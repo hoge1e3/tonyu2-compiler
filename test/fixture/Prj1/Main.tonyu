@@ -1,3 +1,9 @@
-native console;
 
-console.log("Hello");
+x=100;
+y=200;
+fillStyle="white";
+radius=16;
+while(x<300) {
+    x++;
+    update();
+}

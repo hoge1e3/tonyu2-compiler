@@ -1,3 +1,8 @@
-{"compiler":{
-    "outputFile": "js/concat.js","namespace":"user"
-    },"run":{}}
+{
+    "compiler":{
+        "dependingProjects": [{"namespace":"kernel","compiledFile":"js/kernel.js"}],
+        "defaultSuperClass": "kernel.Actor",
+        "outputFile": "js/concat.js","namespace":"user"
+    },
+    "run":{}
+}

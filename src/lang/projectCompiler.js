@@ -363,7 +363,11 @@ const TPRC=module.exports=function (dir) {
 				var prjDir=TPR.resolve(dprj);
 				return TPRC(prjDir);
 			} else if (typeof dprj=="object") {
-				return CPR(dprj.namespace, FS.expandPath(dprj.compiledURL) );
+				if (dprj.compiledURL) {
+					return CPR(dprj.namespace, FS.expandPath(dprj.compiledURL) );
+				} else {
+					return CPR(dprj.namespace, TPR.resolve(dprj.compiledFile) );										
+				}
 			}
 		});
 	};

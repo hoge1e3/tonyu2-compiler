@@ -2,6 +2,7 @@ Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
   namespace: 'user',
+  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
@@ -9,7 +10,16 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        console.log("Hello");
+        _this.x=100;
+        _this.y=200;
+        _this.fillStyle="white";
+        _this.radius=16;
+        while (_this.x<300) {
+          Tonyu.checkLoop();
+          _this.x++;
+          _this.update();
+          
+        }
       },
       fiber$main :function _trc_Main_f_main(_thread) {
         "use strict";
@@ -17,9 +27,30 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        console.log("Hello");
+        _this.x=100;
+        _this.y=200;
+        _this.fillStyle="white";
+        _this.radius=16;
         
-        _thread.retVal=_this;return;
+        _thread.enter(function _trc_Main_ent_main(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+            case 1:
+              if (!(_this.x<300)) { __pc=3     ; break; }
+              _this.x++;
+              _this.fiber$update(_thread);
+              __pc=2;return;
+            case 2:
+              
+              __pc=1;break;
+            case 3     :
+              
+              _thread.exit(_this);return;
+            }
+          }
+        });
       },
       __dummy: false
     };
