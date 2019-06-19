@@ -1,8 +1,13 @@
-if (typeof define!=="function") {
+/*if (typeof define!=="function") {
 	define=require("requirejs").define;
 }
-define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {
-	var ex={"[SUBELEMENTS]":1,pos:1,len:1};
+define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
+	const Visitor=require("./Visitor");
+	const Grammar=require("./Grammar");
+	const cu=require("./compiler");
+	const context=require("./context");
+
+	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 	var ScopeTypes=cu.ScopeTypes;
 	var genSt=cu.newScopeType;
 	var stype=cu.getScopeType;
@@ -153,5 +158,4 @@ TypeChecker.checkExpr=function (klass,env) {
 		return va.vtype;
 	}
 };
-return TypeChecker;
-});
+module.exports=TypeChecker;

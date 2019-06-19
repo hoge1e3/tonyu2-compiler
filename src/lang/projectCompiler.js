@@ -1,17 +1,29 @@
-define(["Tonyu","Tonyu.Compiler.JSGenerator","Tonyu.Compiler.Semantics",
+/*define(["Tonyu","Tonyu.Compiler.JSGenerator","Tonyu.Compiler.Semantics",
 		"Tonyu.TraceTbl","FS","assert","DeferredUtil","compiledProject",
 		"source-map","TypeChecker"],
 		function (Tonyu,JSGenerator,Semantics,
 				ttb,FS,A,DU,CPR,
-				S,TypeChecker) {
-var TPRC=function (dir) {
+				S,TypeChecker) {*/
+const Tonyu=require("../runtime/TonyuLib");
+const JSGenerator=require("./JSGenerator");
+const Semantics=require("./Semantics");
+//const ttb=require("./");
+const FS=require("../lib/FS");
+const A=require("../lib/assert");
+//,DU,
+const CPR=require("./compiledProject");
+const S=require("./source-map");
+const TypeChecker=require("./TypeChecker");
+const TError=require("../runtime/TError");
+
+const TPRC=module.exports=function (dir) {
 	// Difference from TonyuProject
 	//    projectCompiler defines projects of Tonyu 'Language'.
 	//    Responsible for transpilation.
 	A(FS.isFile(dir) && dir.isDir(), "projectCompiler: "+dir+" is not dir obj");
 	var TPR={env:{}};
 	var traceTbl=Tonyu.TraceTbl;//();
-	var F=DU.throwF;
+	//var F=DU.throwF;
 	TPR.env.traceTbl=traceTbl;
 	TPR.EXT=".tonyu";
 	TPR.getDir=function () {return dir;};
@@ -98,7 +110,7 @@ var TPRC=function (dir) {
 		var opt=TPR.getOptions();
 		return A(opt.compiler.namespace,"namespace not specified opt="+JSON.stringify(opt));
 	};
-	TPR.getPublishedURL=function () {//ADDBA
+	/*TPR.getPublishedURL=function () {//ADDBA
 		if (TPR._publishedURL) return TPR._publishedURL;
 		return DU.requirejs(["Auth"]).then(function (Auth) {
 			return Auth.publishedURL(TPR.getName()+"/");
@@ -106,7 +118,7 @@ var TPRC=function (dir) {
 			TPR._publishedURL=r;
 			return r;
 		});
-	};
+	};*/
 	TPR.getOutputFile=function (lang) {
 		var opt=TPR.getOptions();
 		var outF=TPR.resolve(A(opt.compiler.outputFile,"outputFile should be specified in options"));
@@ -130,7 +142,7 @@ var TPRC=function (dir) {
 		this.getOutputFile().rm();
 	};
 	TPR.loadDependingClasses=function (ctx) {
-		var task=DU.directPromise();
+		var task=Promise.resolve();
 		var myNsp=TPR.getNamespace();
 		TPR.getDependingProjects().forEach(function (p) {
 			if (p.getNamespace()==myNsp) return;
@@ -147,19 +159,15 @@ var TPRC=function (dir) {
 		console.log("LoadClasses: "+dir.path());
 		ctx=initCtx(ctx);
 		var visited=ctx.visited||{};
-		if (visited[TPR.path()]) return DU.directPromise();
+		if (visited[TPR.path()]) return Promise.resolve();
 		visited[TPR.path()]=true;
 		return TPR.loadDependingClasses(ctx).then(function () {
 			return TPR.shouldCompile();
-		}).then(function (sc) {
-			if (sc) {
-				return TPR.compile(ctx);
-			} else {
-				var outF=TPR.getOutputFile("js");
-				TPR.showProgress("Eval "+outF.name());
-				return evalFile(outF);//.then(F(copyToClasses));
-			}
-		});
+		}).then(sc=>(sc?TPR.compile(ctx): Promise.resolve()).then(()=>{
+			var outF=TPR.getOutputFile("js");
+			TPR.showProgress("Eval "+outF.name());
+			return evalFile(outF);//.then(F(copyToClasses));
+		}));
 	};
 	function initCtx(ctx) {
 		//どうしてclassMetasとclassesをわけるのか？
@@ -179,7 +187,7 @@ var TPRC=function (dir) {
 		var myNsp=TPR.getNamespace();
 		var baseClasses,ctxOpt,env,myClasses,fileAddedOrRemoved,sf,ord;
 		var compilingClasses;
-		return TPR.loadDependingClasses(ctx).then(F(function () {
+		return TPR.loadDependingClasses(ctx).then(function () {
 			baseClasses=ctx.classes;
 			ctxOpt=ctx.options;
 			env=TPR.env;
@@ -191,10 +199,11 @@ var TPRC=function (dir) {
 				env.aliases[ cl.shortName] = cl.fullName;
 			}
 			return TPR.showProgress("scan sources");
-		})).then(F(function () {
+		}).then(function () {
 			myClasses={};
 			fileAddedOrRemoved=!!ctxOpt.noIncremental;
 			sf=TPR.sourceFiles(myNsp);
+			console.log("Sourcefiles",sf);
 			for (var shortCn in sf) {
 				var f=sf[shortCn];
 				var fullCn=myNsp+"."+shortCn;
@@ -214,7 +223,7 @@ var TPRC=function (dir) {
 				env.aliases[shortCn]=fullCn;
 			}
 			return TPR.showProgress("update check");
-		})).then(F(function () {
+		}).then(function () {
 			for (var n in baseClasses) {
 				if (myClasses[n] && myClasses[n].src && !myClasses[n].src.js) {
 					//前回コンパイルエラーだとここにくるかも
@@ -229,7 +238,7 @@ var TPRC=function (dir) {
 			}
 			if (!fileAddedOrRemoved) {
 				compilingClasses={};
-				for (var n in myClasses) {
+				for (let n in myClasses) {
 					if (Tonyu.klass.shouldCompile(myClasses[n])) {
 						compilingClasses[n]=myClasses[n];
 					}
@@ -239,14 +248,15 @@ var TPRC=function (dir) {
 			}
 			console.log("compilingClasses",compilingClasses);
 			return TPR.showProgress("initClassDecl");
-		})).then(F(function () {
+		}).then(function () {
 			for (var n in compilingClasses) {
 				console.log("initClassDecl: "+n);
 				Semantics.initClassDecls(compilingClasses[n], env);/*ENVC*/
 			}
 			return TPR.showProgress("order");
-		})).then(F(function () {
+		}).then(function () {
 			ord=orderByInheritance(myClasses);/*ENVC*/
+			console.log("ORD",ord);
 			ord.forEach(function (c) {
 				if (compilingClasses[c.fullName]) {
 					console.log("annotate :"+c.fullName);
@@ -264,13 +274,13 @@ var TPRC=function (dir) {
 				console.log("Error in Typecheck(It doesnt matter because Experimental)",e.stack);
 			}
 			return TPR.showProgress("genJS");
-		})).then(F(function () {
+		}).then(function () {
 			//throw "test break";
 			return TPR.genJS(ord.filter(function (c) {
 				return compilingClasses[c.fullName] || c.jsNotUpToDate;
 			}));
 			//return TPR.showProgress("concat");
-		})).then(F(function () {
+		}).then(function () {
 			var copt=TPR.getOptions().compiler;
 			if (ctx.options.hot) {
 				return TPR.hotEval(ord, compilingClasses);
@@ -278,16 +288,20 @@ var TPRC=function (dir) {
 			if (!copt.genAMD) {
 				return TPR.concatJS(ord);
 			}
-		}));
+		});
 	};
 	TPR.genJS=function (ord) {
 		// 途中でコンパイルエラーを起こすと。。。
 		var env=TPR.env;
-		return DU.each(ord,function (c) {
+		for (let c of ord) {
+			JSGenerator.genJS(c, env);
+		}
+		return Promise.resolve();
+		/*return DU.each(ord,function (c) {
 			console.log("genJS :"+c.fullName);
 			JSGenerator.genJS(c, env);
 			return TPR.showProgress("genJS :"+c.fullName);
-		});
+		});*/
 	};
 	TPR.concatJS=function (ord) {
 		//var cbuf="";
@@ -317,7 +331,7 @@ var TPRC=function (dir) {
 		var gc=mapNode.toStringWithSourceMap();
 		outf.text(gc.code+"\n//# sourceMappingURL="+mapFile.name());
 		mapFile.text(gc.map+"");
-		return evalFile(outf);
+		return Promise.resolve(); //evalFile(outf);
 	};
 	TPR.hotEval=function (ord,compilingClasses) {
 		//var cbuf="";
@@ -333,7 +347,8 @@ var TPRC=function (dir) {
 				throw new Error("Src for "+c.fullName+" not generated ");
 			}
 			console.log("hotEval ",c);//, cbuf2);
-			new Function(cbuf2)();
+			const f=Function;
+			new f(cbuf2)();
 		});
 	};
 	TPR.hotCompile=function () {
@@ -365,8 +380,11 @@ var TPRC=function (dir) {
 			if (f.endsWith(TPR.EXT)) {
 				var nb=f.truncExt(TPR.EXT);
 				res[nb]=f;
+				console.log("sourceF",f.path(), f.endsWith(TPR.EXT), TPR.EXT);
 			}
 		}
+		console.log("sourceFRes",res);
+
 		return res;
 	};
 	TPR.sourceDir=function () {
@@ -396,7 +414,7 @@ var TPRC=function (dir) {
 		}
 		while (res.length<ccnt) {
 			var p=res.length;
-			for (var n in classes) {/*ENVC*/
+			for (let n in classes) {/*ENVC*/
 				if (added[n]) continue;
 				var c=classes[n];/*ENVC*/
 				var deps=dep1(c);
@@ -407,7 +425,7 @@ var TPRC=function (dir) {
 			}
 			if (res.length==p) {
 				var loop=[];
-				for (var n in classes) {
+				for (let n in classes) {
 					if (!added[n]) {
 						loop=detectLoop(classes[n]) || [];
 						break;
@@ -482,9 +500,10 @@ var TPRC=function (dir) {
 	}
 	function evalFile(f) {
 		console.log("evalFile: "+f.path());
-		var lastEvaled=new Function(f.text());
+		const fn=Function;
+		var lastEvaled=new fn(f.text());
 		traceTbl.addSource(f.path(),lastEvaled+"");
-		return DU.directPromise( lastEvaled() );
+		return Promise.resolve( lastEvaled() );
 	}
 	TPR.decodeTrace=function (desc) { // user.Test:123
 		var a=desc.split(":");
@@ -502,11 +521,12 @@ var TPRC=function (dir) {
 		}
 	};
 	TPR.showProgress=function (m) {
+		console.log("Progress:" ,m);
 	};
 	TPR.setAMDPaths=function (paths) {
 		TPR.env.amdPaths=paths;
 	};
-	TPR.genXML=function (cname) {//"user.Main"
+	/*TPR.genXML=function (cname) {//"user.Main"
 		requirejs(["XMLBuffer"],function (x) {
 			var c=TPR.env.classes[cname];
 			if (!c) throw new Error("Class "+cname+" not found");
@@ -515,14 +535,12 @@ var TPRC=function (dir) {
 			b(c.node);
 			console.log(b.buf);
 		});
-	};
+	};*/
 	return TPR;
-}
-if (typeof sh=="object") {
+};
+/*if (typeof sh=="object") {
 	sh.tonyuc=function (dir) {
 		var pr=TPRC(sh.resolve(dir));
 		return pr.compile();
 	};
-}
-return TPRC;
-});
+}*/

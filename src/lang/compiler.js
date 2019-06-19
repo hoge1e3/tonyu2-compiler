@@ -1,5 +1,7 @@
-define(["Tonyu","ObjectMatcher", "TError"],
-		function(Tonyu,ObjectMatcher, TError) {
+	const Tonyu=require("../runtime/TonyuLib");
+	const ObjectMatcher=require("./ObjectMatcher");
+	//const TError=require("TError");
+	const root=require("../lib/root");
 	var cu={};
 	Tonyu.Compiler=cu;
 	var ScopeTypes={
@@ -72,7 +74,7 @@ define(["Tonyu","ObjectMatcher", "TError"],
 			res=k.decls.fields[name];
 		});
 		if (typeof (res.vtype)==="string") {
-			res.vtype=Tonyu.classMetas[res.vtype] || window[res.vtype];
+			res.vtype=Tonyu.classMetas[res.vtype] || root[res.vtype];
 		}
 		return res;
 	};
@@ -113,6 +115,4 @@ define(["Tonyu","ObjectMatcher", "TError"],
 		return res;
 	}
 	cu.getParams=getParams;
-	return cu;
-
-});
+	module.exports=cu;

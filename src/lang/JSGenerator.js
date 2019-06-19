@@ -1,11 +1,17 @@
-if (typeof define!=="function") {//B
-	define=require("requirejs").define;
-}
-define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
+/*define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
 		"context", "Visitor","Tonyu.Compiler","assert"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
-		context, Visitor,cu,A) {
-return cu.JSGenerator=(function () {
+		context, Visitor,cu,A) {*/
+const Tonyu=require("../runtime/TonyuLib");
+const IndentBuffer=require("./IndentBuffer");
+const ObjectMatcher=require("./ObjectMatcher");
+const TError=require("../runtime/TError");
+const context=require("./context");
+const Visitor=require("./Visitor");
+const cu=require("./compiler");
+const A=require("../lib/assert");
+
+module.exports=cu.JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 var TH="_thread",THIZ="_this", ARGS="_arguments",FIBPRE="fiber$", FRMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100;//G
 var BINDF="Tonyu.bindFunc";
@@ -120,13 +126,13 @@ function genJS(klass, env) {//B
 	}
 	function lastPosF(node) {//G
 		return function () {
-			if (ctx.noLastPos) return;
+			/*if (ctx.noLastPos) return;
 			buf.printf("%s%s=%s;//%s%n", (env.options.compiler.commentLastPos?"//":""),
-					LASTPOS, traceTbl.add(klass/*.src.tonyu*/,node.pos ), klass.fullName+":"+node.pos);
+					LASTPOS, traceTbl.add(klass,node.pos ), klass.fullName+":"+node.pos);*/
 		};
 	}
 	var THNode={type:"THNode"};//G
-	v=buf.visitor=Visitor({//G
+	const v=buf.visitor=Visitor({//G
 		THNode: function (node) {
 			buf.printf(TH);
 		},
@@ -186,9 +192,9 @@ function genJS(klass, env) {//B
 				}
 			}
 		},
-		program: function (node) {
+		/*program: function (node) {
 			genClass(node.stmts);
-		},
+		},*/
 		number: function (node) {
 			buf.printf("%s", node.value );
 		},
@@ -288,7 +294,7 @@ function genJS(klass, env) {//B
 							t.L, t.O, TH
 				);
 			} else if (t.type=="noRetSuper") {
-				var p=SUPER;//getClassName(klass.superclass);
+				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
 							"%s.prototype.%s%s.apply( %s, [%j]);%n" +//FIBERCALL
 							"%s=%s;return;%n" +/*B*/
@@ -298,7 +304,7 @@ function genJS(klass, env) {//B
 								ctx.pc++
 					);
 			} else if (t.type=="retSuper") {
-				var p=SUPER;//getClassName(klass.superclass);
+				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
 							"%s.prototype.%s%s.apply( %s, [%j]);%n" +//FIBERCALL
 							"%s=%s;return;%n" +/*B*/
@@ -355,7 +361,7 @@ function genJS(klass, env) {//B
 			var a=annotation(node);
 			if (diagnose) {
 				if (a.myMethodCall) {
-					var mc=a.myMethodCall;
+					const mc=a.myMethodCall;
 					var si=mc.scopeInfo;
 					var st=stype(si);
 					if (st==ST.FIELD || st==ST.PROP || st==ST.METHOD) {
@@ -374,9 +380,9 @@ function genJS(klass, env) {//B
 					return;
 				}
 			} else if (a.myMethodCall) {
-				var mc=a.myMethodCall;
-				var si=mc.scopeInfo;
-				var st=stype(si);
+				const mc=a.myMethodCall;
+				const si=mc.scopeInfo;
+				const st=stype(si);
 				if (st==ST.METHOD) {
 					buf.printf("%s.%s(%j)",THIZ, mc.name, [",",mc.args]);
 					return;
@@ -458,8 +464,7 @@ function genJS(klass, env) {//B
 						"switch (%v) {%{"+
 						"%f"+
 						"%n%}}%n"+
-						"break;%n"
-						,
+						"break;%n",
 						node.value,
 						function setpc() {
 							var i=0;
@@ -478,8 +483,7 @@ function genJS(klass, env) {//B
 					node.cases.forEach(function (c) {
 						buf.printf(
 								"%}case %f:%{"+
-								"%j%n"
-								,
+								"%j%n",
 								function () { buf.print(labels[i].put(ctx.pc++)); },
 								["%n",c.stmts]);
 						i++;
@@ -487,8 +491,7 @@ function genJS(klass, env) {//B
 					if (node.defs) {
 						buf.printf(
 								"%}case %f:%{"+
-								"%j%n"
-								,
+								"%j%n",
 								function () { buf.print(labels[i].put(ctx.pc++)); },
 								["%n",node.defs.stmts]);
 					}
@@ -500,8 +503,7 @@ function genJS(klass, env) {//B
 						"switch (%v) {%{"+
 						"%j"+
 						(node.defs?"%n%v":"%D")+
-						"%n%}}"
-						,
+						"%n%}}"						,
 						node.value,
 						["%n",node.cases],
 						node.defs
@@ -617,9 +619,9 @@ function genJS(klass, env) {//B
 			} else {
 				if (!ctx.noWait&&
 						(an.fiberCallRequired || an.hasReturn)) {
-					var brkpos=buf.lazy();
+					const brkpos=buf.lazy();
 					var cntpos=buf.lazy();
-					var pc=ctx.pc++;
+					const pc=ctx.pc++;
 					buf.printf(
 							"%v%n"+
 							"%}case %d:%{" +
@@ -646,8 +648,7 @@ function genJS(klass, env) {//B
 									"for (; %v ; %v) {%{"+
 										(doLoopCheck?"Tonyu.checkLoop();%n":"")+
 										"%v%n" +
-									"%}}"
-										,
+									"%}}"										,
 									/*enterV({noLastPos:true},*/ node.inFor.init,
 									node.inFor.cond, node.inFor.next,
 									node.loop
@@ -819,8 +820,7 @@ function genJS(klass, env) {//B
 	var opTokens=["++", "--", "!==", "===", "+=", "-=", "*=", "/=",
 			"%=", ">=", "<=",
 	"!=", "==", ">>>",">>", "<<", "&&", "||", ">", "<", "+", "?", "=", "*",
-	"%", "/", "^", "~", "\\", ":", ";", ",", "!", "&", "|", "-"
-	,"delete"	 ];
+	"%", "/", "^", "~", "\\", ":", ";", ",", "!", "&", "|", "-"	,"delete"	 ];
 	opTokens.forEach(function (opt) {
 	v.funcs[opt]=function (node) {
 		buf.printf("%s",opt);
@@ -842,17 +842,17 @@ function genJS(klass, env) {//B
 					reqs[mod]=1;
 				}
 				if (klass.superclass) {
-					var mod=klass.superclass.shortName;
+					const mod=klass.superclass.shortName;
 					reqs[mod]=1;
 				}
 				(klass.includes||[]).forEach(function (klass) {
 					var mod=klass.shortName;
 					reqs[mod]=1;
 				});
-				for (var mod in klass.decls.softRefClasses) {
+				for (let mod in klass.decls.softRefClasses) {
 					reqs[mod]=1;
 				}
-				for (var mod in reqs) {
+				for (let mod in reqs) {
 					printf("var %s=require('%s');%n",mod,mod);
 				}
 			}
@@ -864,7 +864,7 @@ function genJS(klass, env) {//B
 			printf("includes: [%s],%n", getClassNames(klass.includes).join(","));
 			printf("methods: function (%s) {%{",SUPER);
 			printf("return {%{");
-			for (var name in methods) {
+			const procMethod=name=>{
 				if (debug) console.log("method1", name);
 				var method=methods[name];
 				if (!method.params) {
@@ -880,7 +880,8 @@ function genJS(klass, env) {//B
 					});
 				}
 				if (debug) console.log("method3", name);
-			}
+			};
+			for (var name in methods) procMethod(name);
 			printf("__dummy: false%n");
 			printf("%}};%n");
 			printf("%}},%n");
@@ -897,11 +898,11 @@ function genJS(klass, env) {//B
 	}
 	function digestDecls(klass) {
 		var res={methods:{},fields:{}};
-		for (var i in klass.decls.methods) {
+		for (let i in klass.decls.methods) {
 			res.methods[i]=
 			{nowait:!!klass.decls.methods[i].nowait};
 		}
-		for (var i in klass.decls.fields) {
+		for (let i in klass.decls.fields) {
 			var src=klass.decls.fields[i];
 			var dst={};
 			//console.log("digestDecls",src);
@@ -1030,8 +1031,7 @@ function genJS(klass, env) {//B
 		buf.printf("(function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
-					"%}})"
-				,
+					"%}})"				,
 					finfo.name, [",", finfo.params],
 					genLocalsF(finfo),
 						fbody
@@ -1047,7 +1047,7 @@ function genJS(klass, env) {//B
 	}
 	function genFn(pos,name) {//G
 		if (!name) name=(fnSeq++)+"";
-		return ("_trc_"+klass.shortName+"_"+name)
+		return ("_trc_"+klass.shortName+"_"+name);
 //        return ("_trc_func_"+traceTbl.add(klass,pos )+"_"+(fnSeq++));//  Math.random()).replace(/\./g,"");
 	}
 	function genSubFunc(node) {//G
@@ -1055,8 +1055,7 @@ function genJS(klass, env) {//B
 		buf.printf("function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
-					"%}}"
-				,
+					"%}}"				,
 					finfo.name,[",", finfo.params],
 						genLocalsF(finfo),
 						fbody
@@ -1074,14 +1073,14 @@ function genJS(klass, env) {//B
 		return f;
 		function f() {
 			ctx.enter({/*scope:finfo.scope*/}, function (){
-				for (var i in finfo.locals.varDecls) {
+				for (let i in finfo.locals.varDecls) {
 					buf.printf("var %s;%n",i);
 				}
-				for (var i in finfo.locals.subFuncDecls) {
+				for (let i in finfo.locals.subFuncDecls) {
 					genSubFunc(finfo.locals.subFuncDecls[i]);
 				}
 			});
-		};
+		}
 	}
 	function isConstructor(f) {//G
 		return OM.match(f, {ftype:"constructor"}) || OM.match(f, {name:"new"});
@@ -1104,5 +1103,3 @@ function genJS(klass, env) {//B
 }//B
 return {genJS:genJS};
 })();
-//if (typeof getReq=="function") getReq.exports("Tonyu.Compiler");
-});

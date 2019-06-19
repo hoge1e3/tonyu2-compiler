@@ -1,17 +1,19 @@
-if (typeof define!=="function") {
-	define=require("requirejs").define;
-}
-
 /*
 * Tonyu2 の構文解析を行う．
 * TonyuLang.parse(src);
 *   - srcを解析して構文木を返す．構文エラーがあれば例外を投げる．
 */
-define(["Grammar", "XMLBuffer", "IndentBuffer", "TT",
+/*define(["Grammar", "XMLBuffer", "IndentBuffer", "TT",
 		"disp", "Parser", "ExpressionParser", "TError"],
 function (Grammar, XMLBuffer, IndentBuffer, TT,
-		disp, Parser, ExpressionParser, TError) {
-return TonyuLang=function () {
+		disp, Parser, ExpressionParser, TError) {*/
+const Grammar=require("./Grammar");
+const IndentBuffer=require("./IndentBuffer");
+const TT=require("./tonyu2_token");
+const Parser=require("./parser");
+const ExpressionParser=require("./ExpressionParser2");
+const TError=require("../runtime/TError");
+module.exports=function () {
 	var p=Parser;
 	var $={};
 	var g=Grammar();
@@ -19,6 +21,7 @@ return TonyuLang=function () {
 
 	var sp=p.StringParser;//(str);
 	var tk=p.TokensParser.token;
+	function disp(n) {return JSON.stringify(n);}
 	var num=tk("number").ret(function (n) {
 		n.type="number";
 		if (typeof n.text!="string") throw "No text for "+disp(n);
@@ -72,7 +75,7 @@ return TonyuLang=function () {
 		return p.sep0(tk(","),true).and(tk(",").opt()).ret(function (list,opt) {
 			return list;
 		});
-	};
+	}
 	var e=ExpressionParser() ;
 	var arrayElem=g("arrayElem").ands(tk("["), e.lazy() , tk("]")).ret(null,"subscript");
 	var argList=g("argList").ands(tk("("), comLastOpt(e.lazy()) , tk(")")).ret(null,"args");
@@ -213,7 +216,7 @@ return TonyuLang=function () {
 		return {type:"postfix", expr:p};
 	});*/
 	var expr=e.build().setName("expr").profile();
-	var retF=function (i) { return function (){ return arguments[i];}; };
+	//var retF=function (i) { return function (){ return arguments[i];}; };
 
 	var stmt=G("stmt").firstTokens();
 	var exprstmt=g("exprstmt").ands(expr,tk(";")).ret("expr");
@@ -287,6 +290,7 @@ return TonyuLang=function () {
 		g.defs[i].profile();
 	}
 	$.parse = function (file) {
+		let str;
 		if (typeof file=="string") {
 			str=file;
 		} else {
@@ -317,13 +321,11 @@ return TonyuLang=function () {
 		/*return "ERROR\nSyntax error at "+mp+"\n"+
 		str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
 	};
-	$.genXML= function (src, node) {
+	/*$.genXML= function (src, node) {
 		var x=XMLBuffer(src) ;
 		x(node);
 		return x.buf;
-	};
+	};*/
 	$.extension="tonyu";
 	return $;
 }();
-
-});

@@ -1,8 +1,4 @@
-if (typeof define!=="function") {
-	define=require("requirejs").define;
-}
-define([],function () {
-return ObjectMatcher=function () {
+module.exports=(function () {
 	var OM={};
 	var VAR="$var",THIZ="$this";
 	OM.v=v;
@@ -51,5 +47,4 @@ return ObjectMatcher=function () {
 		return false;
 	}
 	return OM;
-}();
-});
+})();

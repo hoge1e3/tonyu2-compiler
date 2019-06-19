@@ -1,6 +1,12 @@
-define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
+/*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
-return TT=function () {
+*/
+const IndentBuffer=require("./IndentBuffer");
+const TError=require("../runtime/TError");
+const Grammar=require("./Grammar");
+const Parser=require("./parser");
+
+module.exports=function () {
 	function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
@@ -26,10 +32,10 @@ return TT=function () {
 		var res=space.and(pat).ret(function(a, b) {
 			var res={};
 			res.pos=b.pos;
-			if (typeof res.pos!="number") throw "no pos for "+name+" "+disp(b);
+			if (typeof res.pos!="number") throw "no pos for "+name+" ";//+disp(b);
 			res.len=b.len;
 			res.text=b.src.str.substring(res.pos, res.pos+res.len);
-			if (typeof res.text!="string") throw "no text("+res.text+") for "+name+" "+disp(b);
+			if (typeof res.text!="string") throw "no text("+res.text+") for "+name+" ";//+disp(b);
 			res.toString=function (){
 				return this.text;
 			};
@@ -238,5 +244,3 @@ return TT=function () {
 	}
 	return {parse:parse, extension:"js",reserved:reserved};
 }();
-
-});

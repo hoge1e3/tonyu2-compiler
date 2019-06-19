@@ -1,8 +1,4 @@
-if (typeof define!=="function") {
-	define=require("requirejs").define;
-}
-define([],function (){
-return Visitor = function (funcs) {
+const Visitor = function (funcs) {
 	var $={funcs:funcs, path:[]};
 	$.visit=function (node) {
 		try {
@@ -32,4 +28,4 @@ return Visitor = function (funcs) {
 	};
 	return $;
 };
-});
+module.exports=Visitor;

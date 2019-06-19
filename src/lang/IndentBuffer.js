@@ -1,8 +1,7 @@
-if (typeof define!=="function") {
-	define=require("requirejs").define;
-}
-define(["assert","source-map"],function (A, S) {
-var Pos2RC=function (src) {
+const A=require("../lib/assert");
+const S=require("./source-map");
+
+const Pos2RC=function (src) {
 	var $={};
 	var map=[];
 	var pos=0;
@@ -33,7 +32,7 @@ var Pos2RC=function (src) {
 	};
 	return $;
 };
-return IndentBuffer=function (options) {
+module.exports=function (options) {
 	options=options||{};
 	var $=function () {
 		var args=arguments;
@@ -121,11 +120,11 @@ return IndentBuffer=function (options) {
 					console.log(node);
 					throw new Error (node+" is not array. cannot join fmt:"+fmt);
 				}
-				node.forEach(function (n) {
+				for (let n of node) {
 					if (sep) $.printf(sp);
 					sep=true;
 					$.visitor.visit(n);
-				});
+				}
 				i++;
 			} else if (fstr=="D"){
 				shiftArg(true);
@@ -280,4 +279,3 @@ return IndentBuffer=function (options) {
 	};
 	return $;
 };
-});

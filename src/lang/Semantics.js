@@ -1,11 +1,23 @@
-if (typeof define!=="function") {//B
+/*if (typeof define!=="function") {//B
 	define=require("requirejs").define;
 }
 define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
 		"context", "Visitor","Tonyu.Compiler"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
-		context, Visitor,cu) {
-return cu.Semantics=(function () {
+		context, Visitor,cu) {*/
+const Tonyu=require("../runtime/TonyuLib");
+const TonyuLang=require("./parse_tonyu2");
+const IndentBuffer=require("./IndentBuffer");
+const ObjectMatcher=require("./ObjectMatcher");
+const TError=require("../runtime/TError");
+const context=require("./context");
+const Visitor=require("./Visitor");
+const cu=require("./compiler");
+const A=require("../lib/assert");
+const Grammar=require("./Grammar");
+const root=require("../lib/root");
+
+module.exports=cu.Semantics=(function () {
 /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
 		LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
 var ScopeTypes=cu.ScopeTypes;
@@ -72,14 +84,15 @@ function initClassDecls(klass, env ) {//S
 	function initMethods(program) {
 		var spcn=env.options.compiler.defaultSuperClass;
 		var pos=0;
-		var t;
-		if (t=OM.match( program , {ext:{superclassName:{text:OM.N, pos:OM.P}}})) {
+		var t=OM.match( program , {ext:{superclassName:{text:OM.N, pos:OM.P}}});
+		if (t) {
 			spcn=t.N;
 			pos=t.P;
 			if (spcn=="null") spcn=null;
 		}
 		klass.includes=[];
-		if (t=OM.match( program , {incl:{includeClassNames:OM.C}})) {
+		t=OM.match( program , {incl:{includeClassNames:OM.C}});
+		if (t) {
 			t.C.forEach(function (i) {
 				var n=i.text;/*ENVC*/
 				var p=i.pos;
@@ -123,8 +136,8 @@ function initClassDecls(klass, env ) {//S
 			"catch": function (node) {
 			},
 			exprstmt: function (node) {
-				if (node.expr.type==="literal"
-					&& node.expr.text.match(/^.field strict.$/)) {
+				if (node.expr.type==="literal" &&
+					node.expr.text.match(/^.field strict.$/)) {
 					klass.directives.field_strict=true;
 				}
 			},
@@ -227,7 +240,8 @@ function annotateSource2(klass, env) {//B
 	// These has same value but different purposes:
 	//  myMethodCallTmpl: avoid using bounded field for normal method(); call
 	//  fiberCallTmpl: detect fiber call
-	var myMethodCallTmpl=fiberCallTmpl={
+	var myMethodCallTmpl,fiberCallTmpl;
+	myMethodCallTmpl=fiberCallTmpl={
 			type:"postfix",
 			left:{type:"varAccess", name: {text:OM.N}},
 			op:{type:"call", args:OM.A }
@@ -280,14 +294,14 @@ function annotateSource2(klass, env) {//B
 		}
 		var i;
 		for (i in decls.fields) {
-			var info=decls.fields[i];
+			const info=decls.fields[i];
 			s[i]=genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
 			if (info.node) {
 				annotation(info.node,{info:info});
 			}
 		}
 		for (i in decls.methods) {
-			var info=decls.methods[i];
+			const info=decls.methods[i];
 			var r=Tonyu.klass.propReg.exec(i);
 			if (r) {
 				s[r[2]]=genSt(ST.PROP,{klass:klass.fullName,name:r[2],info:info});
@@ -303,13 +317,13 @@ function annotateSource2(klass, env) {//B
 		var s=topLevelScope;
 		getDependingClasses(klass).forEach(initTopLevelScope2);
 		var decls=klass.decls;// Do not inherit parents' natives
-		for (var i in decls.natives) {
-			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:window[i]});
+		for (let i in decls.natives) {
+			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 		}
-		for (var i in JSNATIVES) {
-			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:window[i]});
+		for (let i in JSNATIVES) {
+			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 		}
-		for (var i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
+		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
 			var fullName=env.aliases[i];
 			s[i]=genSt(ST.CLASS,{name:i,fullName:fullName,info:env.classes[fullName]});
 		}
@@ -318,12 +332,12 @@ function annotateSource2(klass, env) {//B
 		var d=getDependingClasses(klass);
 		for (var n in klass.decls.methods) {
 			var m2=klass.decls.methods[n];
-			d.forEach(function (k) {
+			for (let k of d) {
 				var m=k.decls.methods[n];
 				if (m && m.nowait) {
 					m2.nowait=true;
 				}
-			});
+			}
 		}
 	}
 	function getMethod(name) {//B
@@ -553,14 +567,18 @@ function annotateSource2(klass, env) {//B
 		},
 		postfix: function (node) {
 			var t;
+			function match(node, tmpl) {
+				t=OM.match(node,tmpl);
+				return t;
+			}
 			this.visit(node.left);
 			this.visit(node.op);
-			if (t=OM.match(node, myMethodCallTmpl)) {
+			if (match(node, myMethodCallTmpl)) {
 				var si=annotation(node.left).scopeInfo;
 				annotation(node, {myMethodCall:{name:t.N,args:t.A,scopeInfo:si}});
-			} else if (t=OM.match(node, othersMethodCallTmpl)) {
+			} else if (match(node, othersMethodCallTmpl)) {
 				annotation(node, {othersMethodCall:{target:t.T,name:t.N,args:t.A} });
-			} else if (t=OM.match(node, memberAccessTmpl)) {
+			} else if (match(node, memberAccessTmpl)) {
 				annotation(node, {memberAccess:{target:t.T,name:t.N} });
 			}
 		},
@@ -654,8 +672,8 @@ function annotateSource2(klass, env) {//B
 			scope[i]=si;
 			annotation(locals.varDecls[i],{scopeInfo:si});
 		}
-		for (var i in locals.subFuncDecls) {
-			var si=genSt(ST.LOCAL,{declaringFunc:finfo});
+		for (let i in locals.subFuncDecls) {
+			const si=genSt(ST.LOCAL,{declaringFunc:finfo});
 			scope[i]=si;
 			annotation(locals.subFuncDecls[i],{scopeInfo:si});
 		}
@@ -680,7 +698,8 @@ function annotateSource2(klass, env) {//B
 		var m,ps;
 		var body=node.body;
 		var name=(node.head.name ? node.head.name.text : "anonymous_"+node.pos );
-		if (m=OM.match( node, {head:{params:{params:OM.P}}})) {
+		m=OM.match( node, {head:{params:{params:OM.P}}});
+		if (m) {
 			ps=m.P;
 		} else {
 			ps=[];
@@ -750,5 +769,3 @@ function annotateSource2(klass, env) {//B
 }//B  end of annotateSource2
 return {initClassDecls:initClassDecls, annotate:annotateSource2};
 })();
-//if (typeof getReq=="function") getReq.exports("Tonyu.Compiler");
-});

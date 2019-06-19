@@ -1,0 +1,4 @@
+
+play("cde","eg<c");
+new BodyActor{isStatic:true, x:100, y:200, width:500, height: 10 ,fillStyle:"white",rotation:10};
+new BodyActor{isStatic:false, x:100, y:100, radius: 10 ,fillStyle:"white",rotation:10};
