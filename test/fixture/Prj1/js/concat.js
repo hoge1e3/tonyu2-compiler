@@ -17,6 +17,9 @@ Tonyu.klass.define({
         while (_this.x<300) {
           Tonyu.checkLoop();
           _this.x++;
+          if (_this.getkey("e")==1) {
+            _this.appude_to();
+          }
           _this.update();
           
         }
@@ -40,6 +43,9 @@ Tonyu.klass.define({
             case 1:
               if (!(_this.x<300)) { __pc=3     ; break; }
               _this.x++;
+              if (_this.getkey("e")==1) {
+                _this.appude_to();
+              }
               _this.fiber$update(_thread);
               __pc=2;return;
             case 2:
@@ -55,7 +61,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"appude_to":{}}}
 });
 
 //# sourceMappingURL=concat.js.map
