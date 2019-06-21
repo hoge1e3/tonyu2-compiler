@@ -135,6 +135,10 @@ module.exports=function (options) {
 			fmt=fmt.substring(i);
 		}
 	};
+	$.addTraceIndex=function (fname) {
+		if (!this.traceIndex) this.traceIndex={};
+		this.traceIndex[fname]=1;
+	};
 	$.addMapping=function (token) {
 		//console.log("Token",token,$.srcFile+"");
 		if (!$.srcFile) return ;

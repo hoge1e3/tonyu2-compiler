@@ -1,7 +1,7 @@
 
 x=100;
 y=200;
-fillStyle="white";
+fillStyle="yellow";
 radius=16;
 while(x<300) {
     x++;

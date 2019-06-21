@@ -37,19 +37,22 @@ var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
 
 //-----------
-function genJS(klass, env) {//B
+function genJS(klass, env, genOptions) {//B
 	var srcFile=klass.src.tonyu; //file object  //S
 	var srcCont=srcFile.text();
 	function getSource(node) {
 		return cu.getSource(srcCont,node);
 	}
-	var buf=env.codeBuffer || IndentBuffer({fixLazyLength:6});
+	genOptions=genOptions||{};
+	// env.codeBuffer is not recommended(if generate in parallel...?)
+	var buf=genOptions.codeBuffer || env.codeBuffer || IndentBuffer({fixLazyLength:6});
+	var traceIndex=genOptions.traceIndex||{};
 	buf.setSrcFile(srcFile);
 	var printf=buf.printf;
 	var ctx=context();
 	var debug=false;
 	var OM=ObjectMatcher;
-	var traceTbl=env.traceTbl;
+	//var traceTbl=env.traceTbl;
 	// method := fiber | function
 	var decls=klass.decls;
 	var fields=decls.fields,
@@ -1047,7 +1050,9 @@ function genJS(klass, env) {//B
 	}
 	function genFn(pos,name) {//G
 		if (!name) name=(fnSeq++)+"";
-		return ("_trc_"+klass.shortName+"_"+name);
+		let n=("_trc_"+klass.shortName+"_"+name);
+		traceIndex[n]=1;
+		return n;
 //        return ("_trc_func_"+traceTbl.add(klass,pos )+"_"+(fnSeq++));//  Math.random()).replace(/\./g,"");
 	}
 	function genSubFunc(node) {//G

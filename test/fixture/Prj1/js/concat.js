@@ -12,7 +12,7 @@ Tonyu.klass.define({
         
         _this.x=100;
         _this.y=200;
-        _this.fillStyle="white";
+        _this.fillStyle="yellow";
         _this.radius=16;
         while (_this.x<300) {
           Tonyu.checkLoop();
@@ -32,7 +32,7 @@ Tonyu.klass.define({
         
         _this.x=100;
         _this.y=200;
-        _this.fillStyle="white";
+        _this.fillStyle="yellow";
         _this.radius=16;
         
         _thread.enter(function _trc_Main_ent_main(_thread) {
@@ -63,5 +63,4 @@ Tonyu.klass.define({
   },
   decls: {"methods":{"main":{"nowait":false}},"fields":{"appude_to":{}}}
 });
-
 //# sourceMappingURL=concat.js.map
