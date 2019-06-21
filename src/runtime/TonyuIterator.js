@@ -1,5 +1,5 @@
 //define(["Klass"], function (Klass) {
-	const Klass=require("../lib/Klass");
+	var Klass=require("../lib/Klass");
 	var ArrayValueIterator=Klass.define({
 		$: function ArrayValueIterator(set) {
 			this.set=set;

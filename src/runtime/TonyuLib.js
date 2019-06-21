@@ -1,8 +1,8 @@
 //		function (assert,TT,IT,DU) {
-const assert=require("../lib/assert");
-const root=require("../lib/root");
-const TonyuThreadF=require("./TonyuThread");
-const IT=require("./tonyuIterator");
+var assert=require("../lib/assert");
+var root=require("../lib/root");
+var TonyuThreadF=require("./TonyuThread");
+var IT=require("./tonyuIterator");
 module.exports=root.Tonyu=function () {
 	// old browser support
 	if (!root.performance) {
@@ -14,8 +14,8 @@ module.exports=root.Tonyu=function () {
 		};
 	}
 	var preemptionTime=60;
-	const klass={};
-	let Tonyu,TT;
+	var klass={};
+	var Tonyu,TT;
 	function thread() {
 		var t=new TT();
 		t.handleEx=handleEx;
@@ -162,7 +162,8 @@ module.exports=root.Tonyu=function () {
 			var prot=res.prototype;
 			var props={};
 			var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
-			for (let k in methods) {
+			var k;
+			for (k in methods) {
 				if (k.match(/^fiber\$/)) continue;
 				prot[k]=methods[k];
 				var fbk="fiber$"+k;
@@ -185,7 +186,7 @@ module.exports=root.Tonyu=function () {
 				}
 			}
 			prot.isTonyuObject=true;
-			for (let k in props) {
+			for (k in props) {
 				Object.defineProperty(prot, k , props[k]);
 			}
 			prot.getClassInfo=function () {

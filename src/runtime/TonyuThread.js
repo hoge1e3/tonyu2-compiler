@@ -1,4 +1,4 @@
-	const Klass=require("../lib/Klass");
+	var Klass=require("../lib/Klass");
 module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;

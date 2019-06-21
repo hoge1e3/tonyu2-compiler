@@ -1,4 +1,4 @@
-const TError=function (mesg, src, pos) {
+var TError=function (mesg, src, pos) {
 	if (typeof src=="string") {
 		return {
 			isTError:true,
@@ -31,7 +31,8 @@ const TError=function (mesg, src, pos) {
 			rc=TError.calcRowCol(s,pos);
 		}
 	}
-	return Object.assign(new Error(mesg),{
+	function extend(dst,src) {for (var k in src) dst[k]=src[k];return dst;}
+	return extend(new Error(mesg),{
 		isTError:true,
 		mesg:mesg,src:src,pos:pos,row:rc.row, col:rc.col, klass:klass,
 		toString:function (){
