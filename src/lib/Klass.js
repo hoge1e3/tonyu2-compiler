@@ -1,4 +1,5 @@
-define(["assert"],function (A) {
+//define(["assert"],function (A) {
+    let A=require("./assert");
     var Klass={};
     Klass.define=function (pd) {
         var p,parent;
@@ -172,8 +173,9 @@ define(["assert"],function (A) {
             for (var k in target) addMethod(k);
         }
     });
-    return Klass;
-});
+    module.exports=Klass;
+//    return Klass;
+//});
 /*
 requirejs(["Klass"],function (k) {
   P=k.define ({

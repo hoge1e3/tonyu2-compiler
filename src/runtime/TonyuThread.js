@@ -1,7 +1,8 @@
-define(["DeferredUtil","Klass"],function (DU,Klass) {
+	const Klass=require("../lib/Klass");
+module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;
-	try {window.cnts=cnts;}catch(e){}
+	//try {window.cnts=cnts;}catch(e){}
 	var TonyuThread=Klass.define({
 		$: function TonyuThread() {
 			this.frame=null;
@@ -22,11 +23,12 @@ define(["DeferredUtil","Klass"],function (DU,Klass) {
 			//return this.frame!=null && this._isAlive;
 		},
 		isDead: function () {
-			return this._isDead=this._isDead || (this.frame==null) ||
+			this._isDead=this._isDead || (this.frame==null) ||
 			(this._threadGroup && (
 					this._threadGroup.objectPoolAge!=this.tGrpObjectPoolAge ||
 					this._threadGroup.isDeadThreadGroup()
 			));
+			return this._isDead;
 		},
 		setThreadGroup: function setThreadGroup(g) {// g:TonyuThread
 			this._threadGroup=g;
@@ -96,7 +98,7 @@ define(["DeferredUtil","Klass"],function (DU,Klass) {
 		},
 		promise: function () {
 			var fb=this;
-			return DU.funcPromise(function (succ,err) {
+			return new Promise(function (succ,err) {
 				fb.on("terminate",function (st) {
 					if (st.status==="success") {
 						succ(st.value);
@@ -113,7 +115,7 @@ define(["DeferredUtil","Klass"],function (DU,Klass) {
 			else return this.proimse().then(succ);
 		},
 		fail: function (err) {
-			return this.promise().fail(err);
+			return this.promise().then(e=>e, err);
 		},
 		gotoCatch: function gotoCatch(e) {
 			var fb=this;
@@ -194,10 +196,10 @@ define(["DeferredUtil","Klass"],function (DU,Klass) {
 			fb._isWaiting=true;
 			fb.suspend();
 			if (j instanceof TonyuThread) j=j.promise();
-			return DU.ensureDefer(j).then(function (r) {
+			return Promise.resolve(j).then(function (r) {
 				fb.retVal=r;
 				fb.stepsLoop();
-			}).fail(function (e) {
+			}).then(e=>e,function (e) {
 				fb.gotoCatch(fb.wrapError(e));
 				fb.stepsLoop();
 			});
@@ -258,4 +260,4 @@ define(["DeferredUtil","Klass"],function (DU,Klass) {
 		}
 	});
 	return TonyuThread;
-});
+};

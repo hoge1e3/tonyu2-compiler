@@ -1,37 +1,47 @@
 //		function (assert,TT,IT,DU) {
 const assert=require("../lib/assert");
 const root=require("../lib/root");
-
+const TonyuThreadF=require("./TonyuThread");
+const IT=require("./tonyuIterator");
 module.exports=root.Tonyu=function () {
+	// old browser support
+	if (!root.performance) {
+		root.performance = {};
+	}
+	if (!root.performance.now) {
+		root.performance.now = function now() {
+			return Date.now();
+		};
+	}
 	var preemptionTime=60;
 	const klass={};
-	let Tonyu;
-	/*function thread() {
-		var t=new TT;
+	let Tonyu,TT;
+	function thread() {
+		var t=new TT();
 		t.handleEx=handleEx;
 		return t;
 	}
 	function timeout(t) {
-		return DU.funcPromise(function (s) {
+		return new Promise(function (s) {
 			setTimeout(s,t);
 		});
 	}
-	function animationFrame() {
-		return DU.funcPromise( function (f) {
+	/*function animationFrame() {
+		return new Promise( function (f) {
 			requestAnimationFrame(f);
 		});
-	}
-*/
-	/*function handleEx(e) {
+	}*/
+
+	function handleEx(e) {
 		if (Tonyu.onRuntimeError) {
 			Tonyu.onRuntimeError(e);
 		} else {
-			if (typeof $LASTPOS=="undefined") $LASTPOS=0;
-			alert ("エラー! at "+$LASTPOS+" メッセージ  : "+e);
+			//if (typeof $LASTPOS=="undefined") $LASTPOS=0;
+			if (root.alert) root.alert("エラー! メッセージ  : "+e);
 			console.log(e.stack);
 			throw e;
 		}
-	}*/
+	}
 	klass.addMeta=addMeta;
 	function addMeta(fn,m) {
 		// why use addMeta?
@@ -150,21 +160,6 @@ module.exports=root.Tonyu=function () {
 			// methods: res's own methods(no superclass/modules)
 			res.methods=methods;
 			var prot=res.prototype;
-			/*includes.forEach(function (m) {
-				if (!m.methods) throw m+" Does not have methods";
-				for (var n in m.methods) {
-					if (!(n in prot)) {
-						prot[n]=m.methods[n];
-						if (n!=="__dummy" && !prot[n]) {
-							console.log("WHY2!",prot[n],prot,n);
-							throw new Error("WHY2!"+n);
-						}
-					} else {
-						if (prot[n]!==m.methods[n] && n!=="main" && n!=="fiber$main") {
-						}
-					}
-				}
-			});*/
 			var props={};
 			var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
 			for (let k in methods) {
@@ -338,21 +333,21 @@ module.exports=root.Tonyu=function () {
 		//$LASTPOS=0;
 		//th.steps();
 	}
-	/*var lastLoopCheck=performance.now();
+	var lastLoopCheck=root.performance.now();
 	var prevCheckLoopCalled;
 	function checkLoop() {
-		var now=performance.now();
+		var now=root.performance.now();
 		if (now-lastLoopCheck>1000) {
 			resetLoopCheck(10000);
-			throw new Error("無限ループをストップしました。\n"
-				+"   プロジェクト オプションで無限ループチェックの有無を設定できます。\n"
-				+"   [参考]https://edit.tonyu.jp/doc/options.html\n");
+			throw new Error("無限ループをストップしました。\n"+
+				"   プロジェクト オプションで無限ループチェックの有無を設定できます。\n"+
+				"   [参考]https://edit.tonyu.jp/doc/options.html\n");
 		}
 		prevCheckLoopCalled=now;
 	}
 	function resetLoopCheck(disableTime) {
-		lastLoopCheck=performance.now()+(disableTime||0);
-	}*/
+		lastLoopCheck=root.performance.now()+(disableTime||0);
+	}
 	function is(obj,klass) {
 		if (!obj) return false;
 		if (obj instanceof klass) return true;
@@ -362,15 +357,16 @@ module.exports=root.Tonyu=function () {
 		return false;
 	}
 	//setInterval(resetLoopCheck,16);
-	Tonyu={//thread:thread, /*threadGroup:threadGroup,*/
+	Tonyu={thread:thread, /*threadGroup:threadGroup,*/
 			klass:klass, bless:bless, extend:extend,
 			globals:globals, classes:classes, classMetas:classMetas, setGlobal:setGlobal, getGlobal:getGlobal, getClass:getClass,
-			//timeout:timeout,animationFrame:animationFrame, /*asyncResult:asyncResult,*/
+			timeout:timeout,//animationFrame:animationFrame, /*asyncResult:asyncResult,*/
 			bindFunc:bindFunc,not_a_tonyu_object:not_a_tonyu_object,is:is,
 			hasKey:hasKey,invokeMethod:invokeMethod, callFunc:callFunc,checkNonNull:checkNonNull,
-			//run:run,iterator:IT,checkLoop:checkLoop,resetLoopCheck:resetLoopCheck,DeferredUtil:DU,
+			iterator:IT,//run:run,checkLoop:checkLoop,resetLoopCheck:resetLoopCheck,DeferredUtil:DU,
 			VERSION:1560828115159,//EMBED_VERSION
 			A:A};
+	TT=TonyuThreadF(Tonyu);
 	root.Tonyu=Tonyu;
 	return Tonyu;
 }();

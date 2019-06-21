@@ -1,0 +1,26 @@
+native Promise;
+native console;
+native setTimeout;
+
+\waitFor(f) {
+    if (_thread) {
+        var r=_thread.waitFor(f);
+        return r;
+    }
+    return f;
+}
+\update() {
+    waitFor(new Promise(\(s) {
+        setTimeout(s,50);
+    }));
+}
+
+x=100;
+y=200;
+fillStyle="yellow";
+radius=16;
+while(x<300) {
+    x++;
+    console.log(x,y);
+    update();
+}
