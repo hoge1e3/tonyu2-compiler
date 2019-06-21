@@ -11,13 +11,14 @@ if (FS.PathUtil.isAbsolute(prjPath)) {
 }
 //prj.recursive(f=>console.log(f.relPath(prj)));
 
-Compiler(prj).fullCompile().then(function () {
+const compiler=Compiler(prj);
+compiler.fullCompile().then(function () {
     if (run) {
-        const script=prj.rel("js/concat.js");
+        const script=compiler.getOutputFile();
         require(script.path());
         let Tonyu=root.Tonyu;
         let th=Tonyu.thread();
-        let mainObj=new Tonyu.classes.user.Main();
+        let mainObj=new Tonyu.classes[compiler.getNamespace()].Main();
         th.apply(mainObj,"main");
         th.steps();
     }
