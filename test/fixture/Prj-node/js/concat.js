@@ -106,7 +106,7 @@ Tonyu.klass.define({
         _this.radius=16;
         while (_this.x<200) {
           Tonyu.checkLoop();
-          _this.x++;
+          _this.x+=2;
           console.log(_this.x,_this.y);
           _this.update();
           
@@ -130,7 +130,7 @@ Tonyu.klass.define({
             case 0:
             case 1:
               if (!(_this.x<200)) { __pc=3     ; break; }
-              _this.x++;
+              _this.x+=2;
               console.log(_this.x,_this.y);
               _this.fiber$update(_thread);
               __pc=2;return;

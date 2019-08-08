@@ -10,6 +10,7 @@ const S=require("./source-map");
 const TypeChecker=require("./TypeChecker");
 const TError=require("../runtime/TError");
 const IndentBuffer=require("./IndentBuffer");
+const SourceFiles=require("./SourceFiles");
 
 const TPRC=module.exports=function (dir) {
 	// Difference from TonyuProject
@@ -110,22 +111,6 @@ const TPRC=module.exports=function (dir) {
 		return task;
 	};
 	// Difference of ctx and env:  env is of THIS project. ctx is of cross-project
-	/*TPR.loadClasses=function (ctx) {//ctx: ctx or options(For external call)
-		Tonyu.runMode=false;
-		TPR.showProgress("LoadClasses: "+dir.name());
-		console.log("LoadClasses: "+dir.path());
-		ctx=initCtx(ctx);
-		var visited=ctx.visited||{};
-		if (visited[TPR.path()]) return Promise.resolve();
-		visited[TPR.path()]=true;
-		return TPR.loadDependingClasses(ctx).then(function () {
-			return TPR.shouldCompile();
-		}).then(sc=>(sc?TPR.compile(ctx): Promise.resolve()).then(()=>{
-			var outF=TPR.getOutputFile("js");
-			TPR.showProgress("Eval "+outF.name());
-			return evalFile(outF);//.then(F(copyToClasses));
-		}));
-	};*/
 	function initCtx(ctx) {
 		//どうしてclassMetasとclassesをわけるのか？
 		// metaはFunctionより先に作られるから
@@ -150,7 +135,7 @@ const TPRC=module.exports=function (dir) {
 			file: true
 		};
 
-		let buf,traceIndex;
+		let buf;
 		return TPR.loadDependingClasses(ctx).then(function () {
 			baseClasses=ctx.classes;
 			env=TPR.env;
@@ -190,28 +175,7 @@ const TPRC=module.exports=function (dir) {
 			}
 			return TPR.showProgress("update check");
 		}).then(function () {
-			/*for (var n in baseClasses) {
-				if (myClasses[n] && myClasses[n].src && !myClasses[n].src.js) {
-					//前回コンパイルエラーだとここにくるかも
-					console.log("Class",n,"has no js src");
-					fileAddedOrRemoved=true;
-				}
-				if (!myClasses[n] && baseClasses[n].namespace==myNsp) {
-					console.log("Class",n,"is removed");
-					Tonyu.klass.removeMeta(n);
-					fileAddedOrRemoved=true;
-				}
-			}
-			if (!fileAddedOrRemoved) {
-				compilingClasses={};
-				for (let n in myClasses) {
-					if (Tonyu.klass.shouldCompile(myClasses[n])) {
-						compilingClasses[n]=myClasses[n];
-					}
-				}
-			} else {*/
-				compilingClasses=myClasses;
-			//}
+			compilingClasses=myClasses;
 			console.log("compilingClasses",compilingClasses);
 			return TPR.showProgress("initClassDecl");
 		}).then(function () {
@@ -243,19 +207,16 @@ const TPRC=module.exports=function (dir) {
 		}).then(function () {
 			//throw "test break";
 			buf=IndentBuffer({fixLazyLength:6});
-			traceIndex={};
+			buf.traceIndex={};
 			return TPR.genJS(ord,{
 				codeBuffer: buf,
-				traceIndex,
+				traceIndex:buf.traceIndex,
 			});
 		}).then(function () {
 			if (destinations.file) {
 				const outf=TPR.getOutputFile();
-				const mapFile=outf.sibling(outf.name()+".map");
-				outf.text(buf.close()+"\n//# sourceMappingURL="+mapFile.name());
-				mapFile.text(buf.srcmap.toString());
-				return Promise.resolve(); //evalFile(outf);
-
+				const s=SourceFiles.add(buf.close(), buf.srcmap, buf.traceIndex );
+				return s.saveAs(outf);
 			}
 			//console.log(buf.close(),buf.srcmap.toString(),traceIndex);
 		});
@@ -267,64 +228,7 @@ const TPRC=module.exports=function (dir) {
 			JSGenerator.genJS(c, env, genOptions);
 		}
 		return Promise.resolve();
-		/*return DU.each(ord,function (c) {
-			console.log("genJS :"+c.fullName);
-			JSGenerator.genJS(c, env);
-			return TPR.showProgress("genJS :"+c.fullName);
-		});*/
 	};
-	/*TPR.concatJS=function (ord) {
-		//var cbuf="";
-		var outf=TPR.getOutputFile();
-		TPR.showProgress("generate :"+outf.name());
-		console.log("generate :"+outf);
-		var mapNode=new S.SourceNode(null,null,outf.path());
-		ord.forEach(function (c) {
-			var cbuf2,fn=null;
-			if (typeof (c.src.js)=="string") {
-				cbuf2=c.src.js+"\n";
-			} else if (FS.isFile(c.src.js)) {
-				fn=c.src.js.path();
-				cbuf2=c.src.js.text()+"\n";
-			} else {
-				throw new Error("Src for "+c.fullName+" not generated ");
-			}
-			var snd;
-			if (c.src.map) {
-				snd=S.SourceNode.fromStringWithSourceMap(cbuf2,new S.SourceMapConsumer(c.src.map));
-			} else {
-				snd=new S.SourceNode(null,null,fn,cbuf2);
-			}
-			mapNode.add(snd);
-		});
-		var mapFile=outf.sibling(outf.name()+".map");
-		var gc=mapNode.toStringWithSourceMap();
-		outf.text(gc.code+"\n//# sourceMappingURL="+mapFile.name());
-		mapFile.text(gc.map+"");
-		return Promise.resolve(); //evalFile(outf);
-	};
-	TPR.hotEval=function (ord,compilingClasses) {
-		//var cbuf="";
-		ord.forEach(function (c) {
-			if (!compilingClasses[c.fullName]) return;
-			var cbuf2,fn=null;
-			if (typeof (c.src.js)=="string") {
-				cbuf2=c.src.js+"\n";
-			} else if (FS.isFile(c.src.js)) {
-				fn=c.src.js.path();
-				cbuf2=c.src.js.text()+"\n";
-			} else {
-				throw new Error("Src for "+c.fullName+" not generated ");
-			}
-			console.log("hotEval ",c);//, cbuf2);
-			const f=Function;
-			new f(cbuf2)();
-		});
-	};
-	TPR.hotCompile=function () {
-		var options={hot:true};
-		TPR.compile(options);
-	};*/
 	TPR.getDependingProjects=function () {
 		var opt=TPR.getOptions();
 		var dp=opt.compiler.dependingProjects || [];
@@ -440,45 +344,8 @@ const TPRC=module.exports=function (dir) {
 			}
 			loop(c);
 		}
-		function detectLoopOLD(c, prev){
-			//  A->B->C->A
-			// c[B]=A  c[C]=B   c[A]=C
-			console.log("detectloop",c.fullName);
-			if (crumbs[c.fullName]) {   // c[A]
-				console.log("Detected: ",c.fullName, crumbs, crumbs[c.fullName]);
-				var n=c.fullName;
-				var loop=[];
-				var cnt=0;
-				do {
-					loop.unshift(n);    // A      C       B
-					n=crumbs[n];        // C      B       A
-					if (!n || cnt++>100) {
-						console.log(n,crumbs, loop);
-						throw new Error("detectLoop entered infty loop. Now THAT's scary!");
-					}
-				} while(n!=c.fullName);
-				loop.unshift(c.fullName);
-				return loop;
-			}
-			if (prev) crumbs[c.fullName]=prev.fullName;
-			var deps=dep1(c),res;
-			deps.forEach(function (d) {
-				if (res) return;
-				var r=detectLoop(d,c);
-				if (r) res=r;
-			});
-			delete crumbs[c.fullName];
-			return res;
-		}
 		return res;
 	}
-	/*function evalFile(f) {
-		console.log("evalFile: "+f.path());
-		const fn=Function;
-		var lastEvaled=new fn(f.text());
-		traceTbl.addSource(f.path(),lastEvaled+"");
-		return Promise.resolve( lastEvaled() );
-	}*/
 	TPR.decodeTrace=function (desc) { // user.Test:123
 		var a=desc.split(":");
 		var cl=a[0],pos=parseInt(a[1]);
