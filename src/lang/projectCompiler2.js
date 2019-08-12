@@ -213,11 +213,16 @@ const TPRC=module.exports=function (dir) {
 				traceIndex:buf.traceIndex,
 			});
 		}).then(function () {
+			const s=SourceFiles.add(buf.close(), buf.srcmap, buf.traceIndex );
+			let task=Promise.resolve();
 			if (destinations.file) {
 				const outf=TPR.getOutputFile();
-				const s=SourceFiles.add(buf.close(), buf.srcmap, buf.traceIndex );
-				return s.saveAs(outf);
+				task=s.saveAs(outf);
 			}
+			if (destinations.memory) {
+				task=task.then(e=>s);
+			}
+			return task;
 			//console.log(buf.close(),buf.srcmap.toString(),traceIndex);
 		});
 	};

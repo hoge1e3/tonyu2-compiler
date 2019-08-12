@@ -104,13 +104,14 @@ Tonyu.klass.define({
         _this.y=200;
         _this.fillStyle="yellow";
         _this.radius=16;
-        while (_this.x<200) {
+        while (_this.x<120) {
           Tonyu.checkLoop();
           _this.x+=2;
           console.log(_this.x,_this.y);
           _this.update();
           
         }
+        _this.a.b.c;
       },
       fiber$main :function _trc_Main_f_main(_thread) {
         "use strict";
@@ -129,7 +130,7 @@ Tonyu.klass.define({
             switch (__pc) {
             case 0:
             case 1:
-              if (!(_this.x<200)) { __pc=3     ; break; }
+              if (!(_this.x<120)) { __pc=3     ; break; }
               _this.x+=2;
               console.log(_this.x,_this.y);
               _this.fiber$update(_thread);
@@ -139,6 +140,7 @@ Tonyu.klass.define({
               __pc=1;break;
             case 3     :
               
+              _this.a.b.c;
               _thread.exit(_this);return;
             }
           }
@@ -147,6 +149,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{},"a":{}}}
 });
+//# traceFunctions={"_trc_Updatable_main":1,"_trc_Updatable_f_main":1,"_trc_Updatable_waitFor":1,"_trc_Updatable_f_waitFor":1,"_trc_Updatable_update":1,"_trc_Updatable_f_update":1,"_trc_Updatable_ent_update":1,"_trc_Main_main":1,"_trc_Main_f_main":1,"_trc_Main_ent_main":1}
 //# sourceMappingURL=concat.js.map

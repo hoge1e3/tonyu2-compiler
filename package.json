@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/hoge1e3/tonyu2-compiler/issues"
   },
-  "homepage": "https://github.com/hoge1e3/tonyu2-compiler#readme"
+  "homepage": "https://github.com/hoge1e3/tonyu2-compiler#readme",
+  "dependencies": {
+    "source-map-support": "^0.5.13",
+    "tmp": "^0.1.0"
+  }
 }
