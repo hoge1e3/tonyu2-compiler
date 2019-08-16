@@ -21,6 +21,21 @@ const TPRC=module.exports=function (dir) {
 	//var traceTbl=Tonyu.TraceTbl;//();
 	//var F=DU.throwF;
 	//TPR.env.traceTbl=traceTbl;
+	/*
+	env: {
+		options: options.json
+		classes: classMeta of all projects(usually ===Tonyu.classMetas)
+		aliases: shortName->fullName
+		(parsedNode:) NO USE
+		(amdPaths:) optional
+		(traceTbl:) NO USE
+	}
+	ctx: {
+		(visited:) not used??
+		classes: ===env.classes===Tonyu.classMetas
+		options: compile option( same as options.json:compiler?? )
+	}
+	*/
 	TPR.EXT=".tonyu";
 	TPR.getDir=function () {return dir;};
 	TPR.getOptionsFile=function () {
@@ -87,14 +102,21 @@ const TPRC=module.exports=function (dir) {
 	};
 	TPR.requestRebuild=function () {
 		var env=this.env;
+		for (let k of TPR.getMyClasses()) {
+			delete env.classes[k];
+		}
+	};
+	TPR.getMyClasses=function () {
+		var env=this.env;
 		var ns=this.getNamespace();
+		const res=[];
 		for (var kn in env.classes) {
 			var k=env.classes[kn];
 			if (k.namespace==ns) {
-				console.log("REQRB","remove env.classes.",kn);
-				delete env.classes[kn];
+				res.push(k);
 			}
 		}
+		return res;
 	};
 	TPR.removeOutputFile=function () {
 		this.getOutputFile().rm();
@@ -121,6 +143,64 @@ const TPRC=module.exports=function (dir) {
 		}
 		return ctx;
 	}
+	TPR.fileToClass=function(file) {
+		const shortName=file.truncExt(TPR.EXT);
+		const fullName=TPR.env.aliases[shortName];
+		if (!fullName) return null;
+		let res=TPR.env.classes[fullName];
+		return res;
+	};
+	TPR.postChange=function (file) {
+		const classMeta=TPR.fileToClass(file);
+		if (!classMeta) {
+			// new file added ( no dependency)
+			const m=TPR.addMetaFromFile(file);
+			const c={};c[m.fullName]=m;
+			return TPR.partialCompile(c);
+		} else {
+			// existing file modified
+			console.log("Ex",classMeta);
+			return TPR.partialCompile(TPR.reverseDependingClasses(classMeta));
+		}
+	};
+	TPR.reverseDependingClasses=function (klass) {
+		// TODO: cache
+		const dep={};
+		dep[klass.fullName]=klass;
+		let mod;
+		do {
+			mod=false;
+			for(let k of TPR.getMyClasses()) {
+				if (dep[k.fullName]) break;
+				for (let k2 of Tonyu.klass.getDependingClasses(k)) {
+					if (dep[k2.fullName]) {
+						dep[k.fullName]=k;
+						mod=true;
+						break;
+					}
+				}
+			}
+		} while(mod);
+		console.log("revdep",dep);
+		return dep;
+	};
+	TPR.addMetaFromFile=function (f) {
+		const env=TPR.env;
+		const shortCn=f.truncExt(TPR.EXT);
+		const myNsp=TPR.getNamespace();
+		const fullCn=myNsp+"."+shortCn;
+		var m=Tonyu.klass.getMeta(fullCn);
+		Tonyu.extend(m,{
+			fullName:  fullCn,
+			shortName: shortCn,
+			namespace: myNsp
+		});
+		m.src=m.src||{};
+		m.src.tonyu=f;
+		// Q.1 is resolved here
+		env.aliases[shortCn]=fullCn;
+		return m;
+	};
 	TPR.fullCompile=function (ctx/*or options(For external call)*/) {
 		ctx=initCtx(ctx);
 		ctxOpt=ctx.options ||{};
@@ -128,20 +208,20 @@ const TPRC=module.exports=function (dir) {
 		TPR.showProgress("Compile: "+dir.name());
 		console.log("Compile: "+dir.path());
 		var myNsp=TPR.getNamespace();
-		var baseClasses,ctxOpt,env,myClasses,sf,ord;
+		var baseClasses,ctxOpt,env,myClasses,sf;
 		var compilingClasses;
-		var destinations=ctxOpt.destinations || {
+		ctxOpt.destinations=ctxOpt.destinations || {
 			memory: true,
 			file: true
 		};
 
-		let buf;
 		return TPR.loadDependingClasses(ctx).then(function () {
 			baseClasses=ctx.classes;
 			env=TPR.env;
 			env.aliases={};
-			env.parsedNode=env.parsedNode||{};
+			//env.parsedNode=env.parsedNode||{};
 			env.classes=baseClasses;
+			//console.log("env.classes===Tonyu.classMetas",env.classes===Tonyu.classMetas);
 			for (var n in baseClasses) {
 				var cl=baseClasses[n];
 				// Q.1: Override same name in different namespace??
@@ -156,37 +236,32 @@ const TPRC=module.exports=function (dir) {
 			console.log("Sourcefiles",sf);
 			for (var shortCn in sf) {
 				var f=sf[shortCn];
-				var fullCn=myNsp+"."+shortCn;
-				/*if (!baseClasses[fullCn]) {
-					console.log("Class",fullCn,"is added.");
-					fileAddedOrRemoved=true;
-				}*/
-				var m=Tonyu.klass.getMeta(fullCn);
-				myClasses[fullCn]=baseClasses[fullCn]=m;
-				Tonyu.extend(m,{
-					fullName:  fullCn,
-					shortName: shortCn,
-					namespace: myNsp
-				});
-				m.src=m.src||{};
-				m.src.tonyu=f;
-				// Q.1 is resolved here
-				env.aliases[shortCn]=fullCn;
+				const m=TPR.addMetaFromFile(f);
+				myClasses[m.fullName]=baseClasses[m.fullName]=m;
 			}
 			return TPR.showProgress("update check");
 		}).then(function () {
 			compilingClasses=myClasses;
 			console.log("compilingClasses",compilingClasses);
-			return TPR.showProgress("initClassDecl");
-		}).then(function () {
+			return TPR.partialCompile(compilingClasses,ctxOpt);
+			//return TPR.showProgress("initClassDecl");
+		});
+	};
+	TPR.partialCompile=function(compilingClasses,ctxOpt) {
+		let env=TPR.env,ord,buf;
+		ctxOpt=ctxOpt||{};
+		const destinations=ctxOpt.destinations || {
+			memory: true
+		};
+		return Promise.resolve().then(function () {
 			for (var n in compilingClasses) {
 				console.log("initClassDecl: "+n);
 				Semantics.initClassDecls(compilingClasses[n], env);/*ENVC*/
 			}
 			return TPR.showProgress("order");
 		}).then(function () {
-			ord=orderByInheritance(myClasses);/*ENVC*/
-			console.log("ORD",ord);
+			ord=orderByInheritance(compilingClasses);/*ENVC*/
+			console.log("ORD",ord.map(c=>c.fullName));
 			ord.forEach(function (c) {
 				if (compilingClasses[c.fullName]) {
 					console.log("annotate :"+c.fullName);
@@ -318,9 +393,10 @@ const TPRC=module.exports=function (dir) {
 			}
 		}
 		function dep1(c) {
-			var spc=c.superclass;
+			let deps=Tonyu.klass.getDependingClasses(c);
+			/*var spc=c.superclass;
 			var deps=spc ? [spc]:[] ;
-			if (c.includes) deps=deps.concat(c.includes);
+			if (c.includes) deps=deps.concat(c.includes);*/
 			deps=deps.filter(function (cl) {
 				return cl && classes[cl.fullName] && !cl.builtin && !added[cl.fullName];
 			});
@@ -351,21 +427,6 @@ const TPRC=module.exports=function (dir) {
 		}
 		return res;
 	}
-	TPR.decodeTrace=function (desc) { // user.Test:123
-		var a=desc.split(":");
-		var cl=a[0],pos=parseInt(a[1]);
-		var cls=cl.split(".");
-		var sn=cls.pop();
-		var nsp=cls.join(".");
-		if (nsp==TPR.getNamespace()) {
-			var sf=TPR.sourceFiles(nsp);
-			for (var i in sf) {
-				if (sn==i) {
-					return TError("Trace info", sf[i], pos);
-				}
-			}
-		}
-	};
 	TPR.showProgress=function (m) {
 		console.log("Progress:" ,m);
 	};

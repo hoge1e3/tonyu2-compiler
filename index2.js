@@ -25,7 +25,13 @@ compiler.fullCompile(opt).then(async function (s) {
     if (daemon) {
         const tmpdir=compiler.getOutputFile().up();
         await s.exec();//{tmpdir});
-        prj.watch(e=>console.log(e));
+
+        prj.watch(async (e,f)=>{
+            console.log(e,f.path());
+            const ns=await compiler.postChange(f);
+            console.log(ns);
+            await ns.exec();
+        });
     }
     if (run||daemon) {
         let Tonyu=root.Tonyu;

@@ -334,6 +334,12 @@ PathUtil={
     AbsDir:AbsDir,
     SEP: SEP,
     endsWith: endsWith, startsWith:startsWith,
+    isChildOf: function(child, parent) {
+        return this.startsWith( this.normalize(child), this.normalize(parent));
+    },
+    normalize: function (path) {
+        return this.fixSep(path,"/").replace(/\/+$/,"/");
+    },
     hasDriveLetter: function (path) {
         return driveLetter.exec(path);
     },
@@ -1207,7 +1213,7 @@ return {
 * License : https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md (MIT)
 * source  : http://purl.eligrey.com/github/FileSaver.js
 */
-
+define('FileSaver',[],function (){
 
 // The one and only way of getting global scope in all environments
 // https://stackoverflow.com/q/3277182/1008999
@@ -1362,8 +1368,8 @@ _global.saveAs = saveAs.saveAs = saveAs
 if (typeof module !== 'undefined') {
   module.exports = saveAs;
 }
-;
-define("FileSaver", function(){});
+return saveAs;
+});
 
 define('Content',["assert","Util","FileSaver"],function (assert,Util,saveAs) {
     var Content=function () {};
@@ -3004,6 +3010,21 @@ SFile.prototype={
             reader.readAsArrayBuffer(blob);
         });
     },
+    size: function (f) {
+        if (!f) {
+            if (!this.isDir()) {
+                return this.getBytes().byteLength;
+            } else {
+                var sum=0;
+                this.each(function (f) {
+                    sum+=f.size();
+                });
+                return sum;
+            }
+        } else {
+            //TODO: async
+        }
+    },
     download: function () {
         if (this.isDir()) throw new Error(this+": Download dir is not support yet. Use 'zip' instead.");
         saveAs(this.getBlob(),this.name());;
@@ -3142,7 +3163,7 @@ define('RootFS',["assert","FSClass","PathUtil","SFile"], function (assert,FS,P,S
             notifyChanged: function (path,metaInfo) {
                 if (!this.observers) return;
                 this.observers.forEach(function (ob) {
-                    if (P.startsWith(path,ob.path)) {
+                    if (P.isChildOf(path,ob.path)) {
                         ob.handler(path,metaInfo);
                     }
                 });

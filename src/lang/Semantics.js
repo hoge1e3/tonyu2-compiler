@@ -208,7 +208,7 @@ function annotateSource2(klass, env) {//B
 		return cu.getSource(srcCont,node);
 	}
 	var OM=ObjectMatcher;
-	var traceTbl=env.traceTbl;
+	//var traceTbl=env.traceTbl;
 	// method := fiber | function
 	var decls=klass.decls;
 	var fields=decls.fields,
