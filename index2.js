@@ -31,6 +31,7 @@ compiler.fullCompile(opt).then(async function (s) {
             const ns=await compiler.postChange(f);
             console.log(ns);
             await ns.exec();
+            if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
         });
     }
     if (run||daemon) {

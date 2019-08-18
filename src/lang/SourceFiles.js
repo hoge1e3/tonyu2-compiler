@@ -12,6 +12,10 @@ if (root.process) {
 class SourceFile {
     // var text, sourceMap:S.Sourcemap, functions;
     constructor(text, sourceMap, functions) {
+        if (typeof text==="object") {
+            sourceMap=text.sourceMap;
+            text=text.text;
+        }
         this.text=text;
         this.sourceMap=sourceMap.toString();
         this.functions=functions;
@@ -66,6 +70,9 @@ class SourceFile {
     }
     originalPositionFor(opt) {
         return this.getSourceMapConsumer().originalPositionFor(opt);
+    }
+    export() {
+        return {text:this.text, sourceMap:this.sourceMap};
     }
 }
 class SourceFiles {
