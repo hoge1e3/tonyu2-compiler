@@ -5066,7 +5066,7 @@ class SourceFiles {
     }
     add(text, sourceMap, functions) {
         const sourceFile=new SourceFile(text, sourceMap, functions);
-        for (let k in sourceFile.functions) {
+        if (sourceFile.functions) for (let k in sourceFile.functions) {
             this.functions[k]=sourceFile;
         }
         return sourceFile;
@@ -5294,8 +5294,10 @@ const Visitor = function (funcs) {
 module.exports=Visitor;
 
 },{}],17:[function(require,module,exports){
+(function (global){
 	const A=require("../lib/assert");
 	const root=require("../lib/root");
+	const document=root.document;
 	var CPR=module.exports=function (ns, url) {
 		// ns:String url:String(for URL) / File
 		//A.is(arguments,[String,String]);
@@ -5326,9 +5328,18 @@ module.exports=Visitor;
 				var t=this;
 				return this.loadDependingClasses(ctx).then(function () {
 					if (typeof src==="string") {
-						return t.requirejs(src);
+						if (document) {
+							return t.requirejs(src);
+						}
+						/*global importScripts*/
+						return importScripts(src);
 					} else {
-						return require(src.path());
+						if (typeof global!=="undefined" && global.require) {
+							return global.require(src.path());
+						} else {
+							/*global URL*/
+							return t.requirejs(URL.createObjectURL(src.getBlob()));
+						}
 					}
 				}).then(function () {
 					console.log("Done Loading compiled classes ns=",ns,"url=",src);//,Tonyu.classes);
@@ -5336,7 +5347,6 @@ module.exports=Visitor;
 			},
 			requirejs: function (src) {
 				return new Promise(function (s) {
-					const document=root.document;
 					var head = document.getElementsByTagName("head")[0] || document.documentElement;
 					var script = document.createElement("script");
 					if (root.tonyu_app_version) src+="?"+root.tonyu_app_version;
@@ -5360,6 +5370,7 @@ module.exports=Visitor;
 		};
 	};
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../lib/assert":29,"../lib/root":30}],18:[function(require,module,exports){
 	const Tonyu=require("../runtime/TonyuLib");
 	const ObjectMatcher=require("./ObjectMatcher");

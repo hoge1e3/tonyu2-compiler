@@ -81,7 +81,7 @@ class SourceFiles {
     }
     add(text, sourceMap, functions) {
         const sourceFile=new SourceFile(text, sourceMap, functions);
-        for (let k in sourceFile.functions) {
+        if (sourceFile.functions) for (let k in sourceFile.functions) {
             this.functions[k]=sourceFile;
         }
         return sourceFile;

@@ -1,6 +1,7 @@
 const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
+const SourceFiles=require("../lang/SourceFiles");
 //const FS=(root.parent && root.parent.FS) || root.FS;
 
 class Compiler {
@@ -27,16 +28,20 @@ class Compiler {
         await this.init();
         const compres=await this.w.run("compiler/postChange",{files});
         console.log(compres);
+        return compres;
     }
     async run() {
         await this.init();
         await this.fullCompile();
         this.dir.watch(async (e,f)=>{
             console.log(e,f.path());
-            const ns=await this.partialCompile(f);
-            /*console.log(ns);
-            await ns.exec();
-            if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();*/
+            if (f.ext()===".tonyu") {
+                const nsraw=await this.partialCompile(f);
+                const ns=SourceFiles.add(nsraw);
+                console.log(ns);
+                await ns.exec();
+                if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
+            }
         });
     }
 }

@@ -1,5 +1,6 @@
 	const A=require("../lib/assert");
 	const root=require("../lib/root");
+	const document=root.document;
 	var CPR=module.exports=function (ns, url) {
 		// ns:String url:String(for URL) / File
 		//A.is(arguments,[String,String]);
@@ -30,9 +31,18 @@
 				var t=this;
 				return this.loadDependingClasses(ctx).then(function () {
 					if (typeof src==="string") {
-						return t.requirejs(src);
+						if (document) {
+							return t.requirejs(src);
+						}
+						/*global importScripts*/
+						return importScripts(src);
 					} else {
-						return require(src.path());
+						if (typeof global!=="undefined" && global.require) {
+							return global.require(src.path());
+						} else {
+							/*global URL*/
+							return t.requirejs(URL.createObjectURL(src.getBlob()));
+						}
 					}
 				}).then(function () {
 					console.log("Done Loading compiled classes ns=",ns,"url=",src);//,Tonyu.classes);
@@ -40,7 +50,6 @@
 			},
 			requirejs: function (src) {
 				return new Promise(function (s) {
-					const document=root.document;
 					var head = document.getElementsByTagName("head")[0] || document.documentElement;
 					var script = document.createElement("script");
 					if (root.tonyu_app_version) src+="?"+root.tonyu_app_version;
