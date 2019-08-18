@@ -1,7 +1,7 @@
+/*global self*/
 // Worker Side
-define(["promise","root"], function (_,root) {
     var idseq=1;
-    var paths={},queue={},self=root;
+    var paths={},queue={},root=self;
     root.WorkerService={
         install: function (path, func) {
             paths[path]=func;
@@ -67,5 +67,4 @@ define(["promise","root"], function (_,root) {
             }
         };
     }
-    return root.WorkerService;
-});
+    module.exports=self.WorkerService;

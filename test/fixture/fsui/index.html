@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="../css/jquery-ui.css">
 <script>
 requirejs(["../FS"],FS=>{
-    requirejs(["../fsTools"],shui=>{
+    requirejs(["../fsTools"], shui=>{
         var UI=shui.UI;
         sh.run=prjPath=>{
             const prj=sh.resolve(prjPath);
@@ -13,8 +13,12 @@ requirejs(["../FS"],FS=>{
             ));
         };
         shui.show();
-        sh.echo("cd /Tonyu/Projects/Test/");
-        sh.echo("edit Test.tonyu");
+        shui.sh.cd("/Tonyu/Projects/Test/");
+        shui.sh.run();
+        shui.sh.edit("Test.tonyu");
+        /*sh.echo("cd /Tonyu/Projects/Test/");
+        sh.echo("run");
+        sh.echo("edit Test.tonyu");*/
     });
 });
 </script>

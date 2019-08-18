@@ -1,3 +1,50 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const root=require("../lib/root");
+const Worker=root.Worker;
+const WS=require("../lib/WorkerServiceB");
+//const FS=(root.parent && root.parent.FS) || root.FS;
+
+class Compiler {
+    constructor(dir) {
+        this.dir=dir;
+        this.w=new WS.Wrapper(new Worker(root.WebSite.compilerWorkerURL+"?"+Math.random()));
+    }
+    async init() {
+        if (this.inited) return;
+        await this.w.run("compiler/init",{
+            files: this.dir.exportAsObject({
+                excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
+            })
+        });
+        this.inited=true;
+    }
+    async fullCompile() {
+        await this.init();
+        const compres=await this.w.run("compiler/fullCompile");
+        console.log(compres);
+    }
+    async partialCompile(f) {
+        const files={};files[f.relPath(this.dir)]=f.text();
+        await this.init();
+        const compres=await this.w.run("compiler/postChange",{files});
+        console.log(compres);
+    }
+    async run() {
+        await this.init();
+        await this.fullCompile();
+        this.dir.watch(async (e,f)=>{
+            console.log(e,f.path());
+            const ns=await this.partialCompile(f);
+            /*console.log(ns);
+            await ns.exec();
+            if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();*/
+        });
+    }
+}
+root.TonyuCompiler=Compiler;
+module.exports=Compiler;
+
+},{"../lib/WorkerServiceB":2,"../lib/root":3}],2:[function(require,module,exports){
 /*global Worker*/
 // Browser Side
 let idseq=0;
@@ -106,3 +153,18 @@ WorkerService.serv("console/log", function (params){
     console.log.apply(console,params);
 });
 module.exports=WorkerService;
+
+},{}],3:[function(require,module,exports){
+(function (global){
+/*global window,self,global*/
+(function (deps, factory) {
+    module.exports=factory();
+})([],function (){
+    if (typeof window!=="undefined") return window;
+    if (typeof self!=="undefined") return self;
+    if (typeof global!=="undefined") return global;
+    return (function (){return this;})();
+});
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}]},{},[1]);

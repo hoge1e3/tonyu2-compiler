@@ -1,5 +1,7 @@
-(function (deps,factory) {
-    module.exports=factory();
+// This is kowareta! because r.js does not generate module name:
+//   define("FSLib",[], function () { ...
+(function (d,f) {
+module.exports=f();
 })([],function () {
     var define,requirejs;
 	var R={};
@@ -881,6 +883,11 @@ function (extend, P, M,assert,DU){
             // succ : [type],
             stub("getContent");
         },
+        size: function (path) {
+            var c=this.getContent(path,{type:ArrayBuffer});
+            var l=c.toBin().byteLength;
+            return l;
+        },
         getContentAsync: function (path, options) {
             if (!this.supportsSync()) stub("getContentAsync");
             return DU.resolve(this.getContent.apply(this,arguments));
@@ -1714,16 +1721,17 @@ define('Content',["assert","Util","FileSaver"],function (assert,Util,saveAs) {
 /*global require, requirejs, process, Buffer*/
 define('NativeFS',["FSClass","assert","PathUtil","extend","Content"],
         function (FS,A,P,extend,Content) {
-    var available=(typeof process=="object"/* && process.__node_webkit*/);
-    if (!available) {
+    var assert=A,fs;
+    try {
+        fs=require("fs");
+        if (!fs) {
+            fs=requirejs.nodeRequire("fs");
+        }
+        fs.existsSync("test.txt");
+    }catch(e){
         return function () {
             throw new Error("This system not support native FS");
         };
-    }
-    var assert=A;
-    var fs=require("fs");
-    if (!fs) {
-        fs=requirejs.nodeRequire("fs");
     }
     var NativeFS=function (rootPoint) {
         if (rootPoint) {
@@ -1787,6 +1795,11 @@ define('NativeFS',["FSClass","assert","PathUtil","extend","Content"],
             } else {*/
                 return Content.bin( fs.readFileSync(np) , this.getContentType(path));
             //}
+        },
+        size: function(path) {
+            var np=this.toNativePath(path);
+            var st=fs.statSync(np);
+            return st.size;
         },
         setContent: function (path,content) {
             A.is(arguments,[P.Absolute,Content]);
@@ -3013,7 +3026,8 @@ SFile.prototype={
     size: function (f) {
         if (!f) {
             if (!this.isDir()) {
-                return this.getBytes().byteLength;
+                return this.act.fs.size(this.act.path);
+                //return this.getBytes().byteLength;
             } else {
                 var sum=0;
                 this.each(function (f) {
@@ -3644,12 +3658,13 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     FS.init=function (fs) {
         if (rootFS) return;
         if (!fs) {
-            if (typeof process=="object") {
+            if (NativeFS.available) {
                 fs=new NativeFS();
             } else if (typeof localStorage==="object") {
                 fs=new LSFS(localStorage);
             } else if (typeof importScripts==="function") {
                 // Worker
+                /* global self*/
                 self.addEventListener("message", function (e) {
                     var data=e.data;
                     if (typeof data==="string") {
