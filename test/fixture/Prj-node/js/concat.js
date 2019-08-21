@@ -51,16 +51,16 @@ Tonyu.klass.define({
         
         _thread.retVal=_this;return;
       },
-      update :function _trc_Updatable_update() {
+      update :function _trc_Updatable_update(t) {
         "use strict";
         var _this=this;
         
-        _this.waitFor(new Promise((function anonymous_190(s) {
+        _this.waitFor(new Promise((function anonymous_206(s) {
           
-          setTimeout(s,50);
+          setTimeout(s,t||50);
         })));
       },
-      fiber$update :function _trc_Updatable_f_update(_thread) {
+      fiber$update :function _trc_Updatable_f_update(_thread,t) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
@@ -72,9 +72,9 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              _this.fiber$waitFor(_thread, new Promise((function anonymous_190(s) {
+              _this.fiber$waitFor(_thread, new Promise((function anonymous_206(s) {
                 
-                setTimeout(s,50);
+                setTimeout(s,t||50);
               })));
               __pc=1;return;
             case 1:
@@ -84,19 +84,46 @@ Tonyu.klass.define({
           }
         });
       },
+      appear :function _trc_Updatable_appear(o) {
+        "use strict";
+        var _this=this;
+        var t;
+        
+        t = Tonyu.thread();
+        
+        t.apply(o,"main",[]);
+        t.steps();
+        return o;
+      },
+      fiber$appear :function _trc_Updatable_f_appear(_thread,o) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        var t;
+        
+        t = Tonyu.thread();
+        
+        t.apply(o,"main",[]);
+        t.steps();
+        _thread.retVal=o;return;
+        
+        
+        _thread.retVal=_this;return;
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"waitFor":{"nowait":false},"update":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false},"waitFor":{"nowait":false},"update":{"nowait":false},"appear":{"nowait":false}},"fields":{}}
 });Tonyu.klass.define({
-  fullName: 'user.Main',
-  shortName: 'Main',
+  fullName: 'user.Chara',
+  shortName: 'Chara',
   namespace: 'user',
   superclass: Tonyu.classes.user.Updatable,
   includes: [],
   methods: function (__superClass) {
     return {
-      main :function _trc_Main_main() {
+      main :function _trc_Chara_main() {
         "use strict";
         var _this=this;
         
@@ -111,9 +138,8 @@ Tonyu.klass.define({
           _this.update();
           
         }
-        _this.a.b.c;
       },
-      fiber$main :function _trc_Main_f_main(_thread) {
+      fiber$main :function _trc_Chara_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
@@ -124,7 +150,7 @@ Tonyu.klass.define({
         _this.fillStyle="yellow";
         _this.radius=16;
         
-        _thread.enter(function _trc_Main_ent_main(_thread) {
+        _thread.enter(function _trc_Chara_ent_main(_thread) {
           if (_thread.lastEx) __pc=_thread.catchPC;
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
@@ -140,7 +166,6 @@ Tonyu.klass.define({
               __pc=1;break;
             case 3     :
               
-              _this.a.b.c;
               _thread.exit(_this);return;
             }
           }
@@ -149,7 +174,50 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{},"a":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
+});Tonyu.klass.define({
+  fullName: 'user.Main',
+  shortName: 'Main',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.Updatable,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Main_main() {
+        "use strict";
+        var _this=this;
+        
+        Tonyu.globals.$restart=(function anonymous_45() {
+          
+          _this.appear(new Tonyu.classes.user.Chara);
+        });
+        Tonyu.globals.$restart();
+      },
+      fiber$main :function _trc_Main_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        
+        _thread.enter(function _trc_Main_ent_main(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+              Tonyu.globals.$restart=(function anonymous_45() {
+                
+                _this.appear(new Tonyu.classes.user.Chara);
+              });
+              Tonyu.globals.$restart();
+              _thread.exit(_this);return;
+            }
+          }
+        });
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
 });
-//# traceFunctions={"_trc_Updatable_main":1,"_trc_Updatable_f_main":1,"_trc_Updatable_waitFor":1,"_trc_Updatable_f_waitFor":1,"_trc_Updatable_update":1,"_trc_Updatable_f_update":1,"_trc_Updatable_ent_update":1,"_trc_Main_main":1,"_trc_Main_f_main":1,"_trc_Main_ent_main":1}
 //# sourceMappingURL=concat.js.map

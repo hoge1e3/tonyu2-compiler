@@ -2356,6 +2356,7 @@ exports.createContext = Script.createContext = function (context) {
 };
 
 },{}],7:[function(require,module,exports){
+const Tonyu=require("../runtime/TonyuLib");
 const Compiler=require("../lang/projectCompiler2");
 const root=require("../lib/root");
 const Worker=root.Worker;
@@ -2369,6 +2370,7 @@ WS.serv("compiler/init", params=>{
     ram.importFromObject(files);
     console.log(ram.rel("options.json").text());
     compiler=Compiler(ram);
+    Tonyu.ns2resource=params.ns2resource;
 });
 WS.serv("compiler/fullCompile", async params=>{
     const res=await compiler.fullCompile({destinations:{memory:1}});
@@ -2384,7 +2386,7 @@ WS.serv("compiler/postChange", async params=>{
 });
 WS.ready();
 
-},{"../lang/projectCompiler2":22,"../lib/FS":26,"../lib/WorkerServiceW":28,"../lib/root":30}],8:[function(require,module,exports){
+},{"../lang/projectCompiler2":22,"../lib/FS":26,"../lib/WorkerServiceW":28,"../lib/root":30,"../runtime/TonyuLib":32}],8:[function(require,module,exports){
 // parser.js の補助ライブラリ．式の解析を担当する
 module.exports=function () {
 	const Parser=require("./parser");
@@ -4999,6 +5001,7 @@ class SourceFile {
     constructor(text, sourceMap, functions) {
         if (typeof text==="object") {
             sourceMap=text.sourceMap;
+            functions=text.functions;
             text=text.text;
         }
         this.text=text;
@@ -5057,7 +5060,7 @@ class SourceFile {
         return this.getSourceMapConsumer().originalPositionFor(opt);
     }
     export() {
-        return {text:this.text, sourceMap:this.sourceMap};
+        return {text:this.text, sourceMap:this.sourceMap, functions:this.functions};
     }
 }
 class SourceFiles {
@@ -5074,13 +5077,13 @@ class SourceFiles {
     decodeTrace(e) {
         StackTrace.fromError(e).then(tr=>{
             tr.forEach(t=>{
+                //console.log(t);
                 if (typeof t.functionName!=="string") return;
-                console.log(t.source);
                 /*columnNumber: 17,
                 lineNumber: 21,*/
                 t.functionName.replace(/[\$_a-zA-Z0-9]+/g, s=> {
+                    //console.log("!",s,this.functions[s]);
                     if (this.functions[s]) {
-                        console.log("!",s);
                         const sf=this.functions[s];
                         const opt={
 							line: t.lineNumber, column:t.columnNumber,
@@ -5091,6 +5094,7 @@ class SourceFiles {
                     }
                 });
             });
+            //console.log("functions",this.functions);
         });
         //console.log(st);
     }
@@ -6773,11 +6777,12 @@ const TPRC=module.exports=function (dir) {
 				var prjDir=TPR.resolve(dprj);
 				return TPRC(prjDir);
 			} else if (typeof dprj=="object") {
-				if (dprj.compiledURL) {
-					return CPR(dprj.namespace, FS.expandPath(dprj.compiledURL) );
-				} else {
-					return CPR(dprj.namespace, TPR.resolve(dprj.compiledFile) );
-				}
+				const resource=
+					(dprj.compiledURL && FS.expandPath(dprj.compiledURL))||
+					(dprj.compiledFile && TPR.resolve(dprj.compiledFile))||
+					(Tonyu.ns2resource && Tonyu.ns2resource[dprj.namespace]);
+				if (!resource) throw new Error(`Resource for ${dprj.namespace} not found`);
+				return CPR(dprj.namespace, resource );
 			}
 		});
 	};

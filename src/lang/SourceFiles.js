@@ -14,6 +14,7 @@ class SourceFile {
     constructor(text, sourceMap, functions) {
         if (typeof text==="object") {
             sourceMap=text.sourceMap;
+            functions=text.functions;
             text=text.text;
         }
         this.text=text;
@@ -72,7 +73,7 @@ class SourceFile {
         return this.getSourceMapConsumer().originalPositionFor(opt);
     }
     export() {
-        return {text:this.text, sourceMap:this.sourceMap};
+        return {text:this.text, sourceMap:this.sourceMap, functions:this.functions};
     }
 }
 class SourceFiles {
@@ -89,13 +90,13 @@ class SourceFiles {
     decodeTrace(e) {
         StackTrace.fromError(e).then(tr=>{
             tr.forEach(t=>{
+                //console.log(t);
                 if (typeof t.functionName!=="string") return;
-                console.log(t.source);
                 /*columnNumber: 17,
                 lineNumber: 21,*/
                 t.functionName.replace(/[\$_a-zA-Z0-9]+/g, s=> {
+                    //console.log("!",s,this.functions[s]);
                     if (this.functions[s]) {
-                        console.log("!",s);
                         const sf=this.functions[s];
                         const opt={
 							line: t.lineNumber, column:t.columnNumber,
@@ -106,6 +107,7 @@ class SourceFiles {
                     }
                 });
             });
+            //console.log("functions",this.functions);
         });
         //console.log(st);
     }

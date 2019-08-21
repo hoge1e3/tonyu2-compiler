@@ -1,21 +1,22 @@
 const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
-const SourceFiles=require("../lang/SourceFiles");
+//const SourceFiles=require("../lang/SourceFiles");
 //const FS=(root.parent && root.parent.FS) || root.FS;
 
 class Compiler {
-    constructor(dir) {
+    constructor(dir,config) {
         this.dir=dir;
-        this.w=new WS.Wrapper(new Worker(root.WebSite.compilerWorkerURL+"?"+Math.random()));
+        this.w=new WS.Wrapper(new Worker(config.worker.url+"?"+Math.random()));
+        this.config=config;
+        this.SourceFiles=config.SourceFiles;
     }
     async init() {
         if (this.inited) return;
-        await this.w.run("compiler/init",{
-            files: this.dir.exportAsObject({
-                excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
-            })
+        const files=this.dir.exportAsObject({
+            excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
         });
+        await this.w.run("compiler/init",{files,ns2resource: this.config.ns2resource});
         this.inited=true;
     }
     async fullCompile() {
@@ -37,10 +38,9 @@ class Compiler {
             console.log(e,f.path());
             if (f.ext()===".tonyu") {
                 const nsraw=await this.partialCompile(f);
-                const ns=SourceFiles.add(nsraw);
-                console.log(ns);
-                await ns.exec();
-                if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
+                if (this.config.onCompiled) this.config.onCompiled(nsraw);
+
+                //if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
             }
         });
     }

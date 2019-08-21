@@ -317,11 +317,12 @@ const TPRC=module.exports=function (dir) {
 				var prjDir=TPR.resolve(dprj);
 				return TPRC(prjDir);
 			} else if (typeof dprj=="object") {
-				if (dprj.compiledURL) {
-					return CPR(dprj.namespace, FS.expandPath(dprj.compiledURL) );
-				} else {
-					return CPR(dprj.namespace, TPR.resolve(dprj.compiledFile) );
-				}
+				const resource=
+					(dprj.compiledURL && FS.expandPath(dprj.compiledURL))||
+					(dprj.compiledFile && TPR.resolve(dprj.compiledFile))||
+					(Tonyu.ns2resource && Tonyu.ns2resource[dprj.namespace]);
+				if (!resource) throw new Error(`Resource for ${dprj.namespace} not found`);
+				return CPR(dprj.namespace, resource );
 			}
 		});
 	};

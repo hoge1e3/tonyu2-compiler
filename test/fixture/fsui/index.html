@@ -1,21 +1,54 @@
 <script src="../jquery-1.12.1.js"></script>
 <script src="../jquery-ui.js"></script>
 <script src="../require.js"></script>
+<script src="../CompilerClient.js"></script>
 <link rel="stylesheet" href="../css/jquery-ui.css">
 <script>
 requirejs(["../FS"],FS=>{
     requirejs(["../fsTools"], shui=>{
         var UI=shui.UI;
+        let iframe;
         sh.run=prjPath=>{
             const prj=sh.resolve(prjPath);
-            sh.echo(UI(
+            iframe=UI(
                 "iframe",{src:`run.html?prj=${prj.path()}`,width:400,height:200}
-            ));
+            );
+            sh.echo(iframe);
+        };
+        sh.hotCompile=prjPath=>{
+            const prj=sh.resolve(prjPath);
+            const iw=iframe[0].contentWindow;
+            const config={
+                worker:{
+                    url: "../CompilerWorker.js",
+                    ns2resource: {kernel: "fsui/kernel.js"}
+                },
+                SourceFiles: iw.SourceFiles,
+                onCompiled: async nsraw=>{
+                    const ns=iw.SourceFiles.add(nsraw);
+                    //console.log(ns);
+                    await ns.exec();
+                    const g=iw.Tonyu.globals;
+                    if (g.$restart) g.$restart();
+                }
+            };
+            var tc=new TonyuCompiler(prj, config);
+            tc.run();
         };
         shui.show();
         shui.sh.cd("/Tonyu/Projects/Test/");
         shui.sh.run();
+        shui.sh.edit("Main.tonyu");
         shui.sh.edit("Test.tonyu");
+        function loop(){
+            try {
+                iframe[0].contentWindow.SourceFiles.add;
+                shui.sh.hotCompile();
+            } catch(e) {
+                setTimeout(loop,10);
+            }
+        }
+        loop();
         /*sh.echo("cd /Tonyu/Projects/Test/");
         sh.echo("run");
         sh.echo("edit Test.tonyu");*/

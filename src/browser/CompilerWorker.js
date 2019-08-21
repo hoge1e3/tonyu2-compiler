@@ -1,3 +1,4 @@
+const Tonyu=require("../runtime/TonyuLib");
 const Compiler=require("../lang/projectCompiler2");
 const root=require("../lib/root");
 const Worker=root.Worker;
@@ -11,6 +12,7 @@ WS.serv("compiler/init", params=>{
     ram.importFromObject(files);
     console.log(ram.rel("options.json").text());
     compiler=Compiler(ram);
+    Tonyu.ns2resource=params.ns2resource;
 });
 WS.serv("compiler/fullCompile", async params=>{
     const res=await compiler.fullCompile({destinations:{memory:1}});
