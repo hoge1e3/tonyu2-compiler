@@ -10,14 +10,14 @@ class Compiler {
         this.dir=dir;
         this.w=new WS.Wrapper(new Worker(config.worker.url+"?"+Math.random()));
         this.config=config;
-        this.SourceFiles=config.SourceFiles;
+        //this.SourceFiles=config.SourceFiles;
     }
     async init() {
         if (this.inited) return;
         const files=this.dir.exportAsObject({
             excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
         });
-        await this.w.run("compiler/init",{files,ns2resource: this.config.ns2resource});
+        await this.w.run("compiler/init",{files,ns2resource: this.config.worker.ns2resource});
         this.inited=true;
     }
     async fullCompile() {

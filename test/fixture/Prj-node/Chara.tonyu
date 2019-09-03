@@ -6,7 +6,7 @@ y=200;
 fillStyle="yellow";
 radius=16;
 while(x<120) {
-    x+=2;
+    x+=1;
     console.log(x,y);
     update();
 }
