@@ -1,61 +1,61 @@
 //define(["Klass"], function (Klass) {
-	var Klass=require("../lib/Klass");
-	var ArrayValueIterator=Klass.define({
-		$: function ArrayValueIterator(set) {
+	//var Klass=require("../lib/Klass");
+	class ArrayValueIterator {
+		constructor(set) {
 			this.set=set;
 			this.i=0;
-		},
-		next:function () {
+		}
+		next () {
 			if (this.i>=this.set.length) return false;
 			this[0]=this.set[this.i];
 			this.i++;
 			return true;
 		}
-	});
-	var ArrayKeyValueIterator=Klass.define({
-		$: function ArrayKeyValueIterator(set) {
+	}
+	class ArrayKeyValueIterator {
+		constructor(set) {
 			this.set=set;
 			this.i=0;
-		},
-		next:function () {
+		}
+		next() {
 			if (this.i>=this.set.length) return false;
 			this[0]=this.i;
 			this[1]=this.set[this.i];
 			this.i++;
 			return true;
 		}
-	});
-	var ObjectKeyIterator=Klass.define({
-		$: function ObjectKeyIterator(set) {
+	}
+	class ObjectKeyIterator {
+		constructor(set) {
 			this.elems=[];
 			for (var k in set) {
 				this.elems.push(k);
 			}
 			this.i=0;
-		},
-		next:function () {
+		}
+		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i];
 			this.i++;
 			return true;
 		}
-	});
-	var ObjectKeyValueIterator=Klass.define({
-		$: function ObjectKeyValueIterator(set) {
+	}
+	class ObjectKeyValueIterator{
+		constructor(set) {
 			this.elems=[];
 			for (var k in set) {
 				this.elems.push([k,set[k]]);
 			}
 			this.i=0;
-		},
-		next:function () {
+		}
+		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i][0];
 			this[1]=this.elems[this.i][1];
 			this.i++;
 			return true;
 		}
-	});
+	}
 
 
 	function IT(set, arity) {

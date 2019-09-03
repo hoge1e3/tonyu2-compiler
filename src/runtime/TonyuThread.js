@@ -1,10 +1,10 @@
-	var Klass=require("../lib/Klass");
+//	var Klass=require("../lib/Klass");
 module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
-	var TonyuThread=Klass.define({
-		$: function TonyuThread() {
+	class TonyuThread {
+		constructor() {
 			this.frame=null;
 			this._isDead=false;
 			//this._isAlive=true;
@@ -17,37 +17,37 @@ module.exports=function (Tonyu) {
 			this.onTerminateHandlers=[];
 			this.id=idSeq++;
 			this.age=0; // inc if object pooled
-		},
-		isAlive:function isAlive() {
+		}
+		isAlive() {
 			return !this.isDead();
 			//return this.frame!=null && this._isAlive;
-		},
-		isDead: function () {
+		}
+		isDead() {
 			this._isDead=this._isDead || (this.frame==null) ||
 			(this._threadGroup && (
 					this._threadGroup.objectPoolAge!=this.tGrpObjectPoolAge ||
 					this._threadGroup.isDeadThreadGroup()
 			));
 			return this._isDead;
-		},
-		setThreadGroup: function setThreadGroup(g) {// g:TonyuThread
+		}
+		setThreadGroup(g) {// g:TonyuThread
 			this._threadGroup=g;
 			this.tGrpObjectPoolAge=g.objectPoolAge;
 			//if (g) g.add(fb);
-		},
-		isWaiting:function isWaiting() {
+		}
+		isWaiting() {
 			return this._isWaiting;
-		},
-		suspend:function suspend() {
+		}
+		suspend() {
 			this.fSuspended=true;
 			this.cnt=0;
-		},
-		enter:function enter(frameFunc) {
+		}
+		enter(frameFunc) {
 			//var n=frameFunc.name;
 			//cnts.enterC[n]=(cnts.enterC[n]||0)+1;
 			this.frame={prev:this.frame, func:frameFunc};
-		},
-		apply:function apply(obj, methodName, args) {
+		}
+		apply(obj, methodName, args) {
 			if (!args) args=[];
 			var method;
 			if (typeof methodName=="string") {
@@ -77,26 +77,26 @@ module.exports=function (Tonyu) {
 					pc=2;break;
 				}
 			});
-		},
-		notifyEnd:function (r) {
+		}
+		notifyEnd(r) {
 			this.onEndHandlers.forEach(function (e) {
 				e(r);
 			});
 			this.notifyTermination({status:"success",value:r});
-		},
-		notifyTermination:function (tst) {
+		}
+		notifyTermination(tst) {
 			this.onTerminateHandlers.forEach(function (e) {
 				e(tst);
 			});
-		},
-		on: function (type,f) {
+		}
+		on(type,f) {
 			if (type==="end"||type==="success") this.onEndHandlers.push(f);
 			if (type==="terminate") {
 				this.onTerminateHandlers.push(f);
 				if (this.handleEx) delete this.handleEx;
 			}
-		},
-		promise: function () {
+		}
+		promise() {
 			var fb=this;
 			return new Promise(function (succ,err) {
 				fb.on("terminate",function (st) {
@@ -109,15 +109,15 @@ module.exports=function (Tonyu) {
 					}
 				});
 			});
-		},
-		then: function (succ,err) {
+		}
+		then(succ,err) {
 			if (err) return this.promise().then(succ,err);
 			else return this.promise().then(succ);
-		},
-		fail: function (err) {
+		}
+		fail(err) {
 			return this.promise().then(e=>e, err);
-		},
-		gotoCatch: function gotoCatch(e) {
+		}
+		gotoCatch(e) {
 			var fb=this;
 			if (fb.tryStack.length==0) {
 				fb.termStatus="exception";
@@ -136,27 +136,27 @@ module.exports=function (Tonyu) {
 					fb.frame=fb.frame.prev;
 				}
 			}
-		},
-		startCatch: function startCatch() {
+		}
+		startCatch() {
 			var fb=this;
 			var e=fb.lastEx;
 			fb.lastEx=null;
 			return e;
-		},
-		exit: function exit(res) {
+		}
+		exit(res) {
 			//cnts.exitC++;
 			this.frame=(this.frame ? this.frame.prev:null);
 			this.retVal=res;
-		},
-		enterTry: function enterTry(catchPC) {
+		}
+		enterTry(catchPC) {
 			var fb=this;
 			fb.tryStack.push({frame:fb.frame,catchPC:catchPC});
-		},
-		exitTry: function exitTry() {
+		}
+		exitTry() {
 			var fb=this;
 			fb.tryStack.pop();
-		},
-		waitEvent: function waitEvent(obj,eventSpec) { // eventSpec=[EventType, arg1, arg2....]
+		}
+		waitEvent(obj,eventSpec) { // eventSpec=[EventType, arg1, arg2....]
 			var fb=this;
 			fb.suspend();
 			if (!obj.on) return;
@@ -168,8 +168,8 @@ module.exports=function (Tonyu) {
 				fb.steps();
 			});
 			h=obj.on.apply(obj, eventSpec);
-		},
-		runAsync: function runAsync(f) {
+		}
+		runAsync(f) {
 			var fb=this;
 			var succ=function () {
 				fb.retVal=arguments;
@@ -190,8 +190,8 @@ module.exports=function (Tonyu) {
 			setTimeout(function () {
 				f(succ,err);
 			},0);
-		},
-		waitFor: function waitFor(j) {
+		}
+		waitFor(j) {
 			var fb=this;
 			fb._isWaiting=true;
 			fb.suspend();
@@ -203,18 +203,18 @@ module.exports=function (Tonyu) {
 				fb.gotoCatch(fb.wrapError(e));
 				fb.stepsLoop();
 			});
-		},
-		wrapError: function (e) {
+		}
+		wrapError(e) {
 			if (e instanceof Error) return e;
 			var re=new Error(e);
 			re.original=e;
 			return re;
-		},
-		resume: function (retVal) {
+		}
+		resume(retVal) {
 			this.retVal=retVal;
 			this.steps();
-		},
-		steps: function steps() {
+		}
+		steps() {
 			var fb=this;
 			if (fb.isDead()) return;
 			var sv=Tonyu.currentThread;
@@ -234,8 +234,8 @@ module.exports=function (Tonyu) {
 				}
 			}
 			Tonyu.currentThread=sv;
-		},
-		stepsLoop: function () {
+		}
+		stepsLoop() {
 			var fb=this;
 			fb.steps();
 			if (fb.preempted) {
@@ -243,8 +243,8 @@ module.exports=function (Tonyu) {
 					fb.stepsLoop();
 				},0);
 			}
-		},
-		kill: function kill() {
+		}
+		kill() {
 			var fb=this;
 			//fb._isAlive=false;
 			fb._isDead=true;
@@ -253,11 +253,11 @@ module.exports=function (Tonyu) {
 				fb.termStatus="killed";
 				fb.notifyTermination({status:"killed"});
 			}
-		},
-		clearFrame: function clearFrame() {
+		}
+		clearFrame() {
 			this.frame=null;
 			this.tryStack=[];
 		}
-	});
+	}
 	return TonyuThread;
 };
