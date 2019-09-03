@@ -3,32 +3,28 @@ const StackTrace=require("./stacktrace");
 const SourceFiles=require("./SourceFiles");
 module.exports={
     decode(e) {
-        StackTrace.fromError(e).then(tr=>{
+        return StackTrace.fromError(e,{offline:true}).then(tr=>{
             tr.forEach(t=>{
-                //console.log(t);
-                if (typeof t.functionName!=="string") return;
-                if (!S) return;
-                /*columnNumber: 17,
-                lineNumber: 21,*/
-                t.functionName.replace(/[\$_a-zA-Z0-9]+/g, s=> {
-                    //console.log("!",s,this.functions[s]);
-                    if (SourceFiles.functions[s]) {
-                        const sf=SourceFiles.functions[s];
-                        const opt={
-                            line: t.lineNumber, column:t.columnNumber,
-                            bias:S.SourceMapConsumer.GREATEST_LOWER_BOUND
-                        };
-                        const pos=this.originalPositionFor(sf,opt);
-                        console.log("pos",opt,pos);
-                    }
-                });
+                const sf=SourceFiles.url2SourceFile[t.fileName];
+                console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
+                if (sf) {
+                    const opt={
+                        line: t.lineNumber, column:t.columnNumber,
+                        bias:S.SourceMapConsumer.GREATEST_LOWER_BOUND
+                    };
+                    const pos=this.originalPositionFor(sf,opt);
+                    console.log("pos",opt,pos);
+                    if (pos.source) t.fileName=pos.source;
+                    if (pos.line) t.lineNumber=pos.line;
+                    if (pos.column) t.columnNumber=pos.column;
+                }
             });
-            //console.log("functions",this.functions);
+            console.log("Converted: ",tr);
+            return tr;
         });
-        //console.log(st);
     },
     originalPositionFor(sf,opt) {
-        const s=sf.getSourceMapConsumer();
+        const s=this.getSourceMapConsumer(sf);
         if (!s) return opt;
         return s.originalPositionFor(opt);
     },

@@ -228,12 +228,12 @@ if (root.process) {
     vm=require("vm");
 }
 class SourceFile {
-    // var text, sourceMap:S.Sourcemap, functions;
-    constructor(text, sourceMap, functions) {
+    // var text, sourceMap:S.Sourcemap;
+    constructor(text, sourceMap) {
         if (typeof text==="object") {
             const params=text;
             sourceMap=params.sourceMap;
-            functions=params.functions;
+            //functions=params.functions;
             text=params.text;
             if (params.url) {
                 this.url=params.url;
@@ -241,7 +241,7 @@ class SourceFile {
         }
         this.text=text;
         this.sourceMap=sourceMap && sourceMap.toString();
-        this.functions=functions;
+        //this.functions=functions;
     }
     async saveAs(outf) {
         const mapFile=outf.sibling(outf.name()+".map");
@@ -271,6 +271,7 @@ class SourceFile {
                 s.addEventListener("load",e=>{
                     resolve(e);
                 });
+                this.parent.url2SourceFile[u]=this;
                 document.body.appendChild(s);
             } else if (options && options.tmpdir){
                 const tmpdir=options.tmpdir;
@@ -301,13 +302,14 @@ class SourceFile {
 }
 class SourceFiles {
     constructor() {
-        this.functions={};
+        this.url2SourceFile={};
     }
-    add(text, sourceMap, functions) {
-        const sourceFile=new SourceFile(text, sourceMap, functions);
-        if (sourceFile.functions) for (let k in sourceFile.functions) {
+    add(text, sourceMap) {
+        const sourceFile=new SourceFile(text, sourceMap);
+        /*if (sourceFile.functions) for (let k in sourceFile.functions) {
             this.functions[k]=sourceFile;
-        }
+        }*/
+        sourceFile.parent=this;
         return sourceFile;
     }
 

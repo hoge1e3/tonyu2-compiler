@@ -1,6 +1,5 @@
 const root=require("../lib/root");
 const BuilderClient=require("./BuilderClient");
-const Decoder=require("../lang/StackDecoder");
 const F=require("../project/ProjectFactory");
 /*global window*/
 window.initCmd=function (shui) {

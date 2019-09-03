@@ -364,7 +364,7 @@ module.exports=root.Tonyu=function () {
 			timeout:timeout,//animationFrame:animationFrame, /*asyncResult:asyncResult,*/
 			bindFunc:bindFunc,not_a_tonyu_object:not_a_tonyu_object,is:is,
 			hasKey:hasKey,invokeMethod:invokeMethod, callFunc:callFunc,checkNonNull:checkNonNull,
-			iterator:IT,//run:run,checkLoop:checkLoop,resetLoopCheck:resetLoopCheck,DeferredUtil:DU,
+			iterator:IT,run:run,checkLoop:checkLoop,resetLoopCheck:resetLoopCheck,//DeferredUtil:DU,
 			VERSION:1560828115159,//EMBED_VERSION
 			A:A};
 	TT=TonyuThreadF(Tonyu);

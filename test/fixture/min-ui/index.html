@@ -1,0 +1,16 @@
+<script src="../jquery-1.12.1.js"></script>
+<script src="../jquery-ui.js"></script>
+<script src="../require.js"></script>
+<script src="../BuilderClientTest.js"></script>
+<link rel="stylesheet" href="../css/jquery-ui.css">
+<script>
+requirejs(["../FS"],FS=>{
+    requirejs(["../fsTools"],  shui=>{
+        initCmd(shui);
+        shui.show();
+        sh.echo("cd /project/folder ex. cd /min/");
+        sh.echo("run");
+        sh.echo('in console $("iframe")[0].contentWindow.Project.create("test.Main")');
+    });
+});
+</script>
