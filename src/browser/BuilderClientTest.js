@@ -6,8 +6,8 @@ window.initCmd=function (shui) {
     const UI=shui.UI;
     const sh=shui.sh;
     let iframe;
-    sh.run=async prjPath=>{
-        const prjDir=sh.resolve(prjPath);
+    sh.run=async bootClass=>{
+        const prjDir=sh.cwd;//();//resolve(prjPath);
         const prj=F.createDirBasedCore({dir:prjDir});
         const config={
             worker:{
@@ -19,12 +19,12 @@ window.initCmd=function (shui) {
         await builder.fullCompile();
 
         iframe=UI(
-            "iframe",{src:`run.html?prj=${prjDir.path()}`,width:400,height:200}
+            "iframe",{src:`debug.html?prj=${prjDir.path()}&boot=${bootClass}`,width:400,height:200}
         );
+        root.onTonyuDebuggerReady=(d=>builder.setDebugger(d));
         sh.echo(iframe);
 
         prjDir.watch(async (e,f)=>{
-            builder.setDebugger(iframe[0].contentWindow.Debugger);
             console.log(e,f.path());
             if (f.ext()===".tonyu") {
                 const nsraw=await builder.partialCompile(f);
