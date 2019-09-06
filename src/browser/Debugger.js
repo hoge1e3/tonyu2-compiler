@@ -1,4 +1,4 @@
-const Tonyu=require("../runtime/TonyuLib");
+const Tonyu=require("../runtime/TonyuRuntime");
 const SourceFiles=require("../lang/SourceFiles");
 const StackDecoder=require("../lang/StackDecoder");
 const root=require("../lib/root");
@@ -14,7 +14,7 @@ SourceFiles.add({
     text:outJS.text(),
     sourceMap:outJS.sibling(outJS.name()+".map").text(),
 }).exec();
-root.Project={
+root.Debugger={
     exec: async function (srcraw) {
         await SourceFiles.add(srcraw).exec();
     },

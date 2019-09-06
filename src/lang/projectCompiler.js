@@ -4,7 +4,7 @@
 		function (Tonyu,JSGenerator,Semantics,
 				ttb,FS,A,DU,CPR,
 				S,TypeChecker) {*/
-const Tonyu=require("../runtime/TonyuLib");
+const Tonyu=require("../runtime/TonyuRuntime");
 const JSGenerator=require("./JSGenerator");
 const Semantics=require("./Semantics");
 //const ttb=require("./");

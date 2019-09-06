@@ -1,9 +1,6 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-const IndentBuffer=require("./IndentBuffer");
-const TError=require("../runtime/TError");
-const Grammar=require("./Grammar");
 const Parser=require("./parser");
 
 module.exports=function () {

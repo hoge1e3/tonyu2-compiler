@@ -1,4 +1,4 @@
-	const Tonyu=require("../runtime/TonyuLib");
+	const Tonyu=require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
 	//const TError=require("TError");
 	const root=require("../lib/root");

@@ -2377,9 +2377,9 @@ class BuilderClient {
     //sourceFiles(){return this.prj.sourceFiles();}
     //loadDependingClasses(){return this.prj.loadDependingClasses();}
 
-    setExecTarget(t) {this.execTarget=t;}// t:iframe.contentWindow.Project
+    setDebugger(t) {this.debugger=t;}// t:iframe.contentWindow.Debugger
     exec(srcraw) {
-        if (this.execTarget) return this.execTarget.exec(srcraw);
+        if (this.debugger) return this.debugger.exec(srcraw);
     }
     async init() {
         if (this.inited) return;
@@ -2450,7 +2450,7 @@ window.initCmd=function (shui) {
         sh.echo(iframe);
 
         prjDir.watch(async (e,f)=>{
-            builder.setExecTarget(iframe[0].contentWindow.Project);
+            builder.setDebugger(iframe[0].contentWindow.Debugger);
             console.log(e,f.path());
             if (f.ext()===".tonyu") {
                 const nsraw=await builder.partialCompile(f);

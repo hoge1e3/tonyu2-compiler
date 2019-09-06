@@ -2,7 +2,7 @@
 		"context", "Visitor","Tonyu.Compiler","assert"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
 		context, Visitor,cu,A) {*/
-const Tonyu=require("../runtime/TonyuLib");
+const Tonyu=require("../runtime/TonyuRuntime");
 const IndentBuffer=require("./IndentBuffer");
 const ObjectMatcher=require("./ObjectMatcher");
 const TError=require("../runtime/TError");

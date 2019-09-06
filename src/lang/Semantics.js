@@ -5,7 +5,7 @@ define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "Inde
 		"context", "Visitor","Tonyu.Compiler"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
 		context, Visitor,cu) {*/
-const Tonyu=require("../runtime/TonyuLib");
+const Tonyu=require("../runtime/TonyuRuntime");
 const TonyuLang=require("./parse_tonyu2");
 const IndentBuffer=require("./IndentBuffer");
 const ObjectMatcher=require("./ObjectMatcher");

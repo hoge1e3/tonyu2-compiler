@@ -1,4 +1,4 @@
-const Tonyu=require("../runtime/TonyuLib");
+const Tonyu=require("../runtime/TonyuRuntime");
 const Builder=require("../lang/Builder");//require("../lang/projectCompiler2");
 const root=require("../lib/root");
 const Worker=root.Worker;

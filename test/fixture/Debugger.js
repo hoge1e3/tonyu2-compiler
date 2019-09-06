@@ -2356,7 +2356,7 @@ exports.createContext = Script.createContext = function (context) {
 };
 
 },{}],7:[function(require,module,exports){
-const Tonyu=require("../runtime/TonyuLib");
+const Tonyu=require("../runtime/TonyuRuntime");
 const SourceFiles=require("../lang/SourceFiles");
 const StackDecoder=require("../lang/StackDecoder");
 const root=require("../lib/root");
@@ -2372,7 +2372,7 @@ SourceFiles.add({
     text:outJS.text(),
     sourceMap:outJS.sibling(outJS.name()+".map").text(),
 }).exec();
-root.Project={
+root.Debugger={
     exec: async function (srcraw) {
         await SourceFiles.add(srcraw).exec();
     },
@@ -2403,7 +2403,7 @@ function decodeURLComponentEx(s){
     return decodeURIComponent(s.replace(/\+/g, '%20'));
 }
 
-},{"../lang/SourceFiles":8,"../lang/StackDecoder":9,"../lib/FS":12,"../lib/root":15,"../runtime/TonyuLib":16}],8:[function(require,module,exports){
+},{"../lang/SourceFiles":8,"../lang/StackDecoder":9,"../lib/FS":12,"../lib/root":14,"../runtime/TonyuRuntime":15}],8:[function(require,module,exports){
 const root=require("../lib/root");
 //const fs=require("fs").promises;
 function timeout(t) {
@@ -2502,7 +2502,7 @@ class SourceFiles {
 }
 module.exports=new SourceFiles();
 
-},{"../lib/root":15,"vm":6}],9:[function(require,module,exports){
+},{"../lib/root":14,"vm":6}],9:[function(require,module,exports){
 const S=require("./source-map");
 const StackTrace=require("./stacktrace");
 const SourceFiles=require("./SourceFiles");
@@ -9346,195 +9346,6 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 },{"_process":5,"buffer":3,"fs":1}],13:[function(require,module,exports){
-//define(["assert"],function (A) {
-    let A=require("./assert");
-    var Klass={};
-    Klass.define=function (pd) {
-        var p,parent;
-        if (pd.$parent) {
-            parent=pd.$parent;
-            p=Object.create(parent.prototype);
-            p.super=function () {
-                var a=Array.prototype.slice.call(arguments);
-                var n=a.shift();
-                return parent.prototype[n].apply(this,a);
-            };
-        } else {
-            p={};
-        }
-        var thisName,singletonName;
-        if (pd.$this) {
-            thisName=pd.$this;
-        }
-        if (pd.$singleton) {
-            singletonName=pd.$singleton;
-        }
-        var init=wrap(pd.$) || function (e) {
-            if (e && typeof e=="object") {
-                for (var k in e) {
-                    this[k]=e[k];
-                }
-            }
-        };
-        var fldinit;
-        var warn,wrapped,wrapCancelled;
-        //var check;
-        if (init instanceof Array) {
-            fldinit=init;
-            init=function () {
-                var a=Array.prototype.slice.call(arguments);
-                for (var i=0;i<fldinit.length;i++) {
-                    if (a.length>0) this[fldinit[i]]=a.shift();
-                }
-            };
-        }
-        var klass;
-        function checkSchema(self) {
-            if (pd.$fields) {
-                //console.log("Checking schema",self,pd.$fields);
-                A.is(self,pd.$fields);
-            }
-        }
-        klass=function () {
-            if (! (this instanceof klass)) {
-                var res=Object.create(p);
-                init.apply(res,arguments);
-                checkSchema(res);
-                return res;
-            }
-            init.apply(this,arguments);
-            checkSchema(this);
-        };
-        if (parent) {
-            klass.super=function () {
-                var a=Array.prototype.slice.call(arguments);
-                var t=a.shift();
-                var n=a.shift();
-                return parent.prototype[n].apply(t,a);
-            };
-        }
-        klass.inherit=function (pd) {
-            pd.$parent=klass;
-            return Klass.define(pd);
-        };
-        klass.prototype=p;
-        for (var name in pd) {
-            if (name[0]=="$") continue;
-            if (name.substring(0,7)=="static$") {
-                klass[name.substring(7)]=wrapStatic(pd[name]);
-            } else {
-                if (isPropDesc(pd[name])) {
-                    Object.defineProperty(p,name,wrap(pd[name]));
-                } else {
-                    p[name]=wrap(pd[name]);
-                }
-            }
-        }
-        function wrapStatic(m) {
-            if (!singletonName) return m;
-            var args=getArgs(m);
-            if (args[0]!==singletonName) return m;
-            return (function () {
-                var a=Array.prototype.slice.call(arguments);
-                a.unshift(klass);
-                return m.apply(klass,a);
-            });
-        }
-        function wrap(m) {
-            if (!thisName) return m;
-            if (isPropDesc(m)) {
-                for (var k in m) {
-                    m[k]=wrap(m[k]);
-                }
-                return m;
-            }
-            if (typeof m!=="function") return m;
-            if (thisName!==true) {
-                var args=getArgs(m);
-                if (args[0]!==thisName) {
-                    wrapCancelled=true;
-                    return m;
-                }
-                warn=true;
-            }
-            wrapped=true;
-            return (function () {
-                var a=Array.prototype.slice.call(arguments);
-                a.unshift(this);
-                return m.apply(this,a);
-            });
-        }
-        p.$=init;
-        Object.defineProperty(p,"$bind",{
-            get: function () {
-                if (!this.__bounded) {
-                    this.__bounded=new Klass.Binder(this);
-                }
-                return this.__bounded;
-            }
-        });
-        if (warn) {
-            //console.warn("This declaration style may malfunction when minified");
-            if (!wrapCancelled) {
-                console.warn("Use $this:true instead");
-            } else {
-                console.warn("Use python style in all methods and Use $this:true instead");
-            }
-            try{throw new Error("Trace");}
-            catch(e) {console.log(e.stack);}
-        }
-        return klass;
-    };
-    function getArgs(f) {
-        var fpat=/function[^\(]*\(([^\)]*)\)/;
-        var r=fpat.exec(f+"");
-        if (r) {
-            return r[1].replace(/\s/g,"").split(",");
-        }
-        return [];
-    }
-    function isPropDesc(o) {
-        if (typeof o!=="object") return false;
-        if (!o) return false;
-        var pk={configurable:1,enumerable:1,value:1,writable:1,get:1,set:1};
-        var c=0;
-        for (var k in o) {
-            if (!pk[k]) return false;
-            c+=pk[k];
-        }
-        return c;
-    }
-    Klass.Function=function () {throw new Error("Abstract");};
-    Klass.opt=A.opt;
-    Klass.Binder=Klass.define({
-        $this:true,
-        $:function (t,target) {
-            function addMethod(k){
-                if (typeof target[k]!=="function") return;
-                t[k]=function () {
-                    var a=Array.prototype.slice.call(arguments);
-                    //console.log(this, this.__target);
-                    //A(this.__target,"target is not set");
-                    return target[k].apply(target,a);
-                };
-            }
-            for (var k in target) addMethod(k);
-        }
-    });
-    module.exports=Klass;
-//    return Klass;
-//});
-/*
-requirejs(["Klass"],function (k) {
-  P=k.define ({
-     $:["x","y"]
-  });
-  p=P(2,3);
-  console.log(p.x,p.y);
-});
-*/
-
-},{"./assert":14}],14:[function(require,module,exports){
 (function (global){
     const Assertion=function(failMesg) {
         this.failMesg=flatten(failMesg || "Assertion failed: ");
@@ -9730,7 +9541,7 @@ requirejs(["Klass"],function (k) {
     module.exports=assert;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function (global){
 /*global window,self,global*/
 (function (deps, factory) {
@@ -9743,7 +9554,7 @@ requirejs(["Klass"],function (k) {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 //		function (assert,TT,IT,DU) {
 var assert=require("../lib/assert");
 var root=require("../lib/root");
@@ -10118,14 +9929,14 @@ module.exports=root.Tonyu=function () {
 	return Tonyu;
 }();
 
-},{"../lib/assert":14,"../lib/root":15,"./TonyuThread":17,"./tonyuIterator":18}],17:[function(require,module,exports){
-	var Klass=require("../lib/Klass");
+},{"../lib/assert":13,"../lib/root":14,"./TonyuThread":16,"./tonyuIterator":17}],16:[function(require,module,exports){
+//	var Klass=require("../lib/Klass");
 module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
-	var TonyuThread=Klass.define({
-		$: function TonyuThread() {
+	class TonyuThread {
+		constructor() {
 			this.frame=null;
 			this._isDead=false;
 			//this._isAlive=true;
@@ -10138,37 +9949,37 @@ module.exports=function (Tonyu) {
 			this.onTerminateHandlers=[];
 			this.id=idSeq++;
 			this.age=0; // inc if object pooled
-		},
-		isAlive:function isAlive() {
+		}
+		isAlive() {
 			return !this.isDead();
 			//return this.frame!=null && this._isAlive;
-		},
-		isDead: function () {
+		}
+		isDead() {
 			this._isDead=this._isDead || (this.frame==null) ||
 			(this._threadGroup && (
 					this._threadGroup.objectPoolAge!=this.tGrpObjectPoolAge ||
 					this._threadGroup.isDeadThreadGroup()
 			));
 			return this._isDead;
-		},
-		setThreadGroup: function setThreadGroup(g) {// g:TonyuThread
+		}
+		setThreadGroup(g) {// g:TonyuThread
 			this._threadGroup=g;
 			this.tGrpObjectPoolAge=g.objectPoolAge;
 			//if (g) g.add(fb);
-		},
-		isWaiting:function isWaiting() {
+		}
+		isWaiting() {
 			return this._isWaiting;
-		},
-		suspend:function suspend() {
+		}
+		suspend() {
 			this.fSuspended=true;
 			this.cnt=0;
-		},
-		enter:function enter(frameFunc) {
+		}
+		enter(frameFunc) {
 			//var n=frameFunc.name;
 			//cnts.enterC[n]=(cnts.enterC[n]||0)+1;
 			this.frame={prev:this.frame, func:frameFunc};
-		},
-		apply:function apply(obj, methodName, args) {
+		}
+		apply(obj, methodName, args) {
 			if (!args) args=[];
 			var method;
 			if (typeof methodName=="string") {
@@ -10198,26 +10009,26 @@ module.exports=function (Tonyu) {
 					pc=2;break;
 				}
 			});
-		},
-		notifyEnd:function (r) {
+		}
+		notifyEnd(r) {
 			this.onEndHandlers.forEach(function (e) {
 				e(r);
 			});
 			this.notifyTermination({status:"success",value:r});
-		},
-		notifyTermination:function (tst) {
+		}
+		notifyTermination(tst) {
 			this.onTerminateHandlers.forEach(function (e) {
 				e(tst);
 			});
-		},
-		on: function (type,f) {
+		}
+		on(type,f) {
 			if (type==="end"||type==="success") this.onEndHandlers.push(f);
 			if (type==="terminate") {
 				this.onTerminateHandlers.push(f);
 				if (this.handleEx) delete this.handleEx;
 			}
-		},
-		promise: function () {
+		}
+		promise() {
 			var fb=this;
 			return new Promise(function (succ,err) {
 				fb.on("terminate",function (st) {
@@ -10230,15 +10041,15 @@ module.exports=function (Tonyu) {
 					}
 				});
 			});
-		},
-		then: function (succ,err) {
+		}
+		then(succ,err) {
 			if (err) return this.promise().then(succ,err);
 			else return this.promise().then(succ);
-		},
-		fail: function (err) {
+		}
+		fail(err) {
 			return this.promise().then(e=>e, err);
-		},
-		gotoCatch: function gotoCatch(e) {
+		}
+		gotoCatch(e) {
 			var fb=this;
 			if (fb.tryStack.length==0) {
 				fb.termStatus="exception";
@@ -10257,27 +10068,27 @@ module.exports=function (Tonyu) {
 					fb.frame=fb.frame.prev;
 				}
 			}
-		},
-		startCatch: function startCatch() {
+		}
+		startCatch() {
 			var fb=this;
 			var e=fb.lastEx;
 			fb.lastEx=null;
 			return e;
-		},
-		exit: function exit(res) {
+		}
+		exit(res) {
 			//cnts.exitC++;
 			this.frame=(this.frame ? this.frame.prev:null);
 			this.retVal=res;
-		},
-		enterTry: function enterTry(catchPC) {
+		}
+		enterTry(catchPC) {
 			var fb=this;
 			fb.tryStack.push({frame:fb.frame,catchPC:catchPC});
-		},
-		exitTry: function exitTry() {
+		}
+		exitTry() {
 			var fb=this;
 			fb.tryStack.pop();
-		},
-		waitEvent: function waitEvent(obj,eventSpec) { // eventSpec=[EventType, arg1, arg2....]
+		}
+		waitEvent(obj,eventSpec) { // eventSpec=[EventType, arg1, arg2....]
 			var fb=this;
 			fb.suspend();
 			if (!obj.on) return;
@@ -10289,8 +10100,8 @@ module.exports=function (Tonyu) {
 				fb.steps();
 			});
 			h=obj.on.apply(obj, eventSpec);
-		},
-		runAsync: function runAsync(f) {
+		}
+		runAsync(f) {
 			var fb=this;
 			var succ=function () {
 				fb.retVal=arguments;
@@ -10311,8 +10122,8 @@ module.exports=function (Tonyu) {
 			setTimeout(function () {
 				f(succ,err);
 			},0);
-		},
-		waitFor: function waitFor(j) {
+		}
+		waitFor(j) {
 			var fb=this;
 			fb._isWaiting=true;
 			fb.suspend();
@@ -10324,18 +10135,18 @@ module.exports=function (Tonyu) {
 				fb.gotoCatch(fb.wrapError(e));
 				fb.stepsLoop();
 			});
-		},
-		wrapError: function (e) {
+		}
+		wrapError(e) {
 			if (e instanceof Error) return e;
 			var re=new Error(e);
 			re.original=e;
 			return re;
-		},
-		resume: function (retVal) {
+		}
+		resume(retVal) {
 			this.retVal=retVal;
 			this.steps();
-		},
-		steps: function steps() {
+		}
+		steps() {
 			var fb=this;
 			if (fb.isDead()) return;
 			var sv=Tonyu.currentThread;
@@ -10355,8 +10166,8 @@ module.exports=function (Tonyu) {
 				}
 			}
 			Tonyu.currentThread=sv;
-		},
-		stepsLoop: function () {
+		}
+		stepsLoop() {
 			var fb=this;
 			fb.steps();
 			if (fb.preempted) {
@@ -10364,8 +10175,8 @@ module.exports=function (Tonyu) {
 					fb.stepsLoop();
 				},0);
 			}
-		},
-		kill: function kill() {
+		}
+		kill() {
 			var fb=this;
 			//fb._isAlive=false;
 			fb._isDead=true;
@@ -10374,74 +10185,74 @@ module.exports=function (Tonyu) {
 				fb.termStatus="killed";
 				fb.notifyTermination({status:"killed"});
 			}
-		},
-		clearFrame: function clearFrame() {
+		}
+		clearFrame() {
 			this.frame=null;
 			this.tryStack=[];
 		}
-	});
+	}
 	return TonyuThread;
 };
 
-},{"../lib/Klass":13}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 //define(["Klass"], function (Klass) {
-	var Klass=require("../lib/Klass");
-	var ArrayValueIterator=Klass.define({
-		$: function ArrayValueIterator(set) {
+	//var Klass=require("../lib/Klass");
+	class ArrayValueIterator {
+		constructor(set) {
 			this.set=set;
 			this.i=0;
-		},
-		next:function () {
+		}
+		next () {
 			if (this.i>=this.set.length) return false;
 			this[0]=this.set[this.i];
 			this.i++;
 			return true;
 		}
-	});
-	var ArrayKeyValueIterator=Klass.define({
-		$: function ArrayKeyValueIterator(set) {
+	}
+	class ArrayKeyValueIterator {
+		constructor(set) {
 			this.set=set;
 			this.i=0;
-		},
-		next:function () {
+		}
+		next() {
 			if (this.i>=this.set.length) return false;
 			this[0]=this.i;
 			this[1]=this.set[this.i];
 			this.i++;
 			return true;
 		}
-	});
-	var ObjectKeyIterator=Klass.define({
-		$: function ObjectKeyIterator(set) {
+	}
+	class ObjectKeyIterator {
+		constructor(set) {
 			this.elems=[];
 			for (var k in set) {
 				this.elems.push(k);
 			}
 			this.i=0;
-		},
-		next:function () {
+		}
+		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i];
 			this.i++;
 			return true;
 		}
-	});
-	var ObjectKeyValueIterator=Klass.define({
-		$: function ObjectKeyValueIterator(set) {
+	}
+	class ObjectKeyValueIterator{
+		constructor(set) {
 			this.elems=[];
 			for (var k in set) {
 				this.elems.push([k,set[k]]);
 			}
 			this.i=0;
-		},
-		next:function () {
+		}
+		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i][0];
 			this[1]=this.elems[this.i][1];
 			this.i++;
 			return true;
 		}
-	});
+	}
 
 
 	function IT(set, arity) {
@@ -10470,4 +10281,4 @@ module.exports=function (Tonyu) {
 //	return IT;
 //});
 
-},{"../lib/Klass":13}]},{},[7]);
+},{}]},{},[7]);

@@ -24,7 +24,7 @@ window.initCmd=function (shui) {
         sh.echo(iframe);
 
         prjDir.watch(async (e,f)=>{
-            builder.setExecTarget(iframe[0].contentWindow.Project);
+            builder.setDebugger(iframe[0].contentWindow.Debugger);
             console.log(e,f.path());
             if (f.ext()===".tonyu") {
                 const nsraw=await builder.partialCompile(f);
