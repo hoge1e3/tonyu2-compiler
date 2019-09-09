@@ -1,16 +1,54 @@
-const Compiler=require("./src/lang/projectCompiler");
+const Builder=require("./src/lang/Builder");//require("./src/lang/projectCompiler2");
+const F=require("./src/project/ProjectFactory");
+const langMod=require("./src/lang/langMod");
 const FS=require("./src/lib/FS");
+const root=require("./src/lib/root");
+const SourceFiles=require("./src/lang/SourceFiles");
 const prjPath=process.argv[2];
-let prj;
-if (FS.PathUtil.isAbsolute(prjPath)) {
-    prj=FS.get(prjPath);
-} else {
-    prj=FS.get(process.cwd()).rel(prjPath);
-}
-prj.recursive(f=>console.log(f.relPath(prj)));
+const run=process.argv.indexOf("-r")>=0;
+const daemon=process.argv.indexOf("-d")>=0;
+require('source-map-support').install();
+const prjDir=(()=>{
+    if (FS.PathUtil.isAbsolute(prjPath)) {
+        return FS.get(prjPath);
+    } else {
+        return FS.get(process.cwd()).rel(prjPath);
+    }
+})();
+const prj=F.createDirBasedCore({dir:prjDir}).include(langMod);
+const builder=new Builder(prj);
+let opt={destinations:{file:true,memory:true}};
+if (daemon) opt={destinations:{memory:true}};
+builder.fullCompile(opt).then(async function (s) {
+    if (run) {
+        const script=prj.getOutputFile();
+        require(script.path());
+    }
+    if (daemon) {
+        const tmpdir=prj.getOutputFile().up();
+        await s.exec();//{tmpdir});
 
-Compiler(prj).compile().then(function () {
-
+        prj.watch(async (e,f)=>{
+            console.log(e,f.path());
+            const ns=await builder.postChange(f);
+            console.log(ns);
+            await ns.exec();
+            if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
+        });
+    }
+    if (run||daemon) {
+        let Tonyu=root.Tonyu;
+        Tonyu.onRuntimeError=e=>console.error(e);
+        let th=Tonyu.thread();
+        let mainObj=new Tonyu.classes[prj.getNamespace()].Main();
+        th.apply(mainObj,"main");
+        th.steps();
+        /*th.then(r=>console.log("Done",r),e=>{
+            //SourceFiles.decodeTrace(e);
+            console.error(e);
+        });*/
+    }
 },function (e) {
+    console.error(e+"");
     console.error(e.stack);
 });
