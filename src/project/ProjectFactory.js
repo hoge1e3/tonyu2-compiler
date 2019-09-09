@@ -1,6 +1,6 @@
 //define(function (require,exports,module) {
     const A=require("../lib/assert");
-    const FS=require("../lib/FS");
+    //const FS=require("../lib/FS");
     // This factory will be widely used, even BitArrow.
 
 
@@ -103,7 +103,12 @@
                 return res;
             }
             if (typeof rdir=="string") {
-                return FS.resolve(rdir, this.dir.path());
+                /*global FS*/ //TODO
+                if (typeof FS!=="undefined") {
+                    return FS.resolve(rdir, this.getDir().path());
+                } else {
+                    return this.getDir().rel(rdir);
+                }
             }
             if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
             return rdir;

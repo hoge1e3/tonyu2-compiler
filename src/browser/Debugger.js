@@ -14,12 +14,17 @@ F.addType("debugger",params=>{
     };
     return res;
 });
+F.addDependencyResolver((prj, spec)=> {
+    if (spec.dir && prj.resolve) {
+        return F.create("debugger",{dir:prj.resolve(spec.dir)});
+    }
+});
 //const prj=F.createDirBasedCore
 Tonyu.onRuntimeError=e=>{
     StackDecoder.decode(e);
 };
 root.Debugger={
-    ProjectFactory:F,
+    ProjectFactory:F, FS,
     execFile: async function (outJS) {
         const map=outJS.sibling(outJS.name()+".map");
         const sf=SourceFiles.add({
@@ -39,7 +44,7 @@ root.Debugger={
             console.error(e);
             StackDecoder.decode(e);
         }
-    }
+    },
 };
 if (root.parent && root.parent.onTonyuDebuggerReady) {
     root.parent.onTonyuDebuggerReady(root.Debugger);

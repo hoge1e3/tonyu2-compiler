@@ -14076,7 +14076,7 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
 },{"../lang/SourceFiles":15,"../lang/langMod":20,"../lib/assert":27,"../lib/root":28,"./ProjectFactory":30}],30:[function(require,module,exports){
 //define(function (require,exports,module) {
     const A=require("../lib/assert");
-    const FS=require("../lib/FS");
+    //const FS=require("../lib/FS");
     // This factory will be widely used, even BitArrow.
 
 
@@ -14179,7 +14179,12 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
                 return res;
             }
             if (typeof rdir=="string") {
-                return FS.resolve(rdir, this.dir.path());
+                /*global FS*/ //TODO
+                if (typeof FS!=="undefined") {
+                    return FS.resolve(rdir, this.getDir().path());
+                } else {
+                    return this.getDir().rel(rdir);
+                }
             }
             if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
             return rdir;
@@ -14224,7 +14229,7 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     };
 //});
 
-},{"../lib/FS":25,"../lib/assert":27}],31:[function(require,module,exports){
+},{"../lib/assert":27}],31:[function(require,module,exports){
 var TError=function (mesg, src, pos) {
 	if (typeof src=="string") {
 		return {
