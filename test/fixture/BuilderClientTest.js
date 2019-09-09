@@ -260,6 +260,11 @@ window.initCmd=function (shui) {
                 ns2depspec: {kernel: {namespace:"kernel",url:"fsui/kernel.js"}}
             }
         };
+        F.addDependencyResolver((prj,spec)=>{
+            if (spec.namespace==="kernel") {
+                return CP.create({namespace:"kernel",url:"kernel.js"});
+            }
+        });
         const builder=new BuilderClient(prj,config);
         await builder.fullCompile();
 

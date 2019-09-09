@@ -1,19 +1,28 @@
 <!DOCTYPE HTML>
 <html>
 <body>
+<canvas id="cv"></canvas>
 <script src="../jquery-1.12.1.js" type="text/javascript"></script>
 <script src="../jquery-ui.js" type="text/javascript"></script>
 <script src="../Debugger.js"></script>
 <script>
+const F=Debugger.ProjectFactory;
+F.addDependencyResolver((prj,spec)=>{
+    if (spec.namespace==="kernel") {
+        return F.create("compiled",{namespace:"kernel",url:"kernel.js"});
+    }
+});
+Tonyu.globals.$mainCanvas=$("#cv");
+Tonyu.runMode=true;
+window.UIDiag={};
 start();
 async function start() {
     const root=window;
     const Debugger=root.Debugger;
     const prjDir=FS.get(getQueryString("prj"));
-    await Debugger.init(prjDir);
-    //const prj=Debugger.ProjectFactory.create("compiled",{dir:prjDir});
+    const prj=Debugger.ProjectFactory.create("compiled",{dir:prjDir});
+    await Debugger.init(prj);
     //await prj.loadClasses();
-    //root.Debugger.execFile(prjDir.rel("js/concat.js"));
     const boot=getQueryString("boot");
     if (boot) Debugger.create(boot);
 }

@@ -22,6 +22,7 @@ F.addDependencyResolver((prj, spec)=> {
 });*/
 //const prj=F.createDirBasedCore
 Tonyu.onRuntimeError=e=>{
+    console.error(e);
     StackDecoder.decode(e);
 };
 root.Debugger={
@@ -34,8 +35,9 @@ root.Debugger={
         });
         await sf.exec();
     },*/
-    init: async function (prjDir) {
-        const prj=CP.create({dir:prjDir});
+    init: async function (prj) {
+        Tonyu.globals.$currentProject=prj;
+        Tonyu.currentProject=prj;
         await prj.loadClasses();
     },
     exec: async function (srcraw) {
