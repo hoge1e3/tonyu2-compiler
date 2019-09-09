@@ -256,7 +256,7 @@ window.initCmd=function (shui) {
         const prj=CP.create({dir:prjDir});
         const config={
             worker:{
-                url: "../CompilerWorker.js",
+                url: "../BuilderWorker.js",
                 ns2depspec: {kernel: {namespace:"kernel",url:"fsui/kernel.js"}}
             }
         };
