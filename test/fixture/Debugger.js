@@ -2363,7 +2363,8 @@ const root=require("../lib/root");
 const FS=require("../lib/FS");
 const F=require("../project/ProjectFactory");
 F.langMod=require("../lang/langMod");
-F.addType("debugger",params=>{
+const CP=require("../project/CompiledProject");
+/*F.addType("debugger",params=>{
     const res=F.createDirBasedCore({dir:params.dir});
     res.include(F.langMod);
     res.loadClasses=async function () {
@@ -2376,20 +2377,24 @@ F.addDependencyResolver((prj, spec)=> {
     if (spec.dir && prj.resolve) {
         return F.create("debugger",{dir:prj.resolve(spec.dir)});
     }
-});
+});*/
 //const prj=F.createDirBasedCore
 Tonyu.onRuntimeError=e=>{
     StackDecoder.decode(e);
 };
 root.Debugger={
     ProjectFactory:F, FS,
-    execFile: async function (outJS) {
+    /*execFile: async function (outJS) {
         const map=outJS.sibling(outJS.name()+".map");
         const sf=SourceFiles.add({
             text:outJS.text(),
             sourceMap:map.exists() && map.text(),
         });
         await sf.exec();
+    },*/
+    init: async function (prjDir) {
+        const prj=CP.create({dir:prjDir});
+        await prj.loadClasses();
     },
     exec: async function (srcraw) {
         await SourceFiles.add(srcraw).exec();
@@ -2408,7 +2413,7 @@ if (root.parent && root.parent.onTonyuDebuggerReady) {
     root.parent.onTonyuDebuggerReady(root.Debugger);
 }
 
-},{"../lang/SourceFiles":8,"../lang/StackDecoder":9,"../lang/langMod":10,"../lib/FS":13,"../lib/root":15,"../project/ProjectFactory":16,"../runtime/TonyuRuntime":17}],8:[function(require,module,exports){
+},{"../lang/SourceFiles":8,"../lang/StackDecoder":9,"../lang/langMod":10,"../lib/FS":13,"../lib/root":15,"../project/CompiledProject":16,"../project/ProjectFactory":17,"../runtime/TonyuRuntime":18}],8:[function(require,module,exports){
 const root=require("../lib/root");
 //const fs=require("fs").promises;
 function timeout(t) {
@@ -9583,6 +9588,59 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],16:[function(require,module,exports){
 //define(function (require,exports,module) {
+    const F=require("./ProjectFactory");
+    const root=require("../lib/root");
+    const SourceFiles=require("../lang/SourceFiles");
+    //const A=require("../lib/assert");
+    const langMod=require("../lang/langMod");
+    F.addType("compiled",params=> {
+        if (params.namespace && params.url) return urlBased(params);
+        if (params.dir) return dirBased(params);
+        console.error("Invalid compiled project", params);
+        throw new Error("Invalid compiled project");
+    });
+    function urlBased(params) {
+        const ns=params.namespace;
+        const url=params.url;
+        const res=F.createCore();
+        return res.include(langMod).include({
+            getNamespace:function () {return ns;},
+            loadClasses: async function (ctx) {
+                await this.loadDependingClasses();
+                console.log("Loading compiled classes ns=",ns,"url=",url);
+                const s=SourceFiles.add({url});
+                await s.exec();
+            },
+        });
+    }
+    function dirBased(params) {
+        const res=F.createDirBasedCore(params);
+        return res.include(langMod).include({
+            loadClasses: async function (ctx) {
+                await this.loadDependingClasses();
+                const outJS=this.getOutputFile();
+                const map=outJS.sibling(outJS.name()+".map");
+                const sf=SourceFiles.add({
+                    text:outJS.text(),
+                    sourceMap:map.exists() && map.text(),
+                });
+                await sf.exec();
+            }
+        });
+    }
+    exports.create=params=>F.create("compiled",params);
+    F.addDependencyResolver((prj, spec)=> {
+        if (spec.dir && prj.resolve) {
+            return F.create("compiled",{dir:prj.resolve(spec.dir)});
+        }
+        if (spec.namespace && spec.url) {
+            return F.create("compiled",spec);
+        }
+    });
+//});
+
+},{"../lang/SourceFiles":8,"../lang/langMod":10,"../lib/root":15,"./ProjectFactory":17}],17:[function(require,module,exports){
+//define(function (require,exports,module) {
     const A=require("../lib/assert");
     //const FS=require("../lib/FS");
     // This factory will be widely used, even BitArrow.
@@ -9645,15 +9703,13 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     };
     class ProjectCore {
         getPublishedURL(){}//TODO
-        getOptions(opt) {
-            return this.getOptionsFile().obj();
-        }
+        getOptions(opt) {return {};}//stub
         getName() {
             return this.dir.name().replace(/\/$/,"");
         }
         getDependingProjects() {
             var opt=this.getOptions();
-            var dp=opt.compiler.dependingProjects || [];
+            var dp=(opt.compiler && opt.compiler.dependingProjects) || [];
             return dp.map(dprj=>
                 ProjectCore.factory.fromDependencySpec(this,dprj)
             );
@@ -9697,6 +9753,9 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
             if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
             return rdir;
         },
+        getOptions(opt) {
+            return this.getOptionsFile().obj();
+        },
         getOptionsFile() {// not in compiledProject
             var resFile=this.dir.rel("options.json");
             return resFile;
@@ -9737,7 +9796,7 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     };
 //});
 
-},{"../lib/assert":14}],17:[function(require,module,exports){
+},{"../lib/assert":14}],18:[function(require,module,exports){
 //		function (assert,TT,IT,DU) {
 var assert=require("../lib/assert");
 var root=require("../lib/root");
@@ -10112,7 +10171,7 @@ module.exports=root.Tonyu=function () {
 	return Tonyu;
 }();
 
-},{"../lib/assert":14,"../lib/root":15,"./TonyuThread":18,"./tonyuIterator":19}],18:[function(require,module,exports){
+},{"../lib/assert":14,"../lib/root":15,"./TonyuThread":19,"./tonyuIterator":20}],19:[function(require,module,exports){
 //	var Klass=require("../lib/Klass");
 module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
@@ -10377,7 +10436,7 @@ module.exports=function (Tonyu) {
 	return TonyuThread;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 //define(["Klass"], function (Klass) {
 	//var Klass=require("../lib/Klass");
 	class ArrayValueIterator {

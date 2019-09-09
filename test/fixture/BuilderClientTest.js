@@ -161,16 +161,9 @@ class BuilderClient {
         this.prj=prj;
         this.w=new WS.Wrapper(new Worker(config.worker.url+"?"+Math.random()));
         this.config=config;
-        //this.SourceFiles=config.SourceFiles;
     }
-    //getOptions() {return this.prj.getOptions();}
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}
-    //getNamespace() {return this.prj.getNamespace();}
     getDir(){return this.prj.getDir();}
-    //getEXT(){return this.prj.getEXT();}
-    //sourceFiles(){return this.prj.sourceFiles();}
-    //loadDependingClasses(){return this.prj.loadDependingClasses();}
-
     setDebugger(t) {this.debugger=t;}// t:iframe.contentWindow.Debugger
     exec(srcraw) {
         if (this.debugger) return this.debugger.exec(srcraw);
@@ -180,7 +173,23 @@ class BuilderClient {
         const files=this.getDir().exportAsObject({
             excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
         });
-        await this.w.run("compiler/init",{files,ns2resource: this.config.worker.ns2resource});
+        const ns2depspec=this.config.worker.ns2depspec;
+        await this.w.run("compiler/init",{
+            namespace:this.prj.getNamespace(),
+            files, ns2depspec
+        });
+        const deps=this.prj.getDependingProjects();//TODO recursive
+        for (let dep of deps) {
+            const ns=dep.getNamespace();
+            if (!ns2depspec[ns]) {
+                const files=dep.getDir().exportAsObject({
+                    excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
+                });
+                await this.w.run("compiler/addDependingProject",{
+                    namespace:ns, files
+                });
+            }
+        }
         this.inited=true;
     }
     async fullCompile() {
@@ -217,12 +226,13 @@ class BuilderClient {
 root.TonyuBuidlerClient=BuilderClient;
 module.exports=BuilderClient;
 
-},{"../lang/SourceFiles":4,"../lib/WorkerServiceB":5,"../lib/root":7}],3:[function(require,module,exports){
+},{"../lang/SourceFiles":4,"../lib/WorkerServiceB":6,"../lib/root":8}],3:[function(require,module,exports){
 const root=require("../lib/root");
 const BuilderClient=require("./BuilderClient");
 const SourceFiles=require("../lang/SourceFiles");
 const F=require("../project/ProjectFactory");
-F.addType("compiled",params=>{
+const CP=require("../project/CompiledProject");
+/*F.addType("compiled",params=>{
     const res=F.createDirBasedCore({dir:params.dir});
     res.include(F.langMod);
     res.loadClasses=async function () {
@@ -235,7 +245,7 @@ F.addDependencyResolver((prj, spec)=> {
     if (spec.dir && prj.resolve) {
         return F.create("compiled",{dir:prj.resolve(spec.dir)});
     }
-});
+});*/
 /*global window*/
 window.initCmd=function (shui) {
     const UI=shui.UI;
@@ -243,11 +253,11 @@ window.initCmd=function (shui) {
     let iframe;
     sh.run=async bootClass=>{
         const prjDir=sh.cwd;//();//resolve(prjPath);
-        const prj=F.createDirBasedCore({dir:prjDir});
+        const prj=CP.create({dir:prjDir});
         const config={
             worker:{
                 url: "../CompilerWorker.js",
-                ns2resource: {kernel: {url:"fsui/kernel.js"}}
+                ns2depspec: {kernel: {namespace:"kernel",url:"fsui/kernel.js"}}
             }
         };
         const builder=new BuilderClient(prj,config);
@@ -272,7 +282,7 @@ window.initCmd=function (shui) {
     };
 };
 
-},{"../lang/SourceFiles":4,"../lib/root":7,"../project/ProjectFactory":8,"./BuilderClient":2}],4:[function(require,module,exports){
+},{"../lang/SourceFiles":4,"../lib/root":8,"../project/CompiledProject":9,"../project/ProjectFactory":10,"./BuilderClient":2}],4:[function(require,module,exports){
 const root=require("../lib/root");
 //const fs=require("fs").promises;
 function timeout(t) {
@@ -371,7 +381,29 @@ class SourceFiles {
 }
 module.exports=new SourceFiles();
 
-},{"../lib/root":7,"vm":1}],5:[function(require,module,exports){
+},{"../lib/root":8,"vm":1}],5:[function(require,module,exports){
+    module.exports={
+        getNamespace: function () {//override
+            var opt=this.getOptions();
+            if (opt.compiler && opt.compiler.namespace) return opt.compiler.namespace;
+            throw new Error("Namespace is not set");
+        },
+        //TODO
+        renameClassName: function (o,n) {// o: key of aliases
+            throw new Error("Rename todo");
+        },
+        async loadDependingClasses() {
+            const myNsp=this.getNamespace();
+            for (let p of this.getDependingProjects()) {
+                if (p.getNamespace()===myNsp) continue;
+                await p.loadClasses();
+            }
+        },
+        getEXT() {return ".tonyu";}
+        // loadClasses: stub
+    };
+
+},{}],6:[function(require,module,exports){
 /*global Worker*/
 // Browser Side
 let idseq=0;
@@ -481,7 +513,7 @@ WorkerService.serv("console/log", function (params){
 });
 module.exports=WorkerService;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (global){
     const Assertion=function(failMesg) {
         this.failMesg=flatten(failMesg || "Assertion failed: ");
@@ -677,7 +709,7 @@ module.exports=WorkerService;
     module.exports=assert;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global){
 /*global window,self,global*/
 (function (deps, factory) {
@@ -690,7 +722,60 @@ module.exports=WorkerService;
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+//define(function (require,exports,module) {
+    const F=require("./ProjectFactory");
+    const root=require("../lib/root");
+    const SourceFiles=require("../lang/SourceFiles");
+    //const A=require("../lib/assert");
+    const langMod=require("../lang/langMod");
+    F.addType("compiled",params=> {
+        if (params.namespace && params.url) return urlBased(params);
+        if (params.dir) return dirBased(params);
+        console.error("Invalid compiled project", params);
+        throw new Error("Invalid compiled project");
+    });
+    function urlBased(params) {
+        const ns=params.namespace;
+        const url=params.url;
+        const res=F.createCore();
+        return res.include(langMod).include({
+            getNamespace:function () {return ns;},
+            loadClasses: async function (ctx) {
+                await this.loadDependingClasses();
+                console.log("Loading compiled classes ns=",ns,"url=",url);
+                const s=SourceFiles.add({url});
+                await s.exec();
+            },
+        });
+    }
+    function dirBased(params) {
+        const res=F.createDirBasedCore(params);
+        return res.include(langMod).include({
+            loadClasses: async function (ctx) {
+                await this.loadDependingClasses();
+                const outJS=this.getOutputFile();
+                const map=outJS.sibling(outJS.name()+".map");
+                const sf=SourceFiles.add({
+                    text:outJS.text(),
+                    sourceMap:map.exists() && map.text(),
+                });
+                await sf.exec();
+            }
+        });
+    }
+    exports.create=params=>F.create("compiled",params);
+    F.addDependencyResolver((prj, spec)=> {
+        if (spec.dir && prj.resolve) {
+            return F.create("compiled",{dir:prj.resolve(spec.dir)});
+        }
+        if (spec.namespace && spec.url) {
+            return F.create("compiled",spec);
+        }
+    });
+//});
+
+},{"../lang/SourceFiles":4,"../lang/langMod":5,"../lib/root":8,"./ProjectFactory":10}],10:[function(require,module,exports){
 //define(function (require,exports,module) {
     const A=require("../lib/assert");
     //const FS=require("../lib/FS");
@@ -754,15 +839,13 @@ module.exports=WorkerService;
     };
     class ProjectCore {
         getPublishedURL(){}//TODO
-        getOptions(opt) {
-            return this.getOptionsFile().obj();
-        }
+        getOptions(opt) {return {};}//stub
         getName() {
             return this.dir.name().replace(/\/$/,"");
         }
         getDependingProjects() {
             var opt=this.getOptions();
-            var dp=opt.compiler.dependingProjects || [];
+            var dp=(opt.compiler && opt.compiler.dependingProjects) || [];
             return dp.map(dprj=>
                 ProjectCore.factory.fromDependencySpec(this,dprj)
             );
@@ -806,6 +889,9 @@ module.exports=WorkerService;
             if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
             return rdir;
         },
+        getOptions(opt) {
+            return this.getOptionsFile().obj();
+        },
         getOptionsFile() {// not in compiledProject
             var resFile=this.dir.rel("options.json");
             return resFile;
@@ -846,4 +932,4 @@ module.exports=WorkerService;
     };
 //});
 
-},{"../lib/assert":6}]},{},[3]);
+},{"../lib/assert":7}]},{},[3]);

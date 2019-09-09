@@ -2362,28 +2362,39 @@ const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceW");
 const FS=require("../lib/FS");
+root.FS=FS;
 const F=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
 const langMod=require("../lang/langMod");
 
+
 let prj,builder;
+const ns2depspec={};
+const ram=FS.get("/prj/");
+F.addDependencyResolver(function (prj, spec) {
+    console.log("RESOLV",spec,ns2depspec);
+    if (spec.namespace && ns2depspec[spec.namespace]) {
+        return F.fromDependencySpec(prj,ns2depspec[spec.namespace]);
+    }
+});
 WS.serv("compiler/init", params=>{
+    Object.assign(ns2depspec,params.ns2depspec||{});
     const files=params.files;
-    const ram=FS.get("/prj/");
-    ram.importFromObject(files);
-    console.log(ram.rel("options.json").text());
-    prj=F.createDirBasedCore({dir:ram}).include(langMod);
+    const prjDir=ram.rel((params.namespace||"user")+"/");
+    prjDir.importFromObject(files);
+    //console.log(ram.rel("options.json").text());
+    prj=CompiledProject.create({dir:prjDir});
     builder=new Builder(prj);
-    Tonyu.ns2resource=params.ns2resource;
-    F.addDependencyResolver(function (prj, spec) {
-        console.log("RESOLV",spec,params.ns2resource);
-        if (spec.namespace && params.ns2resource[spec.namespace]) {
-            const r=params.ns2resource[spec.namespace];
-            if (r.url) {
-                return CompiledProject.create({namespace:spec.namespace,url:r.url});
-            }
-        }
-    });
+});
+WS.serv("compiler/addDependingProject", params=>{
+    // params: namespace, files
+    const files=params.files;
+    const prjDir=ram.rel((params.namespace)+"/");
+    prjDir.importFromObject(files);
+    const dprj=CompiledProject.create({dir:prjDir});
+    ns2depspec[params.namespace]={
+        dir: prjDir.path()
+    };
 });
 WS.serv("compiler/fullCompile", async params=>{
     const res=await builder.fullCompile({destinations:{memory:1}});
@@ -14050,30 +14061,55 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     const F=require("./ProjectFactory");
     const root=require("../lib/root");
     const SourceFiles=require("../lang/SourceFiles");
-    const A=require("../lib/assert");
+    //const A=require("../lib/assert");
     const langMod=require("../lang/langMod");
     F.addType("compiled",params=> {
-        const ns=A.is(params.namespace,String,"ns");
-        const url=A.is(params.url,String,"url");
-        //A.is([ns,url],[String,String]);
+        if (params.namespace && params.url) return urlBased(params);
+        if (params.dir) return dirBased(params);
+        console.error("Invalid compiled project", params);
+        throw new Error("Invalid compiled project");
+    });
+    function urlBased(params) {
+        const ns=params.namespace;
+        const url=params.url;
         const res=F.createCore();
         return res.include(langMod).include({
             getNamespace:function () {return ns;},
-            sourceDir: function () {return null;},
-            getDependingProjects: function () {return [];},// virtual
             loadClasses: async function (ctx) {
+                await this.loadDependingClasses();
                 console.log("Loading compiled classes ns=",ns,"url=",url);
-                var src = url+(root.WebSite && root.WebSite.serverType==="BA"?"?"+Math.random():"");
-                //var u=window.navigator.userAgent.toLowerCase();
-                const s=SourceFiles.add({url:src});
+                const s=SourceFiles.add({url});
                 await s.exec();
             },
         });
-    });
+    }
+    function dirBased(params) {
+        const res=F.createDirBasedCore(params);
+        return res.include(langMod).include({
+            loadClasses: async function (ctx) {
+                await this.loadDependingClasses();
+                const outJS=this.getOutputFile();
+                const map=outJS.sibling(outJS.name()+".map");
+                const sf=SourceFiles.add({
+                    text:outJS.text(),
+                    sourceMap:map.exists() && map.text(),
+                });
+                await sf.exec();
+            }
+        });
+    }
     exports.create=params=>F.create("compiled",params);
+    F.addDependencyResolver((prj, spec)=> {
+        if (spec.dir && prj.resolve) {
+            return F.create("compiled",{dir:prj.resolve(spec.dir)});
+        }
+        if (spec.namespace && spec.url) {
+            return F.create("compiled",spec);
+        }
+    });
 //});
 
-},{"../lang/SourceFiles":15,"../lang/langMod":20,"../lib/assert":27,"../lib/root":28,"./ProjectFactory":30}],30:[function(require,module,exports){
+},{"../lang/SourceFiles":15,"../lang/langMod":20,"../lib/root":28,"./ProjectFactory":30}],30:[function(require,module,exports){
 //define(function (require,exports,module) {
     const A=require("../lib/assert");
     //const FS=require("../lib/FS");
@@ -14137,15 +14173,13 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     };
     class ProjectCore {
         getPublishedURL(){}//TODO
-        getOptions(opt) {
-            return this.getOptionsFile().obj();
-        }
+        getOptions(opt) {return {};}//stub
         getName() {
             return this.dir.name().replace(/\/$/,"");
         }
         getDependingProjects() {
             var opt=this.getOptions();
-            var dp=opt.compiler.dependingProjects || [];
+            var dp=(opt.compiler && opt.compiler.dependingProjects) || [];
             return dp.map(dprj=>
                 ProjectCore.factory.fromDependencySpec(this,dprj)
             );
@@ -14188,6 +14222,9 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
             }
             if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
             return rdir;
+        },
+        getOptions(opt) {
+            return this.getOptionsFile().obj();
         },
         getOptionsFile() {// not in compiledProject
             var resFile=this.dir.rel("options.json");

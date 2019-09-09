@@ -161,16 +161,9 @@ class BuilderClient {
         this.prj=prj;
         this.w=new WS.Wrapper(new Worker(config.worker.url+"?"+Math.random()));
         this.config=config;
-        //this.SourceFiles=config.SourceFiles;
     }
-    //getOptions() {return this.prj.getOptions();}
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}
-    //getNamespace() {return this.prj.getNamespace();}
     getDir(){return this.prj.getDir();}
-    //getEXT(){return this.prj.getEXT();}
-    //sourceFiles(){return this.prj.sourceFiles();}
-    //loadDependingClasses(){return this.prj.loadDependingClasses();}
-
     setDebugger(t) {this.debugger=t;}// t:iframe.contentWindow.Debugger
     exec(srcraw) {
         if (this.debugger) return this.debugger.exec(srcraw);
@@ -180,7 +173,23 @@ class BuilderClient {
         const files=this.getDir().exportAsObject({
             excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
         });
-        await this.w.run("compiler/init",{files,ns2resource: this.config.worker.ns2resource});
+        const ns2depspec=this.config.worker.ns2depspec;
+        await this.w.run("compiler/init",{
+            namespace:this.prj.getNamespace(),
+            files, ns2depspec
+        });
+        const deps=this.prj.getDependingProjects();//TODO recursive
+        for (let dep of deps) {
+            const ns=dep.getNamespace();
+            if (!ns2depspec[ns]) {
+                const files=dep.getDir().exportAsObject({
+                    excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
+                });
+                await this.w.run("compiler/addDependingProject",{
+                    namespace:ns, files
+                });
+            }
+        }
         this.inited=true;
     }
     async fullCompile() {

@@ -2,7 +2,8 @@ const root=require("../lib/root");
 const BuilderClient=require("./BuilderClient");
 const SourceFiles=require("../lang/SourceFiles");
 const F=require("../project/ProjectFactory");
-F.addType("compiled",params=>{
+const CP=require("../project/CompiledProject");
+/*F.addType("compiled",params=>{
     const res=F.createDirBasedCore({dir:params.dir});
     res.include(F.langMod);
     res.loadClasses=async function () {
@@ -15,7 +16,7 @@ F.addDependencyResolver((prj, spec)=> {
     if (spec.dir && prj.resolve) {
         return F.create("compiled",{dir:prj.resolve(spec.dir)});
     }
-});
+});*/
 /*global window*/
 window.initCmd=function (shui) {
     const UI=shui.UI;
@@ -23,11 +24,11 @@ window.initCmd=function (shui) {
     let iframe;
     sh.run=async bootClass=>{
         const prjDir=sh.cwd;//();//resolve(prjPath);
-        const prj=F.createDirBasedCore({dir:prjDir});
+        const prj=CP.create({dir:prjDir});
         const config={
             worker:{
                 url: "../CompilerWorker.js",
-                ns2resource: {kernel: {url:"fsui/kernel.js"}}
+                ns2depspec: {kernel: {namespace:"kernel",url:"fsui/kernel.js"}}
             }
         };
         const builder=new BuilderClient(prj,config);

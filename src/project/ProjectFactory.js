@@ -61,15 +61,13 @@
     };
     class ProjectCore {
         getPublishedURL(){}//TODO
-        getOptions(opt) {
-            return this.getOptionsFile().obj();
-        }
+        getOptions(opt) {return {};}//stub
         getName() {
             return this.dir.name().replace(/\/$/,"");
         }
         getDependingProjects() {
             var opt=this.getOptions();
-            var dp=opt.compiler.dependingProjects || [];
+            var dp=(opt.compiler && opt.compiler.dependingProjects) || [];
             return dp.map(dprj=>
                 ProjectCore.factory.fromDependencySpec(this,dprj)
             );
@@ -112,6 +110,9 @@
             }
             if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
             return rdir;
+        },
+        getOptions(opt) {
+            return this.getOptionsFile().obj();
         },
         getOptionsFile() {// not in compiledProject
             var resFile=this.dir.rel("options.json");

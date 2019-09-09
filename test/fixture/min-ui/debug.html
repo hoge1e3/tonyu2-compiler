@@ -10,8 +10,9 @@ async function start() {
     const root=window;
     const Debugger=root.Debugger;
     const prjDir=FS.get(getQueryString("prj"));
-    const prj=Debugger.ProjectFactory.create("debugger",{dir:prjDir});
-    await prj.loadClasses();
+    await Debugger.init(prjDir);
+    //const prj=Debugger.ProjectFactory.create("compiled",{dir:prjDir});
+    //await prj.loadClasses();
     //root.Debugger.execFile(prjDir.rel("js/concat.js"));
     const boot=getQueryString("boot");
     if (boot) Debugger.create(boot);
