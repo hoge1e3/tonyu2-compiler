@@ -21,9 +21,12 @@ F.addDependencyResolver((prj, spec)=> {
     }
 });*/
 //const prj=F.createDirBasedCore
-Tonyu.onRuntimeError=e=>{
+const handlers={runtimeError:[]};
+Tonyu.onRuntimeError=async e=>{
     console.error(e);
-    StackDecoder.decode(e);
+    const stack=await StackDecoder.decode(e);
+    const evt={error:e, message:e.message,stack};
+    handlers.runtimeError.forEach(f=>f(evt));
 };
 root.Debugger={
     ProjectFactory:F, FS,
@@ -48,10 +51,16 @@ root.Debugger={
             const klass=Tonyu.getClass(className);
             new klass();
         }catch(e) {
-            console.error(e);
-            StackDecoder.decode(e);
+            Tonyu.onRuntimeError(e);
+            //console.error(e);
+            //StackDecoder.decode(e);
         }
     },
+    on: function (type,...args) {
+        handlers[type]=handlers[type]||[];
+        const f=args.pop();
+        handlers[type].push(f);
+    }
 };
 if (root.parent && root.parent.onTonyuDebuggerReady) {
     root.parent.onTonyuDebuggerReady(root.Debugger);

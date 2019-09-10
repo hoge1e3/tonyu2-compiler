@@ -12,6 +12,9 @@ F.addDependencyResolver((prj,spec)=>{
         return F.create("compiled",{namespace:"kernel",url:"kernel.js"});
     }
 });
+Debugger.on("runtimeError",evt=>{
+    console.log(evt.stack.map(s=>s+"").join("\n"));
+});
 Tonyu.globals.$mainCanvas=$("#cv");
 Tonyu.runMode=true;
 window.UIDiag={};
