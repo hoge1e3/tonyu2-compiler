@@ -1,5 +1,5 @@
 extends Chara;
 
-if (x is Chara) {
+if (x is Kyara) {
     //console.log("x is Chara");
 }

@@ -176,6 +176,40 @@ Tonyu.klass.define({
   },
   decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
 });Tonyu.klass.define({
+  fullName: 'user.Child',
+  shortName: 'Child',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.Chara,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Child_main() {
+        "use strict";
+        var _this=this;
+        
+        if (Tonyu.is(_this.x,Tonyu.classes.user.Chara)) {
+          
+          
+        }
+      },
+      fiber$main :function _trc_Child_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        if (Tonyu.is(_this.x,Tonyu.classes.user.Chara)) {
+          
+          
+        }
+        
+        _thread.retVal=_this;return;
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+});Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
   namespace: 'user',

@@ -25,8 +25,10 @@ const prj=F.createDirBasedCore({dir:prjDir}).include(langMod);
 const builder=new Builder(prj);
 if (rename.do) {
     console.log(rename);
-    builder.renameClassName(rename.from, rename.to);
-    process.exit();
+    builder.renameClassName(rename.from, rename.to).then(
+        ()=>process.exit(),
+        e=>{console.error(e);process.exit();},
+    );
 }
 let opt={destinations:{file:true,memory:true}};
 if (daemon) opt={destinations:{memory:true}};
