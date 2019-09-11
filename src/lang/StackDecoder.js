@@ -6,20 +6,20 @@ module.exports={
         return StackTrace.fromError(e,{offline:true}).then(tr=>{
             tr.forEach(t=>{
                 const sf=SourceFiles.url2SourceFile[t.fileName];
-                console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
+                //console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
                 if (sf) {
                     const opt={
                         line: t.lineNumber, column:t.columnNumber,
                         bias:S.SourceMapConsumer.GREATEST_LOWER_BOUND
                     };
                     const pos=this.originalPositionFor(sf,opt);
-                    console.log("pos",opt,pos);
+                    //console.log("pos",opt,pos);
                     if (pos.source) t.fileName=pos.source;
                     if (pos.line) t.lineNumber=pos.line;
                     if (pos.column) t.columnNumber=pos.column;
                 }
             });
-            console.log("Converted: ",tr);
+            //console.log("Converted: ",tr);
             return tr;
         });
     },

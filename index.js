@@ -7,6 +7,12 @@ const SourceFiles=require("./src/lang/SourceFiles");
 const prjPath=process.argv[2];
 const run=process.argv.indexOf("-r")>=0;
 const daemon=process.argv.indexOf("-d")>=0;
+const rename={idx:process.argv.indexOf("-ren")};
+if (rename.idx>=0) {
+    rename.from=process.argv[rename.idx+1];
+    rename.to=process.argv[rename.idx+2];
+    rename.do=rename.from&&rename.to;
+}
 require('source-map-support').install();
 const prjDir=(()=>{
     if (FS.PathUtil.isAbsolute(prjPath)) {
@@ -17,6 +23,11 @@ const prjDir=(()=>{
 })();
 const prj=F.createDirBasedCore({dir:prjDir}).include(langMod);
 const builder=new Builder(prj);
+if (rename.do) {
+    console.log(rename);
+    builder.renameClassName(rename.from, rename.to);
+    process.exit();
+}
 let opt={destinations:{file:true,memory:true}};
 if (daemon) opt={destinations:{memory:true}};
 builder.fullCompile(opt).then(async function (s) {

@@ -21,12 +21,29 @@ F.addDependencyResolver((prj, spec)=> {
     }
 });*/
 //const prj=F.createDirBasedCore
-const handlers={runtimeError:[]};
+const Events={
+    handlers:{},
+    getHandler(t) {
+        this.handlers[t]=this.handlers[t]||[];
+        return this.handlers[t];
+    },
+    fire(type,evt) {
+        try {
+            this.getHandler(type).forEach(f=>f(evt));
+        } catch(e) {
+            Tonyu.onRuntimeError(e);
+        }
+    },
+    on(type,...args) {
+        const f=args.pop();
+        this.getHandler(type).push(f);
+    }
+};
 Tonyu.onRuntimeError=async e=>{
     console.error(e);
     const stack=await StackDecoder.decode(e);
     const evt={error:e, message:e.message,stack};
-    handlers.runtimeError.forEach(f=>f(evt));
+    Events.fire("runtimeError",evt);
 };
 root.Debugger={
     ProjectFactory:F, FS,
@@ -41,10 +58,12 @@ root.Debugger={
     init: async function (prj) {
         Tonyu.globals.$currentProject=prj;
         Tonyu.currentProject=prj;
+        Tonyu.globals.$debugger=root.Debugger;
         await prj.loadClasses();
     },
     exec: async function (srcraw) {
         await SourceFiles.add(srcraw).exec();
+        Events.fire("classChanged");
     },
     create: function (className) {
         try {
@@ -56,11 +75,7 @@ root.Debugger={
             //StackDecoder.decode(e);
         }
     },
-    on: function (type,...args) {
-        handlers[type]=handlers[type]||[];
-        const f=args.pop();
-        handlers[type].push(f);
-    }
+    on:Events.on.bind(Events)
 };
 if (root.parent && root.parent.onTonyuDebuggerReady) {
     root.parent.onTonyuDebuggerReady(root.Debugger);
