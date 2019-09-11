@@ -1,0 +1,5 @@
+extends Chara;
+
+if (x is Chara) {
+    //console.log("x is Chara");
+}

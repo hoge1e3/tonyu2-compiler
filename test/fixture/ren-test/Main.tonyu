@@ -1,0 +1,7 @@
+extends Updatable;
+native console;
+
+$restart=\{
+    appear(new Chara);
+};
+$restart();

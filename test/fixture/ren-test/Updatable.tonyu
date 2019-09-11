@@ -1,0 +1,22 @@
+native Promise;
+native setTimeout;
+native Tonyu;
+
+\waitFor(f) {
+    if (_thread) {
+        var r=_thread.waitFor(f);
+        return r;
+    }
+    return f;
+}
+\update(t) {
+    waitFor(new Promise(\(s) {
+        setTimeout(s,t||50);
+    }));
+}
+\appear(o) {
+    var t=Tonyu.thread();
+    t.apply(o,"main",[]);
+    t.steps();
+    return o;
+}
