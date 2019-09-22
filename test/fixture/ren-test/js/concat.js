@@ -1,4 +1,29 @@
 Tonyu.klass.define({
+  fullName: 'user.Mod',
+  shortName: 'Mod',
+  namespace: 'user',
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Mod_main() {
+        "use strict";
+        var _this=this;
+        
+      },
+      fiber$main :function _trc_Mod_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        
+        _thread.retVal=_this;return;
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+});Tonyu.klass.define({
   fullName: 'user.Updatable',
   shortName: 'Updatable',
   namespace: 'user',
@@ -180,14 +205,14 @@ Tonyu.klass.define({
   shortName: 'Child',
   namespace: 'user',
   superclass: Tonyu.classes.user.Chara,
-  includes: [],
+  includes: [Tonyu.classes.user.Mod],
   methods: function (__superClass) {
     return {
       main :function _trc_Child_main() {
         "use strict";
         var _this=this;
         
-        if (Tonyu.is(_this.x,Tonyu.classes.user.Chara)) {
+        if (Tonyu.is(_this.x,_this.Kyara)) {
           
           
         }
@@ -198,7 +223,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        if (Tonyu.is(_this.x,Tonyu.classes.user.Chara)) {
+        if (Tonyu.is(_this.x,_this.Kyara)) {
           
           
         }
@@ -208,7 +233,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"Kyara":{}}}
 });Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
@@ -223,7 +248,7 @@ Tonyu.klass.define({
         
         Tonyu.globals.$restart=(function anonymous_45() {
           
-          _this.appear(new Tonyu.classes.user.Chara);
+          _this.appear(new _this.Kyara);
         });
         Tonyu.globals.$restart();
       },
@@ -241,7 +266,7 @@ Tonyu.klass.define({
             case 0:
               Tonyu.globals.$restart=(function anonymous_45() {
                 
-                _this.appear(new Tonyu.classes.user.Chara);
+                _this.appear(new _this.Kyara);
               });
               Tonyu.globals.$restart();
               _thread.exit(_this);return;
@@ -252,6 +277,6 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"Kyara":{}}}
 });
 //# sourceMappingURL=concat.js.map

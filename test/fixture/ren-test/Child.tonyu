@@ -1,4 +1,5 @@
 extends Chara;
+includes Mod;
 
 if (x is Kyara) {
     //console.log("x is Chara");

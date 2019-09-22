@@ -1,8 +1,9 @@
 // This is kowareta! because r.js does not generate module name:
 //   define("FSLib",[], function () { ...
-(function (d,f) {
-module.exports=f();
-})([],function () {
+//(function (global) {
+//var useGlobal=(typeof global.define!="function");
+//var define=(useGlobal ? define=function(_,f){f();} : global.define);
+define([],function () {
     var define,requirejs;
 	var R={};
 	var REQJS="REQJS_";
@@ -1201,7 +1202,7 @@ function privatize(o){
     return res;
 }
 function extend(d,s) {
-    for (var i in (s||{})) {d[i]=s[i];}
+    for (var i in (s||{})) {d[i]=s[i];} 
     return d;
 }
 return {
@@ -1423,7 +1424,7 @@ define('Content',["assert","Util","FileSaver"],function (assert,Util,saveAs) {
         } else if (bin && Content.isBuffer(bin.buffer)) {
             // in node.js v8.9.1 ,
             ///  bin is Buffer, bin.buffer is ArrayBuffer
-            //   and bin.buffer is content of different file(memory leak?)
+            //   and bin.buffer is content of different file(memory leak?) 
             b.bufType="array1";
             b.arrayBuffer=bin.buffer;
         } else {
@@ -1718,16 +1719,13 @@ define('Content',["assert","Util","FileSaver"],function (assert,Util,saveAs) {
     return Content;
 });
 
-/*global require, requirejs, process, Buffer*/
+/*global process, global, Buffer*/
 define('NativeFS',["FSClass","assert","PathUtil","extend","Content"],
         function (FS,A,P,extend,Content) {
     var assert=A,fs;
     try {
-        fs=require("fs");
-        if (!fs) {
-            fs=requirejs.nodeRequire("fs");
-        }
-        fs.existsSync("test.txt");
+        fs=global.require("fs");
+        fs.existsSync('test.txt');
     }catch(e){
         return function () {
             throw new Error("This system not support native FS");

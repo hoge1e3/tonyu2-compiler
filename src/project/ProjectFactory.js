@@ -1,5 +1,5 @@
 //define(function (require,exports,module) {
-    const A=require("../lib/assert");
+    //const A=require("../lib/assert");
     //const FS=require("../lib/FS");
     // This factory will be widely used, even BitArrow.
 
@@ -123,7 +123,7 @@
         },
         getOutputFile(lang) {// not in compiledProject
             var opt=this.getOptions();
-            var outF=this.resolve(A(opt.compiler.outputFile,"outputFile should be specified in options"));
+            var outF=this.resolve(opt.compiler.outputFile||"js/concat.js");
             if (outF.isDir()) {
                 throw new Error("out: directory style not supported");
             }

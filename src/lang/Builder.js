@@ -329,6 +329,13 @@ module.exports=class {
                 var f=klass.src ? klass.src.tonyu : null;
                 var a=klass.annotation;
                 var changes=[];
+                if (klass.node.ext) {
+                    console.log("SPCl",klass.node.ext.superclassName);
+                }
+                if (klass.node.incl) {
+                    console.log("incl",klass.node.incl.includeClassNames);
+                }
+                //console.log("klass.node",klass.node.ext, klass.node.incl );
                 if (a && f) {
                     console.log("Check", cln);
                     for (var id in a) {

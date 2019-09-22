@@ -46,7 +46,7 @@ Tonyu.onRuntimeError=async e=>{
     Events.fire("runtimeError",evt);
 };
 root.Debugger={
-    ProjectFactory:F, FS,
+    ProjectFactory:F, FS, Tonyu,
     /*execFile: async function (outJS) {
         const map=outJS.sibling(outJS.name()+".map");
         const sf=SourceFiles.add({
