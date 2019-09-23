@@ -71,5 +71,6 @@ class BuilderClient {
         });
     }
 }
+BuilderClient.SourceFiles=SourceFiles;
 root.TonyuBuidlerClient=BuilderClient;
 module.exports=BuilderClient;

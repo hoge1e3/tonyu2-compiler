@@ -2203,157 +2203,6 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],5:[function(require,module,exports){
-var indexOf = function (xs, item) {
-    if (xs.indexOf) return xs.indexOf(item);
-    else for (var i = 0; i < xs.length; i++) {
-        if (xs[i] === item) return i;
-    }
-    return -1;
-};
-var Object_keys = function (obj) {
-    if (Object.keys) return Object.keys(obj)
-    else {
-        var res = [];
-        for (var key in obj) res.push(key)
-        return res;
-    }
-};
-
-var forEach = function (xs, fn) {
-    if (xs.forEach) return xs.forEach(fn)
-    else for (var i = 0; i < xs.length; i++) {
-        fn(xs[i], i, xs);
-    }
-};
-
-var defineProp = (function() {
-    try {
-        Object.defineProperty({}, '_', {});
-        return function(obj, name, value) {
-            Object.defineProperty(obj, name, {
-                writable: true,
-                enumerable: false,
-                configurable: true,
-                value: value
-            })
-        };
-    } catch(e) {
-        return function(obj, name, value) {
-            obj[name] = value;
-        };
-    }
-}());
-
-var globals = ['Array', 'Boolean', 'Date', 'Error', 'EvalError', 'Function',
-'Infinity', 'JSON', 'Math', 'NaN', 'Number', 'Object', 'RangeError',
-'ReferenceError', 'RegExp', 'String', 'SyntaxError', 'TypeError', 'URIError',
-'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'escape',
-'eval', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'undefined', 'unescape'];
-
-function Context() {}
-Context.prototype = {};
-
-var Script = exports.Script = function NodeScript (code) {
-    if (!(this instanceof Script)) return new Script(code);
-    this.code = code;
-};
-
-Script.prototype.runInContext = function (context) {
-    if (!(context instanceof Context)) {
-        throw new TypeError("needs a 'context' argument.");
-    }
-    
-    var iframe = document.createElement('iframe');
-    if (!iframe.style) iframe.style = {};
-    iframe.style.display = 'none';
-    
-    document.body.appendChild(iframe);
-    
-    var win = iframe.contentWindow;
-    var wEval = win.eval, wExecScript = win.execScript;
-
-    if (!wEval && wExecScript) {
-        // win.eval() magically appears when this is called in IE:
-        wExecScript.call(win, 'null');
-        wEval = win.eval;
-    }
-    
-    forEach(Object_keys(context), function (key) {
-        win[key] = context[key];
-    });
-    forEach(globals, function (key) {
-        if (context[key]) {
-            win[key] = context[key];
-        }
-    });
-    
-    var winKeys = Object_keys(win);
-
-    var res = wEval.call(win, this.code);
-    
-    forEach(Object_keys(win), function (key) {
-        // Avoid copying circular objects like `top` and `window` by only
-        // updating existing context properties or new properties in the `win`
-        // that was only introduced after the eval.
-        if (key in context || indexOf(winKeys, key) === -1) {
-            context[key] = win[key];
-        }
-    });
-
-    forEach(globals, function (key) {
-        if (!(key in context)) {
-            defineProp(context, key, win[key]);
-        }
-    });
-    
-    document.body.removeChild(iframe);
-    
-    return res;
-};
-
-Script.prototype.runInThisContext = function () {
-    return eval(this.code); // maybe...
-};
-
-Script.prototype.runInNewContext = function (context) {
-    var ctx = Script.createContext(context);
-    var res = this.runInContext(ctx);
-
-    if (context) {
-        forEach(Object_keys(ctx), function (key) {
-            context[key] = ctx[key];
-        });
-    }
-
-    return res;
-};
-
-forEach(Object_keys(Script.prototype), function (name) {
-    exports[name] = Script[name] = function (code) {
-        var s = Script(code);
-        return s[name].apply(s, [].slice.call(arguments, 1));
-    };
-});
-
-exports.isContext = function (context) {
-    return context instanceof Context;
-};
-
-exports.createScript = function (code) {
-    return exports.Script(code);
-};
-
-exports.createContext = Script.createContext = function (context) {
-    var copy = new Context();
-    if(typeof context === 'object') {
-        forEach(Object_keys(context), function (key) {
-            copy[key] = context[key];
-        });
-    }
-    return copy;
-};
-
-},{}],6:[function(require,module,exports){
 const Tonyu=require("../runtime/TonyuRuntime");
 const Builder=require("../lang/Builder");//require("../lang/projectCompiler2");
 const root=require("../lib/root");
@@ -2408,7 +2257,7 @@ WS.serv("compiler/postChange", async params=>{
 });
 WS.ready();
 
-},{"../lang/Builder":7,"../lang/langMod":19,"../lib/FS":24,"../lib/WorkerServiceW":25,"../lib/root":27,"../project/CompiledProject":28,"../project/ProjectFactory":29,"../runtime/TonyuRuntime":31}],7:[function(require,module,exports){
+},{"../lang/Builder":6,"../lang/langMod":18,"../lib/FS":23,"../lib/WorkerServiceW":24,"../lib/root":26,"../project/CompiledProject":27,"../project/ProjectFactory":28,"../runtime/TonyuRuntime":30}],6:[function(require,module,exports){
 const Tonyu=require("../runtime/TonyuRuntime");
 const JSGenerator=require("./JSGenerator");
 const Semantics=require("./Semantics");
@@ -2789,7 +2638,7 @@ module.exports=class {
 
 };
 
-},{"../lib/FS":24,"../lib/assert":26,"../runtime/TError":30,"../runtime/TonyuRuntime":31,"./IndentBuffer":10,"./JSGenerator":11,"./Semantics":13,"./SourceFiles":14,"./TypeChecker":15,"./source-map":22}],8:[function(require,module,exports){
+},{"../lib/FS":23,"../lib/assert":25,"../runtime/TError":29,"../runtime/TonyuRuntime":30,"./IndentBuffer":9,"./JSGenerator":10,"./Semantics":12,"./SourceFiles":13,"./TypeChecker":14,"./source-map":21}],7:[function(require,module,exports){
 // parser.js の補助ライブラリ．式の解析を担当する
 module.exports=function () {
 	const Parser=require("./parser");
@@ -3059,7 +2908,7 @@ module.exports=function () {
 	return $;
 };
 
-},{"./parser":21}],9:[function(require,module,exports){
+},{"./parser":20}],8:[function(require,module,exports){
 const Grammar=function () {
 	const Parser=require("./parser");
 	var p=Parser;
@@ -3163,7 +3012,7 @@ const Grammar=function () {
 Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
 module.exports=Grammar;
 
-},{"./parser":21}],10:[function(require,module,exports){
+},{"./parser":20}],9:[function(require,module,exports){
 const A=require("../lib/assert");
 const S=require("./source-map");
 
@@ -3450,7 +3299,7 @@ module.exports=function (options) {
 	return $;
 };
 
-},{"../lib/assert":26,"./source-map":22}],11:[function(require,module,exports){
+},{"../lib/assert":25,"./source-map":21}],10:[function(require,module,exports){
 /*define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
 		"context", "Visitor","Tonyu.Compiler","assert"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
@@ -4562,7 +4411,7 @@ function genJS(klass, env, genOptions) {//B
 return {genJS:genJS};
 })();
 
-},{"../lib/assert":26,"../runtime/TError":30,"../runtime/TonyuRuntime":31,"./IndentBuffer":10,"./ObjectMatcher":12,"./Visitor":16,"./compiler":17,"./context":18}],12:[function(require,module,exports){
+},{"../lib/assert":25,"../runtime/TError":29,"../runtime/TonyuRuntime":30,"./IndentBuffer":9,"./ObjectMatcher":11,"./Visitor":15,"./compiler":16,"./context":17}],11:[function(require,module,exports){
 module.exports=(function () {
 	var OM={};
 	var VAR="$var",THIZ="$this";
@@ -4614,7 +4463,7 @@ module.exports=(function () {
 	return OM;
 })();
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /*if (typeof define!=="function") {//B
 	define=require("requirejs").define;
 }
@@ -5387,15 +5236,18 @@ function annotateSource2(klass, env) {//B
 return {initClassDecls:initClassDecls, annotate:annotateSource2};
 })();
 
-},{"../lib/assert":26,"../lib/root":27,"../runtime/TError":30,"../runtime/TonyuRuntime":31,"./Grammar":9,"./IndentBuffer":10,"./ObjectMatcher":12,"./Visitor":16,"./compiler":17,"./context":18,"./parse_tonyu2":20}],14:[function(require,module,exports){
+},{"../lib/assert":25,"../lib/root":26,"../runtime/TError":29,"../runtime/TonyuRuntime":30,"./Grammar":8,"./IndentBuffer":9,"./ObjectMatcher":11,"./Visitor":15,"./compiler":16,"./context":17,"./parse_tonyu2":19}],13:[function(require,module,exports){
+(function (global){
+//define(function (require,exports,module) {
+/*const root=require("root");*/
 const root=require("../lib/root");
-//const fs=require("fs").promises;
 function timeout(t) {
     return new Promise(s=>setTimeout(s,t));
 }
 let vm;
-if (root.process) {
-    vm=require("vm");
+/*global global*/
+if (global.require) {
+    vm=global.require("vm");
 }
 class SourceFile {
     // var text, sourceMap:S.Sourcemap;
@@ -5485,8 +5337,10 @@ class SourceFiles {
 
 }
 module.exports=new SourceFiles();
+//});/*--end of define--*/
 
-},{"../lib/root":27,"vm":5}],15:[function(require,module,exports){
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"../lib/root":26}],14:[function(require,module,exports){
 /*if (typeof define!=="function") {
 	define=require("requirejs").define;
 }
@@ -5649,7 +5503,7 @@ TypeChecker.checkExpr=function (klass,env) {
 };
 module.exports=TypeChecker;
 
-},{"./Grammar":9,"./Visitor":16,"./compiler":17,"./context":18}],16:[function(require,module,exports){
+},{"./Grammar":8,"./Visitor":15,"./compiler":16,"./context":17}],15:[function(require,module,exports){
 const Visitor = function (funcs) {
 	var $={funcs:funcs, path:[]};
 	$.visit=function (node) {
@@ -5682,7 +5536,7 @@ const Visitor = function (funcs) {
 };
 module.exports=Visitor;
 
-},{}],17:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 	const Tonyu=require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
 	//const TError=require("TError");
@@ -5802,7 +5656,7 @@ module.exports=Visitor;
 	cu.getParams=getParams;
 	module.exports=cu;
 
-},{"../lib/root":27,"../runtime/TonyuRuntime":31,"./ObjectMatcher":12}],18:[function(require,module,exports){
+},{"../lib/root":26,"../runtime/TonyuRuntime":30,"./ObjectMatcher":11}],17:[function(require,module,exports){
 module.exports=function () {
 	var c={};
 	c.ovrFunc=function (from , to) {
@@ -5838,7 +5692,7 @@ module.exports=function () {
 	}
 };
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
     module.exports={
         getNamespace: function () {//override
             var opt=this.getOptions();
@@ -5860,7 +5714,7 @@ module.exports=function () {
         // loadClasses: stub
     };
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /*
 * Tonyu2 の構文解析を行う．
 * TonyuLang.parse(src);
@@ -6193,7 +6047,7 @@ module.exports=function () {
 	return $;
 }();
 
-},{"../runtime/TError":30,"./ExpressionParser2":8,"./Grammar":9,"./IndentBuffer":10,"./parser":21,"./tonyu2_token":23}],21:[function(require,module,exports){
+},{"../runtime/TError":29,"./ExpressionParser2":7,"./Grammar":8,"./IndentBuffer":9,"./parser":20,"./tonyu2_token":22}],20:[function(require,module,exports){
 module.exports=function () {
 	function extend(dst, src) {
 		var i;
@@ -6786,7 +6640,7 @@ module.exports=function () {
 	return $;
 }();
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -9842,7 +9696,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ ])
 });
 ;
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
@@ -10087,7 +9941,7 @@ module.exports=function () {
 	return {parse:parse, extension:"js",reserved:reserved};
 }();
 
-},{"./parser":21}],24:[function(require,module,exports){
+},{"./parser":20}],23:[function(require,module,exports){
 (function (process,global,Buffer){
 // This is kowareta! because r.js does not generate module name:
 //   define("FSLib",[], function () { ...
@@ -13827,7 +13681,7 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
 //})(window);
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"_process":4,"buffer":2}],25:[function(require,module,exports){
+},{"_process":4,"buffer":2}],24:[function(require,module,exports){
 /*global self*/
 // Worker Side
     var idseq=1;
@@ -13899,7 +13753,7 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     }
     module.exports=self.WorkerService;
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function (global){
     const Assertion=function(failMesg) {
         this.failMesg=flatten(failMesg || "Assertion failed: ");
@@ -14095,7 +13949,7 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     module.exports=assert;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],27:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function (global){
 /*global window,self,global*/
 (function (deps, factory) {
@@ -14108,13 +13962,19 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],28:[function(require,module,exports){
-//define(function (require,exports,module) {
+},{}],27:[function(require,module,exports){
+/*define(function (require,exports,module) {
+    const F=require("ProjectFactory");
+    const root=require("root");
+    const SourceFiles=require("SourceFiles");
+    const langMod=require("langMod");
+    */
     const F=require("./ProjectFactory");
     const root=require("../lib/root");
     const SourceFiles=require("../lang/SourceFiles");
     //const A=require("../lib/assert");
     const langMod=require("../lang/langMod");
+
     F.addType("compiled",params=> {
         if (params.namespace && params.url) return urlBased(params);
         if (params.dir) return dirBased(params);
@@ -14159,12 +14019,10 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
             return F.create("compiled",spec);
         }
     });
-//});
+//});/*--end of define--*/
 
-},{"../lang/SourceFiles":14,"../lang/langMod":19,"../lib/root":27,"./ProjectFactory":29}],29:[function(require,module,exports){
+},{"../lang/SourceFiles":13,"../lang/langMod":18,"../lib/root":26,"./ProjectFactory":28}],28:[function(require,module,exports){
 //define(function (require,exports,module) {
-    //const A=require("../lib/assert");
-    //const FS=require("../lib/FS");
     // This factory will be widely used, even BitArrow.
 
 
@@ -14198,30 +14056,6 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
     exports.create=function (type,params) {
         if (!types[type]) throw new Error(`Invalid type ${type}`);
         return types[type](params);
-        /*for (let f of types) {
-            res=f()
-        }
-        const res=new ProjectCore();
-        switch(type){
-            case "IDE":
-            if (!Compiler || !sysMod) fail();
-            const c=new Compiler(params.dir);
-            Object.assign(res,c);
-            Object.assign(res,sysMod);
-            return res;
-            case "run3":
-            break;
-            case "compiled":
-            break;
-            case "run2":
-            case "CPTR":
-            break;
-            case "plugin":
-            break;
-        }
-        function fail() {
-            throw new Error(`Cannot create ${type}`);
-        }*/
     };
     class ProjectCore {
         getPublishedURL(){}//TODO
@@ -14316,9 +14150,9 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
         res.dir=params.dir;
         return res.include(dirBasedMod);
     };
-//});
+//});/*--end of define--*/
 
-},{}],30:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var TError=function (mesg, src, pos) {
 	if (typeof src=="string") {
 		return {
@@ -14378,7 +14212,7 @@ TError.calcRowCol=function (text,pos) {
 };
 module.exports=TError;
 
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 //		function (assert,TT,IT,DU) {
 var assert=require("../lib/assert");
 var root=require("../lib/root");
@@ -14753,7 +14587,7 @@ module.exports=root.Tonyu=function () {
 	return Tonyu;
 }();
 
-},{"../lib/assert":26,"../lib/root":27,"./TonyuThread":32,"./tonyuIterator":33}],32:[function(require,module,exports){
+},{"../lib/assert":25,"../lib/root":26,"./TonyuThread":31,"./tonyuIterator":32}],31:[function(require,module,exports){
 //	var Klass=require("../lib/Klass");
 module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
@@ -15018,7 +14852,7 @@ module.exports=function (Tonyu) {
 	return TonyuThread;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 //define(["Klass"], function (Klass) {
 	//var Klass=require("../lib/Klass");
 	class ArrayValueIterator {
@@ -15105,4 +14939,4 @@ module.exports=function (Tonyu) {
 //	return IT;
 //});
 
-},{}]},{},[6]);
+},{}]},{},[5]);

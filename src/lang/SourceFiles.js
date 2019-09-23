@@ -1,11 +1,13 @@
+//define(function (require,exports,module) {
+/*const root=require("root");*/
 const root=require("../lib/root");
-//const fs=require("fs").promises;
 function timeout(t) {
     return new Promise(s=>setTimeout(s,t));
 }
 let vm;
-if (root.process) {
-    vm=require("vm");
+/*global global*/
+if (global.require) {
+    vm=global.require("vm");
 }
 class SourceFile {
     // var text, sourceMap:S.Sourcemap;
@@ -95,3 +97,4 @@ class SourceFiles {
 
 }
 module.exports=new SourceFiles();
+//});/*--end of define--*/

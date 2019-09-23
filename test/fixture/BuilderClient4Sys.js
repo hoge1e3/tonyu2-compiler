@@ -77,65 +77,17 @@ root.TonyuBuidlerClient=BuilderClient;
 module.exports=BuilderClient;
 
 },{"../lang/SourceFiles":3,"../lib/WorkerServiceB":5,"../lib/root":6}],2:[function(require,module,exports){
+// Add extra libraries for Tonyu System IDE
 const root=require("../lib/root");
 const BuilderClient=require("./BuilderClient");
 const SourceFiles=require("../lang/SourceFiles");
-const F=require("../project/ProjectFactory");
-const CP=require("../project/CompiledProject");
-/*F.addType("compiled",params=>{
-    const res=F.createDirBasedCore({dir:params.dir});
-    res.include(F.langMod);
-    res.loadClasses=async function () {
-        await this.loadDependingClasses();
-        await SourceFiles.add({text:this.getOutputFile().text()}).exec();
-    };
-    return res;
-});
-F.addDependencyResolver((prj, spec)=> {
-    if (spec.dir && prj.resolve) {
-        return F.create("compiled",{dir:prj.resolve(spec.dir)});
-    }
-});*/
-/*global window*/
-window.initCmd=function (shui) {
-    const UI=shui.UI;
-    const sh=shui.sh;
-    let iframe;
-    sh.run=async bootClass=>{
-        const prjDir=sh.cwd;//();//resolve(prjPath);
-        const prj=CP.create({dir:prjDir});
-        const config={
-            worker:{
-                url: "../BuilderWorker.js",
-                ns2depspec: {kernel: {namespace:"kernel",url:"fsui/kernel.js"}}
-            }
-        };
-        F.addDependencyResolver((prj,spec)=>{
-            if (spec.namespace==="kernel") {
-                return CP.create({namespace:"kernel",url:"kernel.js"});
-            }
-        });
-        const builder=new BuilderClient(prj,config);
-        await builder.fullCompile();
-
-        iframe=UI(
-            "iframe",{src:`debug.html?prj=${prjDir.path()}&boot=${bootClass}`,width:400,height:200}
-        );
-        root.onTonyuDebuggerReady=(d=>builder.setDebugger(d));
-        sh.echo(iframe);
-
-        prjDir.watch(async (e,f)=>{
-            console.log(e,f.path());
-            if (f.ext()===".tonyu") {
-                const nsraw=await builder.partialCompile(f);
-
-                const Remotonyu=iframe[0].contentWindow.Tonyu;
-                if (Remotonyu.globals.$restart) Remotonyu.globals.$restart();
-            }
-        });
-        console.log("run DONE");
-    };
-};
+const ProjectFactory=require("../project/ProjectFactory");
+const CompiledProject=require("../project/CompiledProject");
+BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.ProjectFactory=ProjectFactory;
+BuilderClient.CompiledProject=CompiledProject;
+module.exports=CompiledProject;
+root.TonyuBuidlerClient=BuilderClient;
 
 },{"../lang/SourceFiles":3,"../lib/root":6,"../project/CompiledProject":7,"../project/ProjectFactory":8,"./BuilderClient":1}],3:[function(require,module,exports){
 (function (global){

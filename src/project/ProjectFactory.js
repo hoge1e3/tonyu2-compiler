@@ -1,6 +1,4 @@
 //define(function (require,exports,module) {
-    //const A=require("../lib/assert");
-    //const FS=require("../lib/FS");
     // This factory will be widely used, even BitArrow.
 
 
@@ -34,30 +32,6 @@
     exports.create=function (type,params) {
         if (!types[type]) throw new Error(`Invalid type ${type}`);
         return types[type](params);
-        /*for (let f of types) {
-            res=f()
-        }
-        const res=new ProjectCore();
-        switch(type){
-            case "IDE":
-            if (!Compiler || !sysMod) fail();
-            const c=new Compiler(params.dir);
-            Object.assign(res,c);
-            Object.assign(res,sysMod);
-            return res;
-            case "run3":
-            break;
-            case "compiled":
-            break;
-            case "run2":
-            case "CPTR":
-            break;
-            case "plugin":
-            break;
-        }
-        function fail() {
-            throw new Error(`Cannot create ${type}`);
-        }*/
     };
     class ProjectCore {
         getPublishedURL(){}//TODO
@@ -152,4 +126,4 @@
         res.dir=params.dir;
         return res.include(dirBasedMod);
     };
-//});
+//});/*--end of define--*/

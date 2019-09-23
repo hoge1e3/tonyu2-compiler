@@ -1,9 +1,15 @@
-//define(function (require,exports,module) {
+/*define(function (require,exports,module) {
+    const F=require("ProjectFactory");
+    const root=require("root");
+    const SourceFiles=require("SourceFiles");
+    const langMod=require("langMod");
+    */
     const F=require("./ProjectFactory");
     const root=require("../lib/root");
     const SourceFiles=require("../lang/SourceFiles");
     //const A=require("../lib/assert");
     const langMod=require("../lang/langMod");
+
     F.addType("compiled",params=> {
         if (params.namespace && params.url) return urlBased(params);
         if (params.dir) return dirBased(params);
@@ -48,4 +54,4 @@
             return F.create("compiled",spec);
         }
     });
-//});
+//});/*--end of define--*/
