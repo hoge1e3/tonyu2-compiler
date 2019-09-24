@@ -77,7 +77,6 @@ root.TonyuBuidlerClient=BuilderClient;
 module.exports=BuilderClient;
 
 },{"../lang/SourceFiles":2,"../lib/WorkerServiceB":3,"../lib/root":4}],2:[function(require,module,exports){
-(function (global){
 //define(function (require,exports,module) {
 /*const root=require("root");*/
 const root=require("../lib/root");
@@ -86,7 +85,7 @@ function timeout(t) {
 }
 let vm;
 /*global global*/
-if (global.require) {
+if (typeof global!=="undefined" && global.require) {
     vm=global.require("vm");
 }
 class SourceFile {
@@ -179,7 +178,6 @@ class SourceFiles {
 module.exports=new SourceFiles();
 //});/*--end of define--*/
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../lib/root":4}],3:[function(require,module,exports){
 /*global Worker*/
 // Browser Side
@@ -291,7 +289,6 @@ WorkerService.serv("console/log", function (params){
 module.exports=WorkerService;
 
 },{}],4:[function(require,module,exports){
-(function (global){
 /*global window,self,global*/
 (function (deps, factory) {
     module.exports=factory();
@@ -302,5 +299,4 @@ module.exports=WorkerService;
     return (function (){return this;})();
 });
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[1]);

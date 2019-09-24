@@ -3,7 +3,7 @@ var assert=require("../lib/assert");
 var root=require("../lib/root");
 var TonyuThreadF=require("./TonyuThread");
 var IT=require("./tonyuIterator");
-module.exports=root.Tonyu=function () {
+module.exports=function () {
 	// old browser support
 	if (!root.performance) {
 		root.performance = {};
@@ -204,6 +204,7 @@ module.exports=root.Tonyu=function () {
 		//addMeta(fullName, res.meta);
 		nso[shortName]=res;
 		outerRes=res;
+		//console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
 		return chkclass(res,{isShim:false});
 	};
 	klass.isSourceChanged=function (k) {
@@ -366,8 +367,12 @@ module.exports=root.Tonyu=function () {
 			hasKey:hasKey,invokeMethod:invokeMethod, callFunc:callFunc,checkNonNull:checkNonNull,
 			iterator:IT,run:run,checkLoop:checkLoop,resetLoopCheck:resetLoopCheck,//DeferredUtil:DU,
 			VERSION:1560828115159,//EMBED_VERSION
-			A:A};
+			A:A,ID:Math.random()};
 	TT=TonyuThreadF(Tonyu);
+	if (root.Tonyu) {
+		console.error("Tonyu called twice!");
+		throw new Error("Tonyu called twice!");
+	}
 	root.Tonyu=Tonyu;
 	return Tonyu;
 }();

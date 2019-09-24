@@ -1,9 +1,8 @@
 // This is kowareta! because r.js does not generate module name:
 //   define("FSLib",[], function () { ...
-//(function (global) {
-//var useGlobal=(typeof global.define!="function");
-//var define=(useGlobal ? define=function(_,f){f();} : global.define);
-define([],function () {
+(function (d,f) {
+module.exports=f();
+})([],function () {
     var define,requirejs;
 	var R={};
 	var REQJS="REQJS_";
@@ -1202,7 +1201,7 @@ function privatize(o){
     return res;
 }
 function extend(d,s) {
-    for (var i in (s||{})) {d[i]=s[i];} 
+    for (var i in (s||{})) {d[i]=s[i];}
     return d;
 }
 return {
@@ -1424,7 +1423,7 @@ define('Content',["assert","Util","FileSaver"],function (assert,Util,saveAs) {
         } else if (bin && Content.isBuffer(bin.buffer)) {
             // in node.js v8.9.1 ,
             ///  bin is Buffer, bin.buffer is ArrayBuffer
-            //   and bin.buffer is content of different file(memory leak?) 
+            //   and bin.buffer is content of different file(memory leak?)
             b.bufType="array1";
             b.arrayBuffer=bin.buffer;
         } else {

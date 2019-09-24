@@ -6,7 +6,7 @@ function timeout(t) {
 }
 let vm;
 /*global global*/
-if (global.require) {
+if (typeof global!=="undefined" && global.require) {
     vm=global.require("vm");
 }
 class SourceFile {

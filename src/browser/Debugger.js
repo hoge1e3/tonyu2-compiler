@@ -1,4 +1,5 @@
-const Tonyu=require("../runtime/TonyuRuntime");
+// Tonyu conflicts with TonyuRuntime(loaded by sys-related libs) in debug.html
+//const Tonyu=require("../runtime/TonyuRuntime");
 const SourceFiles=require("../lang/SourceFiles");
 const StackDecoder=require("../lang/StackDecoder");
 const root=require("../lib/root");
@@ -21,6 +22,7 @@ F.addDependencyResolver((prj, spec)=> {
     }
 });*/
 //const prj=F.createDirBasedCore
+let Tonyu;
 const Events={
     handlers:{},
     getHandler(t) {
@@ -31,7 +33,7 @@ const Events={
         try {
             this.getHandler(type).forEach(f=>f(evt));
         } catch(e) {
-            Tonyu.onRuntimeError(e);
+            if (!evt.noCatch) Tonyu.onRuntimeError(e);
         }
     },
     on(type,...args) {
@@ -39,14 +41,8 @@ const Events={
         this.getHandler(type).push(f);
     }
 };
-Tonyu.onRuntimeError=async e=>{
-    console.error(e);
-    const stack=await StackDecoder.decode(e);
-    const evt={error:e, message:e.message,stack};
-    Events.fire("runtimeError",evt);
-};
 root.Debugger={
-    ProjectFactory:F, FS, Tonyu,
+    ProjectFactory:F, FS,
     /*execFile: async function (outJS) {
         const map=outJS.sibling(outJS.name()+".map");
         const sf=SourceFiles.add({
@@ -55,11 +51,22 @@ root.Debugger={
         });
         await sf.exec();
     },*/
-    init: async function (prj) {
+    setErrorHandler: function () {
+        Tonyu.onRuntimeError=async e=>{
+            console.error(e);
+            const stack=await StackDecoder.decode(e);
+            const evt={error:e, message:e.message,stack,noCatch:true};
+            Events.fire("runtimeError",evt);
+        };
+    },
+    init: async function (prj,_Tonyu) {
+        Tonyu=Tonyu||_Tonyu;
+        this.setErrorHandler();
         Tonyu.globals.$currentProject=prj;
         Tonyu.currentProject=prj;
         Tonyu.globals.$debugger=root.Debugger;
         await prj.loadClasses();
+        console.log("Loading classes COMPLETE",Tonyu.ID,Tonyu.classes);
     },
     exec: async function (srcraw) {
         await SourceFiles.add(srcraw).exec();
