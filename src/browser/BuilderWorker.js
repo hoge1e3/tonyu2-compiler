@@ -27,6 +27,7 @@ WS.serv("compiler/init", params=>{
     //console.log(ram.rel("options.json").text());
     prj=CompiledProject.create({dir:prjDir});
     builder=new Builder(prj);
+    return {prjDir:prjDir.path()};
 });
 WS.serv("compiler/addDependingProject", params=>{
     // params: namespace, files
@@ -37,17 +38,32 @@ WS.serv("compiler/addDependingProject", params=>{
     ns2depspec[params.namespace]={
         dir: prjDir.path()
     };
+    return {prjDir:prjDir.path()};
 });
 WS.serv("compiler/fullCompile", async params=>{
-    const res=await builder.fullCompile({destinations:{memory:1}});
-    return res.export();
+    try {
+        const res=await builder.fullCompile({destinations:{memory:1}});
+        return res.export();
+    } catch(e) {
+        throw convertTError(e);
+    }
 });
 WS.serv("compiler/postChange", async params=>{
-    const fs=params.files;// "relpath"=>"content"
-    let relPath;for(let n in fs) {relPath=n;break;}
-    const f=prj.getDir().rel(relPath);
-    f.text(fs[relPath]);
-    const ns=await builder.postChange(f);
-    return ns.export();
+    try {
+        const fs=params.files;// "relpath"=>"content"
+        let relPath;for(let n in fs) {relPath=n;break;}
+        const f=prj.getDir().rel(relPath);
+        f.text(fs[relPath]);
+        const ns=await builder.postChange(f);
+        return ns.export();
+    } catch(e) {
+        throw convertTError(e);
+    }
 });
+function convertTError(e) {
+    if (e.isTError) {
+        e.src=e.src.path();
+    }
+    return e;
+}
 WS.ready();

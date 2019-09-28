@@ -2,13 +2,16 @@ const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
 const SourceFiles=require("../lang/SourceFiles");
+const FileMap=require("../lib/FileMap");
 //const FS=(root.parent && root.parent.FS) || root.FS;
+const FS=root.FS;// TODO
 
 class BuilderClient {
     constructor(prj,config) {// dirBased
         this.prj=prj;
         this.w=new WS.Wrapper(new Worker(config.worker.url+"?"+Math.random()));
         this.config=config;
+        this.fileMap=new FileMap();
     }
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}
     getDir(){return this.prj.getDir();}
@@ -16,46 +19,68 @@ class BuilderClient {
     exec(srcraw) {
         if (this.debugger) return this.debugger.exec(srcraw);
     }
+    convertFromWorkerPath(path) {
+        return this.fileMap.convert(path,"remote","local");
+    }
     async init() {
         if (this.inited) return;
-        const files=this.getDir().exportAsObject({
+        const fileMap=this.fileMap;
+        const localPrjDir=this.getDir();
+        const files=localPrjDir.exportAsObject({
             excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
         });
         const ns2depspec=this.config.worker.ns2depspec;
-        await this.w.run("compiler/init",{
+        const {prjDir:remotePrjDir}=await this.w.run("compiler/init",{
             namespace:this.prj.getNamespace(),
             files, ns2depspec
         });
+        fileMap.add({local:localPrjDir, remote: remotePrjDir});
         const deps=this.prj.getDependingProjects();//TODO recursive
         for (let dep of deps) {
             const ns=dep.getNamespace();
             if (!ns2depspec[ns]) {
-                const files=dep.getDir().exportAsObject({
+                const localPrjDir=dep.getDir();
+                const files=localPrjDir.exportAsObject({
                     excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
                 });
-                await this.w.run("compiler/addDependingProject",{
+                const {prjDir:remotePrjDir}=await this.w.run("compiler/addDependingProject",{
                     namespace:ns, files
                 });
+                fileMap.add({local:localPrjDir, remote: remotePrjDir});
             }
         }
         this.inited=true;
     }
     async fullCompile() {
-        await this.init();
-        const compres=await this.w.run("compiler/fullCompile");
-        console.log(compres);
-        const sf=SourceFiles.add(compres);
-        await sf.saveAs(this.getOutputFile());
-        await this.exec(compres);
-        return compres;
+        try {
+            await this.init();
+            const compres=await this.w.run("compiler/fullCompile");
+            console.log(compres);
+            const sf=SourceFiles.add(compres);
+            await sf.saveAs(this.getOutputFile());
+            await this.exec(compres);
+            return compres;
+        } catch(e) {
+            throw this.convertError(e);
+        }
     }
     async partialCompile(f) {
-        const files={};files[f.relPath(this.getDir())]=f.text();
-        await this.init();
-        const compres=await this.w.run("compiler/postChange",{files});
-        console.log(compres);
-        await this.exec(compres);
-        return compres;
+        try {
+            const files={};files[f.relPath(this.getDir())]=f.text();
+            await this.init();
+            const compres=await this.w.run("compiler/postChange",{files});
+            console.log(compres);
+            await this.exec(compres);
+            return compres;
+        } catch(e) {
+            throw this.convertError(e);
+        }
+    }
+    convertError(e) {
+        if (e.isTError) {
+            e.src=FS.get(this.convertFromWorkerPath(e.src));
+        }
+        return e;
     }
     async run() {
         await this.init();

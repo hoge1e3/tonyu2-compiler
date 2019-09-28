@@ -52,8 +52,16 @@
             sendError(ex);
         }
         function sendError(e) {
+            e=Object.assign({name:e.name, message:e.message, stack:e.stack},e||{});
+            try {
+                const j=JSON.stringify(e);
+                e=JSON.parse(j);
+            } catch(je) {
+                e=e ? e.message || e+"" : "unknown";
+                console.log("WorkerServiceW", je, e);
+            }
             self.postMessage({
-                id:id, error:e?(e.stack||e+""):"unknown", status:"error"
+                id:id, error:e, status:"error"
             });
         }
     });
