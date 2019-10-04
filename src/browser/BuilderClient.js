@@ -76,6 +76,18 @@ class BuilderClient {
             throw this.convertError(e);
         }
     }
+    async renameClassName(from,to) {
+        try {
+            const changed=await this.w.run("compiler/renameClassName",{from,to}).
+                map(this.convertFromWorkerPath.bind(this));
+            for (let n in changed) {
+                FS.get(n).text(changed[n]);
+            }
+            return changed;
+        } catch(e) {
+            throw this.convertError(e);
+        }
+    }
     convertError(e) {
         if (e.isTError) {
             e.src=FS.get(this.convertFromWorkerPath(e.src));

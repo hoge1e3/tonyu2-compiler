@@ -2,8 +2,9 @@ const S=require("./source-map");
 const StackTrace=require("./stacktrace");
 const SourceFiles=require("./SourceFiles");
 module.exports={
-    decode(e) {
-        return StackTrace.fromError(e,{offline:true}).then(tr=>{
+    async decode(e) {
+        try{
+            const tr=await StackTrace.fromError(e,{offline:true});
             tr.forEach(t=>{
                 const sf=SourceFiles.url2SourceFile[t.fileName];
                 //console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
@@ -21,7 +22,13 @@ module.exports={
             });
             //console.log("Converted: ",tr);
             return tr;
-        });
+        } catch(ex) {
+            if (!e || !e.stack) {
+                console.log("HennaError",e);
+                return [];
+            }
+            return e.stack.split("\n");
+        }
     },
     originalPositionFor(sf,opt) {
         const s=this.getSourceMapConsumer(sf);

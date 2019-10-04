@@ -323,6 +323,7 @@ module.exports=class {
     renameClassName (o,n) {// o: key of aliases
         return this.fullCompile().then(()=>{
             const env=this.getEnv();
+            const changed=[];
             var cls=env.classes;/*ENVC*/
             for (var cln in cls) {/*ENVC*/
                 var klass=cls[cln];/*ENVC*/
@@ -368,11 +369,14 @@ module.exports=class {
                     if (ssrc!=src && !f.isReadOnly()) {
                         console.log("Refact:",f.path(),src);
                         f.text(src);
+                        changed.push(f);
                     }
                 } else {
                     console.log("No Check", cln);
                 }
+
             }
+            return changed;
         });
     }
 

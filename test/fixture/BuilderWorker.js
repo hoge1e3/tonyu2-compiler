@@ -63,6 +63,18 @@ WS.serv("compiler/postChange", async params=>{
         throw convertTError(e);
     }
 });
+WS.serv("compiler/renameClassName", async params=>{
+    try {
+        const ns=await builder.renameClassName(params.from, params.to);
+        const res={};
+        for (let n of ns) {
+            res[ns.path()]=ns.text();
+        }
+        return ns;
+    } catch(e) {
+        throw convertTError(e);
+    }
+});
 function convertTError(e) {
     if (e.isTError) {
         e.src=e.src.path();
@@ -397,6 +409,7 @@ module.exports=class {
     renameClassName (o,n) {// o: key of aliases
         return this.fullCompile().then(()=>{
             const env=this.getEnv();
+            const changed=[];
             var cls=env.classes;/*ENVC*/
             for (var cln in cls) {/*ENVC*/
                 var klass=cls[cln];/*ENVC*/
@@ -442,11 +455,14 @@ module.exports=class {
                     if (ssrc!=src && !f.isReadOnly()) {
                         console.log("Refact:",f.path(),src);
                         f.text(src);
+                        changed.push(f);
                     }
                 } else {
                     console.log("No Check", cln);
                 }
+
             }
+            return changed;
         });
     }
 
@@ -8957,7 +8973,7 @@ function privatize(o){
     return res;
 }
 function extend(d,s) {
-    for (var i in (s||{})) {d[i]=s[i];} 
+    for (var i in (s||{})) {d[i]=s[i];}
     return d;
 }
 return {
@@ -9179,7 +9195,7 @@ define('Content',["assert","Util","FileSaver"],function (assert,Util,saveAs) {
         } else if (bin && Content.isBuffer(bin.buffer)) {
             // in node.js v8.9.1 ,
             ///  bin is Buffer, bin.buffer is ArrayBuffer
-            //   and bin.buffer is content of different file(memory leak?) 
+            //   and bin.buffer is content of different file(memory leak?)
             b.bufType="array1";
             b.arrayBuffer=bin.buffer;
         } else {
@@ -9485,8 +9501,9 @@ define('NativeFS',["FSClass","assert","PathUtil","extend","Content"],
         try {
             fs=fsf();
             fs.existsSync('test.txt');
+            process.cwd();
             break;
-        } catch(e){}
+        } catch(e){fs=null;}
     }
     if (!fs) {
         return function () {

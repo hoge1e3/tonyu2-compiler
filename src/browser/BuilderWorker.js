@@ -60,6 +60,18 @@ WS.serv("compiler/postChange", async params=>{
         throw convertTError(e);
     }
 });
+WS.serv("compiler/renameClassName", async params=>{
+    try {
+        const ns=await builder.renameClassName(params.from, params.to);
+        const res={};
+        for (let n of ns) {
+            res[ns.path()]=ns.text();
+        }
+        return ns;
+    } catch(e) {
+        throw convertTError(e);
+    }
+});
 function convertTError(e) {
     if (e.isTError) {
         e.src=e.src.path();
