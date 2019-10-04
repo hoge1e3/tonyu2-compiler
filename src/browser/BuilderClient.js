@@ -78,8 +78,9 @@ class BuilderClient {
     }
     async renameClassName(from,to) {
         try {
-            const changed=await this.w.run("compiler/renameClassName",{from,to}).
-                map(this.convertFromWorkerPath.bind(this));
+            await this.init();
+            let changed=await this.w.run("compiler/renameClassName",{from,to});
+            changed=changed.map(this.convertFromWorkerPath.bind(this));
             for (let n in changed) {
                 FS.get(n).text(changed[n]);
             }

@@ -4,10 +4,6 @@
             if (opt.compiler && opt.compiler.namespace) return opt.compiler.namespace;
             throw new Error("Namespace is not set");
         },
-        //TODO
-        renameClassName: function (o,n) {// o: key of aliases
-            throw new Error("Rename todo");
-        },
         async loadDependingClasses() {
             const myNsp=this.getNamespace();
             for (let p of this.getDependingProjects()) {

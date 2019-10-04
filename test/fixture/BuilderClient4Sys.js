@@ -79,8 +79,9 @@ class BuilderClient {
     }
     async renameClassName(from,to) {
         try {
-            const changed=await this.w.run("compiler/renameClassName",{from,to}).
-                map(this.convertFromWorkerPath.bind(this));
+            await this.init();
+            let changed=await this.w.run("compiler/renameClassName",{from,to});
+            changed=changed.map(this.convertFromWorkerPath.bind(this));
             for (let n in changed) {
                 FS.get(n).text(changed[n]);
             }
@@ -120,13 +121,15 @@ const BuilderClient=require("./BuilderClient");
 const SourceFiles=require("../lang/SourceFiles");
 const ProjectFactory=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
+const langMod=require("../lang/langMod");
 BuilderClient.SourceFiles=SourceFiles;
 BuilderClient.ProjectFactory=ProjectFactory;
 BuilderClient.CompiledProject=CompiledProject;
+BuilderClient.langMod=langMod;
 module.exports=CompiledProject;
 root.TonyuBuidlerClient=BuilderClient;
 
-},{"../lang/SourceFiles":3,"../lib/root":7,"../project/CompiledProject":8,"../project/ProjectFactory":9,"./BuilderClient":1}],3:[function(require,module,exports){
+},{"../lang/SourceFiles":3,"../lang/langMod":4,"../lib/root":7,"../project/CompiledProject":8,"../project/ProjectFactory":9,"./BuilderClient":1}],3:[function(require,module,exports){
 //define(function (require,exports,module) {
 /*const root=require("root");*/
 const root=require("../lib/root");
@@ -234,10 +237,6 @@ module.exports=new SourceFiles();
             var opt=this.getOptions();
             if (opt.compiler && opt.compiler.namespace) return opt.compiler.namespace;
             throw new Error("Namespace is not set");
-        },
-        //TODO
-        renameClassName: function (o,n) {// o: key of aliases
-            throw new Error("Rename todo");
         },
         async loadDependingClasses() {
             const myNsp=this.getNamespace();

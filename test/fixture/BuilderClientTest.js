@@ -79,8 +79,9 @@ class BuilderClient {
     }
     async renameClassName(from,to) {
         try {
-            const changed=await this.w.run("compiler/renameClassName",{from,to}).
-                map(this.convertFromWorkerPath.bind(this));
+            await this.init();
+            let changed=await this.w.run("compiler/renameClassName",{from,to});
+            changed=changed.map(this.convertFromWorkerPath.bind(this));
             for (let n in changed) {
                 FS.get(n).text(changed[n]);
             }
@@ -282,10 +283,6 @@ module.exports=new SourceFiles();
             var opt=this.getOptions();
             if (opt.compiler && opt.compiler.namespace) return opt.compiler.namespace;
             throw new Error("Namespace is not set");
-        },
-        //TODO
-        renameClassName: function (o,n) {// o: key of aliases
-            throw new Error("Rename todo");
         },
         async loadDependingClasses() {
             const myNsp=this.getNamespace();
