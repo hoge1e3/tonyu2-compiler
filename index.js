@@ -26,7 +26,10 @@ const builder=new Builder(prj);
 if (rename.do) {
     console.log(rename);
     builder.renameClassName(rename.from, rename.to).then(
-        ()=>process.exit(),
+        r=>{
+            console.log("Renamed", r.map(e=>e.path()));
+            process.exit();
+        },
         e=>{console.error(e);process.exit();},
     );
 }

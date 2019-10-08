@@ -1,6 +1,6 @@
 extends Chara;
-includes Mod;
+includes Mode;
 
-if (x is Kyara) {
+if (x is Chara) {
     //console.log("x is Chara");
 }

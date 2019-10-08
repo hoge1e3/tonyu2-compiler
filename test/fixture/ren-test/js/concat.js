@@ -1,16 +1,16 @@
 Tonyu.klass.define({
-  fullName: 'user.Mod',
-  shortName: 'Mod',
+  fullName: 'user.Mode',
+  shortName: 'Mode',
   namespace: 'user',
   includes: [],
   methods: function (__superClass) {
     return {
-      main :function _trc_Mod_main() {
+      main :function _trc_Mode_main() {
         "use strict";
         var _this=this;
         
       },
-      fiber$main :function _trc_Mod_f_main(_thread) {
+      fiber$main :function _trc_Mode_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
@@ -141,14 +141,14 @@ Tonyu.klass.define({
   },
   decls: {"methods":{"main":{"nowait":false},"waitFor":{"nowait":false},"update":{"nowait":false},"appear":{"nowait":false}},"fields":{}}
 });Tonyu.klass.define({
-  fullName: 'user.Chara',
-  shortName: 'Chara',
+  fullName: 'user.Chara2',
+  shortName: 'Chara2',
   namespace: 'user',
   superclass: Tonyu.classes.user.Updatable,
   includes: [],
   methods: function (__superClass) {
     return {
-      main :function _trc_Chara_main() {
+      main :function _trc_Chara2_main() {
         "use strict";
         var _this=this;
         
@@ -164,7 +164,7 @@ Tonyu.klass.define({
           
         }
       },
-      fiber$main :function _trc_Chara_f_main(_thread) {
+      fiber$main :function _trc_Chara2_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
@@ -175,7 +175,7 @@ Tonyu.klass.define({
         _this.fillStyle="yellow";
         _this.radius=16;
         
-        _thread.enter(function _trc_Chara_ent_main(_thread) {
+        _thread.enter(function _trc_Chara2_ent_main(_thread) {
           if (_thread.lastEx) __pc=_thread.catchPC;
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
@@ -204,15 +204,15 @@ Tonyu.klass.define({
   fullName: 'user.Child',
   shortName: 'Child',
   namespace: 'user',
-  superclass: Tonyu.classes.user.Chara,
-  includes: [Tonyu.classes.user.Mod],
+  superclass: Tonyu.classes.user.Chara2,
+  includes: [Tonyu.classes.user.Mode],
   methods: function (__superClass) {
     return {
       main :function _trc_Child_main() {
         "use strict";
         var _this=this;
         
-        if (Tonyu.is(_this.x,_this.Kyara)) {
+        if (Tonyu.is(_this.x,Tonyu.classes.user.Chara2)) {
           
           
         }
@@ -223,7 +223,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        if (Tonyu.is(_this.x,_this.Kyara)) {
+        if (Tonyu.is(_this.x,Tonyu.classes.user.Chara2)) {
           
           
         }
@@ -233,7 +233,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"Kyara":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
 });Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
@@ -246,9 +246,9 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$restart=(function anonymous_45() {
+        Tonyu.globals.$restart=(function anonymous_48() {
           
-          _this.appear(new _this.Kyara);
+          _this.appear(new Tonyu.classes.user.Chara2);
         });
         Tonyu.globals.$restart();
       },
@@ -264,9 +264,9 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              Tonyu.globals.$restart=(function anonymous_45() {
+              Tonyu.globals.$restart=(function anonymous_48() {
                 
-                _this.appear(new _this.Kyara);
+                _this.appear(new Tonyu.classes.user.Chara2);
               });
               Tonyu.globals.$restart();
               _thread.exit(_this);return;
@@ -277,6 +277,6 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"Kyara":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
 });
 //# sourceMappingURL=concat.js.map
