@@ -33,7 +33,7 @@ const Events={
         try {
             this.getHandler(type).forEach(f=>f(evt));
         } catch(e) {
-            if (!evt.noCatch) Tonyu.onRuntimeError(e);
+            if (!evt || !evt.noCatch) Tonyu.onRuntimeError(e);
         }
     },
     on(type,...args) {

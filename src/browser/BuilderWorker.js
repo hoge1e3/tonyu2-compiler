@@ -65,9 +65,13 @@ WS.serv("compiler/renameClassName", async params=>{
         const ns=await builder.renameClassName(params.from, params.to);
         const res={};
         for (let n of ns) {
-            res[ns.path()]=ns.text();
+            if (n.exists()) {
+                res[n.path()]=n.text();
+            } else {
+                res[n.path()]=null;
+            }
         }
-        return ns;
+        return res;
     } catch(e) {
         throw convertTError(e);
     }

@@ -6,23 +6,28 @@ module.exports={
         try{
             const tr=await StackTrace.fromError(e,{offline:true});
             tr.forEach(t=>{
-                const sf=SourceFiles.url2SourceFile[t.fileName];
-                //console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
-                if (sf) {
-                    const opt={
-                        line: t.lineNumber, column:t.columnNumber,
-                        bias:S.SourceMapConsumer.GREATEST_LOWER_BOUND
-                    };
-                    const pos=this.originalPositionFor(sf,opt);
-                    //console.log("pos",opt,pos);
-                    if (pos.source) t.fileName=pos.source;
-                    if (pos.line) t.lineNumber=pos.line;
-                    if (pos.column) t.columnNumber=pos.column;
+                try {
+                    const sf=SourceFiles.url2SourceFile[t.fileName];
+                    console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
+                    if (sf) {
+                        const opt={
+                            line: t.lineNumber, column:t.columnNumber,
+                            bias:S.SourceMapConsumer.GREATEST_LOWER_BOUND
+                        };
+                        const pos=this.originalPositionFor(sf,opt);
+                        console.log("pos",opt,pos);
+                        if (pos.source) t.fileName=pos.source;
+                        if (pos.line) t.lineNumber=pos.line;
+                        if (pos.column) t.columnNumber=pos.column;
+                    }
+                }catch(ex) {
+                    console.log("Sourcemap error",ex);
                 }
             });
-            //console.log("Converted: ",tr);
+            console.log("Converted: ",tr);
             return tr;
         } catch(ex) {
+            console.log("StackTrace error",ex);
             if (!e || !e.stack) {
                 console.log("HennaError",e);
                 return [];

@@ -81,9 +81,14 @@ class BuilderClient {
         try {
             await this.init();
             let changed=await this.w.run("compiler/renameClassName",{from,to});
-            changed=changed.map(this.convertFromWorkerPath.bind(this));
             for (let n in changed) {
-                FS.get(n).text(changed[n]);
+                let val=changed[n];
+                n=this.convertFromWorkerPath(n);
+                if (val==null) {
+                    FS.get(n).rm();
+                } else {
+                    FS.get(n).text(val);
+                }
             }
             return changed;
         } catch(e) {
