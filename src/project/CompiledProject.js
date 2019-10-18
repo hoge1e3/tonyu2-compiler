@@ -23,10 +23,11 @@
         return res.include(langMod).include({
             getNamespace:function () {return ns;},
             loadClasses: async function (ctx) {
-                await this.loadDependingClasses();
                 console.log("Loading compiled classes ns=",ns,"url=",url);
+                await this.loadDependingClasses();
                 const s=SourceFiles.add({url});
                 await s.exec();
+                console.log("Loaded compiled classes ns=",ns,"url=",url);
             },
         });
     }
@@ -34,6 +35,7 @@
         const res=F.createDirBasedCore(params);
         return res.include(langMod).include({
             loadClasses: async function (ctx) {
+                console.log("Loading compiled classes params=",params);
                 await this.loadDependingClasses();
                 const outJS=this.getOutputFile();
                 const map=outJS.sibling(outJS.name()+".map");
@@ -42,6 +44,7 @@
                     sourceMap:map.exists() && map.text(),
                 });
                 await sf.exec();
+                console.log("Loaded compiled classes params=",params);
             }
         });
     }

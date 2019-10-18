@@ -1,0 +1,19 @@
+<body></body>
+<!--script src="../require.js"></script-->
+<script>
+/*
+requirejs.config({
+   shim: {
+      "../BuilderClient4Sys":{exports: "TonyuBuidlerClient"}
+   }
+});
+requirejs(["../BuilderClient4Sys"], r=>console.log(r,window.TonyuBuidlerClient));
+*/
+
+var s=document.createElement("script");
+s.setAttribute("src","BC4.js");
+//s.setAttribute("src","../BuilderClient4Sys.js");
+//s.setAttribute("src","concat.js");
+s.addEventListener("load",r=>console.log(TonyuBuilderClient));
+document.body.appendChild(s);
+</script>

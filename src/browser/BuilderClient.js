@@ -9,7 +9,9 @@ const FS=root.FS;// TODO
 class BuilderClient {
     constructor(prj,config) {// dirBased
         this.prj=prj;
-        this.w=new WS.Wrapper(new Worker(config.worker.url+"?"+Math.random()));
+        let url=config.worker.url;
+        if (!url.match(/^blob/)) url+="?"+Math.random();
+        this.w=new WS.Wrapper(new Worker(url));
         this.config=config;
         this.fileMap=new FileMap();
     }
@@ -115,5 +117,5 @@ class BuilderClient {
     }
 }
 BuilderClient.SourceFiles=SourceFiles;
-root.TonyuBuidlerClient=BuilderClient;
+//root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;

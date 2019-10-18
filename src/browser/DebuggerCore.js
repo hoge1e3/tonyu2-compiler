@@ -1,28 +1,16 @@
-// Tonyu conflicts with TonyuRuntime(loaded by sys-related libs) in debug.html
-//const Tonyu=require("../runtime/TonyuRuntime");
-const SourceFiles=require("../lang/SourceFiles");
-const StackDecoder=require("../lang/StackDecoder");
-const root=require("../lib/root");
-const FS=require("../lib/FS");
-const F=require("../project/ProjectFactory");
-F.langMod=require("../lang/langMod");
-const CP=require("../project/CompiledProject");
-/*F.addType("debugger",params=>{
-    const res=F.createDirBasedCore({dir:params.dir});
-    res.include(F.langMod);
-    res.loadClasses=async function () {
-        await this.loadDependingClasses();
-        await root.Debugger.execFile(this.getOutputFile());
-    };
-    return res;
-});
-F.addDependencyResolver((prj, spec)=> {
-    if (spec.dir && prj.resolve) {
-        return F.create("debugger",{dir:prj.resolve(spec.dir)});
-    }
-});*/
-//const prj=F.createDirBasedCore
-let Tonyu;
+//define(function (require,exports,module) {
+// module.exports:: DI_container -> Debugger
+module.exports=function ({
+    //-- Bundled in BuilderClient4Sys
+    SourceFiles,
+    ProjectFactory:F,
+    CompiledProject:CP,
+    langMod,
+    StackDecoder,
+    //--
+    Tonyu,   root, FS,
+}) {//------
+if (root.Debugger) return root.Debugger;
 const Events={
     handlers:{},
     getHandler(t) {
@@ -43,14 +31,6 @@ const Events={
 };
 root.Debugger={
     ProjectFactory:F, FS,
-    /*execFile: async function (outJS) {
-        const map=outJS.sibling(outJS.name()+".map");
-        const sf=SourceFiles.add({
-            text:outJS.text(),
-            sourceMap:map.exists() && map.text(),
-        });
-        await sf.exec();
-    },*/
     setErrorHandler: function () {
         Tonyu.onRuntimeError=async e=>{
             console.error(e);
@@ -87,3 +67,6 @@ root.Debugger={
 if (root.parent && root.parent.onTonyuDebuggerReady) {
     root.parent.onTonyuDebuggerReady(root.Debugger);
 }
+return root.Debugger;
+};//--------
+//});//--- end of define
