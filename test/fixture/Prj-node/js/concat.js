@@ -116,66 +116,6 @@ Tonyu.klass.define({
   },
   decls: {"methods":{"main":{"nowait":false},"waitFor":{"nowait":false},"update":{"nowait":false},"appear":{"nowait":false}},"fields":{}}
 });Tonyu.klass.define({
-  fullName: 'user.Chara',
-  shortName: 'Chara',
-  namespace: 'user',
-  superclass: Tonyu.classes.user.Updatable,
-  includes: [],
-  methods: function (__superClass) {
-    return {
-      main :function _trc_Chara_main() {
-        "use strict";
-        var _this=this;
-        
-        _this.x=100;
-        _this.y=200;
-        _this.fillStyle="yellow";
-        _this.radius=16;
-        while (_this.x<120) {
-          Tonyu.checkLoop();
-          _this.x+=1;
-          console.log(_this.x,_this.y);
-          _this.update();
-          
-        }
-      },
-      fiber$main :function _trc_Chara_f_main(_thread) {
-        "use strict";
-        var _this=this;
-        //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
-        
-        _this.x=100;
-        _this.y=200;
-        _this.fillStyle="yellow";
-        _this.radius=16;
-        
-        _thread.enter(function _trc_Chara_ent_main(_thread) {
-          if (_thread.lastEx) __pc=_thread.catchPC;
-          for(var __cnt=100 ; __cnt--;) {
-            switch (__pc) {
-            case 0:
-            case 1:
-              if (!(_this.x<120)) { __pc=3     ; break; }
-              _this.x+=1;
-              console.log(_this.x,_this.y);
-              _this.fiber$update(_thread);
-              __pc=2;return;
-            case 2:
-              
-              __pc=1;break;
-            case 3     :
-              
-              _thread.exit(_this);return;
-            }
-          }
-        });
-      },
-      __dummy: false
-    };
-  },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
-});Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
   namespace: 'user',
@@ -219,5 +159,65 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+});Tonyu.klass.define({
+  fullName: 'user.Chara',
+  shortName: 'Chara',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.Updatable,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Chara_main() {
+        "use strict";
+        var _this=this;
+        
+        _this.x=100;
+        _this.y=200;
+        _this.fillStyle="yellow";
+        _this.radius=16;
+        while (_this.x<120) {
+          Tonyu.checkLoop();
+          _this.x+=5;
+          console.log(_this.x,_this.y);
+          _this.update();
+          
+        }
+      },
+      fiber$main :function _trc_Chara_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        _this.x=100;
+        _this.y=200;
+        _this.fillStyle="yellow";
+        _this.radius=16;
+        
+        _thread.enter(function _trc_Chara_ent_main(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+            case 1:
+              if (!(_this.x<120)) { __pc=3     ; break; }
+              _this.x+=5;
+              console.log(_this.x,_this.y);
+              _this.fiber$update(_thread);
+              __pc=2;return;
+            case 2:
+              
+              __pc=1;break;
+            case 3     :
+              
+              _thread.exit(_this);return;
+            }
+          }
+        });
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
 });
 //# sourceMappingURL=concat.js.map
