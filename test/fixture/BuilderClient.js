@@ -37,9 +37,6 @@ class BuilderClient {
         }
         const opt=this.prj.getOptionsFile();
         exported.data[opt.relPath(localPrjDir)]=opt.text();
-        /*const files=localPrjDir.exportAsObject({
-            excludes: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
-        });*/
         console.log("exported",exported);
         const ns2depspec=this.config.worker.ns2depspec;
         const {prjDir:remotePrjDir}=await this.w.run("compiler/init",{

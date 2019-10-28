@@ -1,14 +1,20 @@
 //define(function (require,exports,module) {
 // module.exports:: DI_container -> Debugger
+const SourceFiles=require("../lang/SourceFiles");
+//const ProjectFactory=require("../project/ProjectFactory");
+const CompiledProject=require("../project/CompiledProject");
+const langMod=require("../lang/langMod");
+const StackDecoder=require("../lang/StackDecoder");
+const root=require("../lib/root");
 module.exports=function ({
     //-- Bundled in BuilderClient4Sys
-    SourceFiles,
+    /*SourceFiles,
     ProjectFactory:F,
     CompiledProject:CP,
     langMod,
-    StackDecoder,
+    StackDecoder,*/
     //--
-    Tonyu,   root, FS,
+    Tonyu,
 }) {//------
 if (root.Debugger) return root.Debugger;
 const Events={
@@ -30,7 +36,6 @@ const Events={
     }
 };
 root.Debugger={
-    ProjectFactory:F, FS,
     setErrorHandler: function () {
         Tonyu.onRuntimeError=async e=>{
             console.error(e);
@@ -39,8 +44,8 @@ root.Debugger={
             Events.fire("runtimeError",evt);
         };
     },
-    init: async function (prj,_Tonyu) {
-        Tonyu=Tonyu||_Tonyu;
+    init: async function (prj) {
+        //Tonyu=Tonyu||_Tonyu;
         this.setErrorHandler();
         Tonyu.globals.$currentProject=prj;
         Tonyu.currentProject=prj;
