@@ -127,7 +127,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$restart=(function anonymous_45() {
+        Tonyu.globals.$restart=(function anonymous_55() {
           
           _this.appear(new Tonyu.classes.user.Chara);
         });
@@ -145,7 +145,7 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              Tonyu.globals.$restart=(function anonymous_45() {
+              Tonyu.globals.$restart=(function anonymous_55() {
                 
                 _this.appear(new Tonyu.classes.user.Chara);
               });

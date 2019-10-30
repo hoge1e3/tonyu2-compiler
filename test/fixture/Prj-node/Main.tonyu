@@ -1,6 +1,7 @@
 extends Updatable;
 native console;
 
+//a=50a0;
 $restart=\{
     appear(new Chara);
 };

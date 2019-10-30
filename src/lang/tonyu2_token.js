@@ -120,8 +120,8 @@ module.exports=function () {
 			"extends":true,
 			"includes":true
 	};
-
-	var num=tk(/^[0-9][xb]?[0-9a-f\.]*/i).ret(function (n) {
+	// Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
+	var num=tk(/^(?:0x[0-9a-f]+|0b[01]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e-?[0-9]+)?)/i).ret(function (n) {
 		n.type="number";
 		n.value=n.text-0;//parseInt(n.text);
 		return n;
