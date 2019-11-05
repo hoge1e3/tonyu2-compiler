@@ -22,12 +22,20 @@ F.addDependencyResolver(function (prj, spec) {
 WS.serv("compiler/init", params=>{
     Object.assign(ns2depspec,params.ns2depspec||{});
     const files=params.files;
-    const prjDir=ram.rel((params.namespace||"user")+"/");
+    const namespace=params.namespace||"user";
+    const prjDir=ram.rel(namespace+"/");
     prjDir.importFromObject(files);
     //console.log(ram.rel("options.json").text());
     prj=CompiledProject.create({dir:prjDir});
     builder=new Builder(prj);
     return {prjDir:prjDir.path()};
+});
+WS.serv("compiler/resetFiles", params=>{
+    const files=params.files;
+    const namespace=params.namespace||"user";
+    const prjDir=ram.rel(namespace+"/");
+    prjDir.recursive(f=>console.log("RM",f.path(),!f.isDir() && f.rm()));
+    prjDir.importFromObject(files);    
 });
 WS.serv("compiler/addDependingProject", params=>{
     // params: namespace, files

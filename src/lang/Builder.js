@@ -219,11 +219,11 @@ module.exports=class {
 			memory: true,
 			file: true
 		};
-
 		return this.loadDependingClasses(ctx).then(()=>{
 			baseClasses=ctx.classes;
 			env=this.getEnv();
 			env.aliases={};
+            Tonyu.klass.removeMetaAll(myNsp);// for removed files
 			//env.parsedNode=env.parsedNode||{};
 			env.classes=baseClasses;
 			//console.log("env.classes===Tonyu.classMetas",env.classes===Tonyu.classMetas);
