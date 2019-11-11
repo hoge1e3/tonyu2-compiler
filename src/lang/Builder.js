@@ -310,6 +310,7 @@ module.exports=class {
 		// 途中でコンパイルエラーを起こすと。。。
         var env=this.getEnv();
 		for (let c of ord) {
+            console.log("genJS", c.fullName);
 			JSGenerator.genJS(c, env, genOptions);
 		}
 		return Promise.resolve();

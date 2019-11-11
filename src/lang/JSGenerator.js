@@ -891,6 +891,7 @@ function genJS(klass, env, genOptions) {//B
 			printf("decls: %s%n", JSON.stringify(digestDecls(klass)));
 			printf("%}});");
 			if (genMod) printf("%n%}});");
+			printf("%n");
 			//printf("%}});%n");
 		});
 		//printf("Tonyu.klass.addMeta(%s,%s);%n",
@@ -1102,9 +1103,9 @@ function genJS(klass, env, genOptions) {//B
 		console.log("method4", buf.buf);
 		//throw "ERR";
 	}
-	var bufres=buf.close();
+	//var bufres=buf.close();
 	klass.src.map=buf.mapStr;
-	return bufres;
+	return buf;//res;
 }//B
 return {genJS:genJS};
 })();

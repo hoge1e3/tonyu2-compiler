@@ -2058,6 +2058,7 @@ function genJS(klass, env, genOptions) {//B
 			printf("decls: %s%n", JSON.stringify(digestDecls(klass)));
 			printf("%}});");
 			if (genMod) printf("%n%}});");
+			printf("%n");
 			//printf("%}});%n");
 		});
 		//printf("Tonyu.klass.addMeta(%s,%s);%n",
