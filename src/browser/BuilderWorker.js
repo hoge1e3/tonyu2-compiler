@@ -35,7 +35,7 @@ WS.serv("compiler/resetFiles", params=>{
     const namespace=params.namespace||"user";
     const prjDir=ram.rel(namespace+"/");
     prjDir.recursive(f=>console.log("RM",f.path(),!f.isDir() && f.rm()));
-    prjDir.importFromObject(files);    
+    prjDir.importFromObject(files);
 });
 WS.serv("compiler/addDependingProject", params=>{
     // params: namespace, files
@@ -57,7 +57,9 @@ WS.serv("compiler/fullCompile", async params=>{
     }
 });
 WS.serv("compiler/postChange", async params=>{
+    // postChange is for file(s), modify files before call
     try {
+        // But it changes files inside postchange...
         const fs=params.files;// "relpath"=>"content"
         let relPath;for(let n in fs) {relPath=n;break;}
         const f=prj.getDir().rel(relPath);

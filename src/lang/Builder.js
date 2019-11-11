@@ -154,12 +154,15 @@ module.exports=class {
 		let res=env.classes[fullName];
 		return res;
 	}
-	postChange (file) {
+	postChange (file) {// postChange is for file(s), modify files before call
+        // It may fails before call fullCompile
 		const classMeta=this.fileToClass(file);
 		if (!classMeta) {
-			// new file added ( no dependency)
+			// new file added ( no dependency <- NO! all file should compile again!)
+            // Why?  `new Added`  will change from `new _this.Added` to `new Tonyu.classes.user.Added`
 			const m=this.addMetaFromFile(file);
 			const c={};c[m.fullName]=m;
+            // TODO aliases?
 			return this.partialCompile(c);
 		} else {
 			// existing file modified
@@ -208,13 +211,13 @@ module.exports=class {
 	fullCompile (ctx/*or options(For external call)*/) {
         const dir=this.getDir();
         ctx=this.initCtx(ctx);
-		ctxOpt=ctx.options ||{};
+		const ctxOpt=ctx.options ||{};
 		//if (!ctx.options.hot) Tonyu.runMode=false;
 		this.showProgress("Compile: "+dir.name());
 		console.log("Compile: "+dir.path());
 		var myNsp=this.getNamespace();
-		var baseClasses,ctxOpt,env,myClasses,sf;
-		var compilingClasses;
+		let baseClasses,env,myClasses,sf;
+		let compilingClasses;
 		ctxOpt.destinations=ctxOpt.destinations || {
 			memory: true,
 			file: true
@@ -252,7 +255,7 @@ module.exports=class {
 			//return TPR.showProgress("initClassDecl");
 		});
 	}
-	partialCompile(compilingClasses,ctxOpt) {
+	partialCompile(compilingClasses,ctxOpt) {// partialCompile is for class(es)
 		let env=this.getEnv(),ord,buf;
 		ctxOpt=ctxOpt||{};
 		const destinations=ctxOpt.destinations || {
@@ -261,6 +264,7 @@ module.exports=class {
 		return Promise.resolve().then(()=>{
 			for (var n in compilingClasses) {
 				console.log("initClassDecl: "+n);
+                // does parsing in Semantics
 				Semantics.initClassDecls(compilingClasses[n], env);/*ENVC*/
 			}
 			return this.showProgress("order");
