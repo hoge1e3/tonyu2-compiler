@@ -36,6 +36,7 @@ WS.serv("compiler/resetFiles", params=>{
     const prjDir=ram.rel(namespace+"/");
     prjDir.recursive(f=>console.log("RM",f.path(),!f.isDir() && f.rm()));
     prjDir.importFromObject(files);
+    builder.requestRebuild();
 });
 WS.serv("compiler/addDependingProject", params=>{
     // params: namespace, files

@@ -119,6 +119,7 @@ module.exports=class {
     }
 	requestRebuild () {
 		var env=this.getEnv();
+        env.options=this.getOptions();
 		for (let k of this.getMyClasses()) {
 			delete env.classes[k];
 		}
