@@ -1,4 +1,44 @@
 Tonyu.klass.define({
+  fullName: 'user.Field',
+  shortName: 'Field',
+  namespace: 'user',
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Field_main() {
+        "use strict";
+        var _this=this;
+        
+        Tonyu.globals.$Boot.autoReload=(function anonymous_115(e) {
+          
+          _this.print("Reload!",e.mainClass===Tonyu.classes.user.Field);
+          _this.loadPage(Tonyu.classes.user.Field);
+        });
+        new _this.BodyActor({isStatic: true,x: 128,y: 50,width: 10,height: 200,fillStyle: "#8f8"});
+        new _this.BodyActor({isStatic: true,x: 307,y: 50,width: 10,height: 200,fillStyle: "#8f8"});
+      },
+      fiber$main :function _trc_Field_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        Tonyu.globals.$Boot.autoReload=(function anonymous_115(e) {
+          
+          _this.print("Reload!",e.mainClass===Tonyu.classes.user.Field);
+          _this.loadPage(Tonyu.classes.user.Field);
+        });
+        new _this.BodyActor({isStatic: true,x: 128,y: 50,width: 10,height: 200,fillStyle: "#8f8"});
+        new _this.BodyActor({isStatic: true,x: 307,y: 50,width: 10,height: 200,fillStyle: "#8f8"});
+        
+        _thread.retVal=_this;return;
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"print":{},"loadPage":{},"BodyActor":{}}}
+});
+Tonyu.klass.define({
   fullName: 'user.Updatable',
   shortName: 'Updatable',
   namespace: 'user',
@@ -115,7 +155,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false},"waitFor":{"nowait":false},"update":{"nowait":false},"appear":{"nowait":false}},"fields":{}}
-});Tonyu.klass.define({
+});
+Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
   namespace: 'user',
@@ -159,7 +200,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false}},"fields":{}}
-});Tonyu.klass.define({
+});
+Tonyu.klass.define({
   fullName: 'user.Chara',
   shortName: 'Chara',
   namespace: 'user',
@@ -220,4 +262,5 @@ Tonyu.klass.define({
   },
   decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
 });
+
 //# sourceMappingURL=concat.js.map

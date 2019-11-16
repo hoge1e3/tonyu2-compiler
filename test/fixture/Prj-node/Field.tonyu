@@ -1,0 +1,42 @@
+/*if ($debugger) {
+    $debugger.on("classChanged") \{
+        loadPage(Field);
+    };
+}*/
+
+$Boot.autoReload=\(e) {
+    print ("Reload!",e.mainClass===Field);
+    loadPage(Field);
+    //true;
+};
+
+new BodyActor{
+    isStatic:true,x:128,y:50,
+    width:10,height:200,
+    fillStyle:"#8f8"
+};
+new BodyActor{
+    isStatic:true,x:307,y:50,
+    width:10,height:200,
+    fillStyle:"#8f8"
+};/*
+for (var i=0;i<6;i++) {
+    for (var j=0;j<4;j++) {
+        new BodyActor{
+            isStatic:true,
+            x:150+j*30-(i%2)*15,y:30+i*20,
+            radius:5,
+            fillStyle:"#8f8"
+        };
+    }
+}
+new BodyActor{
+    x:rnd(100)+130,
+    y:0,radius:5,
+    fillStyle:"yellow"
+};
+new BodyActor{
+    x:rnd(100)+130,
+    y:0,radius:5,
+    fillStyle:"yellow"
+};*/

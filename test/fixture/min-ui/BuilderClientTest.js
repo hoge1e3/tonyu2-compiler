@@ -7,7 +7,14 @@ window.initCmd=function ({shui, BuilderClient}) {
     const UI=shui.UI;
     const sh=shui.sh;
     let iframe, builder;
-    sh.run=async bootClass=>{
+    function restart() {
+        try {
+            iframe[0].contentWindow.Tonyu.globals.$restart();
+        } catch(e) {
+            console.log(e);
+        }
+    }
+    sh.init=async ()=>{
         const prjDir=sh.cwd;//();//resolve(prjPath);
         const prj=CP.create({dir:prjDir});
         const config={
@@ -22,8 +29,11 @@ window.initCmd=function ({shui, BuilderClient}) {
             }
         });
         builder=new BuilderClient(prj,config);
+    };
+    sh.run=async bootClass=>{
+        const prjDir=sh.cwd;
+        sh.init();
         await builder.fullCompile();
-
         iframe=UI(
             "iframe",{src:`debug.html?prj=${prjDir.path()}&boot=${bootClass}`,width:400,height:200}
         );
@@ -51,15 +61,17 @@ window.initCmd=function ({shui, BuilderClient}) {
                     await builder.partialCompile(f);
                 }
             }
-            const Remotonyu=iframe[0].contentWindow.Tonyu;
-            if (Remotonyu.globals.$restart) Remotonyu.globals.$restart();
+            restart();
         },50);
         console.log("run DONE");
     };
     sh.clean=async ()=>{
         await builder.clean();
-        const Remotonyu=iframe[0].contentWindow.Tonyu;
-        if (Remotonyu.globals.$restart) Remotonyu.globals.$restart();
+        restart();
+    };
+    sh.parse=async (filePath)=>{
+        const file=sh.resolve(filePath);
+        await builder.parse(file);
     };
     // Main -> Fuga, Base
     // rm Fuga
