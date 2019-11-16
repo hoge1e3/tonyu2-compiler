@@ -10,11 +10,46 @@ module.exports=function () {
 			tbl[c].profile();//(c+" of "+tbl[name);
 		}
 	}
+	function skipSpace(str,pos) {
+		const spos=pos;
+		const max=str.length;
+		//https://www.w3schools.com/jsref/jsref_regexp_whitespace.asp
+		const spcs={9:1,10:1,11:1,12:1,13:1,32:1};
+		for(;pos<max;pos++) {
+		    if (spcs[str.charCodeAt(pos)]) continue;
+		    if (str[pos]==="/") {
+		      	if (str[pos+1]==="*" && readMultiComment()) continue;
+		      	else if (str[pos+1]==="/" && readSingleComment()) continue;
+		    }
+		    break;
+		}
+		return {len:pos-spos};
 
+		function readSingleComment(cmt) {
+		   	/* <pos>//....<pos>\n */
+		   	for(;pos<max;pos++) {
+		      	if (str[pos]=="\n") {return true;}
+		   	}
+		    pos--;
+		    return true;
+		}
+		function readMultiComment(cmt){
+		    // <pos>/*....*<pos>/
+		    const spos=pos;
+		    pos+=2;
+		    for(;pos<max;pos++) {
+		    	if (str[pos]==="*" && str[pos+1]==="/") {
+		        	pos++;return true;
+		      	}
+		    }
+		    pos=spos;
+		}
+	}
 	var sp=Parser.StringParser;
 	var SAMENAME="SAMENAME";
 	var DIV=1,REG=2;
-	var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
+	//var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
+	var space=sp.strLike(skipSpace).setName("space");
 	function tk(r, name) {
 		var pat;
 		var fst;
