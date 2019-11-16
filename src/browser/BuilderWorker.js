@@ -32,8 +32,8 @@ WS.serv("compiler/init", params=>{
 });
 WS.serv("compiler/resetFiles", params=>{
     const files=params.files;
-    const namespace=params.namespace||"user";
-    const prjDir=ram.rel(namespace+"/");
+    //const namespace=params.namespace||"user";
+    const prjDir=prj.getDir();// ram.rel(namespace+"/");
     prjDir.recursive(f=>console.log("RM",f.path(),!f.isDir() && f.rm()));
     prjDir.importFromObject(files);
     builder.requestRebuild();
@@ -49,6 +49,19 @@ WS.serv("compiler/addDependingProject", params=>{
     };
     return {prjDir:prjDir.path()};
 });
+WS.serv("compiler/parse", async ({files})=>{
+    try {
+        // params.files:: relPath=>cont
+        const prjDir=prj.getDir();
+        prjDir.importFromObject({base:prjDir.path(), data:files});
+        for (let k in files) {
+            builder.parse(prjDir.rel(k));
+        }
+    } catch(e) {
+        throw convertTError(e);
+    }
+});
+
 WS.serv("compiler/fullCompile", async params=>{
     try {
         const res=await builder.fullCompile({destinations:{memory:1}});
@@ -58,7 +71,7 @@ WS.serv("compiler/fullCompile", async params=>{
     }
 });
 WS.serv("compiler/postChange", async params=>{
-    // postChange is for file(s), modify files before call
+    // postChange is for file(s), modify files before call(at Builder.js)
     try {
         // But it changes files inside postchange...
         const fs=params.files;// "relpath"=>"content"

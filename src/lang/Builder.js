@@ -115,6 +115,7 @@ module.exports=class {
     getEnv() {
         this.env=this.env||{};
         this.env.options=this.env.options||this.getOptions();
+        this.env.aliases=this.env.aliases||{};
         return this.env;
     }
 	requestRebuild () {
@@ -192,6 +193,10 @@ module.exports=class {
 		console.log("revdep",dep);
 		return dep;
 	}
+    parse(f) {
+        const klass=this.addMetaFromFile(f);
+        return Semantics.parse(klass);
+    }
 	addMetaFromFile(f) {
 		const env=this.getEnv();
 		const shortCn=f.truncExt(this.getEXT());

@@ -47,24 +47,40 @@ function visitSub(node) {//S
 		t.visit(e);
 	});
 }
+function getSourceFile(klass) {
+	return A(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
+}
+function parse(klass) {
+	const s=getSourceFile(klass);//.src.tonyu; //file object
+	let node;
+	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
+		node=klass.node;
+	}
+	if (!node) {
+		//console.log("Parse "+s);
+		node=TonyuLang.parse(s);
+		klass.nodeTimestamp=s.lastUpdate();
+	}
+	return node;
+}
 //-----------
 function initClassDecls(klass, env ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
-	var s=klass.src.tonyu; //file object
-	var node;
+	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
 	if (klass.src && klass.src.js) {
 		// falsify on generateJS. if some class hasSemanticError, it remains true
 		klass.jsNotUpToDate=true;
 	}
-	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
+	const node=parse(klass);
+	/*if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
 		node=klass.node;
 	}
 	if (!node) {
 		console.log("Parse "+s);
 		node=TonyuLang.parse(s);
 		klass.nodeTimestamp=s.lastUpdate();
-	}
+	}*/
 	//console.log(s+"",  !!klass.node, klass.nodeTimestamp, s.lastUpdate());
 	//if (!klass.testid) klass.testid=Math.random();
 	//console.log(klass.testid);
@@ -767,5 +783,5 @@ function annotateSource2(klass, env) {//B
 	annotateSource();
 	delete klass.hasSemanticError;
 }//B  end of annotateSource2
-return {initClassDecls:initClassDecls, annotate:annotateSource2};
+return {initClassDecls:initClassDecls, annotate:annotateSource2,parse};
 })();
