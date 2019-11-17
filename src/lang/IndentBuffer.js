@@ -1,5 +1,6 @@
 const A=require("../lib/assert");
 const S=require("./source-map");
+const StringBuilder=require("../lib/StringBuilder");
 
 const Pos2RC=function (src) {
 	var $={};
@@ -34,6 +35,7 @@ const Pos2RC=function (src) {
 };
 module.exports=function (options) {
 	options=options||{};
+	options.fixLazyLength=options.fixLazyLength||6;
 	var $=function () {
 		var args=arguments;
 		var fmt=args[0];
@@ -172,7 +174,7 @@ module.exports=function (options) {
 		$.srcmap.setSourceContent(f.path(),f.text());
 	};
 	$.print=function (v) {
-		$.buf+=v;
+		$.buf.append(v);
 		var a=(v+"").split("\n");
 		a.forEach(function (line,i) {
 			if (i<a.length-1) {// has \n
@@ -187,13 +189,13 @@ module.exports=function (options) {
 	$.dstFile=options.dstFile;
 	$.mapFile=options.mapFile;
 	$.printf=$;
-	$.buf="";
+	$.buf=StringBuilder();
 	$.bufRow=1;
 	$.bufCol=1;
 	$.srcmap=new S.SourceMapGenerator();
 	$.lazy=function (place) {
 		if (!place) place={};
-		if (options.fixLazyLength) {
+		//if (options.fixLazyLength) {
 			place.length=place.length||options.fixLazyLength;
 			place.pad=place.pad||" ";
 			place.gen=(function () {
@@ -203,12 +205,12 @@ module.exports=function (options) {
 			})();
 			place.puts=[];
 			$.useLengthPlace=true;
-		} else {
+		/*} else {
 			//cannot use with sourcemap
 			place.gen=("GENERETID"+Math.random()+"DITERENEG").replace(/\W/g,"");
 			place.reg=new RegExp(place.gen,"g");
 			A(!$.useLengthPlace,"GENERETID cannot be used");
-		}
+		}*/
 		place.inited=true;
 		//place.src=place.gen;
 		place.put=function (val) {
@@ -222,18 +224,19 @@ module.exports=function (options) {
 				}
 				var place=this;
 				this.puts.forEach(function (i) {
-					var pl=$.buf.length;
+					$.buf.replace(i, place.val);
+					/*var pl=$.buf.length;
 					$.buf=$.buf.substring(0,i)+place.val+$.buf.substring(i+place.length);
-					A.eq(pl,$.buf.length);
+					A.eq(pl,$.buf.length);*/
 				});
 			}
-			if (this.reg) {
+			/*if (this.reg) {
 				$.buf=$.buf.replace(this.reg, val);
-			}
+			}*/
 			return this.val;
 		};
 		place.print=function () {
-			if (this.puts) this.puts.push($.buf.length);
+			if (this.puts) this.puts.push($.buf.getLength());
 			$.print(this.gen);
 		};
 		return place;
@@ -248,11 +251,11 @@ module.exports=function (options) {
 	};
 	$.dedent = function () {
 		var len=$.indentStr.length;
-		if (!$.buf.substring($.buf.length-len).match(/^\s*$/)) {
+		if (!$.buf.last(len).match(/^\s*$/)) {
 			console.log($.buf);
 			throw new Error ("Non-space truncated ");
 		}
-		$.buf=$.buf.substring(0,$.buf.length-len);
+		$.buf.truncate(len);//=$.buf.substring(0,$.buf.length-len);
 		$.indentBuf=$.indentBuf.substring(0 , $.indentBuf.length-len);
 	};
 	$.toLiteral= function (s, quote) {
@@ -276,10 +279,11 @@ module.exports=function (options) {
 			$.mapFile.text($.mapStr);
 			$.printf("%n//# sourceMappingURL=%s%n",$.mapFile.relPath($.dstFile.up()));
 		}
+		const gen=$.buf+"";
 		if ($.dstFile) {
-			$.dstFile.text($.buf);
+			$.dstFile.text(gen);
 		}
-		return $.buf;
+		return gen;
 	};
 	return $;
 };
