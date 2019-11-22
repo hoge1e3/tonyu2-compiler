@@ -3,7 +3,6 @@
         loadPage(Field);
     };
 }*/
-
 $Boot.autoReload=\(e) {
     print ("Reload!",e.mainClass===Field);
     loadPage(Field);

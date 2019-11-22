@@ -9,7 +9,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        Tonyu.globals.$Boot.autoReload=(function anonymous_115(e) {
+        Tonyu.globals.$Boot.autoReload=(function anonymous_113(e) {
           
           _this.print("Reload!",e.mainClass===Tonyu.classes.user.Field);
           _this.loadPage(Tonyu.classes.user.Field);
@@ -23,7 +23,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        Tonyu.globals.$Boot.autoReload=(function anonymous_115(e) {
+        Tonyu.globals.$Boot.autoReload=(function anonymous_113(e) {
           
           _this.print("Reload!",e.mainClass===Tonyu.classes.user.Field);
           _this.loadPage(Tonyu.classes.user.Field);
@@ -220,7 +220,7 @@ Tonyu.klass.define({
         while (_this.x<120) {
           Tonyu.checkLoop();
           _this.x+=5;
-          console.log(_this.x,_this.y);
+          console.log(_this.x,_this.y,"zen　kaku");
           _this.update();
           
         }
@@ -244,7 +244,7 @@ Tonyu.klass.define({
             case 1:
               if (!(_this.x<120)) { __pc=3     ; break; }
               _this.x+=5;
-              console.log(_this.x,_this.y);
+              console.log(_this.x,_this.y,"zen　kaku");
               _this.fiber$update(_thread);
               __pc=2;return;
             case 2:

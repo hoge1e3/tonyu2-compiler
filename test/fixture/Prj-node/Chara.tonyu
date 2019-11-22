@@ -4,10 +4,13 @@ native console;
 x=100;
 y=200;
 fillStyle="yellow";
-radius=16;
+radius=16;　
+　
+  
+
 while(x<120) {
     x+=5;
-    console.log(x,y);
+    console.log(x,y,"zen　kaku");
     update();
 }
 //a.b.x;
