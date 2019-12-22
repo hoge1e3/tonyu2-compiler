@@ -1,12 +1,14 @@
 extends Updatable;
+//includes Excludes;
 native console;
 
+//"field strict";
+//y=super.man();
 x=100;
 y=200;
 fillStyle="yellow";
 radius=16;　
 　
-  
 
 while(x<120) {
     x+=5;

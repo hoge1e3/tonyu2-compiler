@@ -16,6 +16,7 @@ const cu=require("./compiler");
 const A=require("../lib/assert");
 const Grammar=require("./Grammar");
 const root=require("../lib/root");
+const R=require("../lib/R");
 
 module.exports=cu.Semantics=(function () {
 /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
@@ -113,7 +114,7 @@ function initClassDecls(klass, env ) {//S
 				var n=i.text;/*ENVC*/
 				var p=i.pos;
 				var incc=env.classes[env.aliases[n] || n];/*ENVC*/ //CFN env.classes[env.aliases[n]]
-				if (!incc) throw TError ( "クラス "+n+"は定義されていません", s, p);
+				if (!incc) throw TError ( R("classIsUndefined",n), s, p);
 				klass.includes.push(incc);
 			});
 		}
@@ -122,7 +123,7 @@ function initClassDecls(klass, env ) {//S
 		} else if (spcn) {
 			var spc=env.classes[env.aliases[spcn] || spcn];/*ENVC*/  //CFN env.classes[env.aliases[spcn]]
 			if (!spc) {
-				throw TError ( "親クラス "+spcn+"は定義されていません", s, pos);
+				throw TError ( R("superClassIsUndefined",spcn), s, pos);
 			}
 			klass.superclass=spc;
 		} else {
@@ -372,7 +373,7 @@ function annotateSource2(klass, env) {//B
 			return true;
 		}
 		console.log("LVal",node);
-		throw TError( "'"+getSource(node)+"'は左辺には書けません．" , srcFile, node.pos);
+		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
 	}
 	function getScopeInfo(n) {//S
 		var node=n;
@@ -387,7 +388,7 @@ function annotateSource2(klass, env) {//B
 			} else {
 				var isg=n.match(/^\$/);
 				if (env.options.compiler.field_strict || klass.directives.field_strict) {
-					if (!isg) throw new TError(n+"は宣言されていません（フィールドの場合，明示的に宣言してください）．",srcFile,node.pos);
+					if (!isg) throw new TError(R("fieldDeclarationRequired",n),srcFile,node.pos);
 				}
 				t=isg?ST.GLOBAL:ST.FIELD;
 			}
@@ -489,7 +490,7 @@ function annotateSource2(klass, env) {//B
 					kn=e.key.text;
 				}
 				if (dup[kn]) {
-					throw TError( "オブジェクトリテラルのキー名'"+kn+"'が重複しています" , srcFile, e.pos);
+					throw TError( R("duplicateKeyInObjectLiteral",kn) , srcFile, e.pos);
 				}
 				dup[kn]=1;
 				//console.log("objlit",e.key.text);
@@ -501,7 +502,7 @@ function annotateSource2(klass, env) {//B
 				this.visit(node.value);
 			} else {
 				if (node.key.type=="literal") {
-					throw TError( "オブジェクトリテラルのパラメタに単独の文字列は使えません" , srcFile, node.pos);
+					throw TError( R("cannotUseStringLiteralAsAShorthandOfObjectValue") , srcFile, node.pos);
 				}
 				var si=getScopeInfo(node.key);
 				annotation(node,{scopeInfo:si});
@@ -569,11 +570,11 @@ function annotateSource2(klass, env) {//B
 			this.visit(node.value);
 		},
 		"break": function (node) {
-			if (!ctx.brkable) throw TError( "break； は繰り返しまたはswitch文の中で使います." , srcFile, node.pos);
+			if (!ctx.brkable) throw TError( R("breakShouldBeUsedInIterationOrSwitchStatement") , srcFile, node.pos);
 			if (!ctx.noWait) annotateParents(this.path,{hasJump:true});
 		},
 		"continue": function (node) {
-			if (!ctx.contable) throw TError( "continue； は繰り返しの中で使います." , srcFile, node.pos);
+			if (!ctx.contable) throw TError( R("continueShouldBeUsedInIterationStatement") , srcFile, node.pos);
 			if (!ctx.noWait) annotateParents(this.path,{hasJump:true});
 		},
 		"reservedConst": function (node) {
@@ -608,7 +609,7 @@ function annotateSource2(klass, env) {//B
 		exprstmt: function (node) {
 			var t,m;
 			if (node.expr.type==="objlit") {
-				throw TError( "オブジェクトリテラル単独の式文は書けません．" , srcFile, node.pos);
+				throw TError( R("cannotUseObjectLiteralAsTheExpressionOfStatement") , srcFile, node.pos);
 			}
 			if (!ctx.noWait &&
 					(t=OM.match(node,noRetFiberCallTmpl)) &&
@@ -626,7 +627,7 @@ function annotateSource2(klass, env) {//B
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
 					t.S.name) {
 				m=getMethod(t.S.name.text);
-				if (!m) throw new Error("メソッド"+t.S.name.text+" はありません。");
+				if (!m) throw new Error(R("undefinedMethod",t.S.name.text));
 				if (!m.nowait) {
 					t.type="noRetSuper";
 					t.superclass=klass.superclass;
@@ -637,7 +638,7 @@ function annotateSource2(klass, env) {//B
 					(t=OM.match(node,retSuperFiberCallTmpl)) &&
 					t.S.name) {
 				m=getMethod(t.S.name.text);
-				if (!m) throw new Error("メソッド"+t.S.name.text+" はありません。");
+				if (!m) throw new Error(R("undefinedMethod",t.S.name.text));
 				if (!m.nowait) {
 					t.type="retSuper";
 					t.superclass=klass.superclass;
