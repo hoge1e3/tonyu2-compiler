@@ -34,7 +34,7 @@
         return types[type](params);
     };
     class ProjectCore {
-        getPublishedURL(){}//TODO
+        getPublishedURL(){}//override in BAProject
         getOptions(opt) {return {};}//stub
         getName() {
             return this.dir.name().replace(/\/$/,"");
@@ -94,6 +94,9 @@
         },
         setOptions(opt) {// not in compiledProject
             return this.getOptionsFile().obj(opt);
+        },
+        fixOptions(TPR,opt) {// required in BAProject
+            if (!opt.compiler) opt.compiler={};
         },
         getOutputFile(lang) {// not in compiledProject
             var opt=this.getOptions();
