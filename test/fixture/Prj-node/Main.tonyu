@@ -1,7 +1,13 @@
 extends Updatable;
 native console;
+native Tonyu;
 
+//c=Tonyu.getClass("Chara");
+//console.log(c.meta.fullName);
+//Updatable();
 //a=50a0;
+//Tonyu.run("user.Hoge");
+
 $restart=\{
     appear(new Chara);
 };

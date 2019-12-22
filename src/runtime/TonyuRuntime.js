@@ -3,6 +3,7 @@ var assert=require("../lib/assert");
 var root=require("../lib/root");
 var TonyuThreadF=require("./TonyuThread");
 var IT=require("./tonyuIterator");
+const R=require("../lib/R");
 module.exports=function () {
 	// old browser support
 	if (!root.performance) {
@@ -37,7 +38,7 @@ module.exports=function () {
 			Tonyu.onRuntimeError(e);
 		} else {
 			//if (typeof $LASTPOS=="undefined") $LASTPOS=0;
-			if (root.alert) root.alert("エラー! メッセージ  : "+e);
+			if (root.alert) root.alert("Error: "+e);
 			console.log(e.stack);
 			throw e;
 		}
@@ -275,7 +276,7 @@ module.exports=function () {
 				var nr=classes[nn][n];
 				if (nr) {
 					if (!res) { res=nr; found=nn+"."+n; }
-					else throw new Error("曖昧なクラス名： "+nn+"."+n+", "+found);
+					else throw new Error(R("ambiguousClassName",nn,n,found));
 				}
 			}
 		}
@@ -296,17 +297,17 @@ module.exports=function () {
 		return res;
 	}
 	function invokeMethod(t, name, args, objName) {
-		if (!t) throw new Error(objName+"(="+t+")のメソッド "+name+"を呼び出せません");
+		if (!t) throw new Error(R("cannotInvokeMethod",objName,t,name));
 		var f=t[name];
-		if (typeof f!="function") throw new Error((objName=="this"? "": objName+".")+name+"(="+f+")はメソッドではありません");
+		if (typeof f!="function") throw new Error(R("notAMethod", (objName=="this"? "": objName+"."),name,f));
 		return f.apply(t,args);
 	}
 	function callFunc(f,args, fName) {
-		if (typeof f!="function") throw new Error(fName+"は関数ではありません");
+		if (typeof f!="function") throw new Error(R("notAFunction",fName));
 		return f.apply({},args);
 	}
 	function checkNonNull(v, name) {
-		if (v!=v || v==null) throw new Error(name+"(="+v+")は初期化されていません");
+		if (v!=v || v==null) throw new Error(R("uninitialized",name,v));
 		return v;
 	}
 	function A(args) {
@@ -317,7 +318,7 @@ module.exports=function () {
 		return res;
 	}
 	function useNew(c) {
-		throw new Error("クラス名"+c+"はnewをつけて呼び出して下さい。");
+		throw new Error(R("newIsRequiredOnInstanciate",c));
 	}
 	function not_a_tonyu_object(o) {
 		console.log("Not a tonyu object: ",o);
@@ -328,7 +329,7 @@ module.exports=function () {
 	}
 	function run(bootClassName) {
 		var bootClass=getClass(bootClassName);
-		if (!bootClass) throw new Error( bootClassName+" というクラスはありません");
+		if (!bootClass) throw new Error( R("bootClassIsNotFound",bootClassName));
 		Tonyu.runMode=true;
 		var boot=new bootClass();
 		//var th=thread();
@@ -347,9 +348,7 @@ module.exports=function () {
 		var now=root.performance.now();
 		if (now-lastLoopCheck>1000) {
 			resetLoopCheck(10000);
-			throw new Error("無限ループをストップしました。\n"+
-				"   プロジェクト オプションで無限ループチェックの有無を設定できます。\n"+
-				"   [参考]https://edit.tonyu.jp/doc/options.html\n");
+			throw new Error(R("infiniteLoopDetected"));
 		}
 		prevCheckLoopCalled=now;
 	}

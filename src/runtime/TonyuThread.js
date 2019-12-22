@@ -1,4 +1,5 @@
 //	var Klass=require("../lib/Klass");
+const R=require("../lib/R");
 module.exports=function (Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;
@@ -53,14 +54,14 @@ module.exports=function (Tonyu) {
 			if (typeof methodName=="string") {
 				method=obj["fiber$"+methodName];
 				if (!method) {
-					throw new Error("メソッド"+methodName+"が見つかりません");
+					throw new Error(R("undefinedMethod",methodName));
 				}
 			}
 			if (typeof methodName=="function") {
 				method=methodName.fiber;
 				if (!method) {
 					var n=methodName.methodInfo ? methodName.methodInfo.name : methodName.name;
-					throw new Error("メソッド"+n+"は待機可能メソッドではありません");
+					throw new Error(R("notAWaitableMethod",n));
 				}
 			}
 			args=[this].concat(args);

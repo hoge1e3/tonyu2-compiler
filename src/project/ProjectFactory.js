@@ -12,10 +12,6 @@
         types[n]=f;
     };
     exports.fromDependencySpec=function (prj,spec) {
-        if (typeof spec=="string") {
-            var prjDir=prj.resolve(spec);
-            return this.fromDir(prjDir);
-        }
         for (let f of resolvers) {
             const res=f(prj,spec);
             if (res) return res;

@@ -4,6 +4,7 @@ const langMod=require("./src/lang/langMod");
 const FS=require("./src/lib/FS");
 const root=require("./src/lib/root");
 const SourceFiles=require("./src/lang/SourceFiles");
+const compiledProject=require("./src/project/CompiledProject");
 const prjPath=process.argv[2];
 const run=process.argv.indexOf("-r")>=0;
 const daemon=process.argv.indexOf("-d")>=0;
@@ -21,7 +22,10 @@ const prjDir=(()=>{
         return FS.get(process.cwd()).rel(prjPath);
     }
 })();
-const prj=F.createDirBasedCore({dir:prjDir}).include(langMod);
+F.addType("compilable",({dir})=>{
+    return F.createDirBasedCore({dir}).include(langMod);
+});
+const prj=F.create("compilable",{dir:prjDir});  //F.createDirBasedCore({dir:prjDir}).include(langMod);
 const builder=new Builder(prj);
 if (rename.do) {
     console.log(rename);

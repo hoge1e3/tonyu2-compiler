@@ -11,6 +11,7 @@ const Grammar=require("./Grammar");
 const IndentBuffer=require("./IndentBuffer");
 const TT=require("./tonyu2_token");
 const Parser=require("./parser");
+const R=require("../lib/R");
 const ExpressionParser=require("./ExpressionParser2");
 const TError=require("../runtime/TError");
 module.exports=function () {
@@ -301,7 +302,7 @@ module.exports=function () {
 		if (!tokenRes.isSuccess() ) {
 			//return "ERROR\nToken error at "+tokenRes.src.maxPos+"\n"+
 			//	str.substring(0,tokenRes.src.maxPos)+"!!HERE!!"+str.substring(tokenRes.src.maxPos);
-			throw TError("文法エラー(Token)", file ,  tokenRes.src.maxPos);
+			throw TError(R("lexicalError"), file ,  tokenRes.src.maxPos);
 		}
 		var tokens=tokenRes.result[0];
 		//console.log("Tokens: "+tokens.join(","));
@@ -317,7 +318,7 @@ module.exports=function () {
 		}
 		var lt=tokens[res.src.maxPos];
 		var mp=(lt?lt.pos+lt.len: str.length);
-		throw TError("文法エラー", file ,  mp );
+		throw TError(R("parseError"), file ,  mp );
 		/*return "ERROR\nSyntax error at "+mp+"\n"+
 		str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
 	};

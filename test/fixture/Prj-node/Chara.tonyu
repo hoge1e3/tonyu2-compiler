@@ -14,6 +14,12 @@ while(x<120) {
     x+=5;
     console.log(x,y,"zen　kaku");
     update();
+    //a();
+}
+nowait a() {
+    while(true) {
+        x++;
+    }
 }
 //a.b.x;
 /*while (true) {

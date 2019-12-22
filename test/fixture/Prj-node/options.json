@@ -1,6 +1,6 @@
 {
     "compiler":{
-        "dependingProjects": [],
+        "dependingProjects": [{"dir":"../updatable/"}],
         "outputFile": "js/concat.js","namespace":"user"
     },
     "run":{}
