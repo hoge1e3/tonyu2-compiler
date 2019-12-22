@@ -9,6 +9,11 @@ const ja={
     continueShouldBeUsedInIterationStatement:"continue； は繰り返しの中で使います.",
     cannotUseObjectLiteralAsTheExpressionOfStatement:"オブジェクトリテラル単独の式文は書けません．",
     undefinedMethod:"メソッド{1}はありません．",
+    circularDependencyDetected: "次のクラス間に循環参照があります: {1}",
+    cannotWriteReturnInTryStatement: "現実装では、tryの中にreturnは書けません",
+    cannotWriteBreakInTryStatement: "現実装では、tryの中にbreakは書けません",
+    cannotWriteContinueInTryStatement: "現実装では、tryの中にcontinueは書けません",
+    cannotWriteTwoOrMoreCatch: "現実装では、catch節1個のみをサポートしています",
 };
 let dict=ja;
 function R(name,...params) {

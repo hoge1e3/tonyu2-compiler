@@ -1,3 +1,4 @@
+//extends Field;
 extends Updatable;
 //includes Excludes;
 native console;
@@ -8,7 +9,6 @@ x=100;
 y=200;
 fillStyle="yellow";
 radius=16;　
-　
 
 while(x<120) {
     x+=5;
@@ -16,3 +16,15 @@ while(x<120) {
     update();
 }
 //a.b.x;
+/*while (true) {
+try {
+    continue;
+    return 3;
+}　catch(e) {
+
+}　catch(e) {
+
+}
+
+}
+*/

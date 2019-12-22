@@ -3,6 +3,7 @@ const JSGenerator=require("./JSGenerator");
 const Semantics=require("./Semantics");
 //const ttb=require("./");
 const FS=require("../lib/FS");
+const R=require("../lib/R");
 const A=require("../lib/assert");
 //,DU,
 //const CPR=require("./compiledProject");
@@ -40,7 +41,7 @@ function orderByInheritance(classes) {/*ENVC*/
                     break;
                 }
             }
-            throw TError( "次のクラス間に循環参照があります: "+loop.join("->"), "不明" ,0);
+            throw TError( R("circularDependencyDetected",loop.join("->")), "Unknown" ,0);
         }
     }
     function dep1(c) {
@@ -59,7 +60,7 @@ function orderByInheritance(classes) {/*ENVC*/
         function pushPath(c) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
-                throw TError( "次のクラス間に循環参照があります: "+path.join("->"), "不明" ,0);
+                throw TError( R("circularDependencyDetected",path.join("->")), "Unknown" ,0);
             }
             visited[c.fullName]=true;
         }

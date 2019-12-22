@@ -10,6 +10,7 @@ const context=require("./context");
 const Visitor=require("./Visitor");
 const cu=require("./compiler");
 const A=require("../lib/assert");
+const R=require("../lib/R");
 
 module.exports=cu.JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -157,7 +158,7 @@ function genJS(klass, env, genOptions) {//B
 		funcDecl: function (node) {
 		},
 		"return": function (node) {
-			if (ctx.inTry) throw TError("現実装では、tryの中にreturnは書けません",srcFile,node.pos);
+			if (ctx.inTry) throw TError(R("cannotWriteReturnInTryStatement"),srcFile,node.pos);
 			if (!ctx.noWait) {
 				if (node.value) {
 					var t=annotation(node.value).fiberCall;
@@ -395,11 +396,11 @@ function genJS(klass, env, genOptions) {//B
 		},
 		"break": function (node) {
 			if (!ctx.noWait) {
-				if (ctx.inTry && ctx.exitTryOnJump) throw TError("現実装では、tryの中にbreak;は書けません",srcFile,node.pos);
+				if (ctx.inTry && ctx.exitTryOnJump) throw TError(R("cannotWriteBreakInTryStatement"),srcFile,node.pos);
 				if (ctx.closestBrk) {
 					buf.printf("%s=%z; break;%n", FRMPC, ctx.closestBrk);
 				} else {
-					throw TError( "break； は繰り返しの中で使います" , srcFile, node.pos);
+					throw TError( R("breakShouldBeUsedInIterationOrSwitchStatement") , srcFile, node.pos);
 				}
 			} else {
 				buf.printf("break;%n");
@@ -407,13 +408,13 @@ function genJS(klass, env, genOptions) {//B
 		},
 		"continue": function (node) {
 			if (!ctx.noWait) {
-				if (ctx.inTry && ctx.exitTryOnJump) throw TError("現実装では、tryの中にcontinue;は書けません",srcFile,node.pos);
+				if (ctx.inTry && ctx.exitTryOnJump) throw TError(R("cannotWriteContinueInTryStatement"),srcFile,node.pos);
 				if ( typeof (ctx.closestCnt)=="number" ) {
 					buf.printf("%s=%s; break;%n", FRMPC, ctx.closestCnt);
 				} else if (ctx.closestCnt) {
 					buf.printf("%s=%z; break;%n", FRMPC, ctx.closestCnt);
 				} else {
-					throw TError( "continue； は繰り返しの中で使います" , srcFile, node.pos);
+					throw TError( R("continueShouldBeUsedInIterationStatement") , srcFile, node.pos);
 				}
 			} else {
 				buf.printf("continue;%n");
@@ -425,7 +426,7 @@ function genJS(klass, env, genOptions) {//B
 					(an.fiberCallRequired || an.hasJump || an.hasReturn)) {
 				//buf.printf("/*try catch in wait mode is not yet supported*/%n");
 				if (node.catches.length!=1 || node.catches[0].type!="catch") {
-					throw TError("現実装では、catch節1個のみをサポートしています",srcFile,node.pos);
+					throw TError(R("cannotWriteTwoOrMoreCatch"),srcFile,node.pos);
 				}
 				var ct=node.catches[0];
 				var catchPos={},finPos={};

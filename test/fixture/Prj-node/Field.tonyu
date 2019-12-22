@@ -1,3 +1,4 @@
+extends Chara;
 /*if ($debugger) {
     $debugger.on("classChanged") \{
         loadPage(Field);
