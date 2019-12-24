@@ -1,0 +1,71 @@
+Builder.js:6 const R=require("../lib/R");
+次のクラス間に循環参照があります: {1}
+Builder.js:44             throw TError( R("circularDependencyDetected",loop.join("->")), "Unknown" ,0);
+次のクラス間に循環参照があります: {1}
+Builder.js:63                 throw TError( R("circularDependencyDetected",path.join("->")), "Unknown" ,0);
+JSGenerator.js:13 const R=require("../lib/R");
+現実装では、tryの中にreturnは書けません
+JSGenerator.js:161 			if (ctx.inTry) throw TError(R("cannotWriteReturnInTryStatement"),srcFile,node.pos);
+現実装では、tryの中にbreakは書けません
+JSGenerator.js:399 				if (ctx.inTry && ctx.exitTryOnJump) throw TError(R("cannotWriteBreakInTryStatement"),srcFile,node.pos);
+break； は繰り返しまたはswitch文の中で使います.
+JSGenerator.js:403 					throw TError( R("breakShouldBeUsedInIterationOrSwitchStatement") , srcFile, node.pos);
+現実装では、tryの中にcontinueは書けません
+JSGenerator.js:411 				if (ctx.inTry && ctx.exitTryOnJump) throw TError(R("cannotWriteContinueInTryStatement"),srcFile,node.pos);
+continue； は繰り返しの中で使います.
+JSGenerator.js:417 					throw TError( R("continueShouldBeUsedInIterationStatement") , srcFile, node.pos);
+現実装では、catch節1個のみをサポートしています
+JSGenerator.js:429 					throw TError(R("cannotWriteTwoOrMoreCatch"),srcFile,node.pos);
+parse_tonyu2.js:14 const R=require("../lib/R");
+文法エラー(Token)
+parse_tonyu2.js:305 			throw TError(R("lexicalError"), file ,  tokenRes.src.maxPos);
+文法エラー
+parse_tonyu2.js:321 		throw TError(R("parseError"), file ,  mp );
+Semantics.js:19 const R=require("../lib/R");
+クラス {1}は定義されていません
+Semantics.js:117 				if (!incc) throw TError ( R("classIsUndefined",n), s, p);
+親クラス {1}は定義されていません
+Semantics.js:126 				throw TError ( R("superClassIsUndefined",spcn), s, pos);
+'{1}'は左辺には書けません．
+Semantics.js:376 		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
+{1}は宣言されていません（フィールドの場合，明示的に宣言してください）．
+Semantics.js:391 					if (!isg) throw new TError(R("fieldDeclarationRequired",n),srcFile,node.pos);
+オブジェクトリテラルのキー名'{1}'が重複しています
+Semantics.js:493 					throw TError( R("duplicateKeyInObjectLiteral",kn) , srcFile, e.pos);
+オブジェクトリテラルのパラメタに単独の文字列は使えません
+Semantics.js:505 					throw TError( R("cannotUseStringLiteralAsAShorthandOfObjectValue") , srcFile, node.pos);
+break； は繰り返しまたはswitch文の中で使います.
+Semantics.js:573 			if (!ctx.brkable) throw TError( R("breakShouldBeUsedInIterationOrSwitchStatement") , srcFile, node.pos);
+continue； は繰り返しの中で使います.
+Semantics.js:577 			if (!ctx.contable) throw TError( R("continueShouldBeUsedInIterationStatement") , srcFile, node.pos);
+オブジェクトリテラル単独の式文は書けません．
+Semantics.js:612 				throw TError( R("cannotUseObjectLiteralAsTheExpressionOfStatement") , srcFile, node.pos);
+メソッド{1}はありません．
+Semantics.js:630 				if (!m) throw new Error(R("undefinedMethod",t.S.name.text));
+メソッド{1}はありません．
+Semantics.js:641 				if (!m) throw new Error(R("undefinedMethod",t.S.name.text));
+TonyuRuntime.js:6 const R=require("../lib/R");
+曖昧なクラス名： {1}.{2}, {3}
+TonyuRuntime.js:279 					else throw new Error(R("ambiguousClassName",nn,n,found));
+{1}(={2})のメソッド {3}を呼び出せません
+TonyuRuntime.js:300 		if (!t) throw new Error(R("cannotInvokeMethod",objName,t,name));
+{1}{2}(={3})はメソッドではありません
+TonyuRuntime.js:302 		if (typeof f!="function") throw new Error(R("notAMethod", (objName=="this"? "": objName+"."),name,f));
+{1}は関数ではありません
+TonyuRuntime.js:306 		if (typeof f!="function") throw new Error(R("notAFunction",fName));
+{1}(={2})は初期化されていなません
+TonyuRuntime.js:310 		if (v!=v || v==null) throw new Error(R("uninitialized",name,v));
+クラス名{1}はnewをつけて呼び出して下さい。
+TonyuRuntime.js:321 		throw new Error(R("newIsRequiredOnInstanciate",c));
+{1}というクラスはありません．
+TonyuRuntime.js:332 		if (!bootClass) throw new Error( R("bootClassIsNotFound",bootClassName));
+無限ループをストップしました。
+   プロジェクト オプションで無限ループチェックの有無を設定できます。
+   [参考]https://edit.tonyu.jp/doc/options.html
+
+TonyuRuntime.js:351 			throw new Error(R("infiniteLoopDetected"));
+TonyuThread.js:2 const R=require("../lib/R");
+メソッド{1}はありません．
+TonyuThread.js:57 					throw new Error(R("undefinedMethod",methodName));
+メソッド{1}は待機可能メソッドではありません
+TonyuThread.js:64 					throw new Error(R("notAWaitableMethod",n));
