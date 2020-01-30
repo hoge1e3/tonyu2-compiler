@@ -8,7 +8,7 @@ root.FS=FS;
 const F=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
 const langMod=require("../lang/langMod");
-
+const R=require("../lib/R");
 
 let prj,builder;
 const ns2depspec={};
@@ -28,6 +28,7 @@ WS.serv("compiler/init", params=>{
     //console.log(ram.rel("options.json").text());
     prj=CompiledProject.create({dir:prjDir});
     builder=new Builder(prj);
+    if (params.locale) R.setLocale(params.locale);
     return {prjDir:prjDir.path()};
 });
 WS.serv("compiler/resetFiles", params=>{

@@ -9,6 +9,8 @@ const prjPath=process.argv[2];
 const run=process.argv.indexOf("-r")>=0;
 const daemon=process.argv.indexOf("-d")>=0;
 const rename={idx:process.argv.indexOf("-ren")};
+const R=require("./src/lib/R");
+//R.setLocale("ja");
 if (rename.idx>=0) {
     rename.from=process.argv[rename.idx+1];
     rename.to=process.argv[rename.idx+2];
