@@ -121,8 +121,20 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
+        var _it_2;
         
-        Tonyu.globals.$restart=(function anonymous_182() {
+        _this.s=new Set;
+        _this.s.add(5);
+        _this.s.add(10);
+        console.log("listing elem");
+        _it_2=Tonyu.iterator(_this.s,1);
+        while(_it_2.next()) {
+          _this.k=_it_2[0];
+          
+          console.log("elem",_this.k);
+          
+        }
+        Tonyu.globals.$restart=(function anonymous_305() {
           
           _this.appear(new Tonyu.classes.user.Chara);
         });
@@ -133,14 +145,26 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
+        var _it_2;
         
+        _this.s=new Set;
+        _this.s.add(5);
+        _this.s.add(10);
+        console.log("listing elem");
+        _it_2=Tonyu.iterator(_this.s,1);
+        while(_it_2.next()) {
+          _this.k=_it_2[0];
+          
+          console.log("elem",_this.k);
+          
+        }
         
         _thread.enter(function _trc_Main_ent_main(_thread) {
           if (_thread.lastEx) __pc=_thread.catchPC;
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              Tonyu.globals.$restart=(function anonymous_182() {
+              Tonyu.globals.$restart=(function anonymous_305() {
                 
                 _this.appear(new Tonyu.classes.user.Chara);
               });
@@ -153,7 +177,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"s":{},"k":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

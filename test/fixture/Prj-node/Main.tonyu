@@ -1,6 +1,13 @@
 extends Updatable;
 native console;
 native Tonyu;
+native Set;
+s=new Set;
+s.add(5);s.add(10);
+console.log("listing elem");
+for (k of s) {
+    console.log("elem",k);
+}
 
 //c=Tonyu.getClass("Chara");
 //console.log(c.meta.fullName);

@@ -1,5 +1,6 @@
 //define(["Klass"], function (Klass) {
 	//var Klass=require("../lib/Klass");
+	const SYMIT=typeof Symbol!=="undefined" && Symbol.iterator;
 	class ArrayValueIterator {
 		constructor(set) {
 			this.set=set;
@@ -56,8 +57,17 @@
 			return true;
 		}
 	}
-
-
+	class NativeIteratorWrapper {
+		constructor(it) {
+			this.it=it;
+		}
+		next() {
+			const {value,done}=this.it.next();
+			if (done) return false;
+			this[0]=value;
+			return true;
+		}
+	}
 	function IT(set, arity) {
 		if (set.tonyuIterator) {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
@@ -68,6 +78,8 @@
 			} else {
 				return new ArrayKeyValueIterator(set);
 			}
+		} else if (typeof set[SYMIT]==="function") {
+			return new NativeIteratorWrapper(set[SYMIT]());
 		} else if (set instanceof Object){
 			if (arity==1) {
 				return new ObjectKeyIterator(set);
