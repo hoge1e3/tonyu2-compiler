@@ -24,5 +24,8 @@
   "dependencies": {
     "source-map-support": "^0.5.13",
     "tmp": "^0.1.0"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.0"
   }
 }
