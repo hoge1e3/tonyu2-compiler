@@ -1,0 +1,10 @@
+extends Chara;
+native console;
+
+x=0;
+while(x<120) {
+    move();
+    console.log(x);
+    update();
+    //a();
+}

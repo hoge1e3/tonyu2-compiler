@@ -49,13 +49,17 @@ builder.fullCompile(opt).then(async function (s) {
     if (daemon) {
         const tmpdir=prj.getOutputFile().up();
         await s.exec();//{tmpdir});
-
-        prj.watch(async (e,f)=>{
+        let lastRefreshed=new Date().getTime();
+        prjDir.watch(async (e,f)=>{
             console.log(e,f.path());
+            const now=new Date().getTime();
+            if (now-lastRefreshed<500) return;
+            lastRefreshed=new Date().getTime();
             const ns=await builder.postChange(f);
             console.log(ns);
             await ns.exec();
             if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
+
         });
     }
     if (run||daemon) {

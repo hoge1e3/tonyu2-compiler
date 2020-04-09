@@ -22,6 +22,9 @@ nowait a() {
         x++;
     }
 }
+\move() {
+    x+=10;
+}
 //a.b.x;
 /*while (true) {
 try {

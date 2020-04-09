@@ -16,6 +16,6 @@ for (k of s) {
 //Tonyu.run("user.Hoge");
 
 $restart=\{
-    appear(new Chara);
+    appear(new Preya);
 };
 $restart();
