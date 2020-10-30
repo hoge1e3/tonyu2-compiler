@@ -317,8 +317,9 @@ module.exports=function () {
 
 		}
 		var lt=tokens[res.src.maxPos];
-		var mp=(lt?lt.pos+lt.len: str.length);
-		throw TError(R("parseError"), file ,  mp );
+		var mp=(lt?lt.pos : str.length);
+		const len=(lt?lt.len:0);
+		throw TError(R("parseError"), file ,  mp, len );
 		/*return "ERROR\nSyntax error at "+mp+"\n"+
 		str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
 	};
