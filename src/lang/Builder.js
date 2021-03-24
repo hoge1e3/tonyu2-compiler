@@ -284,15 +284,14 @@ module.exports=class {
 					Semantics.annotate(c, env);
 				}
 			});
-			try {
-				/*for (var n in compilingClasses) {
+			if (ctxOpt.typeCheck) {
+                console.log("Type check");
+				for (let n in compilingClasses) {
 					TypeChecker.checkTypeDecl(compilingClasses[n],env);
 				}
-				for (var n in compilingClasses) {
+				for (let n in compilingClasses) {
 					TypeChecker.checkExpr(compilingClasses[n],env);
-				}*/
-			} catch(e) {
-				console.log("Error in Typecheck(It doesnt matter because Experimental)",e.stack);
+				}
 			}
 			return this.showProgress("genJS");
 		}).then(()=>{

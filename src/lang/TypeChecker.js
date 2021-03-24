@@ -109,11 +109,11 @@ TypeChecker.checkExpr=function (klass,env) {
 					var m=a.memberAccess;
 					var vtype=visitExpr(m.target);
 					if (vtype) {
-					var f=cu.getField(vtype,m.name);
-					console.log("GETF",vtype,m.name,f);
-					if (f && f.vtype) {
-						annotation(node,{vtype:f.vtype});
-					}
+						var f=cu.getField(vtype,m.name);
+						console.log("GETF",vtype,m.name,f);
+						if (f && f.vtype) {
+							annotation(node,{vtype:f.vtype});
+						}
 					}
 				} else {
 					this.visit(node.left);
