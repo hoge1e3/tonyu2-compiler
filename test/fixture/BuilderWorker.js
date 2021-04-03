@@ -399,15 +399,14 @@ module.exports=class {
 					Semantics.annotate(c, env);
 				}
 			});
-			try {
-				/*for (var n in compilingClasses) {
+			if (ctxOpt.typeCheck) {
+                console.log("Type check");
+				for (let n in compilingClasses) {
 					TypeChecker.checkTypeDecl(compilingClasses[n],env);
 				}
-				for (var n in compilingClasses) {
+				for (let n in compilingClasses) {
 					TypeChecker.checkExpr(compilingClasses[n],env);
-				}*/
-			} catch(e) {
-				console.log("Error in Typecheck(It doesnt matter because Experimental)",e.stack);
+				}
 			}
 			return this.showProgress("genJS");
 		}).then(()=>{
@@ -3367,11 +3366,11 @@ TypeChecker.checkExpr=function (klass,env) {
 					var m=a.memberAccess;
 					var vtype=visitExpr(m.target);
 					if (vtype) {
-					var f=cu.getField(vtype,m.name);
-					console.log("GETF",vtype,m.name,f);
-					if (f && f.vtype) {
-						annotation(node,{vtype:f.vtype});
-					}
+						var f=cu.getField(vtype,m.name);
+						console.log("GETF",vtype,m.name,f);
+						if (f && f.vtype) {
+							annotation(node,{vtype:f.vtype});
+						}
 					}
 				} else {
 					this.visit(node.left);
@@ -13079,7 +13078,7 @@ module.exports=function (Tonyu) {
 		}
 	}
 	function IT(set, arity) {
-		if (set.tonyuIterator) {
+		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);
 		} else if (set instanceof Array) {
@@ -13088,7 +13087,7 @@ module.exports=function (Tonyu) {
 			} else {
 				return new ArrayKeyValueIterator(set);
 			}
-		} else if (typeof set[SYMIT]==="function") {
+		} else if (set && typeof set[SYMIT]==="function") {
 			return new NativeIteratorWrapper(set[SYMIT]());
 		} else if (set instanceof Object){
 			if (arity==1) {

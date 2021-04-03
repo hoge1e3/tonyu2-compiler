@@ -69,7 +69,7 @@
 		}
 	}
 	function IT(set, arity) {
-		if (set.tonyuIterator) {
+		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);
 		} else if (set instanceof Array) {
@@ -78,7 +78,7 @@
 			} else {
 				return new ArrayKeyValueIterator(set);
 			}
-		} else if (typeof set[SYMIT]==="function") {
+		} else if (set && typeof set[SYMIT]==="function") {
 			return new NativeIteratorWrapper(set[SYMIT]());
 		} else if (set instanceof Object){
 			if (arity==1) {
