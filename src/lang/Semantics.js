@@ -6,7 +6,8 @@ define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "Inde
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
 		context, Visitor,cu) {*/
 const Tonyu=require("../runtime/TonyuRuntime");
-const TonyuLang=require("./parse_tonyu2");
+const TonyuLang2=require("./parse_tonyu2");
+const TonyuLang1=require("./parse_tonyu1");
 const IndentBuffer=require("./IndentBuffer");
 const ObjectMatcher=require("./ObjectMatcher");
 const TError=require("../runtime/TError");
@@ -51,7 +52,10 @@ function visitSub(node) {//S
 function getSourceFile(klass) {
 	return A(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
 }
-function parse(klass) {
+function isTonyu1(options={}) {
+	return options.tonyu1;
+}
+function parse(klass, options={}) {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
 	let node;
 	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
@@ -59,7 +63,11 @@ function parse(klass) {
 	}
 	if (!node) {
 		//console.log("Parse "+s);
-		node=TonyuLang.parse(s);
+		if (isTonyu1(options)) {
+			node=TonyuLang1.parse(s);
+		} else {
+			node=TonyuLang2.parse(s);
+		}
 		klass.nodeTimestamp=s.lastUpdate();
 	}
 	return node;
@@ -73,7 +81,7 @@ function initClassDecls(klass, env ) {//S
 		// falsify on generateJS. if some class hasSemanticError, it remains true
 		klass.jsNotUpToDate=true;
 	}
-	const node=parse(klass);
+	const node=parse(klass, env.options);
 	/*if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
 		node=klass.node;
 	}
