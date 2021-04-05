@@ -29,7 +29,7 @@ const ja={
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
 };
 const en={
-    "superClassIsUndefined" : "Super Class {1} ss Undefined", //親クラス {1}は定義されていません
+    "superClassIsUndefined" : "Super Class '{1}' is not defined", //親クラス {1}は定義されていません
     "classIsUndefined" : "Class {1} is Undefined", //クラス {1}は定義されていません
     "invalidLeftValue" : "{1} is not a valid Left Value", //'{1}'は左辺には書けません．
     "fieldDeclarationRequired" : "'{1}' is not declared, If you have meant it is a Field, Declare Explicitly.", //{1}は宣言されていません（フィールドの場合，明示的に宣言してください）．

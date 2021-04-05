@@ -4,6 +4,7 @@ function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 const tokenizerFactory=require("./tokenizerFactory");
 
 module.exports=tokenizerFactory({
+	caseInsensitive: true, 
 	reserved:{
 		'while':true,
         'switch':true,

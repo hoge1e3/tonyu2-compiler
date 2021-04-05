@@ -345,8 +345,10 @@ function annotateSource2(klass, env) {//B
 		for (let i in decls.natives) {
 			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 		}
-		for (let i in JSNATIVES) {
-			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
+		if (!isTonyu1(env.options)) {
+			for (let i in JSNATIVES) {
+				s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
+			}			
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
 			var fullName=env.aliases[i];

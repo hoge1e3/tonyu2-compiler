@@ -106,6 +106,10 @@ module.exports=class {
     constructor (prj) {// langMod + dirBase
         this.prj=prj;
     }
+    isTonyu1() {
+        const options=this.getOptions();
+        return options.tonyu1;
+    }
     getOptions() {return this.prj.getOptions();}
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}
     getNamespace() {return this.prj.getNamespace();}
@@ -150,7 +154,7 @@ module.exports=class {
 		return ctx;
 	}
 	fileToClass(file) {
-		const shortName=file.truncExt(this.getEXT());
+		const shortName=this.fileToShortClassName(file);
 		const env=this.getEnv();
         const fullName=env.aliases[shortName];
 		if (!fullName) return null;
@@ -198,10 +202,14 @@ module.exports=class {
         const klass=this.addMetaFromFile(f);
         return Semantics.parse(klass);
     }
+    fileToShortClassName(f) {
+        const s=f.truncExt(this.getEXT());
+        return this.isTonyu1()?s.toLowerCase():s;
+    }
 	addMetaFromFile(f) {
 		const env=this.getEnv();
-		const shortCn=f.truncExt(this.getEXT());
-		const myNsp=this.getNamespace();
+		const shortCn=this.fileToShortClassName(f);
+        const myNsp=this.getNamespace();
 		const fullCn=myNsp+"."+shortCn;
 		var m=Tonyu.klass.getMeta(fullCn);
 		Tonyu.extend(m,{

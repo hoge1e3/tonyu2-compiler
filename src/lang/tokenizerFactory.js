@@ -3,7 +3,7 @@ function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
 const Parser=require("./parser");
 
-module.exports=function ({reserved}) {
+module.exports=function ({reserved, caseInsensitive}) {
 	function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
@@ -222,9 +222,12 @@ module.exports=function ({reserved}) {
 	dtk(REG|DIV,SAMENAME ,"|",REG );
 
 	var symresv=tk(/^[a-zA-Z_$][a-zA-Z0-9_$]*/,"symresv_reg").ret(function (s) {
-	s.type=(s.text=="constructor" ? "tk_constructor" :
-		reserved.hasOwnProperty(s.text) ? s.text : "symbol");
-	return s;
+		s.type=(s.text=="constructor" ? "tk_constructor" :
+			reserved.hasOwnProperty(s.text) ? s.text : "symbol");
+		if (caseInsensitive) {
+			s.text=s.text.toLowerCase();
+		}
+		return s;
 	}).first(space);
 	for (var n in reserved) {
 		posts[n]=REG;
