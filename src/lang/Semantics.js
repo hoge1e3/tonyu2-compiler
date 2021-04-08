@@ -6,6 +6,7 @@ define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "Inde
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
 		context, Visitor,cu) {*/
 const Tonyu=require("../runtime/TonyuRuntime");
+const tonyu1=require("./tonyu1");
 const TonyuLang2=require("./parse_tonyu2");
 const TonyuLang1=require("./parse_tonyu1");
 const IndentBuffer=require("./IndentBuffer");
@@ -52,9 +53,6 @@ function visitSub(node) {//S
 function getSourceFile(klass) {
 	return A(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
 }
-function isTonyu1(options={}) {
-	return options.tonyu1;
-}
 function parse(klass, options={}) {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
 	let node;
@@ -63,7 +61,7 @@ function parse(klass, options={}) {
 	}
 	if (!node) {
 		//console.log("Parse "+s);
-		if (isTonyu1(options)) {
+		if (tonyu1.isTonyu1(options)) {
 			node=TonyuLang1.parse(s);
 		} else {
 			node=TonyuLang2.parse(s);
@@ -345,10 +343,10 @@ function annotateSource2(klass, env) {//B
 		for (let i in decls.natives) {
 			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 		}
-		if (!isTonyu1(env.options)) {
+		if (!tonyu1.isTonyu1(env.options)) {
 			for (let i in JSNATIVES) {
 				s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
-			}			
+			}
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
 			var fullName=env.aliases[i];

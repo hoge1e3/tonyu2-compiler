@@ -12,6 +12,7 @@ const TypeChecker=require("./TypeChecker");
 const TError=require("../runtime/TError");
 const IndentBuffer=require("./IndentBuffer");
 const SourceFiles=require("./SourceFiles");
+const tonyu1=require("./tonyu1");
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {/*ENVC*/
     var added={};
@@ -108,7 +109,7 @@ module.exports=class {
     }
     isTonyu1() {
         const options=this.getOptions();
-        return options.tonyu1;
+        return tonyu1.isTonyu1(options);
     }
     getOptions() {return this.prj.getOptions();}
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}

@@ -11,6 +11,7 @@ const Visitor=require("./Visitor");
 const cu=require("./compiler");
 const A=require("../lib/assert");
 const R=require("../lib/R");
+const tonyu1=require("./tonyu1");
 
 module.exports=cu.JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -106,7 +107,11 @@ function genJS(klass, env, genOptions) {//B
 		} else if (t==ST.GLOBAL) {
 			buf.printf("%s%s",GLOBAL_HEAD, n);
 		} else if (t==ST.PARAM || t==ST.LOCAL || t==ST.NATIVE || t==ST.MODULE) {
-			buf.printf("%s",n);
+			if (tonyu1.isTonyu1(env.options) && t==ST.NATIVE) {
+				buf.printf("%s.%s",THIZ, n);
+			} else {
+				buf.printf("%s",n);
+			}
 		} else {
 			console.log("Unknown scope type: ",t);
 			throw new Error("Unknown scope type: "+t);
