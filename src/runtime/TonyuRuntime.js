@@ -83,7 +83,17 @@ module.exports=function () {
 	/*Function.prototype.constructor=function () {
 		throw new Error("This method should not be called");
 	};*/
-	klass.propReg=/^__([gs]et)ter__(.*)$/;
+	const propReg=/^__([gs]et)ter__(.*)$/;
+	klass.propReg=propReg;
+	const property={
+		isPropertyMethod(name) {
+			return propReg.exec(name);
+		},
+		methodFor(type, name) {
+			return `__${type}ter__${name}`;
+		}
+	};
+	klass.property=property;
 	klass.define=function (params) {
 		// fullName, shortName,namspace, superclass, includes, methods:{name/fiber$name: func}, decls
 		var parent=params.superclass;
@@ -168,9 +178,9 @@ module.exports=function () {
 			res.methods=methods;
 			var prot=res.prototype;
 			var props={};
-			var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
-			var k;
-			for (k in methods) {
+			//var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
+			//var k;
+			for (let k in methods) {
 				if (k.match(/^fiber\$/)) continue;
 				prot[k]=methods[k];
 				var fbk="fiber$"+k;
@@ -185,16 +195,26 @@ module.exports=function () {
 				}
 				prot[k].methodInfo=prot[k].methodInfo||{name:k,klass:res};
 				// if profile...
-				var r=propReg.exec(k);
+				const r=property.isPropertyMethod(k);
 				if (r) {
+					props[r[2]]=1;
 					// __(r[1]g/setter)__r[2]
-					props[r[2]]=props[r[2]]||{};
-					props[r[2]][r[1]]=prot[k];
+					//props[r[2]]=props[r[2]]||{};
+					//props[r[2]][r[1]]=prot[k];
 				}
 			}
 			prot.isTonyuObject=true;
-			for (k in props) {
-				Object.defineProperty(prot, k , props[k]);
+			//console.log("Prots1",props);
+			for (let k of Object.keys(props)) {
+				const desc={};
+				for (let type of ["get", "set"]) {
+					const tter=prot[property.methodFor(type, k)];
+					if (tter) {
+						desc[type]=tter;
+					}
+				}
+				//console.log("Prots2",k, desc);
+				Object.defineProperty(prot, k , desc);
 			}
 			prot.getClassInfo=function () {
 				return res.meta;

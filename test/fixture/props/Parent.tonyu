@@ -1,0 +1,7 @@
+native console;
+test=5;
+\x {
+   console.log("get x",test*2);
+   return test*2;
+}
+

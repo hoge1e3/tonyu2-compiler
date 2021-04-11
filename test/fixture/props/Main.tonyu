@@ -1,0 +1,14 @@
+native console;
+
+console.log("Parent");
+p=new Parent;
+p.test=5;
+//p.x=10;
+console.log(p.x);
+
+
+console.log("Child");
+c=new Child;
+c.x=10;
+console.log(c.x, c.test);
+
