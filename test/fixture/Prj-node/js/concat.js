@@ -64,10 +64,26 @@ Tonyu.klass.define({
           
         }
       },
+      move :function _trc_Chara_move() {
+        "use strict";
+        var _this=this;
+        
+        _this.x+=10;
+      },
+      fiber$move :function _trc_Chara_f_move(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        _this.x+=10;
+        
+        _thread.retVal=_this;return;
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
+  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true},"move":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Field',
@@ -136,7 +152,7 @@ Tonyu.klass.define({
         }
         Tonyu.globals.$restart=(function anonymous_305() {
           
-          _this.appear(new Tonyu.classes.user.Chara);
+          _this.appear(new Tonyu.classes.user.Preya);
         });
         Tonyu.globals.$restart();
       },
@@ -166,7 +182,7 @@ Tonyu.klass.define({
             case 0:
               Tonyu.globals.$restart=(function anonymous_305() {
                 
-                _this.appear(new Tonyu.classes.user.Chara);
+                _this.appear(new Tonyu.classes.user.Preya);
               });
               Tonyu.globals.$restart();
               _thread.exit(_this);return;
@@ -178,6 +194,64 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false}},"fields":{"s":{},"k":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.Preya',
+  shortName: 'Preya',
+  namespace: 'user',
+  superclass: Tonyu.classes.user.Chara,
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Preya_main() {
+        "use strict";
+        var _this=this;
+        
+        _this.x=0;
+        while (_this.x<120) {
+          Tonyu.checkLoop();
+          _this.move();
+          console.log(_this.x);
+          _this.update();
+          
+        }
+      },
+      fiber$main :function _trc_Preya_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        _this.x=0;
+        
+        _thread.enter(function _trc_Preya_ent_main(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+            case 1:
+              if (!(_this.x<120)) { __pc=4     ; break; }
+              _this.fiber$move(_thread);
+              __pc=2;return;
+            case 2:
+              
+              console.log(_this.x);
+              _this.fiber$update(_thread);
+              __pc=3;return;
+            case 3:
+              
+              __pc=1;break;
+            case 4     :
+              
+              _thread.exit(_this);return;
+            }
+          }
+        });
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
 });
 
 //# sourceMappingURL=concat.js.map
