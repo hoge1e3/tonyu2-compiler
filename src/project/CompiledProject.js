@@ -23,6 +23,9 @@
         const res=F.createCore();
         return res.include(langMod).include({
             getNamespace:function () {return ns;},
+            getOutputURL() {
+                return url;
+            },
             loadClasses: async function (ctx) {
                 console.log("Loading compiled classes ns=",ns,"url=",url);
                 await this.loadDependingClasses();
