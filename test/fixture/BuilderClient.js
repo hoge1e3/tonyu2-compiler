@@ -38,19 +38,43 @@ class BuilderClient {
         console.log("exported",exported);
         return exported;
     }
+    exportWithDependingFiles() {
+        const ns2depspec=this.config.worker.ns2depspec;
+        const exported=this.exportFiles();
+        const deps=this.prj.getDependingProjects();//TODO recursive
+        const outputDir=this.prj.getOutputFile().up();
+        const newDep=[];
+        for (let dep of deps) {
+            const ns=dep.getNamespace();
+            if (ns2depspec[ns]) {
+                newDep.push({namespace:ns});
+                continue;
+            }
+            const out=dep.getOutputFile();
+            const dstOut=outputDir.rel(`${ns}.js`);
+            const relOfOut=dstOut.relPath(this.prj.getDir());
+            newDep.push({namespace:ns, outputFile: relOfOut});
+            exported.data[relOfOut]=out.text();
+        }
+        const opt=JSON.parse(exported.data["options.json"]);
+        opt.compiler.dependingProjects=newDep;
+        exported.data["options.json"]=JSON.stringify(opt);
+        console.log("opt changed", opt);
+        return exported;
+    }
     async init() {
         if (this.inited) return;
         const fileMap=this.fileMap;
         const localPrjDir=this.getDir();
-        const files=this.exportFiles();
         const ns2depspec=this.config.worker.ns2depspec;
+        const files=this.exportWithDependingFiles();
         const {prjDir:remotePrjDir}=await this.w.run("compiler/init",{
             namespace:this.prj.getNamespace(),
             files, ns2depspec, locale: this.config.locale
         });
         fileMap.add({local:localPrjDir, remote: remotePrjDir});
         const deps=this.prj.getDependingProjects();//TODO recursive
-        for (let dep of deps) {
+        /*for (let dep of deps) {
             const ns=dep.getNamespace();
             if (!ns2depspec[ns]) {
                 const localPrjDir=dep.getDir();
@@ -62,12 +86,12 @@ class BuilderClient {
                 });
                 fileMap.add({local:localPrjDir, remote: remotePrjDir});
             }
-        }
+        }*/
         this.inited=true;
     }
     resetFiles() {
         if (!this.inited) return this.init();
-        const files=this.exportFiles();
+        const files=this.exportWithDependingFiles();
         return this.w.run("compiler/resetFiles",{
             //namespace:this.prj.getNamespace(),
             files

@@ -39,7 +39,7 @@ WS.serv("compiler/resetFiles", params=>{
     prjDir.importFromObject(files);
     builder.requestRebuild();
 });
-WS.serv("compiler/addDependingProject", ({namespace,files})=>{
+/*WS.serv("compiler/addDependingProject", ({namespace,files})=>{
     //const files=params.files;
     const prjDir=ram.rel((namespace)+"/");
     prjDir.importFromObject(files);
@@ -59,7 +59,7 @@ WS.serv("compiler/addDependingProject", ({namespace,files})=>{
     prj.setOptions(options);
     console.log("Options changed as",options);
     return {prjDir:prjDir.path()};
-});
+});*/
 WS.serv("compiler/parse", async ({files})=>{
     try {
         // params.files:: relPath=>cont

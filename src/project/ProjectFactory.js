@@ -123,6 +123,7 @@
     exports.createDirBasedCore=function (params) {
         const res=this.createCore();
         res.dir=params.dir;
+        if (!res.dir.exists()) throw new Error(res.dir.path()+" Does not exist.");
         return res.include(dirBasedMod);
     };
 //});/*--end of define--*/

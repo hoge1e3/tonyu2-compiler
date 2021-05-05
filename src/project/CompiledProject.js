@@ -12,6 +12,7 @@
 
     F.addType("compiled",params=> {
         if (params.namespace && params.url) return urlBased(params);
+        if (params.namespace && params.outputFile) return outputFileBased(params);
         if (params.dir) return dirBased(params);
         console.error("Invalid compiled project", params);
         throw new Error("Invalid compiled project");
@@ -48,6 +49,29 @@
             }
         });
     }
+    function outputFileBased(params) {
+        const ns=params.namespace;
+        const outputFile=params.outputFile;
+        const res=F.createCore();
+        return res.include(langMod).include({
+            getNamespace:function () {return ns;},
+            getOutputFile() {
+                return outputFile;
+            },
+            loadClasses: async function (ctx) {
+                console.log("Loading compiled classes ns=",ns,"outputFile=",outputFile);
+                await this.loadDependingClasses();
+                const outJS=outputFile;
+                const map=outJS.sibling(outJS.name()+".map");
+                const sf=SourceFiles.add({
+                    text:outJS.text(),
+                    sourceMap:map.exists() && map.text(),
+                });
+                await sf.exec();
+                console.log("Loaded compiled classes ns=",ns,"outputFile=",outputFile);
+            },
+        });
+    }
     exports.create=params=>F.create("compiled",params);
     F.addDependencyResolver((prj, spec)=> {
         if (spec.dir && prj.resolve) {
@@ -55,6 +79,12 @@
         }
         if (spec.namespace && spec.url) {
             return F.create("compiled",spec);
+        }
+        if (spec.namespace && spec.outputFile && prj.resolve) {
+            return F.create("compiled",{
+                namespace: spec.namespace,
+                outputFile: prj.resolve(spec.outputFile)
+            });
         }
     });
 //});/*--end of define--*/
