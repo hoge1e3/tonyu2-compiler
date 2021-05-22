@@ -3,6 +3,7 @@ const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
 const SourceFiles=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
+const NS2DepSpec=require("../project/NS2DepSpec");
 //const FS=(root.parent && root.parent.FS) || root.FS;
 const FS=root.FS;// TODO
 
@@ -38,14 +39,14 @@ class BuilderClient {
         return exported;
     }
     exportWithDependingFiles() {
-        const ns2depspec=this.config.worker.ns2depspec;
+        const ns2depspec=new NS2DepSpec(this.config.worker.ns2depspec);
         const exported=this.exportFiles();
         const deps=this.prj.getDependingProjects();//TODO recursive
         const outputDir=this.prj.getOutputFile().up();
         const newDep=[];
         for (let dep of deps) {
             const ns=dep.getNamespace();
-            if (ns2depspec[ns]) {
+            if (ns2depspec.has(ns)) {
                 newDep.push({namespace:ns});
                 continue;
             }
@@ -73,19 +74,6 @@ class BuilderClient {
         });
         fileMap.add({local:localPrjDir, remote: remotePrjDir});
         const deps=this.prj.getDependingProjects();//TODO recursive
-        /*for (let dep of deps) {
-            const ns=dep.getNamespace();
-            if (!ns2depspec[ns]) {
-                const localPrjDir=dep.getDir();
-                const files=localPrjDir.exportAsObject({
-                    excludesF: f=>f.ext()!==".tonyu" && f.name()!=="options.json"
-                });
-                const {prjDir:remotePrjDir}=await this.w.run("compiler/addDependingProject",{
-                    namespace:ns, files
-                });
-                fileMap.add({local:localPrjDir, remote: remotePrjDir});
-            }
-        }*/
         this.inited=true;
     }
     resetFiles() {
@@ -187,5 +175,6 @@ class BuilderClient {
     }
 }
 BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.NS2DepSpec=NS2DepSpec;
 //root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;

@@ -9,18 +9,21 @@ const F=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
 const langMod=require("../lang/langMod");
 const R=require("../lib/R");
+const NS2DepSpec=require("../project/NS2DepSpec");
+
 
 let prj,builder;
-const ns2depspec={};
+let ns2depspec=new NS2DepSpec({});
 const ram=FS.get("/prj/");
 F.addDependencyResolver(function (prj, spec) {
     console.log("RESOLV",spec,ns2depspec);
-    if (spec.namespace && ns2depspec[spec.namespace]) {
-        return F.fromDependencySpec(prj,ns2depspec[spec.namespace]);
+    if (spec.namespace) {
+        const s=ns2depspec.has(spec.namespace);
+        return F.fromDependencySpec(prj, s);
     }
 });
 WS.serv("compiler/init", params=>{
-    Object.assign(ns2depspec,params.ns2depspec||{});
+    ns2depspec=new NS2DepSpec(params.ns2depspec);
     const files=params.files;
     const namespace=params.namespace||"user";
     const prjDir=ram.rel(namespace+"/");
@@ -39,27 +42,6 @@ WS.serv("compiler/resetFiles", params=>{
     prjDir.importFromObject(files);
     builder.requestRebuild();
 });
-/*WS.serv("compiler/addDependingProject", ({namespace,files})=>{
-    //const files=params.files;
-    const prjDir=ram.rel((namespace)+"/");
-    prjDir.importFromObject(files);
-    const dprj=CompiledProject.create({dir:prjDir});
-    ns2depspec[namespace]={
-        dir: prjDir.path()
-    };
-    const options=prj.getOptions();
-    const compiler=options.compiler||{};
-    const dependingProjects=compiler.dependingProjects||[];
-    for (let i=0; i<dependingProjects.length; i++) {
-        const p=dependingProjects[i];
-        if (p.namespace===namespace && p.dir) {
-            p.dir=prjDir.path();
-        }
-    }
-    prj.setOptions(options);
-    console.log("Options changed as",options);
-    return {prjDir:prjDir.path()};
-});*/
 WS.serv("compiler/parse", async ({files})=>{
     try {
         // params.files:: relPath=>cont
