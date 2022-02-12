@@ -63,14 +63,14 @@ const en={
     console.log(buf);*/
 
 let dict=en;
-function R(name,...params) {
+export default function R(name,...params) {
     let mesg=dict[name];
     if (!mesg) {
         return englishify(name)+(params.length?": "+params.join(","):"");
     }
     return buildMesg(mesg, ...params);//+"です！";
 }
-function buildMesg() {
+function buildMesg(...params) {
     var a=Array.prototype.slice.call(arguments);
     var format=a.shift();
     if (a.length===1 && a[0] instanceof Array) a=a[0];
@@ -90,4 +90,4 @@ R.setLocale=locale=>{
     if (locale==="ja") dict=ja;
     if (locale==="en") dict=en;
 };
-module.exports=R;
+//module.exports=R;

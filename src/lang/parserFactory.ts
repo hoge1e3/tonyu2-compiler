@@ -10,10 +10,10 @@ function (Grammar, XMLBuffer, IndentBuffer, TT,
 const Grammar=require("./Grammar");
 const IndentBuffer=require("./IndentBuffer");
 const Parser=require("./parser");
-const R=require("../lib/R");
+import R = require("../lib/R");
 const ExpressionParser=require("./ExpressionParser2");
 const TError=require("../runtime/TError");
-module.exports=function ({TT}) {
+export=function ({TT}) {
 	var p=Parser;
 	var $={};
 	var g=Grammar();

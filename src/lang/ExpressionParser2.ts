@@ -1,5 +1,5 @@
 // parser.js の補助ライブラリ．式の解析を担当する
-module.exports=function () {
+exports=function () {
 	const Parser=require("./parser");
 	var $={};
 	var EXPSTAT="EXPSTAT";

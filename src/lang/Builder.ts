@@ -1,18 +1,4 @@
-const Tonyu=require("../runtime/TonyuRuntime");
-const JSGenerator=require("./JSGenerator");
-const Semantics=require("./Semantics");
-//const ttb=require("./");
-const FS=require("../lib/FS");
-const R=require("../lib/R");
-const A=require("../lib/assert");
-//,DU,
-//const CPR=require("./compiledProject");
-const S=require("./source-map");
-const TypeChecker=require("./TypeChecker");
-const TError=require("../runtime/TError");
-const IndentBuffer=require("./IndentBuffer");
-const SourceFiles=require("./SourceFiles");
-const tonyu1=require("./tonyu1");
+
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {/*ENVC*/
     var added={};

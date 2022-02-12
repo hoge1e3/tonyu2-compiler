@@ -1,7 +1,8 @@
 /*global self*/
 // Worker Side
+declare const self:any;
     var idseq=1;
-    var paths={},queue={},root=self;
+    var paths={},queue={},root:any=self;
     root.WorkerService={
         install: function (path, func) {
             paths[path]=func;
@@ -75,4 +76,5 @@
             }
         };
     }
-    module.exports=self.WorkerService;
+    export default root.WorkerService;
+    //module.exports=self.WorkerService;

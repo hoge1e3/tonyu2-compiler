@@ -10,10 +10,10 @@ const context=require("./context");
 const Visitor=require("./Visitor");
 const cu=require("./compiler");
 const A=require("../lib/assert");
-const R=require("../lib/R");
+import R=require("../lib/R");
 const tonyu1=require("./tonyu1");
 
-module.exports=cu.JSGenerator=(function () {
+export=cu.JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 var TH="_thread",THIZ="_this", ARGS="_arguments",FIBPRE="fiber$", FRMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100;//G
 var BINDF="Tonyu.bindFunc";

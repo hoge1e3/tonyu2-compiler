@@ -18,7 +18,7 @@ const cu=require("./compiler");
 const A=require("../lib/assert");
 const Grammar=require("./Grammar");
 const root=require("../lib/root");
-const R=require("../lib/R");
+import R=require("../lib/R");
 
 module.exports=cu.Semantics=(function () {
 /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B

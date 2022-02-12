@@ -1,9 +1,8 @@
-//		function (assert,TT,IT,DU) {
-var assert=require("../lib/assert");
-var root=require("../lib/root");
-var TonyuThreadF=require("./TonyuThread");
-var IT=require("./tonyuIterator");
-const R=require("../lib/R");
+import R from "../lib/R";
+import IT from "./TonyuIterator";
+import TonyuThreadF from "./TonyuThread";
+import root from "../lib/root";
+
 module.exports=function () {
 	// old browser support
 	if (!root.performance) {
@@ -32,7 +31,15 @@ module.exports=function () {
 			requestAnimationFrame(f);
 		});
 	}*/
-
+	const propReg=/^__([gs]et)ter__(.*)$/;
+	const property={
+		isPropertyMethod(name) {
+			return propReg.exec(name);
+		},
+		methodFor(type, name) {
+			return `__${type}ter__${name}`;
+		}
+	};
 	function handleEx(e) {
 		if (Tonyu.onRuntimeError) {
 			Tonyu.onRuntimeError(e);
@@ -43,7 +50,6 @@ module.exports=function () {
 			throw e;
 		}
 	}
-	klass.addMeta=addMeta;
 	function addMeta(fn,m) {
 		// why use addMeta?
 		// because when compiled from source, additional info(src file) is contained.
@@ -51,6 +57,8 @@ module.exports=function () {
 		assert.is(arguments,[String,Object]);
 		return extend(klass.getMeta(fn), m);
 	}
+	klass.addMeta=addMeta;
+
 	klass.removeMeta=function (n) {
 		delete classMetas[n];
 	};
@@ -83,16 +91,9 @@ module.exports=function () {
 	/*Function.prototype.constructor=function () {
 		throw new Error("This method should not be called");
 	};*/
-	const propReg=/^__([gs]et)ter__(.*)$/;
+
 	klass.propReg=propReg;
-	const property={
-		isPropertyMethod(name) {
-			return propReg.exec(name);
-		},
-		methodFor(type, name) {
-			return `__${type}ter__${name}`;
-		}
-	};
+
 	klass.property=property;
 	klass.define=function (params) {
 		// fullName, shortName,namspace, superclass, includes, methods:{name/fiber$name: func}, decls
@@ -274,7 +275,9 @@ module.exports=function () {
 
 	//alert("init");
 	var globals={};
-	var classes={};// classes.namespace.classname= function
+	type Constructor = new (...args: any[]) => any;
+	type ClassMap={[key:string]:ClassMap}|Constructor;
+	var classes:ClassMap={};// classes.namespace.classname= function
 	var classMetas={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 	function setGlobal(n,v) {
 		globals[n]=v;
@@ -300,11 +303,12 @@ module.exports=function () {
 				}
 			}
 		}
-		return res;//classes[n];
+		if (res instanceof Function) return res;//classes[n];
+		throw new Error(`Not a class: ${n}`);
 	}
 	function bindFunc(t,meth) {
 		if (typeof meth!="function") return meth;
-		var res=function () {
+		var res:any=function () {
 			return meth.apply(t,arguments);
 		};
 		res.methodInfo=Tonyu.extend({thiz:t},meth.methodInfo||{});
@@ -348,7 +352,7 @@ module.exports=function () {
 		return k in obj;
 	}
 	function run(bootClassName) {
-		var bootClass=getClass(bootClassName);
+		var bootClass:Constructor=getClass(bootClassName);
 		if (!bootClass) throw new Error( R("bootClassIsNotFound",bootClassName));
 		Tonyu.runMode=true;
 		var boot=new bootClass();

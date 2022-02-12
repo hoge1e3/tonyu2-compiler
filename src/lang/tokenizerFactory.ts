@@ -1,9 +1,9 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-const Parser=require("./parser");
+import Parser = require("./parser");
 
-module.exports=function ({reserved, caseInsensitive}) {
+export=function ({reserved, caseInsensitive}) {
 	function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {

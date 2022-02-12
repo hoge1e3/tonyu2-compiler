@@ -1,4 +1,4 @@
-const Visitor = function (funcs) {
+export default function Visitor(funcs) {
 	var $={funcs:funcs, path:[]};
 	$.visit=function (node) {
 		try {
@@ -28,4 +28,3 @@ const Visitor = function (funcs) {
 	};
 	return $;
 };
-module.exports=Visitor;

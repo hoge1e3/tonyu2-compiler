@@ -1,4 +1,4 @@
-module.exports=function () {
+exports=function () {
 	var c={};
 	c.ovrFunc=function (from , to) {
 		to.parent=from;

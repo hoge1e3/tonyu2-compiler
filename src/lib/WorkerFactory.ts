@@ -1,29 +1,27 @@
-define([],function () {
-    var WorkerFactory={
-        extractSrcFromFunction: function (f,startMark,endMark) {
+export         function extractSrcFromFunction(f,startMark,endMark) {
             startMark=startMark||/(.|\s)*WORKER[_]SRC[_]BEGIN\*\//;
             endMark=endMark||/\/\*WORKER[_]SRC[_]END(.|\s)*/;
             var src=(""+f).replace(startMark,"").replace(endMark,"");
             return src;
-        },
-        createFromFunction: function (f,startMark,endMark) {
+        }
+export        function createFromFunction(f,startMark,endMark) {
             var src=this.extractSrcFromFunction(f,startMark,endMark);
             return this.createFromString(src);
-        },
-        urlFromString: function (src) {
+        }
+export         function urlFromString(src) {
             return URL.createObjectURL( new Blob([src] ,{type:"text/javascript"} ));
-        },
-        createFromString: function (src) {
+        }
+export         function createFromString(src) {
             var url=this.urlFromString(src);
             return new Worker(url);
-        },
-        requireUrl: function (name) {
+        }
+export        function requireUrl(name) {
             return "worker.js?main="+name;
-        },
-        require: function (name) {
+        }
+export        function require(name) {
             return new Worker(this.requireUrl(name));
-        },
-        create: function (src) {
+        }
+export      function create(src) {
             if (typeof src==="string") {
                 return this.require(src);
             } else if (typeof src==="function") {
@@ -31,7 +29,4 @@ define([],function () {
             }
             throw new Error("Invaluid src type "+src);
         }
-    };
-
-    return WorkerFactory;
-});
+    }

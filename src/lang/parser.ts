@@ -1,4 +1,4 @@
-module.exports=function () {
+export=function () {
 	function extend(dst, src) {
 		var i;
 		for(i in src){

@@ -1,7 +1,7 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-const tokenizerFactory=require("./tokenizerFactory");
+import tokenizerFactory = require("./tokenizerFactory");
 
 module.exports=tokenizerFactory({
 	reserved:{

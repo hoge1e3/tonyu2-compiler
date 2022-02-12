@@ -1,7 +1,7 @@
 /* global define*/
-define(function (require, exports, module) {
+
     //const Tonyu=require("../runtime/TonyuRuntime");
-    class VType{
+export    class VType{
         toPlain() {
             throw new Error("toPlain: abstract");
         }
@@ -13,7 +13,7 @@ define(function (require, exports, module) {
         }
     }
     // "fullName";
-    class Class extends VType {
+export    class Class extends VType {
         constructor(ctx, n_m) {
             this.ctx=ctx;
             if (typeof n_m==="string") {
@@ -82,7 +82,7 @@ define(function (require, exports, module) {
         throw new Error(`${name} is not found`);
     }
     // "number"|"string"|"boolean"
-    class Primitive extends VType  {
+export    class Primitive extends VType  {
         constructor(name, nativeConstructor) {
             this.name=name;
             this.nativeConstructor=nativeConstructor;
@@ -106,7 +106,7 @@ define(function (require, exports, module) {
     }
     exports.Primitive=Primitive;
     // {element: vtype}
-    class TArray extends Primitive {
+export    class TArray extends Primitive {
         constructor(element) {
             this.element=element;
             this.name="Array";
@@ -231,7 +231,7 @@ define(function (require, exports, module) {
 
     }
     // null
-    class Any extends VType {
+export    class Any extends VType {
         toPlain() {
             return null;
         }
@@ -278,7 +278,7 @@ define(function (require, exports, module) {
             this.vtype=vtype;
         }
     }
-    function parse(ctx, plain) {
+export    function parse(ctx, plain) {
         const p=plain=>parse(ctx,plain);
         if (plain==="number") {
             return new Primitive(plain, Number);
@@ -314,6 +314,3 @@ define(function (require, exports, module) {
             return new Or(plain.or.map(p));
         }
     }
-
-    exports.VType=VType;
-});

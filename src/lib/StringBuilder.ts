@@ -1,5 +1,5 @@
 //from https://codepen.io/hoge1e3/pen/OJJaKyV?editors=0010
-module.exports=function (bufSize=1024) {
+export default function StringBuilder(bufSize=1024) {
     const buf=[""];
     function rest(lastIdx) {
         return bufSize-buf[lastIdx].length;
@@ -86,4 +86,4 @@ module.exports=function (bufSize=1024) {
         return buf.join("");
     }
     return {append, replace, truncate,toString,getLength,last};
-};
+}

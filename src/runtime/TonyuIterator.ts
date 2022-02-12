@@ -68,7 +68,7 @@
 			return true;
 		}
 	}
-	function IT(set, arity) {
+	export default function IT(set, arity) {
 		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);
@@ -91,7 +91,7 @@
 			throw new Error(set+" is not iterable");
 		}
 	}
-	module.exports=IT;
+//	module.exports=IT;
 //   Tonyu.iterator=IT;
 //	return IT;
 //});

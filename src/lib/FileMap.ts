@@ -1,4 +1,4 @@
-class FileMap {
+export default class FileMap {
     constructor(){this.sidesList=[];}
     add(sides) {// {sideA:path, sideB:path}
         this.sidesList.push(sides);
@@ -12,4 +12,3 @@ class FileMap {
         return path;
     }
 }
-module.exports=FileMap;

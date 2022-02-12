@@ -1,4 +1,4 @@
-module.exports=(function () {
+export=(function () {
 	var OM={};
 	var VAR="$var",THIZ="$this";
 	OM.v=v;

@@ -1,10 +1,11 @@
 //define(function (require,exports,module) {
 /*const root=require("root");*/
-const root=require("../lib/root");
+import root = require("../lib/root");
 function timeout(t) {
     return new Promise(s=>setTimeout(s,t));
 }
 let vm;
+declare const global:any;
 /*global global*/
 if (typeof global!=="undefined" && global.require && global.require.name!=="requirejs") {
     vm=global.require("vm");

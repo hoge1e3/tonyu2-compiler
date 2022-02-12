@@ -1,10 +1,34 @@
 //	var Klass=require("../lib/Klass");
 const R=require("../lib/R");
-module.exports=function (Tonyu) {
+interface ThreadGroup {
+    isDeadThreadGroup(): boolean;
+    objectPoolAge: any;
+}
+export default function TonyuThreadF(Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
 	class TonyuThread {
+        frame: any;
+        private _isDead: boolean;
+        cnt: number;
+        private _isWaiting: boolean;
+        fSuspended: boolean;
+        tryStack: any[];
+        preemptionTime: number;
+        onEndHandlers: any[];
+        onTerminateHandlers: any[];
+        id: number;
+        age: number;
+		_threadGroup: ThreadGroup;
+		termStatus: undefined|"killed"|"exception";
+		preempted=false;
+        retVal: any;
+        lastEvent: IArguments;
+        lastEx: any;
+        catchPC: any;
+        handleEx: any;
+        tGrpObjectPoolAge: any;
 		constructor() {
 			this.frame=null;
 			this._isDead=false;
@@ -182,7 +206,7 @@ module.exports=function (Tonyu) {
 					msg+=arguments[i]+",";
 				}
 				if (msg.length==0) msg="Async fail";
-				var e=new Error(msg);
+				var e:any=new Error(msg);
 				e.args=arguments;
 				fb.gotoCatch(e);
 				fb.steps();
@@ -207,7 +231,7 @@ module.exports=function (Tonyu) {
 		}
 		wrapError(e) {
 			if (e instanceof Error) return e;
-			var re=new Error(e);
+			var re:any=new Error(e);
 			re.original=e;
 			return re;
 		}
@@ -261,4 +285,4 @@ module.exports=function (Tonyu) {
 		}
 	}
 	return TonyuThread;
-};
+}

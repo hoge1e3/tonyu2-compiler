@@ -1,10 +1,10 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-const tokenizerFactory=require("./tokenizerFactory");
+import tokenizerFactory = require("./tokenizerFactory");
 
-module.exports=tokenizerFactory({
-	caseInsensitive: true, 
+export=tokenizerFactory({
+	caseInsensitive: true,
 	reserved:{
 		'while':true,
         'switch':true,
