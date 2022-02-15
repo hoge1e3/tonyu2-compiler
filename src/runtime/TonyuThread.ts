@@ -1,5 +1,8 @@
 //	var Klass=require("../lib/Klass");
-const R=require("../lib/R");
+
+import R from "../lib/R";
+
+//const R=require("../lib/R");
 interface ThreadGroup {
     isDeadThreadGroup(): boolean;
     objectPoolAge: any;

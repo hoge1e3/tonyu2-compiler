@@ -1,4 +1,5 @@
 export default class FileMap {
+    sidesList: any[];
     constructor(){this.sidesList=[];}
     add(sides) {// {sideA:path, sideB:path}
         this.sidesList.push(sides);

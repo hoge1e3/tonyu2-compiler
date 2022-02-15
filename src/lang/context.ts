@@ -1,5 +1,5 @@
-exports=function () {
-	var c={};
+export default function context() {
+	var c:any={};
 	c.ovrFunc=function (from , to) {
 		to.parent=from;
 		return to;
@@ -16,8 +16,8 @@ exports=function () {
 	function enter(val, act) {
 		var sv={};
 		for (let k in val) {
-			if (k.match(/^\$/)) {
-				k=RegExp.rightContext;
+			if (k[0]==="$") {
+				k=k.substring(1);
 				sv[k]=c[k];
 				c[k]=c.ovrFunc(c[k], val[k]);
 			} else {

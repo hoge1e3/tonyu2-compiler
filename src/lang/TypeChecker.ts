@@ -2,10 +2,16 @@
 	define=require("requirejs").define;
 }
 define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
-	const Visitor=require("./Visitor");
+	/*const Visitor=require("./Visitor");
 	const Grammar=require("./Grammar");
 	const cu=require("./compiler");
 	const context=require("./context");
+*/
+
+import cu from "./compiler";
+import context from "./context";
+import Grammar from "./Grammar";
+import Visitor from "./Visitor";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 	var ScopeTypes=cu.ScopeTypes;
@@ -19,7 +25,7 @@ define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
 	var getDependingClasses=cu.getDependingClasses;
 	var getParams=cu.getParams;
 	var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1};
-var TypeChecker={};
+var TypeChecker:any={};
 function visitSub(node) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
@@ -39,7 +45,7 @@ function visitSub(node) {//S
 }
 
 TypeChecker.checkTypeDecl=function (klass,env) {
-	function annotation(node, aobj) {//B
+	function annotation(node, aobj?) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=Visitor({
@@ -93,7 +99,7 @@ TypeChecker.checkTypeDecl=function (klass,env) {
 	typeDeclVisitor.visit(klass.node);
 };
 TypeChecker.checkExpr=function (klass,env) {
-		function annotation(node, aobj) {//B
+		function annotation(node, aobj?) {//B
 			return annotation3(klass.annotation,node,aobj);
 		}
 		var typeAnnotationVisitor=Visitor({
@@ -158,4 +164,4 @@ TypeChecker.checkExpr=function (klass,env) {
 		return va.vtype;
 	}
 };
-module.exports=TypeChecker;
+export default TypeChecker;

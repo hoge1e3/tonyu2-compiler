@@ -1,7 +1,13 @@
 //define(["Klass"], function (Klass) {
 	//var Klass=require("../lib/Klass");
 	const SYMIT=typeof Symbol!=="undefined" && Symbol.iterator;
-	class ArrayValueIterator {
+	interface ITonyuIterator {
+		set: any;
+		i: number;
+	}
+	class ArrayValueIterator implements ITonyuIterator {
+        set: any;
+        i: number;
 		constructor(set) {
 			this.set=set;
 			this.i=0;
@@ -13,11 +19,13 @@
 			return true;
 		}
 	}
-	class ArrayKeyValueIterator {
+	class ArrayKeyValueIterator implements ITonyuIterator {
 		constructor(set) {
 			this.set=set;
 			this.i=0;
 		}
+        set: any;
+        i: number;
 		next() {
 			if (this.i>=this.set.length) return false;
 			this[0]=this.i;
@@ -26,7 +34,8 @@
 			return true;
 		}
 	}
-	class ObjectKeyIterator {
+	class ObjectKeyIterator implements ITonyuIterator {
+        elems: any[];
 		constructor(set) {
 			this.elems=[];
 			for (var k in set) {
@@ -34,6 +43,8 @@
 			}
 			this.i=0;
 		}
+        set: any;
+        i: number;
 		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i];
@@ -41,7 +52,8 @@
 			return true;
 		}
 	}
-	class ObjectKeyValueIterator{
+	class ObjectKeyValueIterator  implements ITonyuIterator{
+        elems: any[];
 		constructor(set) {
 			this.elems=[];
 			for (var k in set) {
@@ -49,6 +61,8 @@
 			}
 			this.i=0;
 		}
+        set: any;
+        i: number;
 		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i][0];
@@ -57,10 +71,13 @@
 			return true;
 		}
 	}
-	class NativeIteratorWrapper {
+	class NativeIteratorWrapper implements ITonyuIterator {
+        it: any;
 		constructor(it) {
 			this.it=it;
 		}
+        set: any;
+        i=0;
 		next() {
 			const {value,done}=this.it.next();
 			if (done) return false;

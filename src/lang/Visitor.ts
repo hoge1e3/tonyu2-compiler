@@ -1,5 +1,5 @@
 export default function Visitor(funcs) {
-	var $={funcs:funcs, path:[]};
+	var $:any={funcs:funcs, path:[]};
 	$.visit=function (node) {
 		try {
 			$.path.push(node);

@@ -5,8 +5,21 @@ define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "Inde
 		"context", "Visitor","Tonyu.Compiler"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
 		context, Visitor,cu) {*/
-const Tonyu=require("../runtime/TonyuRuntime");
-const tonyu1=require("./tonyu1");
+import Tonyu from "../runtime/TonyuRuntime";
+import R from "../lib/R";
+import TError from "../runtime/TError";
+import root from "../lib/root";
+import { isTonyu1 } from "./tonyu1";
+import ObjectMatcher = require("./ObjectMatcher");
+const OM:any=ObjectMatcher;
+import TonyuLang1 from "./parse_tonyu1";
+import TonyuLang2 from "./parse_tonyu2";
+import assert from "../lib/assert";
+import cu from "./compiler";
+import Visitor from "./Visitor";
+import context from "./context";
+import Grammar from "./Grammar";
+/*const tonyu1=require("./tonyu1");
 const TonyuLang2=require("./parse_tonyu2");
 const TonyuLang1=require("./parse_tonyu1");
 const IndentBuffer=require("./IndentBuffer");
@@ -19,8 +32,9 @@ const A=require("../lib/assert");
 const Grammar=require("./Grammar");
 const root=require("../lib/root");
 import R=require("../lib/R");
+*/
 
-module.exports=cu.Semantics=(function () {
+const Semantics=(function () {
 /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
 		LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
 var ScopeTypes=cu.ScopeTypes;
@@ -51,7 +65,7 @@ function visitSub(node) {//S
 	});
 }
 function getSourceFile(klass) {
-	return A(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
+	return assert(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
 }
 function parse(klass, options={}) {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
@@ -61,7 +75,7 @@ function parse(klass, options={}) {
 	}
 	if (!node) {
 		//console.log("Parse "+s);
-		if (tonyu1.isTonyu1(options)) {
+		if (isTonyu1(options)) {
 			node=TonyuLang1.parse(s);
 		} else {
 			node=TonyuLang2.parse(s);
@@ -103,7 +117,6 @@ function initClassDecls(klass, env ) {//S
 		if (!o) throw mesg+" is null";
 		return o;
 	}*/
-	var OM=ObjectMatcher;
 	function initMethods(program) {
 		var spcn=env.options.compiler.defaultSuperClass;
 		var pos=0;
@@ -137,7 +150,7 @@ function initClassDecls(klass, env ) {//S
 		}
 		klass.directives={};
 		//--
-		function addField(name,node) {// name should be node
+		function addField(name,node=undefined) {// name should be node
 			node=node||name;
 			fields[name+""]={
 				node:node,
@@ -230,7 +243,6 @@ function annotateSource2(klass, env) {//B
 	function getSource(node) {
 		return cu.getSource(srcCont,node);
 	}
-	var OM=ObjectMatcher;
 	//var traceTbl=env.traceTbl;
 	// method := fiber | function
 	var decls=klass.decls;
@@ -292,7 +304,7 @@ function annotateSource2(klass, env) {//B
 			}
 		};
 	klass.annotation={};
-	function annotation(node, aobj) {//B
+	function annotation(node, aobj=undefined) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	/*function assertAnnotated(node, si) {//B
@@ -340,7 +352,7 @@ function annotateSource2(klass, env) {//B
 		var s=topLevelScope;
 		getDependingClasses(klass).forEach(initTopLevelScope2);
 		var decls=klass.decls;// Do not inherit parents' natives
-		if (!tonyu1.isTonyu1(env.options)) {
+		if (!isTonyu1(env.options)) {
 			for (let i in JSNATIVES) {
 				s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 			}
@@ -396,11 +408,11 @@ function annotateSource2(klass, env) {//B
 			} else {
 				var isg=n.match(/^\$/);
 				if (env.options.compiler.field_strict || klass.directives.field_strict) {
-					if (!isg) throw new TError(R("fieldDeclarationRequired",n),srcFile,node.pos);
+					if (!isg) throw TError(R("fieldDeclarationRequired",n),srcFile,node.pos);
 				}
 				t=isg?ST.GLOBAL:ST.FIELD;
 			}
-			var opt={name:n};
+			var opt:any={name:n};
 			if (t==ST.FIELD) {
 				opt.klass=klass.name;
 				klass.decls.fields[n]=klass.decls.fields[n]||{};
@@ -729,7 +741,7 @@ function annotateSource2(klass, env) {//B
 		} else {
 			ps=[];
 		}
-		var finfo={};
+		var finfo:any={};
 		var ns=newScope(ctx.scope);
 		//var locals;
 		ctx.enter({finfo: finfo}, function () {
@@ -794,3 +806,5 @@ function annotateSource2(klass, env) {//B
 }//B  end of annotateSource2
 return {initClassDecls:initClassDecls, annotate:annotateSource2,parse};
 })();
+cu.Semantics=Semantics;
+export default Semantics;

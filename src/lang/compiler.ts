@@ -1,8 +1,11 @@
-	import Tonyu = require("../runtime/TonyuRuntime");
+import Tonyu from "../runtime/TonyuRuntime";
+import root from "../lib/root";
+
+	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
 	//const TError=require("TError");
-	const root=require("../lib/root");
-	var cu={};
+	const root=require("../lib/root");*/
+	const cu:any={};
 	Tonyu.Compiler=cu;
 	var ScopeTypes={
 			FIELD:"field", METHOD:"method", NATIVE:"native",//B
@@ -14,7 +17,7 @@
 	var nodeIdSeq=1;
 	var symSeq=1;//B
 	function genSt(st, options) {//B
-		var res={type:st};
+		var res:any={type:st};
 		if (options) {
 			for (var k in options) res[k]=options[k];
 		}
@@ -41,7 +44,7 @@
 		return prefix+((symSeq++)+"").replace(/\./g,"");
 	}
 	cu.genSym=genSym;
-	function annotation3(aobjs, node, aobj) {//B
+	function annotation3(aobjs, node, aobj=undefined) {//B
 		if (!node._id) {
 			//if (!aobjs._idseq) aobjs._idseq=0;
 			node._id=++nodeIdSeq;
@@ -115,4 +118,4 @@
 		return res;
 	}
 	cu.getParams=getParams;
-	module.exports=cu;
+	export default cu;

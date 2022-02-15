@@ -1,48 +1,48 @@
 // parser.js の補助ライブラリ．式の解析を担当する
-exports=function () {
-	const Parser=require("./parser");
-	var $={};
+import Parser from "./parser";
+export default function ExpressionParser () {
+	var $:any={};
 	var EXPSTAT="EXPSTAT";
 	//  first 10     *  +  <>  &&  ||  =     0  later
 	function opType(type, prio) {
-		var $={};
-		$.eq=function (o) {return type==o.type() && prio==o.prio(); };
-		$.type=function (t) { if (!t) return type; else return t==type;};
-		$.prio=function () {return prio;};
-		$.toString=function () {return "["+type+":"+prio+"]"; };
-		return $;
+		return {
+			eq(o) {return type==o.type() && prio==o.prio(); },
+			type(t) { if (!t) return type; else return t==type;},
+			prio() {return prio;},
+			toString() {return "["+type+":"+prio+"]"; },
+		};
 	}
-	function composite(a) {
-		var $={};
+	function composite(a?) {
 		var e=a;
-		$.add=function (a) {
-			if (!e) {
-				e=a;
-			} else {
-				e=e.or(a);
+		return {
+			add(a) {
+				if (!e) {
+					e=a;
+				} else {
+					e=e.or(a);
+				}
+			},
+			get() {
+				return e;
 			}
 		};
-		$.get=function () {
-			return e;
-		};
-		return $;
 	}
 	function typeComposite() {
 		var built=composite();
 		//var lastOP , isBuilt;
-		var $={};
-		$.reg=function (type, prio, a) {
-			var opt=opType(type, prio);
-			built.add(a.ret(Parser.create(function (r) {
-				r.opType=opt;
-				return r;
-			})).setName("(opType "+opt+" "+a.name+")") );
+		return {
+			reg(type, prio, a) {
+				var opt=opType(type, prio);
+				built.add(a.ret(Parser.create(function (r) {
+					r.opType=opt;
+					return r;
+				})).setName("(opType "+opt+" "+a.name+")") );
+			},
+			get() {return built.get();},
+			parse(st) {
+				return this.get().parse(st);
+			}
 		};
-		$.get=function () {return built.get();};
-		$.parse=function (st) {
-			return $.get().parse(st);
-		};
-		return $;
 	}
 	var prefixOrElement=typeComposite(), postfixOrInfix=typeComposite();
 	var element=composite();

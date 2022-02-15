@@ -1,4 +1,4 @@
-export=function () {
+const Parser=(function () {
 	function extend(dst, src) {
 		var i;
 		for(i in src){
@@ -6,7 +6,7 @@ export=function () {
 		}
 		return dst;
 	}
-	var $={
+	var $:any={
 		consoleBuffer:"",
 		options: {traceTap:false, optimizeFirst: true, profile: false ,
 		verboseFirst: false,traceFirstTbl:false},
@@ -177,10 +177,10 @@ export=function () {
 		firstTokens: function (tokens) {
 			if (!$.options.optimizeFirst) return this;
 			if (typeof tokens=="string") tokens=[tokens];
-			var tbl={};
-				if (tokens) {
-					var t=this;
-					tokens.forEach(function (token) {
+			var tbl:any={};
+			if (tokens) {
+				var t=this;
+				tokens.forEach(function (token) {
 					tbl[token]=t;
 				});
 			} else {
@@ -195,7 +195,7 @@ export=function () {
 				if (!b) return a;
 				return a.orNoUnify(b).checkTbl();
 			}
-			var tbl={}; // tbl.* includes tbl.ALL
+			var tbl:any={}; // tbl.* includes tbl.ALL
 			this.checkTbl();
 			other.checkTbl();
 			function mergeTbl() {
@@ -204,7 +204,7 @@ export=function () {
 				//before tbl={ALL:a1, b:b1, c:c1}   t2={ALL:a2,c:c2,d:d2}
 				//       b1 conts a1  c1 conts a1     c2 conts a2   d2 conts a2
 				//after  tbl={ALL:a1|a2 , b:b1|a2    c:c1|c2    d:a1|d2 }
-				var keys={};
+				var keys:any={};
 				for (let k in tbl) { /*if (d) console.log("tbl.k="+k);*/ keys[k]=1;}
 				for (let k in t2)  { /*if (d) console.log("t2.k="+k);*/ keys[k]=1;}
 				delete keys.ALL;
@@ -377,7 +377,7 @@ export=function () {
 			return this;
 		}
 	});
-	function State(strOrTokens, global) { // class State
+	function State(strOrTokens?, global?) { // class State
 		if (strOrTokens!=null) {
 			this.src={maxPos:0, global:global};// maxPos is shared by all state
 			if (typeof strOrTokens=="string") {
@@ -453,7 +453,7 @@ export=function () {
 		return res;
 	};
 
-	var StringParser={
+	var StringParser:any={
 		empty: Parser.create(function(state) {
 			var res=state.clone();
 			res.success=true;
@@ -588,4 +588,5 @@ export=function () {
 		return null;
 	};
 	return $;
-}();
+})();
+export default Parser;

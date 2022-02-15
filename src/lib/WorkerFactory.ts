@@ -18,7 +18,7 @@ export         function createFromString(src) {
 export        function requireUrl(name) {
             return "worker.js?main="+name;
         }
-export        function require(name) {
+export        function requireMod(name) {
             return new Worker(this.requireUrl(name));
         }
 export      function create(src) {
@@ -29,4 +29,3 @@ export      function create(src) {
             }
             throw new Error("Invaluid src type "+src);
         }
-    }

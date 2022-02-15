@@ -1,16 +1,24 @@
 //define(function (require,exports,module) {
 /*const root=require("root");*/
-import root = require("../lib/root");
+
+import root from "../lib/root";
+
 function timeout(t) {
     return new Promise(s=>setTimeout(s,t));
 }
 let vm;
 declare const global:any;
+declare const require:any;
 /*global global*/
 if (typeof global!=="undefined" && global.require && global.require.name!=="requirejs") {
     vm=global.require("vm");
 }
 class SourceFile {
+    url: any;
+    text: any;
+    sourceMap: any;
+    functions: any;
+    parent: SourceFiles;
     // var text, sourceMap:S.Sourcemap;
     constructor(text, sourceMap) {
         if (typeof text==="object") {
@@ -68,10 +76,10 @@ class SourceFile {
                 require(uniqFile.path());
                 uniqFile.rm();
                 mapFile.rm();
-                resolve();
+                resolve(void(0));
             } else if (root.importScripts && this.url){
                 root.importScripts(this.url);
-                resolve();
+                resolve(void(0));
             } else {
                 const F=Function;
                 const f=(vm? vm.compileFunction(this.text) : new F(this.text));
@@ -84,6 +92,7 @@ class SourceFile {
     }
 }
 class SourceFiles {
+    url2SourceFile: {};
     constructor() {
         this.url2SourceFile={};
     }
@@ -97,5 +106,5 @@ class SourceFiles {
     }
 
 }
-module.exports=new SourceFiles();
+export default new SourceFiles();
 //});/*--end of define--*/

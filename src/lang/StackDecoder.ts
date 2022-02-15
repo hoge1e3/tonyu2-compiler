@@ -1,7 +1,11 @@
-const S=require("./source-map");
+import SourceMap from "./source-map";
+import SourceFiles from "./SourceFiles";
+import StackTrace from "./stacktrace";
+
+/*const S=require("./source-map");
 const StackTrace=require("./stacktrace");
-const SourceFiles=require("./SourceFiles");
-module.exports={
+const SourceFiles=require("./SourceFiles");*/
+export default {
     async decode(e) {
         try{
             const tr=await StackTrace.fromError(e,{offline:true});
@@ -12,7 +16,7 @@ module.exports={
                     if (sf) {
                         const opt={
                             line: t.lineNumber, column:t.columnNumber,
-                            bias:S.SourceMapConsumer.GREATEST_LOWER_BOUND
+                            bias:SourceMap.SourceMapConsumer.GREATEST_LOWER_BOUND
                         };
                         const pos=this.originalPositionFor(sf,opt);
                         console.log("pos",opt,pos);
@@ -42,7 +46,7 @@ module.exports={
     },
     getSourceMapConsumer(sf) {
         if (sf.sourceMapConsumer) return sf.sourceMapConsumer;
-        sf.sourceMapConsumer=new S.SourceMapConsumer(JSON.parse(sf.sourceMap));
+        sf.sourceMapConsumer=new SourceMap.SourceMapConsumer(JSON.parse(sf.sourceMap));
         //console.log(this.sourceMapConsumer);
         return sf.sourceMapConsumer;
     }

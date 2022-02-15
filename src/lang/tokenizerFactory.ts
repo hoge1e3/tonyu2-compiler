@@ -1,9 +1,10 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-import Parser = require("./parser");
 
-export=function ({reserved, caseInsensitive}) {
+import Parser from "./parser";
+
+export default function tokenizerFactory({reserved, caseInsensitive}) {
 	function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
@@ -31,7 +32,7 @@ export=function ({reserved, caseInsensitive}) {
 		}
 		return {len:pos-spos};
 
-		function readSingleComment(cmt) {
+		function readSingleComment() {
 		   	/* <pos>//....<pos>\n */
 		   	for(;pos<max;pos++) {
 		      	if (str[pos]=="\n") {return true;}
@@ -39,7 +40,7 @@ export=function ({reserved, caseInsensitive}) {
 		    pos--;
 		    return true;
 		}
-		function readMultiComment(cmt){
+		function readMultiComment(){
 		    // <pos>/*....*<pos>/
 		    const spos=pos;
 		    pos+=2;
@@ -56,7 +57,7 @@ export=function ({reserved, caseInsensitive}) {
 	var DIV=1,REG=2;
 	//var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
 	var space=sp.strLike(skipSpace).setName("space");
-	function tk(r, name) {
+	function tk(r, name?) {
 		var pat;
 		var fst;
 		if (typeof r=="string") {
@@ -68,7 +69,7 @@ export=function ({reserved, caseInsensitive}) {
 			if (!name) name=r+"";
 		}
 		var res=space.and(pat).ret(function(a, b) {
-			var res={};
+			var res:any={};
 			res.pos=b.pos;
 			if (typeof res.pos!="number") throw "no pos for "+name+" ";//+disp(b);
 			res.len=b.len;
@@ -83,7 +84,7 @@ export=function ({reserved, caseInsensitive}) {
 		if (fst) res=res.first(space, fst);
 		return res.setName(name);//.profile();
 	}
-	var parsers={},posts={};
+	var parsers:any={},posts:any={};
 	function dtk2(prev, name, parser, post) {
 		//console.log("2reg="+prev+" name="+name);
 		if (typeof parser=="string") parser=tk(parser);

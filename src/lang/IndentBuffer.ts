@@ -1,7 +1,9 @@
-const A=require("../lib/assert");
-const S=require("./source-map");
-const StringBuilder=require("../lib/StringBuilder");
+import StringBuilder from "../lib/StringBuilder";
+import SourceMap from "./source-map";
+/*const A=require("../lib/assert");
 
+const StringBuilder=require("../lib/StringBuilder");
+*/
 const Pos2RC=function (src) {
 	var $={};
 	var map=[];
@@ -12,36 +14,37 @@ const Pos2RC=function (src) {
 		pos+=line.length+1;
 	});
 	map.push(pos);
-	$.getRC=function (pos) {
-		while(true) {
-			if (lastRow<0) {
-				return {row:1, col:1};
-			}
-			if (lastRow+1>=map.length) {
-				return {row:map.length, col:1};
-			}
-			//A(!( pos<map[lastRow]  &&  map[lastRow]<=pos ));
-			//A(!( map[lastRow+1]<=pos  &&  pos<map[lastRow+1] ));
-			if (pos<map[lastRow]) {
-				lastRow--;
-			} else if (map[lastRow+1]<=pos) {
-				lastRow++;
-			} else {
-				return {row:lastRow+1, col:pos-map[lastRow]+1};
+	return {
+		getRC(pos) {
+			while(true) {
+				if (lastRow<0) {
+					return {row:1, col:1};
+				}
+				if (lastRow+1>=map.length) {
+					return {row:map.length, col:1};
+				}
+				//A(!( pos<map[lastRow]  &&  map[lastRow]<=pos ));
+				//A(!( map[lastRow+1]<=pos  &&  pos<map[lastRow+1] ));
+				if (pos<map[lastRow]) {
+					lastRow--;
+				} else if (map[lastRow+1]<=pos) {
+					lastRow++;
+				} else {
+					return {row:lastRow+1, col:pos-map[lastRow]+1};
+				}
 			}
 		}
 	};
-	return $;
 };
-module.exports=function (options) {
+export default function IndentBuffer(options) {
 	options=options||{};
 	options.fixLazyLength=options.fixLazyLength||6;
-	var $=function () {
+	var $:any=function () {
 		var args=arguments;
 		var fmt=args[0];
 		//console.log(fmt+ " -- "+arguments[0]+" --- "+arguments.length);
 		var ai=0;
-		function shiftArg(nullable) {
+		function shiftArg(nullable=false) {
 			ai++;
 			var res=args[ai];
 			if (res==null && !nullable) {
@@ -192,7 +195,7 @@ module.exports=function (options) {
 	$.buf=StringBuilder();
 	$.bufRow=1;
 	$.bufCol=1;
-	$.srcmap=new S.SourceMapGenerator();
+	$.srcmap=new SourceMap.SourceMapGenerator();
 	$.lazy=function (place) {
 		if (!place) place={};
 		//if (options.fixLazyLength) {

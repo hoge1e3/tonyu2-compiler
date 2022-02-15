@@ -1,8 +1,7 @@
-export=(function () {
-	var OM={};
+	var OM:any={};
 	var VAR="$var",THIZ="$this";
 	OM.v=v;
-	function v(name, cond) {
+	function v(name, cond=undefined) {
 		var res={};
 		res[VAR]=name;
 		if (cond) res[THIZ]=cond;
@@ -46,5 +45,4 @@ export=(function () {
 		}
 		return false;
 	}
-	return OM;
-})();
+	export default OM;

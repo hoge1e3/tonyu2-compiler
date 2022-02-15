@@ -1,3 +1,4 @@
-const PF=require("./parserFactory");
-const TT=require("./tonyu1_token");
-module.exports=PF({TT});
+import PF from "./parserFactory";
+import TT from "./tonyu1_token";
+const Tonyu1Lang=PF({TT});
+export default Tonyu1Lang;

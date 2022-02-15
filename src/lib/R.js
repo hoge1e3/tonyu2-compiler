@@ -1,0 +1,98 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const ja = {
+    superClassIsUndefined: "親クラス {1}は定義されていません",
+    classIsUndefined: "クラス {1}は定義されていません",
+    invalidLeftValue: "'{1}'は左辺には書けません．",
+    fieldDeclarationRequired: "{1}は宣言されていません（フィールドの場合，明示的に宣言してください）．",
+    duplicateKeyInObjectLiteral: "オブジェクトリテラルのキー名'{1}'が重複しています",
+    cannotUseStringLiteralAsAShorthandOfObjectValue: "オブジェクトリテラルのパラメタに単独の文字列は使えません",
+    breakShouldBeUsedInIterationOrSwitchStatement: "break； は繰り返しまたはswitch文の中で使います.",
+    continueShouldBeUsedInIterationStatement: "continue； は繰り返しの中で使います.",
+    cannotUseObjectLiteralAsTheExpressionOfStatement: "オブジェクトリテラル単独の式文は書けません．",
+    undefinedMethod: "メソッド{1}はありません．",
+    notAWaitableMethod: "メソッド{1}は待機可能メソッドではありません",
+    circularDependencyDetected: "次のクラス間に循環参照があります: {1}",
+    cannotWriteReturnInTryStatement: "現実装では、tryの中にreturnは書けません",
+    cannotWriteBreakInTryStatement: "現実装では、tryの中にbreakは書けません",
+    cannotWriteContinueInTryStatement: "現実装では、tryの中にcontinueは書けません",
+    cannotWriteTwoOrMoreCatch: "現実装では、catch節1個のみをサポートしています",
+    lexicalError: "文法エラー(Token)",
+    parseError: "文法エラー",
+    ambiguousClassName: "曖昧なクラス名： {1}.{2}, {3}",
+    cannotInvokeMethod: "{1}(={2})のメソッド {3}を呼び出せません",
+    notAMethod: "{1}{2}(={3})はメソッドではありません",
+    notAFunction: "{1}は関数ではありません",
+    uninitialized: "{1}(={2})は初期化されていなません",
+    newIsRequiredOnInstanciate: "クラス名{1}はnewをつけて呼び出して下さい。",
+    bootClassIsNotFound: "{1}というクラスはありません．",
+    infiniteLoopDetected: "無限ループをストップしました。\n" +
+        "   プロジェクト オプションで無限ループチェックの有無を設定できます。\n" +
+        "   [参考]https://edit.tonyu.jp/doc/options.html\n",
+};
+const en = {
+    "superClassIsUndefined": "Super Class '{1}' is not defined",
+    "classIsUndefined": "Class {1} is Undefined",
+    "invalidLeftValue": "{1} is not a valid Left Value",
+    "fieldDeclarationRequired": "'{1}' is not declared, If you have meant it is a Field, Declare Explicitly.",
+    "duplicateKeyInObjectLiteral": "Duplicate Key In Object Literal: {1}",
+    "cannotUseStringLiteralAsAShorthandOfObjectValue": "Cannot Use String Literal as a Shorthand of Object Value",
+    "breakShouldBeUsedInIterationOrSwitchStatement": "break; Should be Used In Iteration or switch Statement",
+    "continueShouldBeUsedInIterationStatement": "continue; Should be Used In Iteration Statement",
+    "cannotUseObjectLiteralAsTheExpressionOfStatement": "Cannot Use Object Literal As The Expression Of Statement",
+    "undefinedMethod": "Undefined Method: '{1}'",
+    "notAWaitableMethod": "Not A Waitable Method: '{1}'",
+    "circularDependencyDetected": "Circular Dependency Detected: {1}",
+    "cannotWriteReturnInTryStatement": "Cannot Write Return In Try Statement",
+    "cannotWriteBreakInTryStatement": "Cannot Write Break In Try Statement",
+    "cannotWriteContinueInTryStatement": "Cannot Write Continue In Try Statement",
+    "cannotWriteTwoOrMoreCatch": "Cannot Write Two Or More Catch",
+    "lexicalError": "Lexical Error",
+    "parseError": "Parse Error",
+    "ambiguousClassName": "Ambiguous Class Name: {1}.{2} vs {3}",
+    "cannotInvokeMethod": "Cannot Invoke Method {1}(={2}).{3}",
+    "notAMethod": "Not A Method: {1}{2}(={3})",
+    "notAFunction": "Not A Function: {1}",
+    "uninitialized": "Uninitialized: {1}(={2})",
+    "newIsRequiredOnInstanciate": "new is required to Instanciate {1}",
+    "bootClassIsNotFound": "Boot Class {1} Is Not Found",
+    "infiniteLoopDetected": "Infinite Loop Detected",
+};
+/*let buf="";
+    for (let k of Object.keys(ja)) {
+        buf+=`"${k}" : "${englishify(k)}", //${ja[k]}\n`;
+    }
+    console.log(buf);*/
+let dict = en;
+function R(name, ...params) {
+    let mesg = dict[name];
+    if (!mesg) {
+        return englishify(name) + (params.length ? ": " + params.join(",") : "");
+    }
+    return buildMesg(mesg, ...params); //+"です！";
+}
+exports.default = R;
+function buildMesg(...params) {
+    var a = Array.prototype.slice.call(arguments);
+    var format = a.shift();
+    if (a.length === 1 && a[0] instanceof Array)
+        a = a[0];
+    var P = "vroijvowe0r324";
+    format = format.replace(/\{([0-9])\}/g, P + "$1" + P);
+    format = format.replace(new RegExp(P + "([0-9])" + P, "g"), function (_, n) {
+        return a[parseInt(n) - 1] + "";
+    });
+    return format;
+}
+function englishify(name) {
+    name = name.replace(/([A-Z])/g, " $1");
+    name = name[0].toUpperCase() + name.substring(1);
+    return name;
+}
+R.setLocale = locale => {
+    if (locale === "ja")
+        dict = ja;
+    if (locale === "en")
+        dict = en;
+};
+//module.exports=R;

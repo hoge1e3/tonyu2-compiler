@@ -7,15 +7,22 @@
 		"disp", "Parser", "ExpressionParser", "TError"],
 function (Grammar, XMLBuffer, IndentBuffer, TT,
 		disp, Parser, ExpressionParser, TError) {*/
-const Grammar=require("./Grammar");
+
+import Parser from "./parser";
+import TError from "../runtime/TError";
+import R from "../lib/R";
+import ExpressionParser from "./ExpressionParser2";
+import Grammar from "./Grammar";
+
+/*const Grammar=require("./Grammar");
 const IndentBuffer=require("./IndentBuffer");
 const Parser=require("./parser");
 import R = require("../lib/R");
 const ExpressionParser=require("./ExpressionParser2");
-const TError=require("../runtime/TError");
-export=function ({TT}) {
-	var p=Parser;
-	var $={};
+const TError=require("../runtime/TError");*/
+export default function PF({TT}) {
+	var p:any=Parser;
+	var $:any={};
 	var g=Grammar();
 	var G=g.get;
 
@@ -34,7 +41,7 @@ export=function ({TT}) {
 	for (var resvk in TT.reserved) {
 		var resvp=tk(resvk);
 		//console.log(resvk,resvp, resvp instanceof Parser.Parser);
-		if (resvp instanceof Parser.Parser && resvk!=="constructor") {
+		if (resvp instanceof p.Parser && resvk!=="constructor") {
 			/*if (resvk==="constructor") {
 				console.log("c");
 			}*/

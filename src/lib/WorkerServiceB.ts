@@ -2,6 +2,11 @@
 // Browser Side
 let idseq=0;
 class Wrapper {
+    idseq: number;
+    queue: {};
+    worker: any;
+    readyQueue: any[];
+    isReady=false;
     constructor(worker) {
         const t=this;
         t.idseq=1;
@@ -66,11 +71,11 @@ class Wrapper {
     readyPromise() {
         const t=this;
         return new Promise(function (succ) {
-            if (t.isReady) return succ();
+            if (t.isReady) return succ(undefined);
             t.readyQueue.push(succ);
         });
     }
-    run(path, params) {
+    run(path, params={}) {
         const t=this;
         return t.readyPromise().then(function() {
             return new Promise(function (succ,err) {
@@ -113,4 +118,4 @@ const WorkerService={
 WorkerService.serv("console/log", function (params){
     console.log.apply(console,params);
 });
-module.exports=WorkerService;
+export default WorkerService;

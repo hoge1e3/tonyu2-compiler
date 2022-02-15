@@ -1,4 +1,4 @@
-    export={
+    export default {
         getNamespace: function () {//override
             var opt=this.getOptions();
             if (opt.compiler && opt.compiler.namespace) return opt.compiler.namespace;

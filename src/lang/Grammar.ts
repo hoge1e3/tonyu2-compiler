@@ -1,5 +1,6 @@
+import Parser from "./parser";
+
 const Grammar=function () {
-	const Parser=require("./parser");
 	var p=Parser;
 
 	var $=null;
@@ -14,7 +15,7 @@ const Grammar=function () {
 		});
 	}
 	$=function (name){
-		var $$={};
+		var $$:any={};
 		$$.ands=function() {
 			var p=trans(arguments[0]);  //  ;
 			for (var i=1 ; i<arguments.length ;i++) {
@@ -22,7 +23,7 @@ const Grammar=function () {
 			}
 			p=p.tap(name);
 			$.defs[name]=p;
-			var $$$={};
+			var $$$:any={};
 			$$$.autoNode=function () {
 				var res=p.ret(function () {
 					var res={type:name};
@@ -99,4 +100,4 @@ const Grammar=function () {
 	return $;
 };
 Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
-module.exports=Grammar;
+export default  Grammar;

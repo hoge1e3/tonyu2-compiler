@@ -2,16 +2,28 @@
 		"context", "Visitor","Tonyu.Compiler","assert"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
 		context, Visitor,cu,A) {*/
+/*
 const Tonyu=require("../runtime/TonyuRuntime");
 const IndentBuffer=require("./IndentBuffer");
 const ObjectMatcher=require("./ObjectMatcher");
 const TError=require("../runtime/TError");
 const context=require("./context");
-const Visitor=require("./Visitor");
+
 const cu=require("./compiler");
 const A=require("../lib/assert");
 import R=require("../lib/R");
 const tonyu1=require("./tonyu1");
+*/
+import Visitor from "./Visitor";
+
+import IndentBuffer from "./IndentBuffer";
+import TError from "../runtime/TError";
+import R from "../lib/R";
+import assert from "../lib/assert";
+import { isTonyu1 } from "./tonyu1";
+import OM from "./ObjectMatcher";
+import cu from "./compiler";
+import context from "./context";
 
 export=cu.JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -53,7 +65,6 @@ function genJS(klass, env, genOptions) {//B
 	var printf=buf.printf;
 	var ctx=context();
 	var debug=false;
-	var OM=ObjectMatcher;
 	//var traceTbl=env.traceTbl;
 	// method := fiber | function
 	var decls=klass.decls;
@@ -67,7 +78,7 @@ function genJS(klass, env, genOptions) {//B
 	var genMod=env.options.compiler.genAMD;
 	var doLoopCheck=!env.options.compiler.noLoopCheck;
 
-	function annotation(node, aobj) {//B
+	function annotation(node, aobj?) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	function getMethod(name) {//B
@@ -107,7 +118,7 @@ function genJS(klass, env, genOptions) {//B
 		} else if (t==ST.GLOBAL) {
 			buf.printf("%s%s",GLOBAL_HEAD, n);
 		} else if (t==ST.PARAM || t==ST.LOCAL || t==ST.NATIVE || t==ST.MODULE) {
-			if (tonyu1.isTonyu1(env.options) && t==ST.NATIVE) {
+			if (isTonyu1(env.options) && t==ST.NATIVE) {
 				buf.printf("%s.%s",THIZ, n);
 			} else {
 				buf.printf("%s",n);
@@ -224,7 +235,7 @@ function genJS(klass, env, genOptions) {//B
 			if (node.value) {
 				var t=(!ctx.noWait) && annotation(node).fiberCall;
 				if (t) {
-					A.is(ctx.pc,Number);
+					assert.is(ctx.pc,Number);
 					buf.printf(//VDC
 						"%s.%s%s(%j);%n" +//FIBERCALL
 						"%s=%s;return;%n" +/*B*/
@@ -277,7 +288,7 @@ function genJS(klass, env, genOptions) {//B
 			var si=varAccess(n,annotation(node).scopeInfo, annotation(node));
 		},
 		exprstmt: function (node) {//exprStmt
-			var t={};
+			var t:any={};
 			lastPosF(node)();
 			if (!ctx.noWait) {
 				t=annotation(node).fiberCall || {};
@@ -434,7 +445,7 @@ function genJS(klass, env, genOptions) {//B
 					throw TError(R("cannotWriteTwoOrMoreCatch"),srcFile,node.pos);
 				}
 				var ct=node.catches[0];
-				var catchPos={},finPos={};
+				var catchPos:any={},finPos:any={};
 				buf.printf("%s.enterTry(%z);%n",TH,catchPos);
 				buf.printf("%f", enterV({inTry:true, exitTryOnJump:true},node.stmt) );
 				buf.printf("%s.exitTry();%n",TH);
@@ -914,14 +925,14 @@ function genJS(klass, env, genOptions) {//B
 		}
 		for (let i in klass.decls.fields) {
 			var src=klass.decls.fields[i];
-			var dst={};
+			var dst:any={};
 			//console.log("digestDecls",src);
 			if (src.vtype) {
-			if (typeof (src.vtype)==="string") {
-				dst.vtype=src.vtype;
-			} else {
-				dst.vtype=src.vtype.fullName || src.vtype.name;
-			}
+				if (typeof (src.vtype)==="string") {
+					dst.vtype=src.vtype;
+				} else {
+					dst.vtype=src.vtype.fullName || src.vtype.name;
+				}
 			}
 			res.fields[i]=dst;
 		}

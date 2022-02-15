@@ -1,3 +1,12 @@
+import Tonyu from "../runtime/TonyuRuntime";
+import TError from "../runtime/TError";
+import R from "../lib/R";
+import { isTonyu1 } from "./tonyu1";
+import JSGenerator = require("./JSGenerator");
+import IndentBuffer from "./IndentBuffer";
+import Semantics from "./Semantics";
+import SourceFiles from "./SourceFiles";
+import TypeChecker from "./TypeChecker";
 
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {/*ENVC*/
@@ -21,14 +30,14 @@ function orderByInheritance(classes) {/*ENVC*/
             }
         }
         if (res.length==p) {
-            var loop=[];
+            //var loop=[];
             for (let n in classes) {
                 if (!added[n]) {
-                    loop=detectLoop(classes[n]) || [];
+                    detectLoop(classes[n]);// || [];
                     break;
                 }
             }
-            throw TError( R("circularDependencyDetected",loop.join("->")), "Unknown" ,0);
+            throw TError( R("circularDependencyDetected",""), "Unknown" ,0);
         }
     }
     function dep1(c) {
@@ -67,8 +76,15 @@ function orderByInheritance(classes) {/*ENVC*/
     return res;
 }
 
+/*interface BuilderContext{
+    visited:{[key:string]: boolean}, classes:{[key:string]: },options:ctx
+}*/
+type BuilderContext=any;
+type CompileOptions=any;
 // includes langMod, dirBase
-module.exports=class {
+export = class Builder {
+    prj: any;
+    env: any;
 	// Difference from TonyuProject
 	//    projectCompiler defines projects of Tonyu 'Language'.
 	//    Responsible for transpilation.
@@ -95,15 +111,15 @@ module.exports=class {
     }
     isTonyu1() {
         const options=this.getOptions();
-        return tonyu1.isTonyu1(options);
+        return isTonyu1(options);
     }
     getOptions() {return this.prj.getOptions();}
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}
     getNamespace() {return this.prj.getNamespace();}
     getDir(){return this.prj.getDir();}
     getEXT(){return this.prj.getEXT();}
-    sourceFiles(){return this.prj.sourceFiles();}
-    loadDependingClasses(){return this.prj.loadDependingClasses();}
+    sourceFiles(ns?:string){return this.prj.sourceFiles();}
+    loadDependingClasses(ctx:BuilderContext){return this.prj.loadDependingClasses(ctx);}
     getEnv() {
         this.env=this.env||{};
         this.env.options=this.env.options||this.getOptions();
@@ -130,11 +146,11 @@ module.exports=class {
 		return res;
 	}
 	// Difference of ctx and env:  env is of THIS project. ctx is of cross-project
-	initCtx(ctx) {
+	initCtx(ctx:BuilderContext|CompileOptions={}) {
 		//どうしてclassMetasとclassesをわけるのか？
 		// metaはFunctionより先に作られるから
 		var env=this.getEnv();
-		if (!ctx) ctx={};
+		//if (!ctx) ctx={};
 		if (!ctx.visited) {
 			ctx={visited:{}, classes:(env.classes=env.classes||Tonyu.classMetas),options:ctx};
 		}
@@ -210,7 +226,7 @@ module.exports=class {
 		env.aliases[shortCn]=fullCn;
 		return m;
 	}
-	fullCompile (ctx/*or options(For external call)*/) {
+	fullCompile (ctx?/*or options(For external call)*/) {
         const dir=this.getDir();
         ctx=this.initCtx(ctx);
 		const ctxOpt=ctx.options ||{};
@@ -257,9 +273,9 @@ module.exports=class {
 			//return TPR.showProgress("initClassDecl");
 		});
 	}
-	partialCompile(compilingClasses,ctxOpt) {// partialCompile is for class(es)
+	partialCompile(compilingClasses,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
 		let env=this.getEnv(),ord,buf;
-		ctxOpt=ctxOpt||{};
+		//ctxOpt=ctxOpt||{};
 		const destinations=ctxOpt.destinations || {
 			memory: true
 		};
@@ -298,8 +314,8 @@ module.exports=class {
 				traceIndex:buf.traceIndex,
 			});
 		}).then(()=>{
-			const s=SourceFiles.add(buf.close(), buf.srcmap, buf.traceIndex );
-			let task=Promise.resolve();
+			const s=SourceFiles.add(buf.close(), buf.srcmap/*, buf.traceIndex */);
+			let task:any=Promise.resolve();
 			if (destinations.file) {
 				const outf=this.getOutputFile();
 				task=s.saveAs(outf);
