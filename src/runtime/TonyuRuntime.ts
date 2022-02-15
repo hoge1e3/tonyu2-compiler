@@ -281,6 +281,9 @@ import assert from "../lib/assert";
 	//alert("init");
 	var globals={};
 	type Constructor = new (...args: any[]) => any;
+	function isConstructor(v:any):v is Constructor {
+		return typeof v==="function";
+	}
 	type ClassMap={[key:string]:ClassMap}|Constructor;
 	var classes:ClassMap={};// classes.namespace.classname= function
 	var classMetas={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
@@ -308,8 +311,9 @@ import assert from "../lib/assert";
 				}
 			}
 		}
-		if (res instanceof Function) return res;//classes[n];
-		throw new Error(`Not a class: ${n}`);
+		return res;
+		//if (res instanceof Function) return res;//classes[n];
+		//throw new Error(`Not a class: ${n}`);
 	}
 	function bindFunc(t,meth) {
 		if (typeof meth!="function") return meth;
@@ -357,8 +361,8 @@ import assert from "../lib/assert";
 		return k in obj;
 	}
 	function run(bootClassName) {
-		var bootClass:Constructor=getClass(bootClassName);
-		if (!bootClass) throw new Error( R("bootClassIsNotFound",bootClassName));
+		var bootClass=getClass(bootClassName);
+		if (!isConstructor(bootClass)) throw new Error( R("bootClassIsNotFound",bootClassName));
 		Tonyu.runMode=true;
 		var boot=new bootClass();
 		//var th=thread();

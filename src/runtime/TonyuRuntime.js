@@ -302,6 +302,9 @@ function extend(dst, src) {
 }
 //alert("init");
 var globals = {};
+function isConstructor(v) {
+    return typeof v === "function";
+}
 var classes = {}; // classes.namespace.classname= function
 var classMetas = {}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 function setGlobal(n, v) {
@@ -333,9 +336,9 @@ function getClass(n) {
             }
         }
     }
-    if (res instanceof Function)
-        return res; //classes[n];
-    throw new Error(`Not a class: ${n}`);
+    return res;
+    //if (res instanceof Function) return res;//classes[n];
+    //throw new Error(`Not a class: ${n}`);
 }
 function bindFunc(t, meth) {
     if (typeof meth != "function")
@@ -389,7 +392,7 @@ function hasKey(k, obj) {
 }
 function run(bootClassName) {
     var bootClass = getClass(bootClassName);
-    if (!bootClass)
+    if (!isConstructor(bootClass))
         throw new Error((0, R_1.default)("bootClassIsNotFound", bootClassName));
     Tonyu.runMode = true;
     var boot = new bootClass();
