@@ -1,7 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const TonyuRuntime_1 = require("../runtime/TonyuRuntime");
-const root_1 = require("../lib/root");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
+const root_1 = __importDefault(require("../lib/root"));
 /*import Tonyu = require("../runtime/TonyuRuntime");
 const ObjectMatcher=require("./ObjectMatcher");
 //const TError=require("TError");
@@ -135,4 +137,4 @@ function getParams(method) {
     return res;
 }
 cu.getParams = getParams;
-exports.default = cu;
+module.exports = cu;

@@ -45,4 +45,4 @@
 		}
 		return false;
 	}
-	export default OM;
+	export= OM;

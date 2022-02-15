@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /*global Worker*/
 // Browser Side
 let idseq = 0;
@@ -124,4 +123,4 @@ const WorkerService = {
 WorkerService.serv("console/log", function (params) {
     console.log.apply(console, params);
 });
-exports.default = WorkerService;
+module.exports = WorkerService;

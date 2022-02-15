@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = {
+module.exports = {
     getNamespace: function () {
         var opt = this.getOptions();
         if (opt.compiler && opt.compiler.namespace)

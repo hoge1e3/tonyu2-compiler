@@ -100,4 +100,4 @@ const Grammar=function () {
 	return $;
 };
 Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
-export default  Grammar;
+export=  Grammar;

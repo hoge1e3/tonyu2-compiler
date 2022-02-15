@@ -2,9 +2,11 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-Object.defineProperty(exports, "__esModule", { value: true });
-const parser_1 = require("./parser");
-function tokenizerFactory({ reserved, caseInsensitive }) {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const parser_1 = __importDefault(require("./parser"));
+module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     function profileTbl(parser, name) {
         var tbl = parser._first.tbl;
         for (var c in tbl) {
@@ -254,6 +256,4 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
         return res;
     }
     return { parse: parse, extension: "js", reserved: reserved };
-}
-exports.default = tokenizerFactory;
-;
+};

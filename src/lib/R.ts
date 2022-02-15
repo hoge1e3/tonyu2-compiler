@@ -63,7 +63,7 @@ const en={
     console.log(buf);*/
 
 let dict=en;
-export default function R(name,...params) {
+function R(name,...params) {
     let mesg=dict[name];
     if (!mesg) {
         return englishify(name)+(params.length?": "+params.join(","):"");
@@ -90,4 +90,5 @@ R.setLocale=locale=>{
     if (locale==="ja") dict=ja;
     if (locale==="en") dict=en;
 };
+export=R;
 //module.exports=R;

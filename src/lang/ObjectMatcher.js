@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var OM = {};
 var VAR = "$var", THIZ = "$this";
 OM.v = v;
@@ -53,4 +52,4 @@ function m(obj, tmpl, res) {
     }
     return false;
 }
-exports.default = OM;
+module.exports = OM;

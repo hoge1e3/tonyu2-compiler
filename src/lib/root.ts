@@ -5,4 +5,4 @@ const root:any=(function (){
     if (typeof global!=="undefined") return global;
     return (function (){return this;})();
 })();
-export default root;
+export= root;

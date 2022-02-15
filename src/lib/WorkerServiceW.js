@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var idseq = 1;
 var paths = {}, queue = {}, root = self;
 root.WorkerService = {
@@ -77,5 +76,5 @@ if (!root.console) {
         }
     };
 }
-exports.default = root.WorkerService;
+module.exports = root.WorkerService;
 //module.exports=self.WorkerService;

@@ -1,4 +1,4 @@
-export default function context() {
+export= function context() {
 	var c:any={};
 	c.ovrFunc=function (from , to) {
 		to.parent=from;

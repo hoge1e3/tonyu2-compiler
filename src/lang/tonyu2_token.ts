@@ -3,7 +3,7 @@ import tokenizerFactory from "./tokenizerFactory";
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-export default tokenizerFactory({
+export= tokenizerFactory({
 	caseInsensitive: false,
 	reserved:{
 		"function":true, "var":true , "return":true, "typeof": true, "if":true,

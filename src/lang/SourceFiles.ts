@@ -106,5 +106,5 @@ class SourceFiles {
     }
 
 }
-export default new SourceFiles();
+export= new SourceFiles();
 //});/*--end of define--*/

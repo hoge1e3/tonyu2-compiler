@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function Visitor(funcs) {
+module.exports = function Visitor(funcs) {
     var $ = { funcs: funcs, path: [] };
     $.visit = function (node) {
         try {
@@ -33,6 +32,4 @@ function Visitor(funcs) {
         return $.visit(node);
     };
     return $;
-}
-exports.default = Visitor;
-;
+};

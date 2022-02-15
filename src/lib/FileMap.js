@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-class FileMap {
+module.exports = class FileMap {
     constructor() { this.sidesList = []; }
     add(sides) {
         this.sidesList.push(sides);
@@ -13,5 +12,4 @@ class FileMap {
         }
         return path;
     }
-}
-exports.default = FileMap;
+};

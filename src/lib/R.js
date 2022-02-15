@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const ja = {
     superClassIsUndefined: "親クラス {1}は定義されていません",
     classIsUndefined: "クラス {1}は定義されていません",
@@ -71,7 +70,6 @@ function R(name, ...params) {
     }
     return buildMesg(mesg, ...params); //+"です！";
 }
-exports.default = R;
 function buildMesg(...params) {
     var a = Array.prototype.slice.call(arguments);
     var format = a.shift();
@@ -95,4 +93,5 @@ R.setLocale = locale => {
     if (locale === "en")
         dict = en;
 };
+module.exports = R;
 //module.exports=R;

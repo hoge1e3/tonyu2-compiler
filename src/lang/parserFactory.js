@@ -8,19 +8,15 @@
         "disp", "Parser", "ExpressionParser", "TError"],
 function (Grammar, XMLBuffer, IndentBuffer, TT,
         disp, Parser, ExpressionParser, TError) {*/
-Object.defineProperty(exports, "__esModule", { value: true });
-const parser_1 = require("./parser");
-const TError_1 = require("../runtime/TError");
-const R_1 = require("../lib/R");
-const ExpressionParser2_1 = require("./ExpressionParser2");
-const Grammar_1 = require("./Grammar");
-/*const Grammar=require("./Grammar");
-const IndentBuffer=require("./IndentBuffer");
-const Parser=require("./parser");
-import R = require("../lib/R");
-const ExpressionParser=require("./ExpressionParser2");
-const TError=require("../runtime/TError");*/
-function PF({ TT }) {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const parser_1 = __importDefault(require("./parser"));
+const TError_1 = __importDefault(require("../runtime/TError"));
+const R_1 = __importDefault(require("../lib/R"));
+const ExpressionParser2_1 = __importDefault(require("./ExpressionParser2"));
+const Grammar_1 = __importDefault(require("./Grammar"));
+module.exports = function PF({ TT }) {
     var p = parser_1.default;
     var $ = {};
     var g = (0, Grammar_1.default)();
@@ -322,6 +318,4 @@ function PF({ TT }) {
     };*/
     $.extension = "tonyu";
     return $;
-}
-exports.default = PF;
-;
+};

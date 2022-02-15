@@ -1,12 +1,11 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const source_map_1 = require("./source-map");
-const SourceFiles_1 = require("./SourceFiles");
-const stacktrace_1 = require("./stacktrace");
-/*const S=require("./source-map");
-const StackTrace=require("./stacktrace");
-const SourceFiles=require("./SourceFiles");*/
-exports.default = {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const source_map_1 = __importDefault(require("./source-map"));
+const SourceFiles_1 = __importDefault(require("./SourceFiles"));
+const stacktrace_1 = __importDefault(require("./stacktrace"));
+module.exports = {
     async decode(e) {
         try {
             const tr = await stacktrace_1.default.fromError(e, { offline: true });

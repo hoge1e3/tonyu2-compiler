@@ -76,5 +76,5 @@ declare const self:any;
             }
         };
     }
-    export default root.WorkerService;
+    export= root.WorkerService;
     //module.exports=self.WorkerService;

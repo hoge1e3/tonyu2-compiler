@@ -4,7 +4,7 @@ function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 
 import Parser from "./parser";
 
-export default function tokenizerFactory({reserved, caseInsensitive}) {
+export= function tokenizerFactory({reserved, caseInsensitive}) {
 	function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {

@@ -589,4 +589,4 @@ const Parser=(function () {
 	};
 	return $;
 })();
-export default Parser;
+export= Parser;

@@ -1,7 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const StringBuilder_1 = require("../lib/StringBuilder");
-const source_map_1 = require("./source-map");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const StringBuilder_1 = __importDefault(require("../lib/StringBuilder"));
+const source_map_1 = __importDefault(require("./source-map"));
 /*const A=require("../lib/assert");
 
 const StringBuilder=require("../lib/StringBuilder");
@@ -40,7 +42,7 @@ const Pos2RC = function (src) {
         }
     };
 };
-function IndentBuffer(options) {
+module.exports = function IndentBuffer(options) {
     options = options || {};
     options.fixLazyLength = options.fixLazyLength || 6;
     var $ = function () {
@@ -324,6 +326,4 @@ function IndentBuffer(options) {
         return gen;
     };
     return $;
-}
-exports.default = IndentBuffer;
-;
+};

@@ -1,6 +1,6 @@
 // parser.js の補助ライブラリ．式の解析を担当する
 import Parser from "./parser";
-export default function ExpressionParser () {
+export= function ExpressionParser () {
 	var $:any={};
 	var EXPSTAT="EXPSTAT";
 	//  first 10     *  +  <>  &&  ||  =     0  later

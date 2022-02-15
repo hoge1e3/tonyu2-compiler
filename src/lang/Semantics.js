@@ -1,5 +1,7 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 /*if (typeof define!=="function") {//B
     define=require("requirejs").define;
 }
@@ -7,20 +9,20 @@ define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "Inde
         "context", "Visitor","Tonyu.Compiler"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
         context, Visitor,cu) {*/
-const TonyuRuntime_1 = require("../runtime/TonyuRuntime");
-const R_1 = require("../lib/R");
-const TError_1 = require("../runtime/TError");
-const root_1 = require("../lib/root");
+const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
+const R_1 = __importDefault(require("../lib/R"));
+const TError_1 = __importDefault(require("../runtime/TError"));
+const root_1 = __importDefault(require("../lib/root"));
 const tonyu1_1 = require("./tonyu1");
 const ObjectMatcher = require("./ObjectMatcher");
 const OM = ObjectMatcher;
-const parse_tonyu1_1 = require("./parse_tonyu1");
-const parse_tonyu2_1 = require("./parse_tonyu2");
-const assert_1 = require("../lib/assert");
-const compiler_1 = require("./compiler");
-const Visitor_1 = require("./Visitor");
-const context_1 = require("./context");
-const Grammar_1 = require("./Grammar");
+const parse_tonyu1_1 = __importDefault(require("./parse_tonyu1"));
+const parse_tonyu2_1 = __importDefault(require("./parse_tonyu2"));
+const assert_1 = __importDefault(require("../lib/assert"));
+const compiler_1 = __importDefault(require("./compiler"));
+const Visitor_1 = __importDefault(require("./Visitor"));
+const context_1 = __importDefault(require("./context"));
+const Grammar_1 = __importDefault(require("./Grammar"));
 /*const tonyu1=require("./tonyu1");
 const TonyuLang2=require("./parse_tonyu2");
 const TonyuLang1=require("./parse_tonyu1");
@@ -837,4 +839,4 @@ const Semantics = (function () {
     return { initClassDecls: initClassDecls, annotate: annotateSource2, parse };
 })();
 compiler_1.default.Semantics = Semantics;
-exports.default = Semantics;
+module.exports = Semantics;

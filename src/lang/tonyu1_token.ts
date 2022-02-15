@@ -4,7 +4,7 @@ function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 
 import tokenizerFactory from "./tokenizerFactory";
 
-export default tokenizerFactory({
+export= tokenizerFactory({
 	caseInsensitive: true,
 	reserved:{
 		'while':true,

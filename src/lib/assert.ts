@@ -190,4 +190,4 @@
     function isArg(a) {
         return "length" in a && "caller" in a && "callee" in a;
     }
-    export default assert;
+    export= assert;

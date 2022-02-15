@@ -20,7 +20,7 @@ const Parser=require("./parser");
 import R = require("../lib/R");
 const ExpressionParser=require("./ExpressionParser2");
 const TError=require("../runtime/TError");*/
-export default function PF({TT}) {
+export= function PF({TT}) {
 	var p:any=Parser;
 	var $:any={};
 	var g=Grammar();

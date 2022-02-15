@@ -1,4 +1,4 @@
-export default function Visitor(funcs) {
+export= function Visitor(funcs) {
 	var $:any={funcs:funcs, path:[]};
 	$.visit=function (node) {
 		try {

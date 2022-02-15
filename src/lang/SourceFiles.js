@@ -1,8 +1,10 @@
 "use strict";
 //define(function (require,exports,module) {
 /*const root=require("root");*/
-Object.defineProperty(exports, "__esModule", { value: true });
-const root_1 = require("../lib/root");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const root_1 = __importDefault(require("../lib/root"));
 function timeout(t) {
     return new Promise(s => setTimeout(s, t));
 }
@@ -101,5 +103,5 @@ class SourceFiles {
         return sourceFile;
     }
 }
-exports.default = new SourceFiles();
+module.exports = new SourceFiles();
 //});/*--end of define--*/

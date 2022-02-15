@@ -5,7 +5,7 @@ import StackTrace from "./stacktrace";
 /*const S=require("./source-map");
 const StackTrace=require("./stacktrace");
 const SourceFiles=require("./SourceFiles");*/
-export default {
+export= {
     async decode(e) {
         try{
             const tr=await StackTrace.fromError(e,{offline:true});

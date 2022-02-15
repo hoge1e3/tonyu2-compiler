@@ -1,13 +1,16 @@
 "use strict";
-const TonyuRuntime_1 = require("../runtime/TonyuRuntime");
-const TError_1 = require("../runtime/TError");
-const R_1 = require("../lib/R");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
+const TError_1 = __importDefault(require("../runtime/TError"));
+const R_1 = __importDefault(require("../lib/R"));
 const tonyu1_1 = require("./tonyu1");
 const JSGenerator = require("./JSGenerator");
-const IndentBuffer_1 = require("./IndentBuffer");
-const Semantics_1 = require("./Semantics");
-const SourceFiles_1 = require("./SourceFiles");
-const TypeChecker_1 = require("./TypeChecker");
+const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
+const Semantics_1 = __importDefault(require("./Semantics"));
+const SourceFiles_1 = __importDefault(require("./SourceFiles"));
+const TypeChecker_1 = __importDefault(require("./TypeChecker"));
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {
     var added = {};

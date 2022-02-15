@@ -1,8 +1,10 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 // parser.js の補助ライブラリ．式の解析を担当する
-const parser_1 = require("./parser");
-function ExpressionParser() {
+const parser_1 = __importDefault(require("./parser"));
+module.exports = function ExpressionParser() {
     var $ = {};
     var EXPSTAT = "EXPSTAT";
     //  first 10     *  +  <>  &&  ||  =     0  later
@@ -277,6 +279,4 @@ function ExpressionParser() {
         });
     };
     return $;
-}
-exports.default = ExpressionParser;
-;
+};

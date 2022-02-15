@@ -1,10 +1,12 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const R_1 = require("../lib/R");
-const TonyuIterator_1 = require("./TonyuIterator");
-const TonyuThread_1 = require("./TonyuThread");
-const root_1 = require("../lib/root");
-const assert_1 = require("../lib/assert");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const R_1 = __importDefault(require("../lib/R"));
+const TonyuIterator_1 = __importDefault(require("./TonyuIterator"));
+const TonyuThread_1 = __importDefault(require("./TonyuThread"));
+const root_1 = __importDefault(require("../lib/root"));
+const assert_1 = __importDefault(require("../lib/assert"));
 // old browser support
 if (!root_1.default.performance) {
     root_1.default.performance = {};
@@ -206,7 +208,13 @@ var klass = {
                     console.log("WHY!", prot[k], prot, k);
                     throw new Error("WHY!" + k);
                 }
-                prot[k].methodInfo = prot[k].methodInfo || { name: k, klass: res };
+                /*if (typeof methods[k]==="boolean") {
+                    console.log(methods);
+                    throw new Error(`${k} ${methods[k]}`);
+                }*/
+                if (k !== "__dummy") {
+                    prot[k].methodInfo = prot[k].methodInfo || { name: k, klass: res };
+                }
                 // if profile...
                 const r = property.isPropertyMethod(k);
                 if (r) {
@@ -434,4 +442,4 @@ if (root_1.default.Tonyu) {
     throw new Error("Tonyu called twice!");
 }
 root_1.default.Tonyu = Tonyu;
-exports.default = Tonyu;
+module.exports = Tonyu;

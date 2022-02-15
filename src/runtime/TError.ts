@@ -1,4 +1,4 @@
-export default function TError(message, src, pos, len=0) {
+function TError(message, src, pos, len=0) {
 	let rc;
 	const extend=(dst,src)=>{for (var k in src) dst[k]=src[k];return dst;};
 	if (typeof src=="string") {
@@ -48,4 +48,5 @@ TError.calcRowCol=function (text,pos) {// returns 1 origin row,col
 	}
 	return {row:row+1,col:col+1};
 };
+export=TError;
 //module.exports=TError;

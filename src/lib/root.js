@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const root = (function () {
     if (typeof window !== "undefined")
         return window;
@@ -9,4 +8,4 @@ const root = (function () {
         return global;
     return (function () { return this; })();
 })();
-exports.default = root;
+module.exports = root;

@@ -36,7 +36,7 @@ const Pos2RC=function (src) {
 		}
 	};
 };
-export default function IndentBuffer(options) {
+export= function IndentBuffer(options) {
 	options=options||{};
 	options.fixLazyLength=options.fixLazyLength||6;
 	var $:any=function () {

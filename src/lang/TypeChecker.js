@@ -8,11 +8,13 @@ const Grammar=require("./Grammar");
 const cu=require("./compiler");
 const context=require("./context");
 */
-Object.defineProperty(exports, "__esModule", { value: true });
-const compiler_1 = require("./compiler");
-const context_1 = require("./context");
-const Grammar_1 = require("./Grammar");
-const Visitor_1 = require("./Visitor");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const compiler_1 = __importDefault(require("./compiler"));
+const context_1 = __importDefault(require("./context"));
+const Grammar_1 = __importDefault(require("./Grammar"));
+const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 var ScopeTypes = compiler_1.default.ScopeTypes;
 var genSt = compiler_1.default.newScopeType;
@@ -171,4 +173,4 @@ TypeChecker.checkExpr = function (klass, env) {
         return va.vtype;
     }
 };
-exports.default = TypeChecker;
+module.exports = TypeChecker;

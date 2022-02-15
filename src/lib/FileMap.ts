@@ -1,4 +1,4 @@
-export default class FileMap {
+export= class FileMap {
     sidesList: any[];
     constructor(){this.sidesList=[];}
     add(sides) {// {sideA:path, sideB:path}

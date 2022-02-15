@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 /*define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
         "context", "Visitor","Tonyu.Compiler","assert"],
 function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
@@ -15,15 +18,15 @@ const A=require("../lib/assert");
 import R=require("../lib/R");
 const tonyu1=require("./tonyu1");
 */
-const Visitor_1 = require("./Visitor");
-const IndentBuffer_1 = require("./IndentBuffer");
-const TError_1 = require("../runtime/TError");
-const R_1 = require("../lib/R");
-const assert_1 = require("../lib/assert");
+const Visitor_1 = __importDefault(require("./Visitor"));
+const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
+const TError_1 = __importDefault(require("../runtime/TError"));
+const R_1 = __importDefault(require("../lib/R"));
+const assert_1 = __importDefault(require("../lib/assert"));
 const tonyu1_1 = require("./tonyu1");
-const ObjectMatcher_1 = require("./ObjectMatcher");
-const compiler_1 = require("./compiler");
-const context_1 = require("./context");
+const ObjectMatcher_1 = __importDefault(require("./ObjectMatcher"));
+const compiler_1 = __importDefault(require("./compiler"));
+const context_1 = __importDefault(require("./context"));
 module.exports = compiler_1.default.JSGenerator = (function () {
     // TonyuソースファイルをJavascriptに変換する
     var TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$", FRMPC = "__pc", LASTPOS = "$LASTPOS", CNTV = "__cnt", CNTC = 100; //G

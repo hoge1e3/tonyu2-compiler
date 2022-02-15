@@ -85,7 +85,7 @@
 			return true;
 		}
 	}
-	export default function IT(set, arity) {
+	export= function IT(set, arity) {
 		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);

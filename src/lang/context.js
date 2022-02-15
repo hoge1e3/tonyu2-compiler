@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-function context() {
+module.exports = function context() {
     var c = {};
     c.ovrFunc = function (from, to) {
         to.parent = from;
@@ -37,6 +36,4 @@ function context() {
         }
         return res;
     }
-}
-exports.default = context;
-;
+};

@@ -1,6 +1,8 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const parser_1 = require("./parser");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const parser_1 = __importDefault(require("./parser"));
 const Grammar = function () {
     var p = parser_1.default;
     var $ = null;
@@ -103,4 +105,4 @@ const Grammar = function () {
     return $;
 };
 Grammar.SUBELEMENTS = Symbol("[SUBELEMENTS]");
-exports.default = Grammar;
+module.exports = Grammar;

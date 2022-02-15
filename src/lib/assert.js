@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const Assertion = function (failMesg = "Assertion failed: ") {
     this.failMesg = flatten(failMesg);
 };
@@ -202,4 +201,4 @@ function flatten(a) {
 function isArg(a) {
     return "length" in a && "caller" in a && "callee" in a;
 }
-exports.default = assert;
+module.exports = assert;

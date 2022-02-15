@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 function TError(message, src, pos, len = 0) {
     let rc;
     const extend = (dst, src) => { for (var k in src)
@@ -39,7 +38,6 @@ function TError(message, src, pos, len = 0) {
         }
     });
 }
-exports.default = TError;
 ;
 TError.calcRowCol = function (text, pos) {
     var lines = text.split("\n");
@@ -53,4 +51,5 @@ TError.calcRowCol = function (text, pos) {
     }
     return { row: row + 1, col: col + 1 };
 };
+module.exports = TError;
 //module.exports=TError;

@@ -1,8 +1,10 @@
 "use strict";
 //	var Klass=require("../lib/Klass");
-Object.defineProperty(exports, "__esModule", { value: true });
-const R_1 = require("../lib/R");
-function TonyuThreadF(Tonyu) {
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const R_1 = __importDefault(require("../lib/R"));
+module.exports = function TonyuThreadF(Tonyu) {
     var cnts = { enterC: {}, exitC: 0 };
     var idSeq = 1;
     //try {window.cnts=cnts;}catch(e){}
@@ -280,5 +282,4 @@ function TonyuThreadF(Tonyu) {
         }
     }
     return TonyuThread;
-}
-exports.default = TonyuThreadF;
+};

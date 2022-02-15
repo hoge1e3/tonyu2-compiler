@@ -1,10 +1,9 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const tokenizerFactory_1 = require("./tokenizerFactory");
-/*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
-function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
-*/
-exports.default = (0, tokenizerFactory_1.default)({
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+const tokenizerFactory_1 = __importDefault(require("./tokenizerFactory"));
+module.exports = (0, tokenizerFactory_1.default)({
     caseInsensitive: false,
     reserved: {
         "function": true, "var": true, "return": true, "typeof": true, "if": true,

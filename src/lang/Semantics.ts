@@ -807,4 +807,4 @@ function annotateSource2(klass, env) {//B
 return {initClassDecls:initClassDecls, annotate:annotateSource2,parse};
 })();
 cu.Semantics=Semantics;
-export default Semantics;
+export= Semantics;

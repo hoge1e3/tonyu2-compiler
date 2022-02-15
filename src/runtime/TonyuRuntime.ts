@@ -192,7 +192,13 @@ import assert from "../lib/assert";
 						console.log("WHY!",prot[k],prot,k);
 						throw new Error("WHY!"+k);
 					}
-					prot[k].methodInfo=prot[k].methodInfo||{name:k,klass:res};
+					/*if (typeof methods[k]==="boolean") {
+						console.log(methods);
+						throw new Error(`${k} ${methods[k]}`);
+					}*/
+					if (k!=="__dummy") {
+						prot[k].methodInfo=prot[k].methodInfo||{name:k,klass:res};
+					}
 					// if profile...
 					const r=property.isPropertyMethod(k);
 					if (r) {
@@ -402,4 +408,4 @@ import assert from "../lib/assert";
 		throw new Error("Tonyu called twice!");
 	}
 	root.Tonyu=Tonyu;
-	export default Tonyu;
+	export= Tonyu;

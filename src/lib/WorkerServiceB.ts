@@ -118,4 +118,4 @@ const WorkerService={
 WorkerService.serv("console/log", function (params){
     console.log.apply(console,params);
 });
-export default WorkerService;
+export= WorkerService;

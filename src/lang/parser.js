@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const Parser = (function () {
     function extend(dst, src) {
         var i;
@@ -648,4 +647,4 @@ const Parser = (function () {
     };
     return $;
 })();
-exports.default = Parser;
+module.exports = Parser;

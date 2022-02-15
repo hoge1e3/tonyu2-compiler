@@ -118,4 +118,4 @@ import root from "../lib/root";
 		return res;
 	}
 	cu.getParams=getParams;
-	export default cu;
+	export= cu;

@@ -7,7 +7,7 @@ interface ThreadGroup {
     isDeadThreadGroup(): boolean;
     objectPoolAge: any;
 }
-export default function TonyuThreadF(Tonyu) {
+export= function TonyuThreadF(Tonyu) {
 	var cnts={enterC:{},exitC:0};
 	var idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}

@@ -164,4 +164,4 @@ TypeChecker.checkExpr=function (klass,env) {
 		return va.vtype;
 	}
 };
-export default TypeChecker;
+export= TypeChecker;

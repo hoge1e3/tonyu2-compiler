@@ -1,2 +1,2 @@
 declare const StackTrace:any;
-export default StackTrace; 
+export= StackTrace;
