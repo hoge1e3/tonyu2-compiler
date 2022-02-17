@@ -11,6 +11,41 @@ import root from "../lib/root";
 			PARAM:"param", GLOBAL:"global",
 			CLASS:"class", MODULE:"module"
 	};
+	class ST_LOCAL {
+		tyoe=ScopeTypes.LOCAL;
+		constructor(public declaringFunc){}
+	}
+	class ST_PARAM {
+		type=ScopeTypes.PARAM;
+		constructor(public declaringFunc){}
+	}
+	class ST_FIELD {
+		tyoe=ScopeTypes.FIELD;
+		constructor(public klass, public name, public info){}
+	}
+	class ST_PROP {
+		type=ScopeTypes.PROP;
+		constructor(public klass, public name, public info){}
+	}
+	class ST_METHOD {
+		type=ScopeTypes.METHOD;
+		constructor(public klass, public name, public info){}
+	}
+	class ST_THVAR {
+		type=ScopeTypes.THVAR;
+	}
+	class ST_NATIVE{
+		type=ScopeTypes.NATIVE;
+		constructor(public name, public value){}
+	}
+	class ST_CLASS {
+		type=ScopeTypes.CLASS;
+		constructor(public name, public fullName, public info){}
+	}
+	class ST_MODULE{
+		type=ScopeTypes.MODULE;
+		constructor(public name){}
+	}
 	const cu={ScopeTypes,newScopeType:genSt,getScopeType:stype,newScope,nullCheck:nc,
 		genSym,extend,annotation:annotation3,getSource,getField,getMethod:getMethod2,
 		getDependingClasses,getParams
