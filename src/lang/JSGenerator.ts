@@ -25,7 +25,7 @@ import OM from "./ObjectMatcher";
 import cu from "./compiler";
 import context from "./context";
 
-export=cu.JSGenerator=(function () {
+export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 var TH="_thread",THIZ="_this", ARGS="_arguments",FIBPRE="fiber$", FRMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100;//G
 var BINDF="Tonyu.bindFunc";
