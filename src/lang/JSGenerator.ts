@@ -1,19 +1,3 @@
-/*define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
-		"context", "Visitor","Tonyu.Compiler","assert"],
-function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
-		context, Visitor,cu,A) {*/
-/*
-const Tonyu=require("../runtime/TonyuRuntime");
-const IndentBuffer=require("./IndentBuffer");
-const ObjectMatcher=require("./ObjectMatcher");
-const TError=require("../runtime/TError");
-const context=require("./context");
-
-const cu=require("./compiler");
-const A=require("../lib/assert");
-import R=require("../lib/R");
-const tonyu1=require("./tonyu1");
-*/
 import Visitor from "./Visitor";
 
 import IndentBuffer from "./IndentBuffer";

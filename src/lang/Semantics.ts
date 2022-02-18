@@ -1,10 +1,3 @@
-/*if (typeof define!=="function") {//B
-	define=require("requirejs").define;
-}
-define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
-		"context", "Visitor","Tonyu.Compiler"],
-function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
-		context, Visitor,cu) {*/
 import Tonyu from "../runtime/TonyuRuntime";
 import R from "../lib/R";
 import TError from "../runtime/TError";

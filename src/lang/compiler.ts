@@ -5,14 +5,16 @@ import root from "../lib/root";
 	const ObjectMatcher=require("./ObjectMatcher");
 	//const TError=require("TError");
 	const root=require("../lib/root");*/
+	type valueOf<T>=T[keyof T];
 	const ScopeTypes={
 			FIELD:"field", METHOD:"method", NATIVE:"native",//B
 			LOCAL:"local", THVAR:"threadvar",PROP:"property",
 			PARAM:"param", GLOBAL:"global",
 			CLASS:"class", MODULE:"module"
 	};
+
 	class ST_LOCAL {
-		tyoe=ScopeTypes.LOCAL;
+		type=ScopeTypes.LOCAL;
 		constructor(public declaringFunc){}
 	}
 	class ST_PARAM {
@@ -20,7 +22,7 @@ import root from "../lib/root";
 		constructor(public declaringFunc){}
 	}
 	class ST_FIELD {
-		tyoe=ScopeTypes.FIELD;
+		type=ScopeTypes.FIELD;
 		constructor(public klass, public name, public info){}
 	}
 	class ST_PROP {
@@ -42,13 +44,21 @@ import root from "../lib/root";
 		type=ScopeTypes.CLASS;
 		constructor(public name, public fullName, public info){}
 	}
+	class ST_GLOBAL{
+		type=ScopeTypes.GLOBAL;
+		constructor(public name){}
+	}
 	class ST_MODULE{
 		type=ScopeTypes.MODULE;
 		constructor(public name){}
 	}
+	/*type STES={
+		LOCAL:ST_LOCAL, PARAM:ST_PARAM
+	};
+	export type STCS=valueOf<STES>;*/
 	const cu={ScopeTypes,newScopeType:genSt,getScopeType:stype,newScope,nullCheck:nc,
 		genSym,extend,annotation:annotation3,getSource,getField,getMethod:getMethod2,
-		getDependingClasses,getParams
+		getDependingClasses,getParams,
 	};
 	Tonyu.Compiler=cu;
 
