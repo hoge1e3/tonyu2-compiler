@@ -8,7 +8,7 @@ define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
 	const context=require("./context");
 */
 
-import cu from "./compiler";
+import * as cu from "./compiler";
 import context from "./context";
 import Grammar from "./Grammar";
 import Visitor from "./Visitor";

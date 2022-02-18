@@ -8,24 +8,43 @@ const Grammar=require("./Grammar");
 const cu=require("./compiler");
 const context=require("./context");
 */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-const compiler_1 = __importDefault(require("./compiler"));
+const cu = __importStar(require("./compiler"));
 const context_1 = __importDefault(require("./context"));
 const Grammar_1 = __importDefault(require("./Grammar"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
-var ScopeTypes = compiler_1.default.ScopeTypes;
-var genSt = compiler_1.default.newScopeType;
-var stype = compiler_1.default.getScopeType;
-var newScope = compiler_1.default.newScope;
+var ScopeTypes = cu.ScopeTypes;
+var genSt = cu.newScopeType;
+var stype = cu.getScopeType;
+var newScope = cu.newScope;
 //var nc=cu.nullCheck;
-var genSym = compiler_1.default.genSym;
-var annotation3 = compiler_1.default.annotation;
-var getMethod2 = compiler_1.default.getMethod;
-var getDependingClasses = compiler_1.default.getDependingClasses;
-var getParams = compiler_1.default.getParams;
+var genSym = cu.genSym;
+var annotation3 = cu.annotation;
+var getMethod2 = cu.getMethod;
+var getDependingClasses = cu.getDependingClasses;
+var getParams = cu.getParams;
 var JSNATIVES = { Array: 1, String: 1, Boolean: 1, Number: 1, Void: 1, Object: 1, RegExp: 1, Error: 1 };
 var TypeChecker = {};
 function visitSub(node) {
@@ -121,7 +140,7 @@ TypeChecker.checkExpr = function (klass, env) {
                 var m = a.memberAccess;
                 var vtype = visitExpr(m.target);
                 if (vtype) {
-                    var f = compiler_1.default.getField(vtype, m.name);
+                    var f = cu.getField(vtype, m.name);
                     console.log("GETF", vtype, m.name, f);
                     if (f && f.vtype) {
                         annotation(node, { vtype: f.vtype });

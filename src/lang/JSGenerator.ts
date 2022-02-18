@@ -6,7 +6,7 @@ import R from "../lib/R";
 import assert from "../lib/assert";
 import { isTonyu1 } from "./tonyu1";
 import OM from "./ObjectMatcher";
-import cu from "./compiler";
+import * as cu from "./compiler";
 import context from "./context";
 
 export=(cu as any).JSGenerator=(function () {

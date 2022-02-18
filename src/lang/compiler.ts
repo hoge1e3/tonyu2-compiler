@@ -6,7 +6,7 @@ import root from "../lib/root";
 	//const TError=require("TError");
 	const root=require("../lib/root");*/
 	type valueOf<T>=T[keyof T];
-	const ScopeTypes={
+	export const ScopeTypes={
 			FIELD:"field", METHOD:"method", NATIVE:"native",//B
 			LOCAL:"local", THVAR:"threadvar",PROP:"property",
 			PARAM:"param", GLOBAL:"global",
@@ -52,20 +52,20 @@ import root from "../lib/root";
 		type=ScopeTypes.MODULE;
 		constructor(public name){}
 	}
-	/*type STES={
+	type STES={
 		LOCAL:ST_LOCAL, PARAM:ST_PARAM
 	};
-	export type STCS=valueOf<STES>;*/
-	const cu={ScopeTypes,newScopeType:genSt,getScopeType:stype,newScope,nullCheck:nc,
+	export type STCS=valueOf<STES>;
+	/*const cu={ScopeTypes,newScopeType:genSt,getScopeType:stype,newScope,nullCheck:nc,
 		genSym,extend,annotation:annotation3,getSource,getField,getMethod:getMethod2,
 		getDependingClasses,getParams,
 	};
-	Tonyu.Compiler=cu;
+	Tonyu.Compiler=cu;*/
 
 	//cu.ScopeTypes=ScopeTypes;
 	let nodeIdSeq=1;
 	let symSeq=1;//B
-	function genSt(st, options?) {//B
+	export function newScopeType(st, options?) {//B
 		const res:any={type:st};
 		if (options) {
 			for (let k in options) res[k]=options[k];
@@ -74,26 +74,26 @@ import root from "../lib/root";
 		return res;
 	}
 	//cu.newScopeType=genSt;
-	function stype(st) {//B
+	export function getScopeType(st) {//B
 		return st ? st.type : null;
 	}
 	//cu.getScopeType=stype;
-	function newScope(s) {//B
+	export function newScope(s) {//B
 		const f=function (){};
 		f.prototype=s;
 		return new f();
 	}
 	//cu.newScope=newScope;
-	function nc(o, mesg) {//B
+	export function nullCheck(o, mesg) {//B
 		if (!o) throw mesg+" is null";
 		return o;
 	}
 	//cu.nullCheck=nc;
-	function genSym(prefix) {//B
+	export function genSym(prefix) {//B
 		return prefix+((symSeq++)+"").replace(/\./g,"");
 	}
 	//cu.genSym=genSym;
-	function annotation3(aobjs, node, aobj=undefined) {//B
+	export function annotation(aobjs, node, aobj=undefined) {//B
 		if (!node._id) {
 			//if (!aobjs._idseq) aobjs._idseq=0;
 			node._id=++nodeIdSeq;
@@ -110,17 +110,17 @@ import root from "../lib/root";
 		return res;
 	}
 	//cu.extend=extend;
-	function extend(res,aobj) {
+	/*function extend(res,aobj) {
 		for (let i in aobj) res[i]=aobj[i];
 		return res;
-	};
+	};*/
 	//cu.annotation=annotation3;
-	function getSource(srcCont,node) {//B
+	export function getSource(srcCont,node) {//B
 		return srcCont.substring(node.pos,node.pos+node.len);
 	}
 	//cu.getSource=getSource;
 	//cu.getField=getField;
-	function getField(klass,name){
+	export function getField(klass,name){
 		if (klass instanceof Function) return null;
 		let res=null;
 		getDependingClasses(klass).forEach(function (k) {
@@ -132,7 +132,7 @@ import root from "../lib/root";
 		}
 		return res;
 	};
-	function getMethod2(klass,name) {//B
+	export function getMethod(klass,name) {//B
 		let res=null;
 		getDependingClasses(klass).forEach(function (k) {
 			if (res) return;
@@ -141,7 +141,7 @@ import root from "../lib/root";
 		return res;
 	}
 	//cu.getMethod=getMethod2;
-	function getDependingClasses(klass) {//B
+	export function getDependingClasses(klass) {//B
 		const visited={};
 		const res=[];
 		function loop(k) {
@@ -159,7 +159,7 @@ import root from "../lib/root";
 		return res;
 	}
 	//cu.getDependingClasses=getDependingClasses;
-	function getParams(method) {//B
+	export function getParams(method) {//B
 		let res=[];
 		if (!method.head) return res;
 		if (method.head.setter) res.push(method.head.setter.value);
@@ -169,4 +169,4 @@ import root from "../lib/root";
 		return res;
 	}
 	//cu.getParams=getParams;
-	export= cu;
+	//export= cu;

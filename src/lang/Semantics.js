@@ -1,14 +1,26 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-/*if (typeof define!=="function") {//B
-    define=require("requirejs").define;
-}
-define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
-        "context", "Visitor","Tonyu.Compiler"],
-function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
-        context, Visitor,cu) {*/
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const R_1 = __importDefault(require("../lib/R"));
 const TError_1 = __importDefault(require("../runtime/TError"));
@@ -19,7 +31,7 @@ const OM = ObjectMatcher;
 const parse_tonyu1_1 = __importDefault(require("./parse_tonyu1"));
 const parse_tonyu2_1 = __importDefault(require("./parse_tonyu2"));
 const assert_1 = __importDefault(require("../lib/assert"));
-const compiler_1 = __importDefault(require("./compiler"));
+const cu = __importStar(require("./compiler"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 const context_1 = __importDefault(require("./context"));
 const Grammar_1 = __importDefault(require("./Grammar"));
@@ -40,16 +52,16 @@ import R=require("../lib/R");
 const Semantics = (function () {
     /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
             LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
-    var ScopeTypes = compiler_1.default.ScopeTypes;
-    var genSt = compiler_1.default.newScopeType;
-    var stype = compiler_1.default.getScopeType;
-    var newScope = compiler_1.default.newScope;
+    var ScopeTypes = cu.ScopeTypes;
+    var genSt = cu.newScopeType;
+    var stype = cu.getScopeType;
+    var newScope = cu.newScope;
     //var nc=cu.nullCheck;
-    var genSym = compiler_1.default.genSym;
-    var annotation3 = compiler_1.default.annotation;
-    var getMethod2 = compiler_1.default.getMethod;
-    var getDependingClasses = compiler_1.default.getDependingClasses;
-    var getParams = compiler_1.default.getParams;
+    var genSym = cu.genSym;
+    var annotation3 = cu.annotation;
+    var getMethod2 = cu.getMethod;
+    var getDependingClasses = cu.getDependingClasses;
+    var getParams = cu.getParams;
     var JSNATIVES = { Array: 1, String: 1, Boolean: 1, Number: 1, Void: 1, Object: 1, RegExp: 1, Error: 1, Date: 1 };
     function visitSub(node) {
         var t = this;
@@ -254,7 +266,7 @@ const Semantics = (function () {
         var srcFile = klass.src.tonyu; //file object  //S
         var srcCont = srcFile.text();
         function getSource(node) {
-            return compiler_1.default.getSource(srcCont, node);
+            return cu.getSource(srcCont, node);
         }
         //var traceTbl=env.traceTbl;
         // method := fiber | function
@@ -430,7 +442,7 @@ const Semantics = (function () {
                 if (t == ST.FIELD) {
                     opt.klass = klass.name;
                     klass.decls.fields[n] = klass.decls.fields[n] || {};
-                    compiler_1.default.extend(klass.decls.fields[n], {
+                    Object.assign(klass.decls.fields[n], {
                         klass: klass.fullName,
                         name: n
                     }); //si;
@@ -838,5 +850,5 @@ const Semantics = (function () {
     } //B  end of annotateSource2
     return { initClassDecls: initClassDecls, annotate: annotateSource2, parse };
 })();
-compiler_1.default.Semantics = Semantics;
+cu.Semantics = Semantics;
 module.exports = Semantics;

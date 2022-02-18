@@ -8,7 +8,7 @@ const OM:any=ObjectMatcher;
 import TonyuLang1 from "./parse_tonyu1";
 import TonyuLang2 from "./parse_tonyu2";
 import assert from "../lib/assert";
-import cu from "./compiler";
+import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import context from "./context";
 import Grammar from "./Grammar";
@@ -30,7 +30,7 @@ import R=require("../lib/R");
 const Semantics=(function () {
 /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
 		LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
-var ScopeTypes=cu.ScopeTypes;
+var ScopeTypes=cu.ScopeTypes
 var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
 var newScope=cu.newScope;
@@ -409,7 +409,7 @@ function annotateSource2(klass, env) {//B
 			if (t==ST.FIELD) {
 				opt.klass=klass.name;
 				klass.decls.fields[n]=klass.decls.fields[n]||{};
-				cu.extend(klass.decls.fields[n],{
+				Object.assign(klass.decls.fields[n],{
 					klass:klass.fullName,
 					name:n
 				});//si;

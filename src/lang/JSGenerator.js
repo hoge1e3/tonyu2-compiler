@@ -1,23 +1,26 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-/*define(["Tonyu", "Tonyu.Iterator", "TonyuLang", "ObjectMatcher", "TError", "IndentBuffer",
-        "context", "Visitor","Tonyu.Compiler","assert"],
-function(Tonyu, Tonyu_iterator, TonyuLang, ObjectMatcher, TError, IndentBuffer,
-        context, Visitor,cu,A) {*/
-/*
-const Tonyu=require("../runtime/TonyuRuntime");
-const IndentBuffer=require("./IndentBuffer");
-const ObjectMatcher=require("./ObjectMatcher");
-const TError=require("../runtime/TError");
-const context=require("./context");
-
-const cu=require("./compiler");
-const A=require("../lib/assert");
-import R=require("../lib/R");
-const tonyu1=require("./tonyu1");
-*/
 const Visitor_1 = __importDefault(require("./Visitor"));
 const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
 const TError_1 = __importDefault(require("../runtime/TError"));
@@ -25,9 +28,9 @@ const R_1 = __importDefault(require("../lib/R"));
 const assert_1 = __importDefault(require("../lib/assert"));
 const tonyu1_1 = require("./tonyu1");
 const ObjectMatcher_1 = __importDefault(require("./ObjectMatcher"));
-const compiler_1 = __importDefault(require("./compiler"));
+const cu = __importStar(require("./compiler"));
 const context_1 = __importDefault(require("./context"));
-module.exports = compiler_1.default.JSGenerator = (function () {
+module.exports = cu.JSGenerator = (function () {
     // TonyuソースファイルをJavascriptに変換する
     var TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$", FRMPC = "__pc", LASTPOS = "$LASTPOS", CNTV = "__cnt", CNTC = 100; //G
     var BINDF = "Tonyu.bindFunc";
@@ -41,22 +44,22 @@ module.exports = compiler_1.default.JSGenerator = (function () {
     var SUPER = "__superClass";
     /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
             LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
-    var ScopeTypes = compiler_1.default.ScopeTypes;
+    var ScopeTypes = cu.ScopeTypes;
     //var genSt=cu.newScopeType;
-    var stype = compiler_1.default.getScopeType;
+    var stype = cu.getScopeType;
     //var newScope=cu.newScope;
     //var nc=cu.nullCheck;
     //var genSym=cu.genSym;
-    var annotation3 = compiler_1.default.annotation;
-    var getMethod2 = compiler_1.default.getMethod;
-    var getDependingClasses = compiler_1.default.getDependingClasses;
-    var getParams = compiler_1.default.getParams;
+    var annotation3 = cu.annotation;
+    var getMethod2 = cu.getMethod;
+    var getDependingClasses = cu.getDependingClasses;
+    var getParams = cu.getParams;
     //-----------
     function genJS(klass, env, genOptions) {
         var srcFile = klass.src.tonyu; //file object  //S
         var srcCont = srcFile.text();
         function getSource(node) {
-            return compiler_1.default.getSource(srcCont, node);
+            return cu.getSource(srcCont, node);
         }
         genOptions = genOptions || {};
         // env.codeBuffer is not recommended(if generate in parallel...?)
