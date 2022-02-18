@@ -9,7 +9,7 @@ import OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import context from "./context";
 
-export=(cu as any).JSGenerator=(function () {
+//export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 var TH="_thread",THIZ="_this", ARGS="_arguments",FIBPRE="fiber$", FRMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100;//G
 var BINDF="Tonyu.bindFunc";
@@ -35,7 +35,7 @@ var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
 
 //-----------
-function genJS(klass, env, genOptions) {//B
+export function genJS(klass, env, genOptions) {//B
 	var srcFile=klass.src.tonyu; //file object  //S
 	var srcCont=srcFile.text();
 	function getSource(node) {
@@ -1108,5 +1108,5 @@ function genJS(klass, env, genOptions) {//B
 	klass.src.map=buf.mapStr;
 	return buf;//res;
 }//B
-return {genJS:genJS};
-})();
+//return {genJS:genJS};
+//})();
