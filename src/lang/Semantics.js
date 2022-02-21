@@ -33,7 +33,7 @@ const parse_tonyu2_1 = __importDefault(require("./parse_tonyu2"));
 const assert_1 = __importDefault(require("../lib/assert"));
 const cu = __importStar(require("./compiler"));
 const Visitor_1 = __importDefault(require("./Visitor"));
-const context_1 = __importDefault(require("./context"));
+const context_1 = require("./context");
 const Grammar_1 = __importDefault(require("./Grammar"));
 /*const tonyu1=require("./tonyu1");
 const TonyuLang2=require("./parse_tonyu2");
@@ -278,7 +278,7 @@ const Semantics = (function () {
         // ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
         //  キー： 変数名   値： ScopeTypesのいずれか
         var v = null;
-        var ctx = context_1.default();
+        const ctx = context_1.context();
         var debug = false;
         var othersMethodCallTmpl = {
             type: "postfix",
@@ -315,14 +315,14 @@ const Semantics = (function () {
             }
         };
         var noRetSuperFiberCallTmpl = {
-            expr: OM.v("S", { type: "superExpr", params: { args: OM.A } }) //, $var:"S"}
+            expr: OM.S({ type: "superExpr", params: { args: OM.A } })
         };
         var retSuperFiberCallTmpl = {
             expr: {
                 type: "infix",
                 op: OM.O,
                 left: OM.L,
-                right: OM.v("S", { type: "superExpr", params: { args: OM.A } }) //, $var:"S"}
+                right: OM.S({ type: "superExpr", params: { args: OM.A } })
             }
         };
         klass.annotation = {};

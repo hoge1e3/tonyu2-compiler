@@ -9,7 +9,7 @@ define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
 */
 
 import * as cu from "./compiler";
-import context from "./context";
+import {context} from "./context";
 import Grammar from "./Grammar";
 import Visitor from "./Visitor";
 

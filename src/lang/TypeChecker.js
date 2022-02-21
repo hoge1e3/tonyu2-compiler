@@ -31,7 +31,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const cu = __importStar(require("./compiler"));
-const context_1 = __importDefault(require("./context"));
+const context_1 = require("./context");
 const Grammar_1 = __importDefault(require("./Grammar"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -183,7 +183,7 @@ TypeChecker.checkExpr = function (klass, env) {
             }
         }
     });
-    var ctx = context_1.default();
+    var ctx = context_1.context();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {

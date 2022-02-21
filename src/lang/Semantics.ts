@@ -10,7 +10,7 @@ import TonyuLang2 from "./parse_tonyu2";
 import assert from "../lib/assert";
 import * as cu from "./compiler";
 import Visitor from "./Visitor";
-import context from "./context";
+import {context} from "./context";
 import Grammar from "./Grammar";
 /*const tonyu1=require("./tonyu1");
 const TonyuLang2=require("./parse_tonyu2");
@@ -249,7 +249,17 @@ function annotateSource2(klass, env) {//B
 	// ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
 	//  キー： 変数名   値： ScopeTypesのいずれか
 	var v=null;
-	var ctx=context();
+	type SemCtx={
+		scope: any,
+		method: any,
+		finfo: any,
+		locals: any,
+		noWait: boolean,
+		isMain: boolean,
+		contable: boolean,
+		brkable: boolean,
+	};
+	const ctx=context<SemCtx>();
 	var debug=false;
 	var othersMethodCallTmpl={
 			type:"postfix",
@@ -286,14 +296,14 @@ function annotateSource2(klass, env) {//B
 		}
 	};
 	var noRetSuperFiberCallTmpl={
-		expr: OM.v("S",{type:"superExpr", params:{args:OM.A}})//, $var:"S"}
+		expr: OM.S({type:"superExpr", params:{args:OM.A}})
 	};
 	var retSuperFiberCallTmpl={
 			expr: {
 				type: "infix",
 				op: OM.O,
 				left: OM.L,
-				right: OM.v("S",{type:"superExpr", params:{args:OM.A}})//, $var:"S"}
+				right: OM.S({type:"superExpr", params:{args:OM.A}})
 			}
 		};
 	klass.annotation={};

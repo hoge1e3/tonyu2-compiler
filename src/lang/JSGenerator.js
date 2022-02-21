@@ -31,7 +31,7 @@ const assert_1 = __importDefault(require("../lib/assert"));
 const tonyu1_1 = require("./tonyu1");
 const OM = __importStar(require("./ObjectMatcher"));
 const cu = __importStar(require("./compiler"));
-const context_1 = __importDefault(require("./context"));
+const context_1 = require("./context");
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 var TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$", FRMPC = "__pc", LASTPOS = "$LASTPOS", CNTV = "__cnt", CNTC = 100; //G
@@ -69,7 +69,7 @@ function genJS(klass, env, genOptions) {
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = context_1.default();
+    var ctx = context_1.context();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function

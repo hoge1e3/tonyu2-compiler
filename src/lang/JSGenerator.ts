@@ -7,7 +7,7 @@ import assert from "../lib/assert";
 import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
-import context from "./context";
+import {context} from "./context";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -47,7 +47,18 @@ export function genJS(klass, env, genOptions) {//B
 	var traceIndex=genOptions.traceIndex||{};
 	buf.setSrcFile(srcFile);
 	var printf=buf.printf;
-	var ctx=context();
+	type GenCtx={
+		noWait: boolean,
+		pc: number,
+		threadAvail: boolean,
+		finfo: any,
+		method: any,
+		closestBrk: any,
+		closestCnt: any,
+		inTry: boolean,
+		exitTryOnJump: boolean,
+	};
+	var ctx=context<GenCtx>();
 	var debug=false;
 	//var traceTbl=env.traceTbl;
 	// method := fiber | function
