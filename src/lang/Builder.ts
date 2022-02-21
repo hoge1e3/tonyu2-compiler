@@ -4,7 +4,7 @@ import R from "../lib/R";
 import { isTonyu1 } from "./tonyu1";
 import JSGenerator = require("./JSGenerator");
 import IndentBuffer from "./IndentBuffer";
-import Semantics from "./Semantics";
+import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
 import TypeChecker from "./TypeChecker";
 

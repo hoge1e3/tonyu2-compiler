@@ -12,24 +12,8 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import Grammar from "./Grammar";
-/*const tonyu1=require("./tonyu1");
-const TonyuLang2=require("./parse_tonyu2");
-const TonyuLang1=require("./parse_tonyu1");
-const IndentBuffer=require("./IndentBuffer");
-const ObjectMatcher=require("./ObjectMatcher");
-const TError=require("../runtime/TError");
-const context=require("./context");
-const Visitor=require("./Visitor");
-const cu=require("./compiler");
-const A=require("../lib/assert");
-const Grammar=require("./Grammar");
-const root=require("../lib/root");
-import R=require("../lib/R");
-*/
 
-const Semantics=(function () {
-/*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
-		LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
+
 var ScopeTypes=cu.ScopeTypes
 var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -60,7 +44,7 @@ function visitSub(node) {//S
 function getSourceFile(klass) {
 	return assert(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
 }
-function parse(klass, options={}) {
+export function parse(klass, options={}) {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
 	let node;
 	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
@@ -78,7 +62,7 @@ function parse(klass, options={}) {
 	return node;
 }
 //-----------
-function initClassDecls(klass, env ) {//S
+export function initClassDecls(klass, env ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
 	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
@@ -87,17 +71,6 @@ function initClassDecls(klass, env ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	/*if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
-		node=klass.node;
-	}
-	if (!node) {
-		console.log("Parse "+s);
-		node=TonyuLang.parse(s);
-		klass.nodeTimestamp=s.lastUpdate();
-	}*/
-	//console.log(s+"",  !!klass.node, klass.nodeTimestamp, s.lastUpdate());
-	//if (!klass.testid) klass.testid=Math.random();
-	//console.log(klass.testid);
 	var MAIN={name:"main",stmts:[],pos:0, isMain:true};
 	// method := fiber | function
 	var fields={}, methods={main: MAIN}, natives={}, amds={},softRefClasses={};
@@ -106,10 +79,7 @@ function initClassDecls(klass, env ) {//S
 	// ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，AMDモジュール変数
 	//   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
 	klass.node=node;
-	/*function nc(o, mesg) {
-		if (!o) throw mesg+" is null";
-		return o;
-	}*/
+
 	function initMethods(program) {
 		var spcn=env.options.compiler.defaultSuperClass;
 		var pos=0;
@@ -203,23 +173,9 @@ function initClassDecls(klass, env ) {//S
 						stmts: stmt.body.stmts,
 						node: stmt
 				};
-				//annotation(stmt,methods[name]);
-				//annotation(stmt,{finfo:methods[name]});
 			} else if (stmt.type=="nativeDecl") {
 				natives[stmt.name.text]=stmt;
 			} else {
-				/*if (stmt.type=="varsDecl") {
-					stmt.decls.forEach(function (d) {
-						//console.log("varDecl", d.name.text);
-						//fields[d.name.text]=d;
-						fields[d.name.text]={
-							node:d,
-							klass:klass.fullName,
-							name:d.name.text,
-							pos:d.pos
-						};
-					});
-				}*/
 				MAIN.stmts.push(stmt);
 			}
 		});
@@ -310,19 +266,6 @@ function annotateSource2(klass, env) {//B
 	function annotation(node, aobj=undefined) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
-	/*function assertAnnotated(node, si) {//B
-		var a=annotation(node);
-		if (!a.scopeInfo) {
-			console.log(srcCont.substring(node.pos-5,node.pos+20));
-			console.log(node, si);
-			throw "Scope info not set";
-		}
-		if (si.type!=a.scopeInfo.type){
-			console.log(srcCont.substring(node.pos-5,node.pos+20));
-			console.log(node, si , a.scopeInfo);
-			throw "Scope info not match";
-		}
-	}*/
 	function initTopLevelScope2(klass) {//S
 		if (klass.builtin) return;
 		var s=topLevelScope;
@@ -807,7 +750,4 @@ function annotateSource2(klass, env) {//B
 	annotateSource();
 	delete klass.hasSemanticError;
 }//B  end of annotateSource2
-return {initClassDecls:initClassDecls, annotate:annotateSource2,parse};
-})();
-(cu as any).Semantics=Semantics;
-export= Semantics;
+export const annotate= annotateSource2;

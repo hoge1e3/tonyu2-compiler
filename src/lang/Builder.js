@@ -1,4 +1,23 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,7 +27,7 @@ const R_1 = __importDefault(require("../lib/R"));
 const tonyu1_1 = require("./tonyu1");
 const JSGenerator = require("./JSGenerator");
 const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
-const Semantics_1 = __importDefault(require("./Semantics"));
+const Semantics = __importStar(require("./Semantics"));
 const SourceFiles_1 = __importDefault(require("./SourceFiles"));
 const TypeChecker_1 = __importDefault(require("./TypeChecker"));
 //const langMod=require("./langMod");
@@ -202,7 +221,7 @@ module.exports = class Builder {
     }
     parse(f) {
         const klass = this.addMetaFromFile(f);
-        return Semantics_1.default.parse(klass);
+        return Semantics.parse(klass);
     }
     fileToShortClassName(f) {
         const s = f.truncExt(this.getEXT());
@@ -282,7 +301,7 @@ module.exports = class Builder {
             for (var n in compilingClasses) {
                 console.log("initClassDecl: " + n);
                 // does parsing in Semantics
-                Semantics_1.default.initClassDecls(compilingClasses[n], env); /*ENVC*/
+                Semantics.initClassDecls(compilingClasses[n], env); /*ENVC*/
             }
             return this.showProgress("order");
         }).then(() => {
@@ -291,7 +310,7 @@ module.exports = class Builder {
             ord.forEach(c => {
                 if (compilingClasses[c.fullName]) {
                     console.log("annotate :" + c.fullName);
-                    Semantics_1.default.annotate(c, env);
+                    Semantics.annotate(c, env);
                 }
             });
             if (ctxOpt.typeCheck) {
