@@ -1,22 +1,47 @@
-	var OM:any={};
-	var VAR="$var",THIZ="$this";
-	OM.v=v;
-	function v(name, cond=undefined) {
-		var res={};
+	//var OM:any={};
+	const VAR=("$var");//,THIZ="$this";
+	//OM.v=v;
+	export function v(name:string, res={}) {
 		res[VAR]=name;
-		if (cond) res[THIZ]=cond;
+		//if (cond) res[THIZ]=cond;
 		return res;
 	}
-	OM.isVar=isVar;
-	var names="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	//OM.isVar=isVar;
+	export const A=v("A");
+	export const B=v("B");
+	export const C=v("C");
+	export const D=v("D");
+	export const E=v("E");
+	export const F=v("F");
+	export const G=v("G");
+	export const H=v("H");
+	export const I=v("I");
+	export const J=v("J");
+	export const K=v("K");
+	export const L=v("L");
+	export const M=v("M");
+	export const N=v("N");
+	export const O=v("O");
+	export const P=v("P");
+	export const Q=v("Q");
+	export const R=v("R");
+	export const S=v("S");
+	export const T=v("T");
+	export const U=v("U");
+	export const V=v("V");
+	export const W=v("W");
+	export const X=v("X");
+	export const Y=v("Y");
+	export const Z=v("Z");
+	/*var names="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	for (var i =0 ; i<names.length ; i++) {
 		var c=names.substring(i,i+1);
 		OM[c]=v(c);
-	}
-	function isVar(o) {
+	}*/
+	export function isVar(o) {
 		return o && o[VAR];
 	}
-	OM.match=function (obj, tmpl) {
+	export function match(obj, tmpl) {
 		var res={};
 		if (m(obj,tmpl,res)) return res;
 		return null;
@@ -34,7 +59,7 @@
 			//if (typeof obj!="object") obj={$this:obj};
 			for (var i in tmpl) {
 				if (i==VAR) continue;
-				var oe=(i==THIZ? obj :  obj[i] );
+				var oe=obj[i];//(i==THIZ? obj :  obj[i] );
 				var te=tmpl[i];
 				if (!m(oe, te, res)) return false;
 			}
@@ -45,4 +70,4 @@
 		}
 		return false;
 	}
-	export= OM;
+	//export= OM;

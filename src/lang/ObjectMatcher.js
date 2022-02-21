@@ -1,29 +1,59 @@
 "use strict";
-var OM = {};
-var VAR = "$var", THIZ = "$this";
-OM.v = v;
-function v(name, cond = undefined) {
-    var res = {};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.match = exports.isVar = exports.Z = exports.Y = exports.X = exports.W = exports.V = exports.U = exports.T = exports.S = exports.R = exports.Q = exports.P = exports.O = exports.N = exports.M = exports.L = exports.K = exports.J = exports.I = exports.H = exports.G = exports.F = exports.E = exports.D = exports.C = exports.B = exports.A = exports.v = void 0;
+//var OM:any={};
+const VAR = ("$var"); //,THIZ="$this";
+//OM.v=v;
+function v(name, res = {}) {
     res[VAR] = name;
-    if (cond)
-        res[THIZ] = cond;
+    //if (cond) res[THIZ]=cond;
     return res;
 }
-OM.isVar = isVar;
-var names = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-for (var i = 0; i < names.length; i++) {
-    var c = names.substring(i, i + 1);
-    OM[c] = v(c);
-}
+exports.v = v;
+//OM.isVar=isVar;
+exports.A = v("A");
+exports.B = v("B");
+exports.C = v("C");
+exports.D = v("D");
+exports.E = v("E");
+exports.F = v("F");
+exports.G = v("G");
+exports.H = v("H");
+exports.I = v("I");
+exports.J = v("J");
+exports.K = v("K");
+exports.L = v("L");
+exports.M = v("M");
+exports.N = v("N");
+exports.O = v("O");
+exports.P = v("P");
+exports.Q = v("Q");
+exports.R = v("R");
+exports.S = v("S");
+exports.T = v("T");
+exports.U = v("U");
+exports.V = v("V");
+exports.W = v("W");
+exports.X = v("X");
+exports.Y = v("Y");
+exports.Z = v("Z");
+/*var names="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+for (var i =0 ; i<names.length ; i++) {
+    var c=names.substring(i,i+1);
+    OM[c]=v(c);
+}*/
 function isVar(o) {
     return o && o[VAR];
 }
-OM.match = function (obj, tmpl) {
+exports.isVar = isVar;
+function match(obj, tmpl) {
     var res = {};
     if (m(obj, tmpl, res))
         return res;
     return null;
-};
+}
+exports.match = match;
+;
 function m(obj, tmpl, res) {
     if (obj === tmpl)
         return true;
@@ -40,7 +70,7 @@ function m(obj, tmpl, res) {
         for (var i in tmpl) {
             if (i == VAR)
                 continue;
-            var oe = (i == THIZ ? obj : obj[i]);
+            var oe = obj[i]; //(i==THIZ? obj :  obj[i] );
             var te = tmpl[i];
             if (!m(oe, te, res))
                 return false;
@@ -52,4 +82,4 @@ function m(obj, tmpl, res) {
     }
     return false;
 }
-module.exports = OM;
+//export= OM;

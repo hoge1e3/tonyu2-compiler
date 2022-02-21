@@ -71,7 +71,7 @@ TypeChecker.checkTypeDecl = function (klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
-    var typeDeclVisitor = (0, Visitor_1.default)({
+    var typeDeclVisitor = Visitor_1.default({
         varDecl: function (node) {
             //console.log("TCV","varDecl",node);
             if (node.value)
@@ -127,7 +127,7 @@ TypeChecker.checkExpr = function (klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
-    var typeAnnotationVisitor = (0, Visitor_1.default)({
+    var typeAnnotationVisitor = Visitor_1.default({
         number: function (node) {
             annotation(node, { vtype: Number });
         },
@@ -183,7 +183,7 @@ TypeChecker.checkExpr = function (klass, env) {
             }
         }
     });
-    var ctx = (0, context_1.default)();
+    var ctx = context_1.default();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {

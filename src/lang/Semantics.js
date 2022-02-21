@@ -83,7 +83,7 @@ const Semantics = (function () {
         });
     }
     function getSourceFile(klass) {
-        return (0, assert_1.default)(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
+        return assert_1.default(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
     }
     function parse(klass, options = {}) {
         const s = getSourceFile(klass); //.src.tonyu; //file object
@@ -93,7 +93,7 @@ const Semantics = (function () {
         }
         if (!node) {
             //console.log("Parse "+s);
-            if ((0, tonyu1_1.isTonyu1)(options)) {
+            if (tonyu1_1.isTonyu1(options)) {
                 node = parse_tonyu1_1.default.parse(s);
             }
             else {
@@ -154,7 +154,7 @@ const Semantics = (function () {
                     var p = i.pos;
                     var incc = env.classes[env.aliases[n] || n]; /*ENVC*/ //CFN env.classes[env.aliases[n]]
                     if (!incc)
-                        throw (0, TError_1.default)((0, R_1.default)("classIsUndefined", n), s, p);
+                        throw TError_1.default(R_1.default("classIsUndefined", n), s, p);
                     klass.includes.push(incc);
                 });
             }
@@ -164,7 +164,7 @@ const Semantics = (function () {
             else if (spcn) {
                 var spc = env.classes[env.aliases[spcn] || spcn]; /*ENVC*/ //CFN env.classes[env.aliases[spcn]]
                 if (!spc) {
-                    throw (0, TError_1.default)((0, R_1.default)("superClassIsUndefined", spcn), s, pos);
+                    throw TError_1.default(R_1.default("superClassIsUndefined", spcn), s, pos);
                 }
                 klass.superclass = spc;
             }
@@ -182,7 +182,7 @@ const Semantics = (function () {
                     pos: node.pos
                 };
             }
-            var fieldsCollector = (0, Visitor_1.default)({
+            var fieldsCollector = Visitor_1.default({
                 varDecl: function (node) {
                     addField(node.name, node);
                 },
@@ -278,7 +278,7 @@ const Semantics = (function () {
         // ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
         //  キー： 変数名   値： ScopeTypesのいずれか
         var v = null;
-        var ctx = (0, context_1.default)();
+        var ctx = context_1.default();
         var debug = false;
         var othersMethodCallTmpl = {
             type: "postfix",
@@ -315,14 +315,14 @@ const Semantics = (function () {
             }
         };
         var noRetSuperFiberCallTmpl = {
-            expr: { type: "superExpr", params: { args: OM.A }, $var: "S" }
+            expr: OM.v("S", { type: "superExpr", params: { args: OM.A } }) //, $var:"S"}
         };
         var retSuperFiberCallTmpl = {
             expr: {
                 type: "infix",
                 op: OM.O,
                 left: OM.L,
-                right: { type: "superExpr", params: { args: OM.A }, $var: "S" }
+                right: OM.v("S", { type: "superExpr", params: { args: OM.A } }) //, $var:"S"}
             }
         };
         klass.annotation = {};
@@ -376,7 +376,7 @@ const Semantics = (function () {
             var s = topLevelScope;
             getDependingClasses(klass).forEach(initTopLevelScope2);
             var decls = klass.decls; // Do not inherit parents' natives
-            if (!(0, tonyu1_1.isTonyu1)(env.options)) {
+            if (!tonyu1_1.isTonyu1(env.options)) {
                 for (let i in JSNATIVES) {
                     s[i] = genSt(ST.NATIVE, { name: "native::" + i, value: root_1.default[i] });
                 }
@@ -417,7 +417,7 @@ const Semantics = (function () {
                 return true;
             }
             console.log("LVal", node);
-            throw (0, TError_1.default)((0, R_1.default)("invalidLeftValue", getSource(node)), srcFile, node.pos);
+            throw TError_1.default(R_1.default("invalidLeftValue", getSource(node)), srcFile, node.pos);
         }
         function getScopeInfo(n) {
             var node = n;
@@ -434,7 +434,7 @@ const Semantics = (function () {
                     var isg = n.match(/^\$/);
                     if (env.options.compiler.field_strict || klass.directives.field_strict) {
                         if (!isg)
-                            throw (0, TError_1.default)((0, R_1.default)("fieldDeclarationRequired", n), srcFile, node.pos);
+                            throw TError_1.default(R_1.default("fieldDeclarationRequired", n), srcFile, node.pos);
                     }
                     t = isg ? ST.GLOBAL : ST.FIELD;
                 }
@@ -454,7 +454,7 @@ const Semantics = (function () {
             }
             return si;
         }
-        var localsCollector = (0, Visitor_1.default)({
+        var localsCollector = Visitor_1.default({
             varDecl: function (node) {
                 if (ctx.isMain) {
                     annotation(node, { varInMain: true });
@@ -516,7 +516,7 @@ const Semantics = (function () {
                 ctx.method.fiberCallRequired = true;
             annotateParents(path, { fiberCallRequired: true });
         }
-        var varAccessesAnnotator = (0, Visitor_1.default)({
+        var varAccessesAnnotator = Visitor_1.default({
             varAccess: function (node) {
                 var si = getScopeInfo(node.name);
                 var t = stype(si);
@@ -539,7 +539,7 @@ const Semantics = (function () {
                         kn = e.key.text;
                     }
                     if (dup[kn]) {
-                        throw (0, TError_1.default)((0, R_1.default)("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
+                        throw TError_1.default(R_1.default("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
                     }
                     dup[kn] = 1;
                     //console.log("objlit",e.key.text);
@@ -552,7 +552,7 @@ const Semantics = (function () {
                 }
                 else {
                     if (node.key.type == "literal") {
-                        throw (0, TError_1.default)((0, R_1.default)("cannotUseStringLiteralAsAShorthandOfObjectValue"), srcFile, node.pos);
+                        throw TError_1.default(R_1.default("cannotUseStringLiteralAsAShorthandOfObjectValue"), srcFile, node.pos);
                     }
                     var si = getScopeInfo(node.key);
                     annotation(node, { scopeInfo: si });
@@ -621,13 +621,13 @@ const Semantics = (function () {
             },
             "break": function (node) {
                 if (!ctx.brkable)
-                    throw (0, TError_1.default)((0, R_1.default)("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
                 if (!ctx.noWait)
                     annotateParents(this.path, { hasJump: true });
             },
             "continue": function (node) {
                 if (!ctx.contable)
-                    throw (0, TError_1.default)((0, R_1.default)("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
                 if (!ctx.noWait)
                     annotateParents(this.path, { hasJump: true });
             },
@@ -665,7 +665,7 @@ const Semantics = (function () {
             exprstmt: function (node) {
                 var t, m;
                 if (node.expr.type === "objlit") {
-                    throw (0, TError_1.default)((0, R_1.default)("cannotUseObjectLiteralAsTheExpressionOfStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotUseObjectLiteralAsTheExpressionOfStatement"), srcFile, node.pos);
                 }
                 if (!ctx.noWait &&
                     (t = OM.match(node, noRetFiberCallTmpl)) &&
@@ -686,7 +686,7 @@ const Semantics = (function () {
                     t.S.name) {
                     m = getMethod(t.S.name.text);
                     if (!m)
-                        throw new Error((0, R_1.default)("undefinedMethod", t.S.name.text));
+                        throw new Error(R_1.default("undefinedMethod", t.S.name.text));
                     if (!m.nowait) {
                         t.type = "noRetSuper";
                         t.superclass = klass.superclass;
@@ -699,7 +699,7 @@ const Semantics = (function () {
                     t.S.name) {
                     m = getMethod(t.S.name.text);
                     if (!m)
-                        throw new Error((0, R_1.default)("undefinedMethod", t.S.name.text));
+                        throw new Error(R_1.default("undefinedMethod", t.S.name.text));
                     if (!m.nowait) {
                         t.type = "retSuper";
                         t.superclass = klass.superclass;

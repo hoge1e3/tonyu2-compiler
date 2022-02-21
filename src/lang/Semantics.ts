@@ -286,14 +286,14 @@ function annotateSource2(klass, env) {//B
 		}
 	};
 	var noRetSuperFiberCallTmpl={
-		expr: {type:"superExpr", params:{args:OM.A}, $var:"S"}
+		expr: OM.v("S",{type:"superExpr", params:{args:OM.A}})//, $var:"S"}
 	};
 	var retSuperFiberCallTmpl={
 			expr: {
 				type: "infix",
 				op: OM.O,
 				left: OM.L,
-				right: {type:"superExpr", params:{args:OM.A}, $var:"S"}
+				right: OM.v("S",{type:"superExpr", params:{args:OM.A}})//, $var:"S"}
 			}
 		};
 	klass.annotation={};

@@ -5,7 +5,7 @@ import TError from "../runtime/TError";
 import R from "../lib/R";
 import assert from "../lib/assert";
 import { isTonyu1 } from "./tonyu1";
-import OM from "./ObjectMatcher";
+import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import context from "./context";
 

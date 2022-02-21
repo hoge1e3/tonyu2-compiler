@@ -1,6 +1,11 @@
 extends Chara;
 native console;
 
+\man() {
+    y=super.man();
+    console.log("Preya::Man",y);
+}
+man();
 x=0;
 while(x<120) {
     move();

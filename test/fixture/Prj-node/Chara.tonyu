@@ -25,6 +25,10 @@ nowait a() {
 \move() {
     x+=10;
 }
+\man() {
+    console.log("Chara:man");
+    return 10;
+}
 //a.b.x;
 /*while (true) {
 try {

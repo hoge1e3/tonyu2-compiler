@@ -80,10 +80,29 @@ Tonyu.klass.define({
         
         _thread.retVal=_this;return;
       },
+      man :function _trc_Chara_man() {
+        "use strict";
+        var _this=this;
+        
+        console.log("Chara:man");
+        return 10;
+      },
+      fiber$man :function _trc_Chara_f_man(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        console.log("Chara:man");
+        _thread.retVal=10;return;
+        
+        
+        _thread.retVal=_this;return;
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true},"move":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
+  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true},"move":{"nowait":false},"man":{"nowait":false}},"fields":{"x":{},"y":{},"fillStyle":{},"radius":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Field',
@@ -207,6 +226,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
+        _this.man();
         _this.x=0;
         while (_this.x<120) {
           Tonyu.checkLoop();
@@ -222,27 +242,61 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        _this.x=0;
         
         _thread.enter(function _trc_Preya_ent_main(_thread) {
           if (_thread.lastEx) __pc=_thread.catchPC;
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
+              _this.fiber$man(_thread);
+              __pc=1;return;
             case 1:
-              if (!(_this.x<120)) { __pc=4     ; break; }
-              _this.fiber$move(_thread);
-              __pc=2;return;
-            case 2:
               
-              console.log(_this.x);
-              _this.fiber$update(_thread);
+              _this.x=0;
+            case 2:
+              if (!(_this.x<120)) { __pc=5     ; break; }
+              _this.fiber$move(_thread);
               __pc=3;return;
             case 3:
               
-              __pc=1;break;
-            case 4     :
+              console.log(_this.x);
+              _this.fiber$update(_thread);
+              __pc=4;return;
+            case 4:
               
+              __pc=2;break;
+            case 5     :
+              
+              _thread.exit(_this);return;
+            }
+          }
+        });
+      },
+      man :function _trc_Preya_man() {
+        "use strict";
+        var _this=this;
+        
+        _this.y=__superClass.prototype.man.apply( _this, []);
+        console.log("Preya::Man",_this.y);
+      },
+      fiber$man :function _trc_Preya_f_man(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        
+        _thread.enter(function _trc_Preya_ent_man(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+              __superClass.prototype.fiber$man.apply( _this, [_thread]);
+              __pc=1;return;
+            case 1:
+              _this.y=_thread.retVal;
+              
+              console.log("Preya::Man",_this.y);
               _thread.exit(_this);return;
             }
           }
@@ -251,7 +305,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false},"man":{"nowait":false}},"fields":{}}
 });
 
 //# sourceMappingURL=concat.js.map
