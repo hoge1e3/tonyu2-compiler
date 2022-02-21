@@ -1,10 +1,23 @@
 	//var OM:any={};
-	const VAR=("$var");//,THIZ="$this";
+	const VAR=Symbol("$var");//,THIZ="$this";
 	//OM.v=v;
-	export function v(name:string, res={}) {
-		res[VAR]=name;
+	type Variable = Function & {
+		vname:string, cond:any
+	};
+	export function v(name:string, cond={}):Variable {
+		const res=function (cond2:any) {
+			const cond3={...cond};
+			Object.assign(cond3, cond2);
+			return v(name, cond3);
+		}
+		res.vname=name;
+		res.cond=cond;
+		res[VAR]=true;
 		//if (cond) res[THIZ]=cond;
 		return res;
+	}
+	function isVariable(a:any): a is Variable {
+		return a[VAR];
 	}
 	//OM.isVar=isVar;
 	export const A=v("A");
@@ -48,24 +61,26 @@
 	};
 	function m(obj, tmpl, res) {
 		if (obj===tmpl) return true;
-		if (obj==null) return false;
-		if (typeof obj=="string" && tmpl instanceof RegExp) {
+		else if (obj==null) return false;
+		else if (isVariable(tmpl)) {
+		   if (!m(obj, tmpl.cond, res)) return false;
+		   res[tmpl.vname]=obj;
+		   return true;
+	   } else if (typeof obj=="string" && tmpl instanceof RegExp) {
 			return obj.match(tmpl);
-		}
-		if (typeof tmpl=="function") {
+		} else if (typeof tmpl=="function") {
 			return tmpl(obj,res);
-		}
-		if (typeof tmpl=="object") {
+		} else if (typeof tmpl=="object") {
 			//if (typeof obj!="object") obj={$this:obj};
 			for (var i in tmpl) {
-				if (i==VAR) continue;
+				//if (i==VAR) continue;
 				var oe=obj[i];//(i==THIZ? obj :  obj[i] );
 				var te=tmpl[i];
 				if (!m(oe, te, res)) return false;
 			}
-			if (tmpl[VAR]) {
+			/*if (tmpl[VAR]) {
 				res[tmpl[VAR]]=obj;
-			}
+			}*/
 			return true;
 		}
 		return false;

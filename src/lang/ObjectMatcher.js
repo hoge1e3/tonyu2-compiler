@@ -2,14 +2,23 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.match = exports.isVar = exports.Z = exports.Y = exports.X = exports.W = exports.V = exports.U = exports.T = exports.S = exports.R = exports.Q = exports.P = exports.O = exports.N = exports.M = exports.L = exports.K = exports.J = exports.I = exports.H = exports.G = exports.F = exports.E = exports.D = exports.C = exports.B = exports.A = exports.v = void 0;
 //var OM:any={};
-const VAR = ("$var"); //,THIZ="$this";
-//OM.v=v;
-function v(name, res = {}) {
-    res[VAR] = name;
+const VAR = Symbol("$var"); //,THIZ="$this";
+function v(name, cond = {}) {
+    const res = function (cond2) {
+        const cond3 = { ...cond };
+        Object.assign(cond3, cond2);
+        return v(name, cond3);
+    };
+    res.vname = name;
+    res.cond = cond;
+    res[VAR] = true;
     //if (cond) res[THIZ]=cond;
     return res;
 }
 exports.v = v;
+function isVariable(a) {
+    return a[VAR];
+}
 //OM.isVar=isVar;
 exports.A = v("A");
 exports.B = v("B");
@@ -57,27 +66,32 @@ exports.match = match;
 function m(obj, tmpl, res) {
     if (obj === tmpl)
         return true;
-    if (obj == null)
+    else if (obj == null)
         return false;
-    if (typeof obj == "string" && tmpl instanceof RegExp) {
+    else if (isVariable(tmpl)) {
+        if (!m(obj, tmpl.cond, res))
+            return false;
+        res[tmpl.vname] = obj;
+        return true;
+    }
+    else if (typeof obj == "string" && tmpl instanceof RegExp) {
         return obj.match(tmpl);
     }
-    if (typeof tmpl == "function") {
+    else if (typeof tmpl == "function") {
         return tmpl(obj, res);
     }
-    if (typeof tmpl == "object") {
+    else if (typeof tmpl == "object") {
         //if (typeof obj!="object") obj={$this:obj};
         for (var i in tmpl) {
-            if (i == VAR)
-                continue;
+            //if (i==VAR) continue;
             var oe = obj[i]; //(i==THIZ? obj :  obj[i] );
             var te = tmpl[i];
             if (!m(oe, te, res))
                 return false;
         }
-        if (tmpl[VAR]) {
-            res[tmpl[VAR]] = obj;
-        }
+        /*if (tmpl[VAR]) {
+            res[tmpl[VAR]]=obj;
+        }*/
         return true;
     }
     return false;
