@@ -11,70 +11,64 @@ import root from "../lib/root";
 			LOCAL:"local", THVAR:"threadvar",PROP:"property",
 			PARAM:"param", GLOBAL:"global",
 			CLASS:"class", MODULE:"module"
+	} as const;
+	export namespace ScopeInfo{
+		export class LOCAL {
+			type=ScopeTypes.LOCAL;
+			constructor(public declaringFunc){}
+		}
+		export class PARAM {
+			type=ScopeTypes.PARAM;
+			constructor(public declaringFunc){}
+		}
+		export class FIELD {
+			type=ScopeTypes.FIELD;
+			constructor(public klass, public name, public info){}
+		}
+		export class PROP {
+			type=ScopeTypes.PROP;
+			constructor(public klass, public name, public info){}
+		}
+		export class METHOD{
+			type=ScopeTypes.METHOD;
+			constructor(public klass, public name, public info){}
+		}
+		export class THVAR {
+			type=ScopeTypes.THVAR;
+		}
+		export class NATIVE{
+			type=ScopeTypes.NATIVE;
+			constructor(public name, public value){}
+		}
+		export class CLASS{
+			type=ScopeTypes.CLASS;
+			constructor(public name, public fullName, public info){}
+		}
+		export class GLOBAL {
+			type=ScopeTypes.GLOBAL;
+			constructor(public name){}
+		}
+		export class MODULE {
+			type=ScopeTypes.MODULE;
+			constructor(public name){}
+		}
+		export type ALL=FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE;
 	};
+	export type ScopeInfos=ScopeInfo.ALL;
+	export type ScopeType=valueOf<typeof ScopeTypes>;
 
-	class ST_LOCAL {
-		type=ScopeTypes.LOCAL;
-		constructor(public declaringFunc){}
-	}
-	class ST_PARAM {
-		type=ScopeTypes.PARAM;
-		constructor(public declaringFunc){}
-	}
-	class ST_FIELD {
-		type=ScopeTypes.FIELD;
-		constructor(public klass, public name, public info){}
-	}
-	class ST_PROP {
-		type=ScopeTypes.PROP;
-		constructor(public klass, public name, public info){}
-	}
-	class ST_METHOD {
-		type=ScopeTypes.METHOD;
-		constructor(public klass, public name, public info){}
-	}
-	class ST_THVAR {
-		type=ScopeTypes.THVAR;
-	}
-	class ST_NATIVE{
-		type=ScopeTypes.NATIVE;
-		constructor(public name, public value){}
-	}
-	class ST_CLASS {
-		type=ScopeTypes.CLASS;
-		constructor(public name, public fullName, public info){}
-	}
-	class ST_GLOBAL{
-		type=ScopeTypes.GLOBAL;
-		constructor(public name){}
-	}
-	class ST_MODULE{
-		type=ScopeTypes.MODULE;
-		constructor(public name){}
-	}
-	type STES={
-		LOCAL:ST_LOCAL, PARAM:ST_PARAM
-	};
-	export type STCS=valueOf<STES>;
-	/*const cu={ScopeTypes,newScopeType:genSt,getScopeType:stype,newScope,nullCheck:nc,
-		genSym,extend,annotation:annotation3,getSource,getField,getMethod:getMethod2,
-		getDependingClasses,getParams,
-	};
-	Tonyu.Compiler=cu;*/
-
-	//cu.ScopeTypes=ScopeTypes;
 	let nodeIdSeq=1;
 	let symSeq=1;//B
-	export function newScopeType(st, options?) {//B
+	/*export function newScopeType(st, options?) {//B
 		const res:any={type:st};
 		if (options) {
 			for (let k in options) res[k]=options[k];
 		}
 		if (!res.name) res.name=genSym("_"+st+"_");
 		return res;
-	}
+	}*/
 	//cu.newScopeType=genSt;
-	export function getScopeType(st) {//B
+	export function getScopeType(st: ScopeInfos ) {//B
 		return st ? st.type : null;
 	}
 	//cu.getScopeType=stype;

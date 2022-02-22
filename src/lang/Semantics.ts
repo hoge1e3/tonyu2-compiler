@@ -15,9 +15,10 @@ import Grammar from "./Grammar";
 
 
 var ScopeTypes=cu.ScopeTypes
-var genSt=cu.newScopeType;
+//var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
 var newScope=cu.newScope;
+const SI=cu.ScopeInfo;
 //var nc=cu.nullCheck;
 var genSym=cu.genSym;
 var annotation3=cu.annotation;
@@ -276,7 +277,7 @@ function annotateSource2(klass, env) {//B
 		var i;
 		for (i in decls.fields) {
 			const info=decls.fields[i];
-			s[i]=genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
+			s[i]=new SI.FIELD(klass, i, info);//genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
 			if (info.node) {
 				annotation(info.node,{info:info});
 			}
@@ -285,9 +286,10 @@ function annotateSource2(klass, env) {//B
 			const info=decls.methods[i];
 			var r=Tonyu.klass.propReg.exec(i);
 			if (r) {
-				s[r[2]]=genSt(ST.PROP,{klass:klass.fullName,name:r[2],info:info});
+				const name=r[2];
+				s[name]=new SI.PROP(klass.fullName, name, info);// genSt(ST.PROP,{klass:klass.fullName,name:r[2],info:info});
 			} else {
-				s[i]=genSt(ST.METHOD,{klass:klass.fullName,name:i,info:info});
+				s[i]=new SI.METHOD(klass.fullName, i, info);//genSt(ST.METHOD,{klass:klass.fullName,name:i,info:info});
 			}
 			if (info.node) {
 				annotation(info.node,{info:info});
@@ -300,15 +302,16 @@ function annotateSource2(klass, env) {//B
 		var decls=klass.decls;// Do not inherit parents' natives
 		if (!isTonyu1(env.options)) {
 			for (let i in JSNATIVES) {
-				s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
+				s[i]=new SI.NATIVE("native::"+i, root[i]);
 			}
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
 			var fullName=env.aliases[i];
-			s[i]=genSt(ST.CLASS,{name:i,fullName:fullName,info:env.classes[fullName]});
+			s[i]=new SI.CLASS(i,fullName,env.classes[fullName]);//,{name:i,fullName:fullName,info:env.classes[fullName]});
 		}
 		for (let i in decls.natives) {
-			s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
+			s[i]=new SI.NATIVE("native::"+i, root[i]);
+			//s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 		}
 	}
 	function inheritSuperMethod() {//S
@@ -342,32 +345,44 @@ function annotateSource2(klass, env) {//B
 		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
 	}
 	function getScopeInfo(n) {//S
-		var node=n;
+		const node=n;
 		n=n+"";
-		var si=ctx.scope[n];
-		var t=stype(si);
+		const si=ctx.scope[n];
+		const t=stype(si);
 		if (!t) {
 			if (env.amdPaths && env.amdPaths[n]) {
-				t=ST.MODULE;
+				//t=ST.MODULE;
 				klass.decls.amds[n]=env.amdPaths[n];
+				topLevelScope[n]=new SI.MODULE(n);
 				//console.log(n,"is module");
 			} else {
 				var isg=n.match(/^\$/);
 				if (env.options.compiler.field_strict || klass.directives.field_strict) {
 					if (!isg) throw TError(R("fieldDeclarationRequired",n),srcFile,node.pos);
 				}
-				t=isg?ST.GLOBAL:ST.FIELD;
+				if (isg) {
+					topLevelScope[n]=new SI.GLOBAL(n);
+				} else {
+					//opt.klass=klass.name;
+					klass.decls.fields[n]=klass.decls.fields[n]||{};
+					Object.assign(klass.decls.fields[n],{
+						klass:klass.fullName,
+						name:n
+					});//si;
+					topLevelScope[n]=new SI.FIELD(klass, n, klass.decls.fields[n]);
+				}
 			}
-			var opt:any={name:n};
-			if (t==ST.FIELD) {
+			return topLevelScope[n];
+			//var opt:any={name:n};
+			/*if (t==ST.FIELD) {
 				opt.klass=klass.name;
 				klass.decls.fields[n]=klass.decls.fields[n]||{};
 				Object.assign(klass.decls.fields[n],{
 					klass:klass.fullName,
 					name:n
 				});//si;
-			}
-			si=topLevelScope[n]=genSt(t,opt);
+			}*/
+			//topLevelScope[n]=si;//genSt(t,opt);
 		}
 		if (t==ST.CLASS) {
 			klass.decls.softRefClasses[n]=si;
@@ -510,7 +525,7 @@ function annotateSource2(klass, env) {//B
 			var TH="_thread";
 			var t=this;
 			var ns=newScope(ctx.scope);
-			ns[TH]=genSt(ST.THVAR);
+			ns[TH]=new SI.THVAR();//genSt(ST.THVAR);
 			ctx.enter({scope:ns}, function () {
 				t.visit(node.then);
 			});
@@ -651,12 +666,12 @@ function annotateSource2(klass, env) {//B
 		var locals=finfo.locals;
 		for (var i in locals.varDecls) {
 			//console.log("LocalVar ",i,"declared by ",finfo);
-			var si=genSt(ST.LOCAL,{declaringFunc:finfo});
+			var si=new SI.LOCAL(finfo);//genSt(ST.LOCAL,{declaringFunc:finfo});
 			scope[i]=si;
 			annotation(locals.varDecls[i],{scopeInfo:si});
 		}
 		for (let i in locals.subFuncDecls) {
-			const si=genSt(ST.LOCAL,{declaringFunc:finfo});
+			const si=new SI.LOCAL(finfo);//genSt(ST.LOCAL,{declaringFunc:finfo});
 			scope[i]=si;
 			annotation(locals.subFuncDecls[i],{scopeInfo:si});
 		}
@@ -692,7 +707,7 @@ function annotateSource2(klass, env) {//B
 		//var locals;
 		ctx.enter({finfo: finfo}, function () {
 			ps.forEach(function (p) {
-				var si=genSt(ST.PARAM,{declaringFunc:finfo});
+				var si=new SI.PARAM(finfo);//genSt(ST.PARAM,{declaringFunc:finfo});
 				annotation(p,{scopeInfo:si});
 				ns[p.name.text]=si;
 			});
@@ -721,9 +736,9 @@ function annotateSource2(klass, env) {//B
 		//f:info  (of method)
 		var ns=newScope(ctx.scope);
 		f.params.forEach(function (p,cnt) {
-			var si=genSt(ST.PARAM,{
-				klass:klass.name, name:f.name, no:cnt, declaringFunc:f
-			});
+			var si=new SI.PARAM(f);
+			//	klass:klass.name, name:f.name, no:cnt, declaringFunc:f
+			//});
 			ns[p.name.text]=si;
 			annotation(p,{scopeInfo:si,declaringFunc:f});
 		});

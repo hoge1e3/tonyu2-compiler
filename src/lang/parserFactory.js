@@ -19,7 +19,7 @@ const Grammar_1 = __importDefault(require("./Grammar"));
 module.exports = function PF({ TT }) {
     var p = parser_1.default;
     var $ = {};
-    var g = Grammar_1.default();
+    var g = (0, Grammar_1.default)();
     var G = g.get;
     var sp = p.StringParser; //(str);
     var tk = p.TokensParser.token;
@@ -79,7 +79,7 @@ module.exports = function PF({ TT }) {
             return list;
         });
     }
-    var e = ExpressionParser2_1.default();
+    var e = (0, ExpressionParser2_1.default)();
     var arrayElem = g("arrayElem").ands(tk("["), e.lazy(), tk("]")).ret(null, "subscript");
     var argList = g("argList").ands(tk("("), comLastOpt(e.lazy()), tk(")")).ret(null, "args");
     var member = g("member").ands(tk("."), symresv).ret(null, "name");
@@ -291,7 +291,7 @@ module.exports = function PF({ TT }) {
         if (!tokenRes.isSuccess()) {
             //return "ERROR\nToken error at "+tokenRes.src.maxPos+"\n"+
             //	str.substring(0,tokenRes.src.maxPos)+"!!HERE!!"+str.substring(tokenRes.src.maxPos);
-            throw TError_1.default(R_1.default("lexicalError"), file, tokenRes.src.maxPos);
+            throw (0, TError_1.default)((0, R_1.default)("lexicalError"), file, tokenRes.src.maxPos);
         }
         var tokens = tokenRes.result[0];
         //console.log("Tokens: "+tokens.join(","));
@@ -307,7 +307,7 @@ module.exports = function PF({ TT }) {
         var lt = tokens[res.src.maxPos];
         var mp = (lt ? lt.pos : str.length);
         const len = (lt ? lt.len : 0);
-        throw TError_1.default(R_1.default("parseError"), file, mp, len);
+        throw (0, TError_1.default)((0, R_1.default)("parseError"), file, mp, len);
         /*return "ERROR\nSyntax error at "+mp+"\n"+
         str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
     };

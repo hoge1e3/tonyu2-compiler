@@ -15,7 +15,7 @@ import Visitor from "./Visitor";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 	var ScopeTypes=cu.ScopeTypes;
-	var genSt=cu.newScopeType;
+	//var genSt=cu.newScopeType;
 	var stype=cu.getScopeType;
 	var newScope=cu.newScope;
 	//var nc=cu.nullCheck;

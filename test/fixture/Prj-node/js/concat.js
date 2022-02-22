@@ -156,15 +156,15 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
-        var _it_2;
+        var _it_1;
         
         _this.s=new Set;
         _this.s.add(5);
         _this.s.add(10);
         console.log("listing elem");
-        _it_2=Tonyu.iterator(_this.s,1);
-        while(_it_2.next()) {
-          _this.k=_it_2[0];
+        _it_1=Tonyu.iterator(_this.s,1);
+        while(_it_1.next()) {
+          _this.k=_it_1[0];
           
           console.log("elem",_this.k);
           
@@ -180,15 +180,15 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
-        var _it_2;
+        var _it_1;
         
         _this.s=new Set;
         _this.s.add(5);
         _this.s.add(10);
         console.log("listing elem");
-        _it_2=Tonyu.iterator(_this.s,1);
-        while(_it_2.next()) {
-          _this.k=_it_2[0];
+        _it_1=Tonyu.iterator(_this.s,1);
+        while(_it_1.next()) {
+          _this.k=_it_1[0];
           
           console.log("elem",_this.k);
           

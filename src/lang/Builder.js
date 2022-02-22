@@ -60,7 +60,7 @@ function orderByInheritance(classes) {
                     break;
                 }
             }
-            throw TError_1.default(R_1.default("circularDependencyDetected", ""), "Unknown", 0);
+            throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", ""), "Unknown", 0);
         }
     }
     function dep1(c) {
@@ -79,7 +79,7 @@ function orderByInheritance(classes) {
         function pushPath(c) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
-                throw TError_1.default(R_1.default("circularDependencyDetected", path.join("->")), "Unknown", 0);
+                throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", path.join("->")), "Unknown", 0);
             }
             visited[c.fullName] = true;
         }
@@ -125,7 +125,7 @@ module.exports = class Builder {
     }
     isTonyu1() {
         const options = this.getOptions();
-        return tonyu1_1.isTonyu1(options);
+        return (0, tonyu1_1.isTonyu1)(options);
     }
     getOptions() { return this.prj.getOptions(); }
     getOutputFile(...f) { return this.prj.getOutputFile(...f); }
@@ -325,7 +325,7 @@ module.exports = class Builder {
             return this.showProgress("genJS");
         }).then(() => {
             //throw "test break";
-            buf = IndentBuffer_1.default({ fixLazyLength: 6 });
+            buf = (0, IndentBuffer_1.default)({ fixLazyLength: 6 });
             buf.traceIndex = {};
             return this.genJS(ord, {
                 codeBuffer: buf,

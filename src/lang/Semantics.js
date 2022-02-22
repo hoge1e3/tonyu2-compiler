@@ -38,9 +38,10 @@ const Visitor_1 = __importDefault(require("./Visitor"));
 const context_1 = require("./context");
 const Grammar_1 = __importDefault(require("./Grammar"));
 var ScopeTypes = cu.ScopeTypes;
-var genSt = cu.newScopeType;
+//var genSt=cu.newScopeType;
 var stype = cu.getScopeType;
 var newScope = cu.newScope;
+const SI = cu.ScopeInfo;
 //var nc=cu.nullCheck;
 var genSym = cu.genSym;
 var annotation3 = cu.annotation;
@@ -68,7 +69,7 @@ function visitSub(node) {
     });
 }
 function getSourceFile(klass) {
-    return assert_1.default(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
+    return (0, assert_1.default)(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
 }
 function parse(klass, options = {}) {
     const s = getSourceFile(klass); //.src.tonyu; //file object
@@ -78,7 +79,7 @@ function parse(klass, options = {}) {
     }
     if (!node) {
         //console.log("Parse "+s);
-        if (tonyu1_1.isTonyu1(options)) {
+        if ((0, tonyu1_1.isTonyu1)(options)) {
             node = parse_tonyu1_1.default.parse(s);
         }
         else {
@@ -125,7 +126,7 @@ function initClassDecls(klass, env) {
                 var p = i.pos;
                 var incc = env.classes[env.aliases[n] || n]; /*ENVC*/ //CFN env.classes[env.aliases[n]]
                 if (!incc)
-                    throw TError_1.default(R_1.default("classIsUndefined", n), s, p);
+                    throw (0, TError_1.default)((0, R_1.default)("classIsUndefined", n), s, p);
                 klass.includes.push(incc);
             });
         }
@@ -135,7 +136,7 @@ function initClassDecls(klass, env) {
         else if (spcn) {
             var spc = env.classes[env.aliases[spcn] || spcn]; /*ENVC*/ //CFN env.classes[env.aliases[spcn]]
             if (!spc) {
-                throw TError_1.default(R_1.default("superClassIsUndefined", spcn), s, pos);
+                throw (0, TError_1.default)((0, R_1.default)("superClassIsUndefined", spcn), s, pos);
             }
             klass.superclass = spc;
         }
@@ -153,7 +154,7 @@ function initClassDecls(klass, env) {
                 pos: node.pos
             };
         }
-        var fieldsCollector = Visitor_1.default({
+        var fieldsCollector = (0, Visitor_1.default)({
             varDecl: function (node) {
                 addField(node.name, node);
             },
@@ -236,7 +237,7 @@ function annotateSource2(klass, env) {
     // ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
     //  キー： 変数名   値： ScopeTypesのいずれか
     var v = null;
-    const ctx = context_1.context();
+    const ctx = (0, context_1.context)();
     var debug = false;
     var othersMethodCallTmpl = {
         type: "postfix",
@@ -298,7 +299,7 @@ function annotateSource2(klass, env) {
         var i;
         for (i in decls.fields) {
             const info = decls.fields[i];
-            s[i] = genSt(ST.FIELD, { klass: klass.fullName, name: i, info: info });
+            s[i] = new SI.FIELD(klass, i, info); //genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
             if (info.node) {
                 annotation(info.node, { info: info });
             }
@@ -307,10 +308,11 @@ function annotateSource2(klass, env) {
             const info = decls.methods[i];
             var r = TonyuRuntime_1.default.klass.propReg.exec(i);
             if (r) {
-                s[r[2]] = genSt(ST.PROP, { klass: klass.fullName, name: r[2], info: info });
+                const name = r[2];
+                s[name] = new SI.PROP(klass.fullName, name, info); // genSt(ST.PROP,{klass:klass.fullName,name:r[2],info:info});
             }
             else {
-                s[i] = genSt(ST.METHOD, { klass: klass.fullName, name: i, info: info });
+                s[i] = new SI.METHOD(klass.fullName, i, info); //genSt(ST.METHOD,{klass:klass.fullName,name:i,info:info});
             }
             if (info.node) {
                 annotation(info.node, { info: info });
@@ -321,17 +323,18 @@ function annotateSource2(klass, env) {
         var s = topLevelScope;
         getDependingClasses(klass).forEach(initTopLevelScope2);
         var decls = klass.decls; // Do not inherit parents' natives
-        if (!tonyu1_1.isTonyu1(env.options)) {
+        if (!(0, tonyu1_1.isTonyu1)(env.options)) {
             for (let i in JSNATIVES) {
-                s[i] = genSt(ST.NATIVE, { name: "native::" + i, value: root_1.default[i] });
+                s[i] = new SI.NATIVE("native::" + i, root_1.default[i]);
             }
         }
         for (let i in env.aliases) { /*ENVC*/ //CFN  env.classes->env.aliases
             var fullName = env.aliases[i];
-            s[i] = genSt(ST.CLASS, { name: i, fullName: fullName, info: env.classes[fullName] });
+            s[i] = new SI.CLASS(i, fullName, env.classes[fullName]); //,{name:i,fullName:fullName,info:env.classes[fullName]});
         }
         for (let i in decls.natives) {
-            s[i] = genSt(ST.NATIVE, { name: "native::" + i, value: root_1.default[i] });
+            s[i] = new SI.NATIVE("native::" + i, root_1.default[i]);
+            //s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
         }
     }
     function inheritSuperMethod() {
@@ -362,44 +365,57 @@ function annotateSource2(klass, env) {
             return true;
         }
         console.log("LVal", node);
-        throw TError_1.default(R_1.default("invalidLeftValue", getSource(node)), srcFile, node.pos);
+        throw (0, TError_1.default)((0, R_1.default)("invalidLeftValue", getSource(node)), srcFile, node.pos);
     }
     function getScopeInfo(n) {
-        var node = n;
+        const node = n;
         n = n + "";
-        var si = ctx.scope[n];
-        var t = stype(si);
+        const si = ctx.scope[n];
+        const t = stype(si);
         if (!t) {
             if (env.amdPaths && env.amdPaths[n]) {
-                t = ST.MODULE;
+                //t=ST.MODULE;
                 klass.decls.amds[n] = env.amdPaths[n];
+                topLevelScope[n] = new SI.MODULE(n);
                 //console.log(n,"is module");
             }
             else {
                 var isg = n.match(/^\$/);
                 if (env.options.compiler.field_strict || klass.directives.field_strict) {
                     if (!isg)
-                        throw TError_1.default(R_1.default("fieldDeclarationRequired", n), srcFile, node.pos);
+                        throw (0, TError_1.default)((0, R_1.default)("fieldDeclarationRequired", n), srcFile, node.pos);
                 }
-                t = isg ? ST.GLOBAL : ST.FIELD;
+                if (isg) {
+                    topLevelScope[n] = new SI.GLOBAL(n);
+                }
+                else {
+                    //opt.klass=klass.name;
+                    klass.decls.fields[n] = klass.decls.fields[n] || {};
+                    Object.assign(klass.decls.fields[n], {
+                        klass: klass.fullName,
+                        name: n
+                    }); //si;
+                    topLevelScope[n] = new SI.FIELD(klass, n, klass.decls.fields[n]);
+                }
             }
-            var opt = { name: n };
-            if (t == ST.FIELD) {
-                opt.klass = klass.name;
-                klass.decls.fields[n] = klass.decls.fields[n] || {};
-                Object.assign(klass.decls.fields[n], {
-                    klass: klass.fullName,
-                    name: n
-                }); //si;
-            }
-            si = topLevelScope[n] = genSt(t, opt);
+            return topLevelScope[n];
+            //var opt:any={name:n};
+            /*if (t==ST.FIELD) {
+                opt.klass=klass.name;
+                klass.decls.fields[n]=klass.decls.fields[n]||{};
+                Object.assign(klass.decls.fields[n],{
+                    klass:klass.fullName,
+                    name:n
+                });//si;
+            }*/
+            //topLevelScope[n]=si;//genSt(t,opt);
         }
         if (t == ST.CLASS) {
             klass.decls.softRefClasses[n] = si;
         }
         return si;
     }
-    var localsCollector = Visitor_1.default({
+    var localsCollector = (0, Visitor_1.default)({
         varDecl: function (node) {
             if (ctx.isMain) {
                 annotation(node, { varInMain: true });
@@ -461,7 +477,7 @@ function annotateSource2(klass, env) {
             ctx.method.fiberCallRequired = true;
         annotateParents(path, { fiberCallRequired: true });
     }
-    var varAccessesAnnotator = Visitor_1.default({
+    var varAccessesAnnotator = (0, Visitor_1.default)({
         varAccess: function (node) {
             var si = getScopeInfo(node.name);
             var t = stype(si);
@@ -484,7 +500,7 @@ function annotateSource2(klass, env) {
                     kn = e.key.text;
                 }
                 if (dup[kn]) {
-                    throw TError_1.default(R_1.default("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
                 }
                 dup[kn] = 1;
                 //console.log("objlit",e.key.text);
@@ -497,7 +513,7 @@ function annotateSource2(klass, env) {
             }
             else {
                 if (node.key.type == "literal") {
-                    throw TError_1.default(R_1.default("cannotUseStringLiteralAsAShorthandOfObjectValue"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("cannotUseStringLiteralAsAShorthandOfObjectValue"), srcFile, node.pos);
                 }
                 var si = getScopeInfo(node.key);
                 annotation(node, { scopeInfo: si });
@@ -539,7 +555,7 @@ function annotateSource2(klass, env) {
             var TH = "_thread";
             var t = this;
             var ns = newScope(ctx.scope);
-            ns[TH] = genSt(ST.THVAR);
+            ns[TH] = new SI.THVAR(); //genSt(ST.THVAR);
             ctx.enter({ scope: ns }, function () {
                 t.visit(node.then);
             });
@@ -566,13 +582,13 @@ function annotateSource2(klass, env) {
         },
         "break": function (node) {
             if (!ctx.brkable)
-                throw TError_1.default(R_1.default("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
             if (!ctx.noWait)
                 annotateParents(this.path, { hasJump: true });
         },
         "continue": function (node) {
             if (!ctx.contable)
-                throw TError_1.default(R_1.default("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
             if (!ctx.noWait)
                 annotateParents(this.path, { hasJump: true });
         },
@@ -610,7 +626,7 @@ function annotateSource2(klass, env) {
         exprstmt: function (node) {
             var t, m;
             if (node.expr.type === "objlit") {
-                throw TError_1.default(R_1.default("cannotUseObjectLiteralAsTheExpressionOfStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("cannotUseObjectLiteralAsTheExpressionOfStatement"), srcFile, node.pos);
             }
             if (!ctx.noWait &&
                 (t = OM.match(node, noRetFiberCallTmpl)) &&
@@ -631,7 +647,7 @@ function annotateSource2(klass, env) {
                 t.S.name) {
                 m = getMethod(t.S.name.text);
                 if (!m)
-                    throw new Error(R_1.default("undefinedMethod", t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "noRetSuper";
                     t.superclass = klass.superclass;
@@ -644,7 +660,7 @@ function annotateSource2(klass, env) {
                 t.S.name) {
                 m = getMethod(t.S.name.text);
                 if (!m)
-                    throw new Error(R_1.default("undefinedMethod", t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "retSuper";
                     t.superclass = klass.superclass;
@@ -692,12 +708,12 @@ function annotateSource2(klass, env) {
         var locals = finfo.locals;
         for (var i in locals.varDecls) {
             //console.log("LocalVar ",i,"declared by ",finfo);
-            var si = genSt(ST.LOCAL, { declaringFunc: finfo });
+            var si = new SI.LOCAL(finfo); //genSt(ST.LOCAL,{declaringFunc:finfo});
             scope[i] = si;
             annotation(locals.varDecls[i], { scopeInfo: si });
         }
         for (let i in locals.subFuncDecls) {
-            const si = genSt(ST.LOCAL, { declaringFunc: finfo });
+            const si = new SI.LOCAL(finfo); //genSt(ST.LOCAL,{declaringFunc:finfo});
             scope[i] = si;
             annotation(locals.subFuncDecls[i], { scopeInfo: si });
         }
@@ -734,7 +750,7 @@ function annotateSource2(klass, env) {
         //var locals;
         ctx.enter({ finfo: finfo }, function () {
             ps.forEach(function (p) {
-                var si = genSt(ST.PARAM, { declaringFunc: finfo });
+                var si = new SI.PARAM(finfo); //genSt(ST.PARAM,{declaringFunc:finfo});
                 annotation(p, { scopeInfo: si });
                 ns[p.name.text] = si;
             });
@@ -763,9 +779,9 @@ function annotateSource2(klass, env) {
         //f:info  (of method)
         var ns = newScope(ctx.scope);
         f.params.forEach(function (p, cnt) {
-            var si = genSt(ST.PARAM, {
-                klass: klass.name, name: f.name, no: cnt, declaringFunc: f
-            });
+            var si = new SI.PARAM(f);
+            //	klass:klass.name, name:f.name, no:cnt, declaringFunc:f
+            //});
             ns[p.name.text] = si;
             annotation(p, { scopeInfo: si, declaringFunc: f });
         });

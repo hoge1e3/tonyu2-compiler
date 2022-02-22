@@ -36,7 +36,7 @@ const Grammar_1 = __importDefault(require("./Grammar"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 var ScopeTypes = cu.ScopeTypes;
-var genSt = cu.newScopeType;
+//var genSt=cu.newScopeType;
 var stype = cu.getScopeType;
 var newScope = cu.newScope;
 //var nc=cu.nullCheck;
@@ -71,7 +71,7 @@ TypeChecker.checkTypeDecl = function (klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
-    var typeDeclVisitor = Visitor_1.default({
+    var typeDeclVisitor = (0, Visitor_1.default)({
         varDecl: function (node) {
             //console.log("TCV","varDecl",node);
             if (node.value)
@@ -127,7 +127,7 @@ TypeChecker.checkExpr = function (klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
-    var typeAnnotationVisitor = Visitor_1.default({
+    var typeAnnotationVisitor = (0, Visitor_1.default)({
         number: function (node) {
             annotation(node, { vtype: Number });
         },
@@ -183,7 +183,7 @@ TypeChecker.checkExpr = function (klass, env) {
             }
         }
     });
-    var ctx = context_1.context();
+    var ctx = (0, context_1.context)();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.getSource = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.newScopeType = exports.ScopeTypes = void 0;
+exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.getSource = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfo = exports.ScopeTypes = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 exports.ScopeTypes = {
@@ -12,93 +12,98 @@ exports.ScopeTypes = {
     PARAM: "param", GLOBAL: "global",
     CLASS: "class", MODULE: "module"
 };
-class ST_LOCAL {
-    constructor(declaringFunc) {
-        this.declaringFunc = declaringFunc;
-        this.type = exports.ScopeTypes.LOCAL;
+var ScopeInfo;
+(function (ScopeInfo) {
+    class LOCAL {
+        constructor(declaringFunc) {
+            this.declaringFunc = declaringFunc;
+            this.type = exports.ScopeTypes.LOCAL;
+        }
     }
-}
-class ST_PARAM {
-    constructor(declaringFunc) {
-        this.declaringFunc = declaringFunc;
-        this.type = exports.ScopeTypes.PARAM;
+    ScopeInfo.LOCAL = LOCAL;
+    class PARAM {
+        constructor(declaringFunc) {
+            this.declaringFunc = declaringFunc;
+            this.type = exports.ScopeTypes.PARAM;
+        }
     }
-}
-class ST_FIELD {
-    constructor(klass, name, info) {
-        this.klass = klass;
-        this.name = name;
-        this.info = info;
-        this.type = exports.ScopeTypes.FIELD;
+    ScopeInfo.PARAM = PARAM;
+    class FIELD {
+        constructor(klass, name, info) {
+            this.klass = klass;
+            this.name = name;
+            this.info = info;
+            this.type = exports.ScopeTypes.FIELD;
+        }
     }
-}
-class ST_PROP {
-    constructor(klass, name, info) {
-        this.klass = klass;
-        this.name = name;
-        this.info = info;
-        this.type = exports.ScopeTypes.PROP;
+    ScopeInfo.FIELD = FIELD;
+    class PROP {
+        constructor(klass, name, info) {
+            this.klass = klass;
+            this.name = name;
+            this.info = info;
+            this.type = exports.ScopeTypes.PROP;
+        }
     }
-}
-class ST_METHOD {
-    constructor(klass, name, info) {
-        this.klass = klass;
-        this.name = name;
-        this.info = info;
-        this.type = exports.ScopeTypes.METHOD;
+    ScopeInfo.PROP = PROP;
+    class METHOD {
+        constructor(klass, name, info) {
+            this.klass = klass;
+            this.name = name;
+            this.info = info;
+            this.type = exports.ScopeTypes.METHOD;
+        }
     }
-}
-class ST_THVAR {
-    constructor() {
-        this.type = exports.ScopeTypes.THVAR;
+    ScopeInfo.METHOD = METHOD;
+    class THVAR {
+        constructor() {
+            this.type = exports.ScopeTypes.THVAR;
+        }
     }
-}
-class ST_NATIVE {
-    constructor(name, value) {
-        this.name = name;
-        this.value = value;
-        this.type = exports.ScopeTypes.NATIVE;
+    ScopeInfo.THVAR = THVAR;
+    class NATIVE {
+        constructor(name, value) {
+            this.name = name;
+            this.value = value;
+            this.type = exports.ScopeTypes.NATIVE;
+        }
     }
-}
-class ST_CLASS {
-    constructor(name, fullName, info) {
-        this.name = name;
-        this.fullName = fullName;
-        this.info = info;
-        this.type = exports.ScopeTypes.CLASS;
+    ScopeInfo.NATIVE = NATIVE;
+    class CLASS {
+        constructor(name, fullName, info) {
+            this.name = name;
+            this.fullName = fullName;
+            this.info = info;
+            this.type = exports.ScopeTypes.CLASS;
+        }
     }
-}
-class ST_GLOBAL {
-    constructor(name) {
-        this.name = name;
-        this.type = exports.ScopeTypes.GLOBAL;
+    ScopeInfo.CLASS = CLASS;
+    class GLOBAL {
+        constructor(name) {
+            this.name = name;
+            this.type = exports.ScopeTypes.GLOBAL;
+        }
     }
-}
-class ST_MODULE {
-    constructor(name) {
-        this.name = name;
-        this.type = exports.ScopeTypes.MODULE;
+    ScopeInfo.GLOBAL = GLOBAL;
+    class MODULE {
+        constructor(name) {
+            this.name = name;
+            this.type = exports.ScopeTypes.MODULE;
+        }
     }
-}
-/*const cu={ScopeTypes,newScopeType:genSt,getScopeType:stype,newScope,nullCheck:nc,
-    genSym,extend,annotation:annotation3,getSource,getField,getMethod:getMethod2,
-    getDependingClasses,getParams,
-};
-Tonyu.Compiler=cu;*/
-//cu.ScopeTypes=ScopeTypes;
+    ScopeInfo.MODULE = MODULE;
+})(ScopeInfo = exports.ScopeInfo || (exports.ScopeInfo = {}));
+;
 let nodeIdSeq = 1;
 let symSeq = 1; //B
-function newScopeType(st, options) {
-    const res = { type: st };
+/*export function newScopeType(st, options?) {//B
+    const res:any={type:st};
     if (options) {
-        for (let k in options)
-            res[k] = options[k];
+        for (let k in options) res[k]=options[k];
     }
-    if (!res.name)
-        res.name = genSym("_" + st + "_");
+    if (!res.name) res.name=genSym("_"+st+"_");
     return res;
-}
-exports.newScopeType = newScopeType;
+}*/
 //cu.newScopeType=genSt;
 function getScopeType(st) {
     return st ? st.type : null;

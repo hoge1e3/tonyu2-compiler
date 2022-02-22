@@ -6,7 +6,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const tokenizerFactory_1 = __importDefault(require("./tokenizerFactory"));
-module.exports = tokenizerFactory_1.default({
+module.exports = (0, tokenizerFactory_1.default)({
     caseInsensitive: true,
     reserved: {
         'while': true,
