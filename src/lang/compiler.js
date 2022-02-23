@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.getSource = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfo = exports.ScopeTypes = void 0;
+exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.getSource = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 exports.ScopeTypes = {
@@ -12,22 +12,22 @@ exports.ScopeTypes = {
     PARAM: "param", GLOBAL: "global",
     CLASS: "class", MODULE: "module"
 };
-var ScopeInfo;
-(function (ScopeInfo) {
+var ScopeInfos;
+(function (ScopeInfos) {
     class LOCAL {
         constructor(declaringFunc) {
             this.declaringFunc = declaringFunc;
             this.type = exports.ScopeTypes.LOCAL;
         }
     }
-    ScopeInfo.LOCAL = LOCAL;
+    ScopeInfos.LOCAL = LOCAL;
     class PARAM {
         constructor(declaringFunc) {
             this.declaringFunc = declaringFunc;
             this.type = exports.ScopeTypes.PARAM;
         }
     }
-    ScopeInfo.PARAM = PARAM;
+    ScopeInfos.PARAM = PARAM;
     class FIELD {
         constructor(klass, name, info) {
             this.klass = klass;
@@ -36,7 +36,7 @@ var ScopeInfo;
             this.type = exports.ScopeTypes.FIELD;
         }
     }
-    ScopeInfo.FIELD = FIELD;
+    ScopeInfos.FIELD = FIELD;
     class PROP {
         constructor(klass, name, info) {
             this.klass = klass;
@@ -45,7 +45,7 @@ var ScopeInfo;
             this.type = exports.ScopeTypes.PROP;
         }
     }
-    ScopeInfo.PROP = PROP;
+    ScopeInfos.PROP = PROP;
     class METHOD {
         constructor(klass, name, info) {
             this.klass = klass;
@@ -54,13 +54,13 @@ var ScopeInfo;
             this.type = exports.ScopeTypes.METHOD;
         }
     }
-    ScopeInfo.METHOD = METHOD;
+    ScopeInfos.METHOD = METHOD;
     class THVAR {
         constructor() {
             this.type = exports.ScopeTypes.THVAR;
         }
     }
-    ScopeInfo.THVAR = THVAR;
+    ScopeInfos.THVAR = THVAR;
     class NATIVE {
         constructor(name, value) {
             this.name = name;
@@ -68,7 +68,7 @@ var ScopeInfo;
             this.type = exports.ScopeTypes.NATIVE;
         }
     }
-    ScopeInfo.NATIVE = NATIVE;
+    ScopeInfos.NATIVE = NATIVE;
     class CLASS {
         constructor(name, fullName, info) {
             this.name = name;
@@ -77,22 +77,22 @@ var ScopeInfo;
             this.type = exports.ScopeTypes.CLASS;
         }
     }
-    ScopeInfo.CLASS = CLASS;
+    ScopeInfos.CLASS = CLASS;
     class GLOBAL {
         constructor(name) {
             this.name = name;
             this.type = exports.ScopeTypes.GLOBAL;
         }
     }
-    ScopeInfo.GLOBAL = GLOBAL;
+    ScopeInfos.GLOBAL = GLOBAL;
     class MODULE {
         constructor(name) {
             this.name = name;
             this.type = exports.ScopeTypes.MODULE;
         }
     }
-    ScopeInfo.MODULE = MODULE;
-})(ScopeInfo = exports.ScopeInfo || (exports.ScopeInfo = {}));
+    ScopeInfos.MODULE = MODULE;
+})(ScopeInfos = exports.ScopeInfos || (exports.ScopeInfos = {}));
 ;
 let nodeIdSeq = 1;
 let symSeq = 1; //B

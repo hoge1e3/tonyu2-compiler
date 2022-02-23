@@ -37,11 +37,14 @@ const cu = __importStar(require("./compiler"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 const context_1 = require("./context");
 const Grammar_1 = __importDefault(require("./Grammar"));
+function isPostfix(n) {
+    return n.type == "postfix";
+}
 var ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype = cu.getScopeType;
 var newScope = cu.newScope;
-const SI = cu.ScopeInfo;
+const SI = cu.ScopeInfos;
 //var nc=cu.nullCheck;
 var genSym = cu.genSym;
 var annotation3 = cu.annotation;
@@ -229,17 +232,14 @@ function annotateSource2(klass, env) {
     }
     //var traceTbl=env.traceTbl;
     // method := fiber | function
-    var decls = klass.decls;
-    var fields = decls.fields, methods = decls.methods, natives = decls.natives, amds = decls.amds;
+    const decls = klass.decls;
+    const methods = decls.methods;
     // ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，モジュール変数の集まり．親クラスの宣言は含まない
     var ST = ScopeTypes;
     var topLevelScope = {};
-    // ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
-    //  キー： 変数名   値： ScopeTypesのいずれか
-    var v = null;
     const ctx = (0, context_1.context)();
-    var debug = false;
-    var othersMethodCallTmpl = {
+    const debug = false;
+    const othersMethodCallTmpl = {
         type: "postfix",
         left: {
             type: "postfix",
@@ -248,7 +248,7 @@ function annotateSource2(klass, env) {
         },
         op: { type: "call", args: OM.A }
     };
-    var memberAccessTmpl = {
+    const memberAccessTmpl = {
         type: "postfix",
         left: OM.T,
         op: { type: "member", name: { text: OM.N } }
@@ -256,16 +256,16 @@ function annotateSource2(klass, env) {
     // These has same value but different purposes:
     //  myMethodCallTmpl: avoid using bounded field for normal method(); call
     //  fiberCallTmpl: detect fiber call
-    var myMethodCallTmpl, fiberCallTmpl;
-    myMethodCallTmpl = fiberCallTmpl = {
+    const myMethodCallTmpl = {
         type: "postfix",
         left: { type: "varAccess", name: { text: OM.N } },
         op: { type: "call", args: OM.A }
     };
-    var noRetFiberCallTmpl = {
+    const fiberCallTmpl = myMethodCallTmpl;
+    const noRetFiberCallTmpl = {
         expr: fiberCallTmpl
     };
-    var retFiberCallTmpl = {
+    const retFiberCallTmpl = {
         expr: {
             type: "infix",
             op: OM.O,
@@ -273,10 +273,10 @@ function annotateSource2(klass, env) {
             right: fiberCallTmpl
         }
     };
-    var noRetSuperFiberCallTmpl = {
+    const noRetSuperFiberCallTmpl = {
         expr: OM.S({ type: "superExpr", params: { args: OM.A } })
     };
-    var retSuperFiberCallTmpl = {
+    const retSuperFiberCallTmpl = {
         expr: {
             type: "infix",
             op: OM.O,
@@ -296,15 +296,14 @@ function annotateSource2(klass, env) {
         if (!decls) {
             console.log("DECLNUL", klass);
         }
-        var i;
-        for (i in decls.fields) {
+        for (let i in decls.fields) {
             const info = decls.fields[i];
             s[i] = new SI.FIELD(klass, i, info); //genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
             if (info.node) {
                 annotation(info.node, { info: info });
             }
         }
-        for (i in decls.methods) {
+        for (let i in decls.methods) {
             const info = decls.methods[i];
             var r = TonyuRuntime_1.default.klass.propReg.exec(i);
             if (r) {
@@ -358,7 +357,7 @@ function annotateSource2(klass, env) {
     }
     function checkLVal(node) {
         if (node.type == "varAccess" ||
-            node.type == "postfix" && (node.op.type == "member" || node.op.type == "arrayElem")) {
+            isPostfix(node) && (node.op.type == "member" || node.op.type == "arrayElem")) {
             if (node.type == "varAccess") {
                 annotation(node, { noBind: true });
             }
@@ -689,12 +688,11 @@ function annotateSource2(klass, env) {
     function resolveType(node) {
         var name = node.name + "";
         var si = getScopeInfo(node.name);
-        var t = stype(si);
         //console.log("TExpr",name,si,t);
-        if (t === ST.NATIVE) {
+        if (si instanceof SI.NATIVE) {
             annotation(node, { resolvedType: si.value });
         }
-        else if (t === ST.CLASS) {
+        else if (si instanceof SI.CLASS) {
             annotation(node, { resolvedType: si.info });
         }
     }

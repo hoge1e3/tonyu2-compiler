@@ -1,13 +1,4 @@
 "use strict";
-/*if (typeof define!=="function") {
-    define=require("requirejs").define;
-}
-define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
-/*const Visitor=require("./Visitor");
-const Grammar=require("./Grammar");
-const cu=require("./compiler");
-const context=require("./context");
-*/
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });

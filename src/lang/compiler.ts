@@ -12,7 +12,7 @@ import root from "../lib/root";
 			PARAM:"param", GLOBAL:"global",
 			CLASS:"class", MODULE:"module"
 	} as const;
-	export namespace ScopeInfo{
+	export namespace ScopeInfos{
 		export class LOCAL {
 			type=ScopeTypes.LOCAL;
 			constructor(public declaringFunc){}
@@ -54,7 +54,7 @@ import root from "../lib/root";
 		}
 		export type ALL=FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE;
 	};
-	export type ScopeInfos=ScopeInfo.ALL;
+	export type ScopeInfo=ScopeInfos.ALL;
 	export type ScopeType=valueOf<typeof ScopeTypes>;
 
 	let nodeIdSeq=1;
@@ -68,7 +68,7 @@ import root from "../lib/root";
 		return res;
 	}*/
 	//cu.newScopeType=genSt;
-	export function getScopeType(st: ScopeInfos ) {//B
+	export function getScopeType(st: ScopeInfo ) {//B
 		return st ? st.type : null;
 	}
 	//cu.getScopeType=stype;

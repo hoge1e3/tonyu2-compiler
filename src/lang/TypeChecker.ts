@@ -1,13 +1,3 @@
-/*if (typeof define!=="function") {
-	define=require("requirejs").define;
-}
-define(["Visitor","Tonyu.Compiler","context"],function (Visitor,cu,context) {*/
-	/*const Visitor=require("./Visitor");
-	const Grammar=require("./Grammar");
-	const cu=require("./compiler");
-	const context=require("./context");
-*/
-
 import * as cu from "./compiler";
 import {context} from "./context";
 import Grammar from "./Grammar";

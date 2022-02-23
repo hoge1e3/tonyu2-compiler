@@ -13,12 +13,20 @@ import Visitor from "./Visitor";
 import {context} from "./context";
 import Grammar from "./Grammar";
 
-
-var ScopeTypes=cu.ScopeTypes
+type NodeBase={type:string, pos:{}};
+type TextNode={text:string};
+type Program=NodeBase & {stmts: Statement[]};
+type Statement=NodeBase &{name: TextNode, head:any, body:{stmts:Statement[]}};
+type Postfix=NodeBase & {op:Node};
+type Node=Program | Statement | Postfix;
+function isPostfix(n:Node): n is Postfix {
+	return n.type=="postfix";
+}
+var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
 var newScope=cu.newScope;
-const SI=cu.ScopeInfo;
+const SI=cu.ScopeInfos;
 //var nc=cu.nullCheck;
 var genSym=cu.genSym;
 var annotation3=cu.annotation;
@@ -26,7 +34,7 @@ var getMethod2=cu.getMethod;
 var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
 var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1,Date:1};
-function visitSub(node) {//S
+function visitSub(node: Node) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
 	var es;
@@ -81,7 +89,7 @@ export function initClassDecls(klass, env ) {//S
 	//   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
 	klass.node=node;
 
-	function initMethods(program) {
+	function initMethods(program: Program) {
 		var spcn=env.options.compiler.defaultSuperClass;
 		var pos=0;
 		var t=OM.match( program , {ext:{superclassName:{text:OM.N, pos:OM.P}}});
@@ -153,7 +161,7 @@ export function initClassDecls(klass, env ) {//S
 		fieldsCollector.def=visitSub;
 		fieldsCollector.visit(program.stmts);
 		//-- end of fieldsCollector
-		program.stmts.forEach(function (stmt) {
+		program.stmts.forEach(function (stmt:Statement) {
 			if (stmt.type=="funcDecl") {
 				var head=stmt.head;
 				var ftype="function";
@@ -190,35 +198,32 @@ function annotateSource2(klass, env) {//B
 	klass.hasSemanticError=true;
 	var srcFile=klass.src.tonyu; //file object  //S
 	var srcCont=srcFile.text();
-	function getSource(node) {
+	function getSource(node: Node) {
 		return cu.getSource(srcCont,node);
 	}
 	//var traceTbl=env.traceTbl;
 	// method := fiber | function
-	var decls=klass.decls;
-	var fields=decls.fields,
-		methods=decls.methods,
-		natives=decls.natives,
-		amds=decls.amds;
+	const decls=klass.decls;
+	const methods=decls.methods;
 	// ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，モジュール変数の集まり．親クラスの宣言は含まない
 	var ST=ScopeTypes;
-	var topLevelScope={};
+	type ScopeMap= {[key:string]: cu.ScopeInfo};
+	var topLevelScope={} as ScopeMap;
 	// ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
 	//  キー： 変数名   値： ScopeTypesのいずれか
-	var v=null;
 	type SemCtx={
-		scope: any,
-		method: any,
-		finfo: any,
-		locals: any,
+		scope: ScopeMap,
+		method: {fiberCallRequired:boolean},
+		finfo: {useArgs:boolean, useTry:boolean},
+		locals: {varDecls:{},subFuncDecls:{}},
 		noWait: boolean,
 		isMain: boolean,
 		contable: boolean,
 		brkable: boolean,
 	};
 	const ctx=context<SemCtx>();
-	var debug=false;
-	var othersMethodCallTmpl={
+	const debug=false;
+	const othersMethodCallTmpl={
 			type:"postfix",
 			left:{
 				type:"postfix",
@@ -227,7 +232,7 @@ function annotateSource2(klass, env) {//B
 			},
 			op:{type:"call", args:OM.A }
 	};
-	var memberAccessTmpl={
+	const memberAccessTmpl={
 			type:"postfix",
 			left: OM.T,
 			op:{type:"member",name:{text:OM.N}}
@@ -235,16 +240,16 @@ function annotateSource2(klass, env) {//B
 	// These has same value but different purposes:
 	//  myMethodCallTmpl: avoid using bounded field for normal method(); call
 	//  fiberCallTmpl: detect fiber call
-	var myMethodCallTmpl,fiberCallTmpl;
-	myMethodCallTmpl=fiberCallTmpl={
+	const myMethodCallTmpl={
 			type:"postfix",
 			left:{type:"varAccess", name: {text:OM.N}},
 			op:{type:"call", args:OM.A }
 	};
-	var noRetFiberCallTmpl={
+	const fiberCallTmpl=myMethodCallTmpl;
+	const noRetFiberCallTmpl={
 		expr: fiberCallTmpl
 	};
-	var retFiberCallTmpl={
+	const retFiberCallTmpl={
 		expr: {
 			type: "infix",
 			op: OM.O,
@@ -252,10 +257,10 @@ function annotateSource2(klass, env) {//B
 			right: fiberCallTmpl
 		}
 	};
-	var noRetSuperFiberCallTmpl={
+	const noRetSuperFiberCallTmpl={
 		expr: OM.S({type:"superExpr", params:{args:OM.A}})
 	};
-	var retSuperFiberCallTmpl={
+	const retSuperFiberCallTmpl={
 			expr: {
 				type: "infix",
 				op: OM.O,
@@ -264,7 +269,7 @@ function annotateSource2(klass, env) {//B
 			}
 		};
 	klass.annotation={};
-	function annotation(node, aobj=undefined) {//B
+	function annotation(node: Node, aobj=undefined) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	function initTopLevelScope2(klass) {//S
@@ -274,15 +279,14 @@ function annotateSource2(klass, env) {//B
 		if (!decls) {
 			console.log("DECLNUL",klass);
 		}
-		var i;
-		for (i in decls.fields) {
+		for (let i in decls.fields) {
 			const info=decls.fields[i];
 			s[i]=new SI.FIELD(klass, i, info);//genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
 			if (info.node) {
 				annotation(info.node,{info:info});
 			}
 		}
-		for (i in decls.methods) {
+		for (let i in decls.methods) {
 			const info=decls.methods[i];
 			var r=Tonyu.klass.propReg.exec(i);
 			if (r) {
@@ -333,9 +337,9 @@ function annotateSource2(klass, env) {//B
 		return stype(ctx.scope[name])==ST.METHOD &&
 		!getMethod(name).nowait ;
 	}
-	function checkLVal(node) {//S
+	function checkLVal(node: Node) {//S
 		if (node.type=="varAccess" ||
-				node.type=="postfix" && (node.op.type=="member" || node.op.type=="arrayElem") ) {
+				isPostfix(node) && (node.op.type=="member" || node.op.type=="arrayElem") ) {
 			if (node.type=="varAccess") {
 				annotation(node,{noBind:true});
 			}
@@ -344,7 +348,7 @@ function annotateSource2(klass, env) {//B
 		console.log("LVal",node);
 		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
 	}
-	function getScopeInfo(n) {//S
+	function getScopeInfo(n):cu.ScopeInfo {//S
 		const node=n;
 		n=n+"";
 		const si=ctx.scope[n];
@@ -646,13 +650,12 @@ function annotateSource2(klass, env) {//B
 		}
 	});
 	function resolveType(node) {//node:typeExpr
-		var name=node.name+"";
+		var name:string=node.name+"";
 		var si=getScopeInfo(node.name);
-		var t=stype(si);
 		//console.log("TExpr",name,si,t);
-		if (t===ST.NATIVE) {
+		if (si instanceof SI.NATIVE) {
 			annotation(node, {resolvedType: si.value});
-		} else if (t===ST.CLASS){
+		} else if (si instanceof SI.CLASS){
 			annotation(node, {resolvedType: si.info});
 		}
 	}
