@@ -37,7 +37,7 @@ export= function ExpressionParser () {
 			reg(type, prio, a) {
 				var opt=opType(type, prio);
 				built.add(a.ret(Parser.create(function (r) {
-					r.opType=opt;
+					(r as any).opType=opt;
 					return r;
 				})).setName("(opType "+opt+" "+a.name+")") );
 			},

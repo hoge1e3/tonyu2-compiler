@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.Parser = exports.create = void 0;
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = void 0;
 function extend(dst, src) {
     var i;
     for (i in src) {
@@ -81,7 +81,7 @@ class Parser {
                 res.success = false;
             }
             return res;
-        }).setName("(except " + t.name + ")"));
+        }).setName("(except " + t.name + ")", this));
     }
     noFollow(p) {
         var t = this;
@@ -92,7 +92,7 @@ class Parser {
             var res2 = p.parse(res);
             res.success = !res2.success;
             return res;
-        }).setName("(" + t.name + " noFollow " + p.name + ")"));
+        }).setName("(" + t.name + " noFollow " + p.name + ")", this));
     }
     andNoUnify(next) {
         nc(next, "next"); // next==next
@@ -107,13 +107,13 @@ class Parser {
             }
             return r2;
         });
-        return res.setName("(" + this.name + " " + next.name + ")");
+        return res.setName("(" + this.name + " " + next.name + ")", { type: "and", first: this, next: this });
     }
     and(next) {
-        var res = this.andNoUnify(next);
+        const _res = this.andNoUnify(next);
         //if (!$.options.optimizeFirst) return res;
         if (!this._first)
-            return res;
+            return _res;
         var tbl = this._first.tbl;
         var ntbl = {};
         //  tbl           ALL:a1  b:b1     c:c1
@@ -122,8 +122,8 @@ class Parser {
         for (var c in tbl) {
             ntbl[c] = tbl[c].andNoUnify(next);
         }
-        res = Parser.fromFirst(this._first.space, ntbl);
-        res.setName("(" + this.name + " >> " + next.name + ")");
+        const res = Parser.fromFirst(this._first.space, ntbl);
+        res.setName("(" + this.name + " >> " + next.name + ")", _res);
         if (options.verboseFirst) {
             console.log("Created aunify name=" + res.name + " tbl=" + dispTbl(ntbl));
         }
@@ -182,11 +182,11 @@ class Parser {
                 tbl[ct.substring(i, i + 1)] = this;
             }
             //this._first={space: space, tbl:tbl};
-            return Parser.fromFirst(space, tbl).setName("(fst " + this.name + ")");
+            return Parser.fromFirst(space, tbl).setName("(fst " + this.name + ")", this);
             //        		this._first={space: space, chars:ct};
         }
         else if (ct == null) {
-            return Parser.fromFirst(space, { ALL: this }).setName("(fst " + this.name + ")");
+            return Parser.fromFirst(space, { ALL: this }).setName("(fst " + this.name + ")", this);
             //this._first={space:space, tbl:{ALL:this}};
         }
         else if (typeof ct == "object") {
@@ -209,7 +209,7 @@ class Parser {
         else {
             tbl.ALL = this;
         }
-        return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")");
+        return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
     }
     unifyFirst(other) {
         var thiz = this;
@@ -257,7 +257,7 @@ class Parser {
         }
         extend(tbl, this._first.tbl);
         mergeTbl();
-        var res = Parser.fromFirst(this._first.space, tbl).setName("(" + this.name + ")U(" + other.name + ")");
+        var res = Parser.fromFirst(this._first.space, tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", a: this, b: this });
         if (options.verboseFirst)
             console.log("Created unify name=" + res.name + " tbl=" + dispTbl(tbl));
         return res;
@@ -286,13 +286,17 @@ class Parser {
             else {
                 return r1;
             }
-        });
-        res.name = "(" + this.name + ")|(" + other.name + ")";
+        }).setName("(" + this.name + ")|(" + other.name + ")", { type: "or", a: this, b: this });
         return res;
     }
     setName(n, struct) {
         this.name = n;
-        this.struct = struct;
+        if (struct instanceof Parser) {
+            this.struct = { type: "alias", target: struct };
+        }
+        else {
+            this.struct = struct;
+        }
         return this;
     }
     /*profile (name) {
@@ -332,7 +336,7 @@ class Parser {
             }
         });
         //if (min>0) res._first=p._first;
-        return res.setName("(" + p.name + " * " + min + ")");
+        return res.setName("(" + p.name + " * " + min + ")", { type: "rept", elem: p });
     }
     rep0() { return this.repN(0); }
     rep1() { return this.repN(1); }
@@ -349,7 +353,7 @@ class Parser {
                 s.result = [null];
                 return s;
             }
-        }).setName("(" + t.name + ")?");
+        }).setName("(" + t.name + ")?", { type: "opt", elem: t });
     }
     sep1(sep, valuesToArray) {
         var value = this;
@@ -372,7 +376,7 @@ class Parser {
             else {
                 return { head: r1, tails: r2 };
             }
-        }).setName("(sep1 " + value.name + "~~" + sep.name + ")");
+        }).setName("(sep1 " + value.name + "~~" + sep.name + ")", { type: "rept", elem: this });
     }
     sep0(s) {
         return this.sep1(s, true).opt().ret(function (r) {
@@ -458,43 +462,44 @@ class Parser {
     }
 }
 exports.Parser = Parser;
-function State(strOrTokens, global) {
-    if (strOrTokens != null) {
-        this.src = { maxPos: 0, global: global }; // maxPos is shared by all state
-        if (typeof strOrTokens == "string") {
-            this.src.str = strOrTokens;
+class State {
+    constructor(strOrTokens, global) {
+        if (strOrTokens != null) {
+            this.src = { maxPos: 0, global: global }; // maxPos is shared by all state
+            if (typeof strOrTokens == "string") {
+                this.src.str = strOrTokens;
+            }
+            if (strOrTokens instanceof Array) {
+                this.src.tokens = strOrTokens;
+            }
+            this.pos = 0;
+            this.result = [];
+            this.success = true;
         }
-        if (strOrTokens instanceof Array) {
-            this.src.tokens = strOrTokens;
-        }
-        this.pos = 0;
-        this.result = [];
-        this.success = true;
     }
-}
-extend(State.prototype, {
-    clone: function () {
+    clone() {
         var s = new State();
         s.src = this.src;
         s.pos = this.pos;
         s.result = this.result.slice();
         s.success = this.success;
         return s;
-    },
-    updateMaxPos: function (npos) {
+    }
+    updateMaxPos(npos) {
         if (npos > this.src.maxPos) {
             this.src.maxPos = npos;
         }
-    },
-    isSuccess: function () {
+    }
+    isSuccess() {
         return this.success;
-    },
-    getGlobal: function () {
+    }
+    getGlobal() {
         if (!this.src.global)
             this.src.global = {};
         return this.src.global;
     }
-});
+}
+exports.State = State;
 function strLike(func) {
     // func :: str,pos, state? -> {len:int, other...}  (null for no match )
     return Parser.create(function (state) {

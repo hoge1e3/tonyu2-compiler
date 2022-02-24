@@ -37,7 +37,7 @@ const Grammar = function () {
     function buildTypes() {
         for (const k of Object.keys(defs)) {
             const v = defs[k];
-            console.log(k, v.typeInfo);
+            console.log(k, v.typeInfo, v.struct);
         }
     }
     function setTypeInfo(parser, name, fields = {}) {

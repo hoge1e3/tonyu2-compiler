@@ -1,8 +1,8 @@
 //const Parser=(function () {
 type And={type:"and", first:Parser, next:Parser};
-type Or ={type:"or" , first:Parser, next:Parser};
+type Or ={type:"or" , a:Parser, b:Parser};
 type Rept={type:"rept", elem:Parser};
-type Opt={type:"rept", elem:Parser};
+type Opt={type:"opt", elem:Parser};
 type Alias={type: "alias", target:Parser};
 type Struct=And|Or|Rept|Opt|Alias;
 	function extend(dst, src) {
@@ -52,8 +52,8 @@ type Struct=And|Or|Rept|Opt|Alias;
 		name?: string;
 		_first?: any;
 		// Parser.parse:: State->State
-		static create(parserFunc) { return create(parserFunc);}
-		constructor (parseFunc){
+		static create(parserFunc:(s:State)=>State) { return create(parserFunc);}
+		constructor (parseFunc:(s:State)=>State){
 			if (options.traceTap) {
 				this.parse=function(s){
 					console.log("tap: name="+this.name+"  pos="+(s?s.pos:"?"));
@@ -74,7 +74,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 				this.parse=parseFunc;
 			}
 		}
-		except(f) {
+		except(f:Function) {
 			var t=this;
 			return this.ret(Parser.create(function (res) {
 				//var res=t.parse(s);
@@ -83,9 +83,9 @@ type Struct=And|Or|Rept|Opt|Alias;
 					res.success=false;
 				}
 				return res;
-			}).setName("(except "+t.name+")"));
+			}).setName("(except "+t.name+")",this));
 		}
-		noFollow(p) {
+		noFollow(p:Parser) {
 			var t=this;
 			nc(p,"p");
 			return this.ret(Parser.create(function (res) {
@@ -94,7 +94,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 				var res2=p.parse(res);
 				res.success=!res2.success;
 				return res;
-			}).setName("("+t.name+" noFollow "+p.name+")"));
+			}).setName("("+t.name+" noFollow "+p.name+")",this));
 		}
 		andNoUnify(next) {// Parser.and:: (Function|Parser)  -> Parser
 			nc(next,"next"); // next==next
@@ -108,12 +108,12 @@ type Struct=And|Or|Rept|Opt|Alias;
 				}
 				return r2;
 			});
-			return res.setName("("+this.name+" "+next.name+")");
+			return res.setName("("+this.name+" "+next.name+")",{type:"and",first:this,next:this});
 		}
 		and(next) {// Parser.and:: Parser  -> Parser
-			var res=this.andNoUnify(next);
+			const _res=this.andNoUnify(next);
 			//if (!$.options.optimizeFirst) return res;
-			if (!this._first) return res;
+			if (!this._first) return _res;
 			var tbl=this._first.tbl;
 			var ntbl={};
 			//  tbl           ALL:a1  b:b1     c:c1
@@ -122,8 +122,8 @@ type Struct=And|Or|Rept|Opt|Alias;
 			for (var c in tbl) {
 				ntbl[c]=tbl[c].andNoUnify(next);
 			}
-			res=Parser.fromFirst(this._first.space, ntbl);
-			res.setName("("+this.name+" >> "+next.name+")");
+			const res=Parser.fromFirst(this._first.space, ntbl);
+			res.setName("("+this.name+" >> "+next.name+")",_res);
 			if (options.verboseFirst) {
 				console.log("Created aunify name=" +res.name+" tbl="+dispTbl(ntbl));
 			}
@@ -177,10 +177,10 @@ type Struct=And|Or|Rept|Opt|Alias;
 						tbl[ct.substring(i,i+1)]=this;
 					}
 				//this._first={space: space, tbl:tbl};
-				return Parser.fromFirst(space,tbl).setName("(fst "+this.name+")");
+				return Parser.fromFirst(space,tbl).setName("(fst "+this.name+")",this);
 //        		this._first={space: space, chars:ct};
 			} else if (ct==null) {
-				return Parser.fromFirst(space,{ALL:this}).setName("(fst "+this.name+")");
+				return Parser.fromFirst(space,{ALL:this}).setName("(fst "+this.name+")",this);
 				//this._first={space:space, tbl:{ALL:this}};
 			} else if (typeof ct=="object") {
 				throw "this._first={space: space, tbl:ct}";
@@ -199,7 +199,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			} else {
 				tbl.ALL=this;
 			}
-			return Parser.fromFirstTokens(tbl).setName("(fstT "+this.name+")");
+			return Parser.fromFirstTokens(tbl).setName("(fstT "+this.name+")",this);
 		}
 		unifyFirst (other) {
 			var thiz=this;
@@ -239,7 +239,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			}
 			extend(tbl, this._first.tbl);
 			mergeTbl();
-			var res=Parser.fromFirst(this._first.space, tbl).setName("("+this.name+")U("+other.name+")");
+			var res=Parser.fromFirst(this._first.space, tbl).setName("("+this.name+")U("+other.name+")",{type:"or",a:this, b:this});
 			if (options.verboseFirst) console.log("Created unify name=" +res.name+" tbl="+dispTbl(tbl));
 			return res;
 		}
@@ -265,13 +265,16 @@ type Struct=And|Or|Rept|Opt|Alias;
 				} else {
 					return r1;
 				}
-			});
-			res.name="("+this.name+")|("+other.name+")";
+			}).setName("("+this.name+")|("+other.name+")",{type:"or", a:this, b:this} );
 			return res;
 		}
-		setName (n, struct?: Struct) {
+		setName (n:string, struct?: Struct|Parser) {
 			this.name=n;
-			this.struct=struct;
+			if (struct instanceof Parser) {
+				this.struct={type:"alias", target:struct};
+			} else {
+				this.struct=struct;
+			}
 			return this;
 		}
 		/*profile (name) {
@@ -308,7 +311,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 				}
 			});
 			//if (min>0) res._first=p._first;
-			return res.setName("("+p.name+" * "+min+")");
+			return res.setName("("+p.name+" * "+min+")",{type:"rept", elem:p});
 		}
 		rep0 () { return this.repN(0); }
 		rep1 () { return this.repN(1); }
@@ -324,7 +327,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 					s.result=[null];
 					return s;
 				}
-			}).setName("("+t.name+")?");
+			}).setName("("+t.name+")?",{type:"opt",elem:t});
 		}
 		sep1(sep, valuesToArray) {
 			var value=this;
@@ -344,7 +347,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 				} else {
 					return {head:r1,tails:r2};
 				}
-			}).setName("(sep1 "+value.name+"~~"+sep.name+")");
+			}).setName("(sep1 "+value.name+"~~"+sep.name+")",{type:"rept", elem:this});
 		}
 		sep0(s){
 			return this.sep1(s,true).opt().ret(function (r) {
@@ -424,42 +427,46 @@ type Struct=And|Or|Rept|Opt|Alias;
 			return res;
 		}
 	}
-	function State(strOrTokens?, global?) { // class State
-		if (strOrTokens!=null) {
-			this.src={maxPos:0, global:global};// maxPos is shared by all state
-			if (typeof strOrTokens=="string") {
-				this.src.str=strOrTokens;
+	export class State{
+		src:{maxPos:number, global?:any, str?:string, tokens?:any[]};
+		pos:number;
+		result:any[];
+		success:boolean;
+		constructor(strOrTokens?, global?) { // class State
+			if (strOrTokens!=null) {
+				this.src={maxPos:0, global:global};// maxPos is shared by all state
+				if (typeof strOrTokens=="string") {
+					this.src.str=strOrTokens;
+				}
+				if (strOrTokens instanceof Array) {
+					this.src.tokens=strOrTokens;
+				}
+				this.pos=0;
+				this.result=[];
+				this.success=true;
 			}
-			if (strOrTokens instanceof Array) {
-				this.src.tokens=strOrTokens;
-			}
-			this.pos=0;
-			this.result=[];
-			this.success=true;
 		}
-	}
-	extend(State.prototype, {
-		clone: function() {
+		clone() {
 			var s=new State();
 			s.src=this.src;
 			s.pos=this.pos;
 			s.result=this.result.slice();
 			s.success=this.success;
 			return s;
-		},
-		updateMaxPos:function (npos) {
+		}
+		updateMaxPos(npos:number) {
 			if (npos > this.src.maxPos) {
 				this.src.maxPos=npos;
 			}
-		},
-		isSuccess: function () {
+		}
+		isSuccess() {
 			return this.success;
-		},
-		getGlobal: function () {
+		}
+		getGlobal () {
 				if (!this.src.global) this.src.global={};
 				return this.src.global;
 		}
-	});
+	}
 	function strLike(func) {
 		// func :: str,pos, state? -> {len:int, other...}  (null for no match )
 		return Parser.create(function(state){

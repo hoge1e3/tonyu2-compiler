@@ -7,12 +7,12 @@ import { Parser, StringParser } from "./parser";
 //import Parser from "./parser";
 
 export= function tokenizerFactory({reserved, caseInsensitive}) {
-	function profileTbl(parser, name) {
+	/*function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
 			tbl[c].profile();//(c+" of "+tbl[name);
 		}
-	}
+	}*/
 	//const spcs={};for(i=0;i<=0xffff;i++) if (String.fromCharCode(i).match(/\s/)) spcs[i]=1;
 	const spcs={
 		9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 32: 1, 160: 1, 5760: 1,
