@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.create = exports.Parser = void 0;
-//const Parser=(function () {
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.Parser = exports.create = void 0;
 function extend(dst, src) {
     var i;
     for (i in src) {
@@ -38,42 +37,42 @@ function dispTbl(tbl) {
 ;
 //var console={log:function (s) { $.consoleBuffer+=s; }};
 function _debug(s) { console.log(s); }
-function Parser(parseFunc) {
-    if (options.traceTap) {
-        this.parse = function (s) {
-            console.log("tap: name=" + this.name + "  pos=" + (s ? s.pos : "?"));
-            var r = parseFunc.apply(this, [s]);
-            var img = "NOIMG";
-            if (r.src && r.src.str) {
-                img = r.src.str.substring(r.pos - 3, r.pos) + "^" + r.src.str.substring(r.pos, r.pos + 3);
-            }
-            if (r.src && r.src.tokens) {
-                img = r.src.tokens[r.pos - 1] + "[" + r.src.tokens[r.pos] + "]" + r.src.tokens[r.pos + 1];
-            }
-            console.log("/tap: name=" + this.name +
-                " pos=" + (s ? s.pos : "?") + "->" + (r ? r.pos : "?") + " " + img + " res=" + (r ? r.success : "?"));
-            return r;
-        };
-    }
-    else {
-        this.parse = parseFunc;
-    }
-}
-exports.Parser = Parser;
+//export function Parser
 function create(parseFunc) {
     return new Parser(parseFunc);
 }
 exports.create = create;
 ;
-Parser.create = create;
 function nc(v, name) {
     if (v == null)
         throw name + " is null!";
     return v;
 }
-extend(Parser.prototype, {
+class Parser {
+    constructor(parseFunc) {
+        if (options.traceTap) {
+            this.parse = function (s) {
+                console.log("tap: name=" + this.name + "  pos=" + (s ? s.pos : "?"));
+                var r = parseFunc.apply(this, [s]);
+                var img = "NOIMG";
+                if (r.src && r.src.str) {
+                    img = r.src.str.substring(r.pos - 3, r.pos) + "^" + r.src.str.substring(r.pos, r.pos + 3);
+                }
+                if (r.src && r.src.tokens) {
+                    img = r.src.tokens[r.pos - 1] + "[" + r.src.tokens[r.pos] + "]" + r.src.tokens[r.pos + 1];
+                }
+                console.log("/tap: name=" + this.name +
+                    " pos=" + (s ? s.pos : "?") + "->" + (r ? r.pos : "?") + " " + img + " res=" + (r ? r.success : "?"));
+                return r;
+            };
+        }
+        else {
+            this.parse = parseFunc;
+        }
+    }
     // Parser.parse:: State->State
-    except: function (f) {
+    static create(parserFunc) { return create(parserFunc); }
+    except(f) {
         var t = this;
         return this.ret(Parser.create(function (res) {
             //var res=t.parse(s);
@@ -83,8 +82,8 @@ extend(Parser.prototype, {
             }
             return res;
         }).setName("(except " + t.name + ")"));
-    },
-    noFollow: function (p) {
+    }
+    noFollow(p) {
         var t = this;
         nc(p, "p");
         return this.ret(Parser.create(function (res) {
@@ -94,8 +93,8 @@ extend(Parser.prototype, {
             res.success = !res2.success;
             return res;
         }).setName("(" + t.name + " noFollow " + p.name + ")"));
-    },
-    andNoUnify: function (next) {
+    }
+    andNoUnify(next) {
         nc(next, "next"); // next==next
         var t = this; // Parser
         var res = Parser.create(function (s) {
@@ -109,8 +108,8 @@ extend(Parser.prototype, {
             return r2;
         });
         return res.setName("(" + this.name + " " + next.name + ")");
-    },
-    and: function (next) {
+    }
+    and(next) {
         var res = this.andNoUnify(next);
         //if (!$.options.optimizeFirst) return res;
         if (!this._first)
@@ -129,8 +128,8 @@ extend(Parser.prototype, {
             console.log("Created aunify name=" + res.name + " tbl=" + dispTbl(ntbl));
         }
         return res;
-    },
-    retNoUnify: function (f) {
+    }
+    retNoUnify(f) {
         var t = this;
         var p;
         if (typeof f == "function") {
@@ -152,8 +151,8 @@ extend(Parser.prototype, {
             return r2;*/
         }).setName("(" + this.name + " >= " + p.name + ")");
         return res;
-    },
-    ret: function (next) {
+    }
+    ret(next) {
         if (!this._first)
             return this.retNoUnify(next);
         var tbl = this._first.tbl;
@@ -167,12 +166,12 @@ extend(Parser.prototype, {
             console.log("Created runify name=" + res.name + " tbl=" + dispTbl(ntbl));
         }
         return res;
-    },
+    }
     /*
     this._first={space: space, chars:String};
     this._first={space: space, tbl:{char:Parser}};
 */
-    first: function (space, ct) {
+    first(space, ct) {
         if (!options.optimizeFirst)
             return this;
         if (space == null)
@@ -194,8 +193,8 @@ extend(Parser.prototype, {
             throw "this._first={space: space, tbl:ct}";
         }
         return this;
-    },
-    firstTokens: function (tokens) {
+    }
+    firstTokens(tokens) {
         if (!options.optimizeFirst)
             return this;
         if (typeof tokens == "string")
@@ -211,8 +210,8 @@ extend(Parser.prototype, {
             tbl.ALL = this;
         }
         return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")");
-    },
-    unifyFirst: function (other) {
+    }
+    unifyFirst(other) {
         var thiz = this;
         function or(a, b) {
             if (!a)
@@ -262,8 +261,8 @@ extend(Parser.prototype, {
         if (options.verboseFirst)
             console.log("Created unify name=" + res.name + " tbl=" + dispTbl(tbl));
         return res;
-    },
-    or: function (other) {
+    }
+    or(other) {
         nc(other, "other");
         if (this._first && other._first &&
             this._first.space && this._first.space === other._first.space) {
@@ -275,8 +274,8 @@ extend(Parser.prototype, {
             }
             return this.orNoUnify(other);
         }
-    },
-    orNoUnify: function (other) {
+    }
+    orNoUnify(other) {
         var t = this; // t:Parser
         var res = Parser.create(function (s) {
             var r1 = t.parse(s); // r1:State
@@ -290,24 +289,19 @@ extend(Parser.prototype, {
         });
         res.name = "(" + this.name + ")|(" + other.name + ")";
         return res;
-    },
-    setName: function (n) {
+    }
+    setName(n, struct) {
         this.name = n;
-        if (this._first) {
-            /*var tbl=this._first.tbl;
-            for (var i in tbl) {
-                tbl[i].setName("(elm "+i+" of "+n+")");
-            }*/
-        }
+        this.struct = struct;
         return this;
-    },
-    profile: function (name) {
+    }
+    /*profile (name) {
         if (options.profile) {
-            this.parse = this.parse.profile(name || this.name);
+            this.parse=this.parse.profile(name || this.name);
         }
         return this;
-    },
-    repN: function (min) {
+    }*/
+    repN(min) {
         var p = this;
         if (!min)
             min = 0;
@@ -339,10 +333,10 @@ extend(Parser.prototype, {
         });
         //if (min>0) res._first=p._first;
         return res.setName("(" + p.name + " * " + min + ")");
-    },
-    rep0: function () { return this.repN(0); },
-    rep1: function () { return this.repN(1); },
-    opt: function () {
+    }
+    rep0() { return this.repN(0); }
+    rep1() { return this.repN(1); }
+    opt() {
         var t = this;
         return Parser.create(function (s) {
             var r = t.parse(s);
@@ -356,8 +350,8 @@ extend(Parser.prototype, {
                 return s;
             }
         }).setName("(" + t.name + ")?");
-    },
-    sep1: function (sep, valuesToArray) {
+    }
+    sep1(sep, valuesToArray) {
         var value = this;
         nc(value, "value");
         nc(sep, "sep");
@@ -379,15 +373,15 @@ extend(Parser.prototype, {
                 return { head: r1, tails: r2 };
             }
         }).setName("(sep1 " + value.name + "~~" + sep.name + ")");
-    },
-    sep0: function (s) {
+    }
+    sep0(s) {
         return this.sep1(s, true).opt().ret(function (r) {
             if (!r)
                 return [];
             return r;
         });
-    },
-    tap: function (msg) {
+    }
+    tap(msg) {
         return this;
         /*if (!$.options.traceTap) return this;
         if (!msg) msg="";
@@ -401,17 +395,17 @@ extend(Parser.prototype, {
         });
 
         return res.setName("(Tap "+t.name+")");*/
-    },
-    retN: function (i) {
+    }
+    retN(i) {
         return this.ret(function () {
             return arguments[i];
         });
-    },
-    parseStr: function (str, global) {
+    }
+    parseStr(str, global) {
         var st = new State(str, global);
         return this.parse(st);
-    },
-    checkTbl: function () {
+    }
+    checkTbl() {
         if (!this._first)
             return this;
         var tbl = this._first.tbl;
@@ -421,7 +415,49 @@ extend(Parser.prototype, {
         }
         return this;
     }
-});
+    static fromFirst(space, tbl) {
+        if (space == "TOKEN") {
+            return Parser.fromFirstTokens(tbl);
+        }
+        var res = Parser.create(function (s0) {
+            var s = space.parse(s0);
+            var f = s.src.str.substring(s.pos, s.pos + 1);
+            if (options.traceFirstTbl) {
+                console.log(this.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
+            }
+            if (tbl[f]) {
+                return tbl[f].parse(s);
+            }
+            if (tbl.ALL)
+                return tbl.ALL.parse(s);
+            s.success = false;
+            return s;
+        });
+        res._first = { space: space, tbl: tbl };
+        res.checkTbl();
+        return res;
+    }
+    static fromFirstTokens(tbl) {
+        var res = Parser.create(function (s) {
+            var t = s.src.tokens[s.pos];
+            var f = t ? t.type : null;
+            if (options.traceFirstTbl) {
+                console.log(this.name + ": firstT=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
+            }
+            if (f != null && tbl[f]) {
+                return tbl[f].parse(s);
+            }
+            if (tbl.ALL)
+                return tbl.ALL.parse(s);
+            s.success = false;
+            return s;
+        });
+        res._first = { space: "TOKEN", tbl: tbl };
+        res.checkTbl();
+        return res;
+    }
+}
+exports.Parser = Parser;
 function State(strOrTokens, global) {
     if (strOrTokens != null) {
         this.src = { maxPos: 0, global: global }; // maxPos is shared by all state
@@ -459,47 +495,6 @@ extend(State.prototype, {
         return this.src.global;
     }
 });
-Parser.fromFirst = function (space, tbl) {
-    if (space == "TOKEN") {
-        return Parser.fromFirstTokens(tbl);
-    }
-    var res = Parser.create(function (s0) {
-        var s = space.parse(s0);
-        var f = s.src.str.substring(s.pos, s.pos + 1);
-        if (options.traceFirstTbl) {
-            console.log(this.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
-        }
-        if (tbl[f]) {
-            return tbl[f].parse(s);
-        }
-        if (tbl.ALL)
-            return tbl.ALL.parse(s);
-        s.success = false;
-        return s;
-    });
-    res._first = { space: space, tbl: tbl };
-    res.checkTbl();
-    return res;
-};
-Parser.fromFirstTokens = function (tbl) {
-    var res = Parser.create(function (s) {
-        var t = s.src.tokens[s.pos];
-        var f = t ? t.type : null;
-        if (options.traceFirstTbl) {
-            console.log(this.name + ": firstT=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
-        }
-        if (f != null && tbl[f]) {
-            return tbl[f].parse(s);
-        }
-        if (tbl.ALL)
-            return tbl.ALL.parse(s);
-        s.success = false;
-        return s;
-    });
-    res._first = { space: "TOKEN", tbl: tbl };
-    res.checkTbl();
-    return res;
-};
 function strLike(func) {
     // func :: str,pos, state? -> {len:int, other...}  (null for no match )
     return Parser.create(function (state) {

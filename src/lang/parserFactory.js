@@ -234,7 +234,7 @@ module.exports = function PF({ TT }) {
     /*e.mkPostfix(function (p) {
         return {type:"postfix", expr:p};
     });*/
-    var expr = e.build().setName("expr").profile();
+    var expr = e.build().setName("expr"); //.profile();
     //var retF=function (i) { return function (){ return arguments[i];}; };
     var stmt = G("stmt").firstTokens();
     var exprstmt = g("exprstmt").ands(expr, tk(";")).ret("expr");
@@ -294,9 +294,9 @@ module.exports = function PF({ TT }) {
     var program = g("program").
         ands(ext.opt(), incl.opt(), stmt.rep0(), Parser.TokensParser.eof).
         ret("ext", "incl", "stmts");
-    for (var i in g.defs) {
+    /*for (var i in g.defs) {
         g.defs[i].profile();
-    }
+    }*/
     $.parse = function (file) {
         let str;
         if (typeof file == "string") {
