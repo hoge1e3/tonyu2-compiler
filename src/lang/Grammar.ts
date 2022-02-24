@@ -17,11 +17,11 @@ const Grammar=function () {
 	}
 	function get(name:string) {
 		if (defs[name]) return defs[name];
-		return p.lazy(function () {
+		return setTypeInfo( p.lazy(function () {
 			var r=defs[name];
 			if (!r) throw "grammar named '"+name +"' is undefined";
 			return r;
-		}).setName("(Lazy of "+name+")");
+		}).setName("(Lazy of "+name+")") , name);
 	}
 	function chain<P>(parsers:P[], f:(p:P, e:P)=>P) {
 		const [first,...rest]=parsers;
@@ -30,6 +30,16 @@ const Grammar=function () {
 			p=f(p,e);
 		}
 		return p;
+	}
+	function buildTypes() {
+		for (const k of Object.keys(defs)) {
+			const v=defs[k];
+			console.log(k,  v.typeInfo);
+		}
+	}
+	function setTypeInfo(parser, name, fields={}) {
+		parser.typeInfo={name, fields};
+		return parser;
 	}
 	const defs={};
 	return comp((name:string)=>{
@@ -45,7 +55,7 @@ const Grammar=function () {
 				p=p.tap(name);*/
 				defs[name]=p;
 				return {
-					autoNode() {
+					/*autoNode() {
 						var res=p.ret(function (...args) {
 							const res={type:name};
 							for (var i=0 ; i<args.length ;i++) {
@@ -60,7 +70,7 @@ const Grammar=function () {
 						}).setName(name);
 						defs[name]=res;
 						return res;
-					},
+					},*/
 					ret (...args) {
 						if (args.length==0) return p;
 						if (typeof args[0]=="function") {
@@ -68,6 +78,7 @@ const Grammar=function () {
 							return defs[name];
 						}
 						const names=[];
+						const fields={};
 						let fn=(e:any)=>e;//(e){return e;};
 						for (var i=0 ; i<args.length ;i++) {
 							if (typeof args[i]=="function") {
@@ -75,6 +86,7 @@ const Grammar=function () {
 								break;
 							}
 							names[i]=args[i];
+							fields[names[i]]=parsers[i];
 						}
 						const res=p.ret(function (...args) {
 							var res={type:name};
@@ -93,6 +105,7 @@ const Grammar=function () {
 							};
 							return fn(res);
 						}).setName(name);
+						setTypeInfo(res,name,fields);
 						defs[name]=res;
 						return  res;
 					}
@@ -100,14 +113,14 @@ const Grammar=function () {
 			},
 			ors(...parsers) {
 				parsers=parsers.map(trans);
-				const p=chain(parsers, (p,e)=>p.or(e)).tap(name);
+				const p=chain(parsers, (p,e)=>p.or(e)).tap(name).setName(`(ors ${name})`);
 				p.parsers=parsers;
-				defs[name]=p;
+				defs[name]=setTypeInfo(p,"or",{});
 				return defs[name];
 			}
 		};
 		//return $$;
-	}, {defs,get});
+	}, {defs,get,buildTypes});
 	//return $;
 };
 Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
