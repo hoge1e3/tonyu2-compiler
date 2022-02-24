@@ -96,7 +96,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 				return res;
 			}).setName("("+t.name+" noFollow "+p.name+")",this));
 		}
-		andNoUnify(next) {// Parser.and:: (Function|Parser)  -> Parser
+		andNoUnify(next:Parser) {// Parser.and:: (Function|Parser)  -> Parser
 			nc(next,"next"); // next==next
 			var t=this; // Parser
 			var res=Parser.create(function(s){ //s:State
@@ -110,7 +110,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			});
 			return res.setName("("+this.name+" "+next.name+")",{type:"and",first:this,next:this});
 		}
-		and(next) {// Parser.and:: Parser  -> Parser
+		and(next:Parser) {// Parser.and:: Parser  -> Parser
 			const _res=this.andNoUnify(next);
 			//if (!$.options.optimizeFirst) return res;
 			if (!this._first) return _res;
@@ -130,8 +130,8 @@ type Struct=And|Or|Rept|Opt|Alias;
 			return res;
 		}
 		retNoUnify(f) {
-			var t=this;
-			var p;
+			const t=this;
+			let p:Parser;
 			if (typeof f=="function") {
 				p=Parser.create(function (r1) {
 					var r2=r1.clone();
@@ -168,7 +168,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 		this._first={space: space, chars:String};
 		this._first={space: space, tbl:{char:Parser}};
 	*/
-		first (space, ct?) {
+		first (space:Parser|"TOKEN", ct?) {
 			if (!options.optimizeFirst) return this;
 			if (space==null) throw "Space is null2!";
 			if (typeof ct=="string") {
@@ -201,7 +201,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			}
 			return Parser.fromFirstTokens(tbl).setName("(fstT "+this.name+")",this);
 		}
-		unifyFirst (other) {
+		unifyFirst (other:Parser) {
 			var thiz=this;
 			function or(a,b) {
 				if (!a) return b;
@@ -243,7 +243,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			if (options.verboseFirst) console.log("Created unify name=" +res.name+" tbl="+dispTbl(tbl));
 			return res;
 		}
-		or(other) { // Parser->Parser
+		or(other:Parser) { // Parser->Parser
 			nc(other,"other");
 				if (this._first && other._first &&
 						this._first.space && this._first.space===other._first.space) {
@@ -255,7 +255,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 					return this.orNoUnify(other);
 				}
 		}
-		orNoUnify (other) {
+		orNoUnify (other:Parser) {
 				var t=this;  // t:Parser
 			var res=Parser.create(function(s){
 				var r1=t.parse(s); // r1:State
@@ -283,7 +283,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			}
 			return this;
 		}*/
-		repN(min){
+		repN(min:number){
 			var p=this;
 			if (!min) min=0;
 			var res=Parser.create(function(s) {
@@ -329,7 +329,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 				}
 			}).setName("("+t.name+")?",{type:"opt",elem:t});
 		}
-		sep1(sep, valuesToArray) {
+		sep1(sep:Parser, valuesToArray:boolean) {
 			var value=this;
 			nc(value,"value");nc(sep,"sep");
 			var tail=sep.and(value).ret(function(r1, r2) {
@@ -349,13 +349,13 @@ type Struct=And|Or|Rept|Opt|Alias;
 				}
 			}).setName("(sep1 "+value.name+"~~"+sep.name+")",{type:"rept", elem:this});
 		}
-		sep0(s){
+		sep0(s:Parser){
 			return this.sep1(s,true).opt().ret(function (r) {
 				if (!r) return [];
 				return r;
 			});
 		}
-		tap (msg) {
+		tap (msg:string) {
 			return this;
 			/*if (!$.options.traceTap) return this;
 			if (!msg) msg="";
@@ -370,12 +370,12 @@ type Struct=And|Or|Rept|Opt|Alias;
 
 			return res.setName("(Tap "+t.name+")");*/
 		}
-		retN (i) {
+		retN (i:number) {
 			return this.ret(function () {
 				return arguments[i];
 			});
 		}
-		parseStr (str,global) {
+		parseStr (str:string,global?) {
 			var st=new State(str,global);
 			return this.parse(st);
 		}
@@ -387,7 +387,7 @@ type Struct=And|Or|Rept|Opt|Alias;
 			}
 			return this;
 		}
-		static fromFirst (space, tbl) {
+		static fromFirst (space:Parser|"TOKEN", tbl) {
 			if (space=="TOKEN") {
 				return Parser.fromFirstTokens(tbl);
 			}

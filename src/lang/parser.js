@@ -130,8 +130,8 @@ class Parser {
         return res;
     }
     retNoUnify(f) {
-        var t = this;
-        var p;
+        const t = this;
+        let p;
         if (typeof f == "function") {
             p = Parser.create(function (r1) {
                 var r2 = r1.clone();
