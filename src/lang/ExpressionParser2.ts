@@ -1,5 +1,8 @@
 // parser.js の補助ライブラリ．式の解析を担当する
-import Parser from "./parser";
+
+import { Parser, setRange } from "./parser";
+
+//import Parser from "./parser";
 export= function ExpressionParser () {
 	var $:any={};
 	var EXPSTAT="EXPSTAT";
@@ -79,37 +82,37 @@ export= function ExpressionParser () {
 		$.mkInfix.def=f;
 	};
 	$.mkInfix.def=function (left,op,right) {
-		return Parser.setRange({type:"infix", op:op, left: left, right: right});
+		return setRange({type:"infix", op:op, left: left, right: right});
 	};
 	$.mkInfixl=function (f) {
 		$.mkInfixl.def=f;
 	};
 	$.mkInfixl.def=function (left, op , right) {
-		return Parser.setRange({type:"infixl",op:op ,left:left, right:right});
+		return setRange({type:"infixl",op:op ,left:left, right:right});
 	};
 	$.mkInfixr=function (f) {
 		$.mkInfixr.def=f;
 	};
 	$.mkInfixr.def=function (left, op , right) {
-		return Parser.setRange({type:"infixr",op:op ,left:left, right:right});
+		return setRange({type:"infixr",op:op ,left:left, right:right});
 	};
 	$.mkPrefix=function (f) {
 		$.mkPrefix.def=f;
 	};
 	$.mkPrefix.def=function (op , right) {
-		return Parser.setRange({type:"prefix", op:op, right:right});
+		return setRange({type:"prefix", op:op, right:right});
 	};
 	$.mkPostfix=function (f) {
 		$.mkPostfix.def=f;
 	};
 	$.mkPostfix.def=function (left, op) {
-		return Parser.setRange({type:"postfix", left:left, op:op});
+		return setRange({type:"postfix", left:left, op:op});
 	};
 	$.mkTrifixr=function(f) {
 		$.mkTrifixr.def=f;
 	};
 	$.mkTrifixr.def=function (left, op1, mid, op2, right) {
-		return Parser.setRange({type:"trifixr", left:left, op1:op1, mid:mid, op2:op2, right:right});
+		return setRange({type:"trifixr", left:left, op1:op1, mid:mid, op2:op2, right:right});
 	};
 	$.build= function () {
 		//postfixOrInfix.build();

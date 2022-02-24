@@ -1,23 +1,23 @@
-import Parser from "./parser";
-const p=Parser;
+//import * as Parser from "./parser";
+import { addRange, lazy, Parser, setRange } from "./parser";
 
 const Grammar=function () {
 	function trans(name:any) {
 		if (typeof name=="string") return get(name);
 		return name;
 	}
-	function tap(name) {
-		return p.Parser.create(function (st) {
+	/*function tap(name) {
+		return Parser.create(function (st) {
 			console.log("Parsing "+name+" at "+st.pos+"  "+st.src.str.substring(st.pos, st.pos+20).replace(/[\r\n]/g,"\\n"));
 			return st;
 		});
-	}
+	}*/
 	function comp<T1,T2>(o1:T1, o2:T2):T1&T2 {
 		return Object.assign(o1,o2);
 	}
 	function get(name:string) {
 		if (defs[name]) return defs[name];
-		return setTypeInfo( p.lazy(function () {
+		return setTypeInfo( lazy(function () {
 			var r=defs[name];
 			if (!r) throw "grammar named '"+name +"' is undefined";
 			return r;
@@ -93,8 +93,8 @@ const Grammar=function () {
 							res[Grammar.SUBELEMENTS]=[];
 							for (var i=0 ; i<args.length ;i++) {
 								var e=args[i];
-								var rg=Parser.setRange(e);
-								Parser.addRange(res, rg);
+								var rg=setRange(e);
+								addRange(res, rg);
 								if (names[i]) {
 									res[names[i]]=e;
 								}

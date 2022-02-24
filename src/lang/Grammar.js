@@ -1,28 +1,25 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-const parser_1 = __importDefault(require("./parser"));
-const p = parser_1.default;
+//import * as Parser from "./parser";
+const parser_1 = require("./parser");
 const Grammar = function () {
     function trans(name) {
         if (typeof name == "string")
             return get(name);
         return name;
     }
-    function tap(name) {
-        return p.Parser.create(function (st) {
-            console.log("Parsing " + name + " at " + st.pos + "  " + st.src.str.substring(st.pos, st.pos + 20).replace(/[\r\n]/g, "\\n"));
+    /*function tap(name) {
+        return Parser.create(function (st) {
+            console.log("Parsing "+name+" at "+st.pos+"  "+st.src.str.substring(st.pos, st.pos+20).replace(/[\r\n]/g,"\\n"));
             return st;
         });
-    }
+    }*/
     function comp(o1, o2) {
         return Object.assign(o1, o2);
     }
     function get(name) {
         if (defs[name])
             return defs[name];
-        return setTypeInfo(p.lazy(function () {
+        return setTypeInfo((0, parser_1.lazy)(function () {
             var r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
@@ -100,8 +97,8 @@ const Grammar = function () {
                             res[Grammar.SUBELEMENTS] = [];
                             for (var i = 0; i < args.length; i++) {
                                 var e = args[i];
-                                var rg = parser_1.default.setRange(e);
-                                parser_1.default.addRange(res, rg);
+                                var rg = (0, parser_1.setRange)(e);
+                                (0, parser_1.addRange)(res, rg);
                                 if (names[i]) {
                                     res[names[i]] = e;
                                 }

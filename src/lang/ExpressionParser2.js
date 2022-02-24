@@ -1,9 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 // parser.js の補助ライブラリ．式の解析を担当する
-const parser_1 = __importDefault(require("./parser"));
+const parser_1 = require("./parser");
 module.exports = function ExpressionParser() {
     var $ = {};
     var EXPSTAT = "EXPSTAT";
@@ -41,7 +38,7 @@ module.exports = function ExpressionParser() {
         return {
             reg(type, prio, a) {
                 var opt = opType(type, prio);
-                built.add(a.ret(parser_1.default.create(function (r) {
+                built.add(a.ret(parser_1.Parser.create(function (r) {
                     r.opType = opt;
                     return r;
                 })).setName("(opType " + opt + " " + a.name + ")"));
@@ -87,42 +84,42 @@ module.exports = function ExpressionParser() {
         $.mkInfix.def = f;
     };
     $.mkInfix.def = function (left, op, right) {
-        return parser_1.default.setRange({ type: "infix", op: op, left: left, right: right });
+        return (0, parser_1.setRange)({ type: "infix", op: op, left: left, right: right });
     };
     $.mkInfixl = function (f) {
         $.mkInfixl.def = f;
     };
     $.mkInfixl.def = function (left, op, right) {
-        return parser_1.default.setRange({ type: "infixl", op: op, left: left, right: right });
+        return (0, parser_1.setRange)({ type: "infixl", op: op, left: left, right: right });
     };
     $.mkInfixr = function (f) {
         $.mkInfixr.def = f;
     };
     $.mkInfixr.def = function (left, op, right) {
-        return parser_1.default.setRange({ type: "infixr", op: op, left: left, right: right });
+        return (0, parser_1.setRange)({ type: "infixr", op: op, left: left, right: right });
     };
     $.mkPrefix = function (f) {
         $.mkPrefix.def = f;
     };
     $.mkPrefix.def = function (op, right) {
-        return parser_1.default.setRange({ type: "prefix", op: op, right: right });
+        return (0, parser_1.setRange)({ type: "prefix", op: op, right: right });
     };
     $.mkPostfix = function (f) {
         $.mkPostfix.def = f;
     };
     $.mkPostfix.def = function (left, op) {
-        return parser_1.default.setRange({ type: "postfix", left: left, op: op });
+        return (0, parser_1.setRange)({ type: "postfix", left: left, op: op });
     };
     $.mkTrifixr = function (f) {
         $.mkTrifixr.def = f;
     };
     $.mkTrifixr.def = function (left, op1, mid, op2, right) {
-        return parser_1.default.setRange({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
+        return (0, parser_1.setRange)({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
     };
     $.build = function () {
         //postfixOrInfix.build();
         //prefixOrElement.build();
-        $.built = parser_1.default.create(function (st) {
+        $.built = parser_1.Parser.create(function (st) {
             return parse(0, st);
         }).setName("ExpBuilt");
         return $.built;
@@ -274,7 +271,7 @@ module.exports = function ExpressionParser() {
         }
     }
     $.lazy = function () {
-        return parser_1.default.create(function (st) {
+        return parser_1.Parser.create(function (st) {
             return $.built.parse(st);
         });
     };

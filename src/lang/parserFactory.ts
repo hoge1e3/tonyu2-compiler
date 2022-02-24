@@ -8,7 +8,7 @@
 function (Grammar, XMLBuffer, IndentBuffer, TT,
 		disp, Parser, ExpressionParser, TError) {*/
 
-import Parser from "./parser";
+import * as Parser from "./parser";
 import TError from "../runtime/TError";
 import R from "../lib/R";
 import ExpressionParser from "./ExpressionParser2";

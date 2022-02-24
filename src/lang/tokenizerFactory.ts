@@ -2,7 +2,9 @@
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
 
-import Parser from "./parser";
+import { Parser, StringParser } from "./parser";
+
+//import Parser from "./parser";
 
 export= function tokenizerFactory({reserved, caseInsensitive}) {
 	function profileTbl(parser, name) {
@@ -52,20 +54,20 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		    pos=spos;
 		}
 	}
-	var sp=Parser.StringParser;
+	//var sp=Parser.StringParser;
 	var SAMENAME="SAMENAME";
 	var DIV=1,REG=2;
 	//var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
-	var space=sp.strLike(skipSpace).setName("space");
+	var space=StringParser.strLike(skipSpace).setName("space");
 	function tk(r, name?) {
 		var pat;
 		var fst;
 		if (typeof r=="string") {
-			pat=sp.str(r);
+			pat=StringParser.str(r);
 			if (r.length>0) fst=r.substring(0,1);
 			if (!name) name=r;
 		} else {
-			pat=sp.reg(r);
+			pat=StringParser.reg(r);
 			if (!name) name=r+"";
 		}
 		var res=space.and(pat).ret(function(a, b) {
@@ -239,7 +241,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 	parsers[DIV]=or(parsers[DIV],symresv);
 
 	function parse(str) {
-		var res=Parser.StringParser.parse(all, str);
+		var res=StringParser.parse(all, str);
 		if (res.success) {
 		} else {
 			console.log("Stopped at "+str.substring( res.src.maxPos-5, res.src.maxPos+5));

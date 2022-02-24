@@ -8,16 +8,35 @@
         "disp", "Parser", "ExpressionParser", "TError"],
 function (Grammar, XMLBuffer, IndentBuffer, TT,
         disp, Parser, ExpressionParser, TError) {*/
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-const parser_1 = __importDefault(require("./parser"));
+const Parser = __importStar(require("./parser"));
 const TError_1 = __importDefault(require("../runtime/TError"));
 const R_1 = __importDefault(require("../lib/R"));
 const ExpressionParser2_1 = __importDefault(require("./ExpressionParser2"));
 const Grammar_1 = __importDefault(require("./Grammar"));
 module.exports = function PF({ TT }) {
-    var p = parser_1.default;
+    var p = Parser;
     var $ = {};
     var g = (0, Grammar_1.default)();
     var G = g.get;
@@ -96,15 +115,15 @@ module.exports = function PF({ TT }) {
             throw disp(argList);
         }
         if (argList) {
-            var rg = parser_1.default.getRange(argList);
-            parser_1.default.addRange(res, rg);
+            var rg = Parser.getRange(argList);
+            Parser.addRange(res, rg);
             argList.args.forEach(function (arg) {
                 res.push(arg);
             });
         }
         oof.forEach(function (o) {
-            var rg = parser_1.default.getRange(o);
-            parser_1.default.addRange(res, rg);
+            var rg = Parser.getRange(o);
+            Parser.addRange(res, rg);
             res.push(o.obj);
         });
         return res;
@@ -204,7 +223,7 @@ module.exports = function PF({ TT }) {
     e.postfix(prio, arrayElem);
     function mki(left, op, right) {
         var res = { type: "infix", left: left, op: op, right: right };
-        parser_1.default.setRange(res);
+        Parser.setRange(res);
         res.toString = function () {
             return "(" + left + op + right + ")";
         };
@@ -273,7 +292,7 @@ module.exports = function PF({ TT }) {
     var incl = g("includes").ands(tk("includes"), symbol.sep1(tk(","), true), tk(";")).
         ret(null, "includeClassNames");
     var program = g("program").
-        ands(ext.opt(), incl.opt(), stmt.rep0(), parser_1.default.TokensParser.eof).
+        ands(ext.opt(), incl.opt(), stmt.rep0(), Parser.TokensParser.eof).
         ret("ext", "incl", "stmts");
     for (var i in g.defs) {
         g.defs[i].profile();
