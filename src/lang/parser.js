@@ -531,28 +531,18 @@ function strLike(func) {
         }
     }).setName("STRLIKE");
 }
-exports.StringParser = {
-    empty: Parser.create(function (state) {
-        var res = state.clone();
-        res.success = true;
-        res.result = [null]; //{length:0, isEmpty:true}];
-        return res;
-    }).setName("E"),
-    fail: Parser.create(function (s) {
-        s.success = false;
-        return s;
-    }).setName("F"),
-    str: function (st) {
+class StringParser {
+    static str(st) {
         return this.strLike(function (str, pos) {
             if (str.substring(pos, pos + st.length) === st)
                 return { len: st.length };
             return null;
         }).setName(st);
-    },
-    reg(r) {
+    }
+    static reg(r) {
         if (!(r + "").match(/^\/\^/))
             console.log("Waring regex should have ^ at the head:" + (r + ""));
-        return this.strLike(function (str, pos) {
+        return strLike(function (str, pos) {
             var res = r.exec(str.substring(pos));
             if (res) {
                 res.len = res[0].length;
@@ -560,18 +550,29 @@ exports.StringParser = {
             }
             return null;
         }).setName(r + "");
-    },
-    strLike,
-    parse(parser, str, global) {
+    }
+    static parse(parser, str, global) {
         var st = new State(str, global);
         return parser.parse(st);
-    },
-    eof: strLike(function (str, pos) {
-        if (pos == str.length)
-            return { len: 0 };
-        return null;
-    }).setName("EOF"),
-};
+    }
+}
+exports.StringParser = StringParser;
+StringParser.empty = Parser.create(function (state) {
+    var res = state.clone();
+    res.success = true;
+    res.result = [null]; //{length:0, isEmpty:true}];
+    return res;
+}).setName("E");
+StringParser.fail = Parser.create(function (s) {
+    s.success = false;
+    return s;
+}).setName("F");
+StringParser.strLike = strLike;
+StringParser.eof = strLike(function (str, pos) {
+    if (pos == str.length)
+        return { len: 0 };
+    return null;
+}).setName("EOF");
 //  why not eof: ? because StringParser.strLike
 //$.StringParser=StringParser;
 exports.TokensParser = {

@@ -508,44 +508,44 @@ type ParseFunc=(s:State)=>State;
 			}
 		}).setName("STRLIKE");
 	}
-	export const StringParser={
-		empty: Parser.create(function(state:State) {
+	export class StringParser{
+		static empty=Parser.create(function(state:State) {
 			var res=state.clone();
 			res.success=true;
 			res.result=[null]; //{length:0, isEmpty:true}];
 			return res;
-		}).setName("E"),
-		fail: Parser.create(function(s:State){
+		}).setName("E");
+		static fail=Parser.create(function(s:State){
 			s.success=false;
 			return s;
-		}).setName("F"),
-		str: function (st:string) {
+		}).setName("F");
+		static str(st:string) {
 			return this.strLike(function (str:string,pos:number) {
 				if (str.substring(pos, pos+st.length)===st) return {len:st.length};
 				return null;
 			}).setName(st);
-		},
-		reg(r:RegExp) {//r: regex (must have ^ at the head)
+		}
+		static reg(r:RegExp) {//r: regex (must have ^ at the head)
 			if (!(r+"").match(/^\/\^/)) console.log("Waring regex should have ^ at the head:"+(r+""));
-			return this.strLike(function (str:string,pos:number) {
-				var res=r.exec( str.substring(pos) );
+			return strLike(function (str:string,pos:number) {
+				var res:any=r.exec( str.substring(pos) );
 				if (res) {
-					(res as any).len=res[0].length;
+					res.len=res[0].length;
 					return res;
 				}
 				return null;
 			}).setName(r+"");
-		},
-		strLike,
-		parse(parser:Parser, str:string, global?) {
+		}
+		static strLike=strLike;
+		static parse(parser:Parser, str:string, global?) {
 			var st=new State(str,global);
 			return parser.parse(st);
-		},
-		eof:strLike(function (str:string,pos:number) {
+		}
+		static eof=strLike(function (str:string,pos:number) {
 			if (pos==str.length) return {len:0};
 			return null;
-		}).setName("EOF"),
-	};
+		}).setName("EOF");
+	}
 	//  why not eof: ? because StringParser.strLike
 
 	//$.StringParser=StringParser;
