@@ -2,7 +2,7 @@
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
 
-import { Parser, StringParser } from "./parser";
+import { Parser, StringParser, StrStateSrc } from "./parser";
 
 //import Parser from "./parser";
 
@@ -122,7 +122,8 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		}
 		st=space.parse(st);
 		//console.log(st.src.maxPos+"=="+st.src.str.length)
-		st.success=st.src.maxPos==st.src.str.length;
+		const src=st.src as StrStateSrc;
+		st.success=st.src.maxPos==src.str.length;
 		st.result[0]=res;
 		return st;
 	});

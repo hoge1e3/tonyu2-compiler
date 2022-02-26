@@ -135,7 +135,8 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
         }
         st = space.parse(st);
         //console.log(st.src.maxPos+"=="+st.src.str.length)
-        st.success = st.src.maxPos == st.src.str.length;
+        const src = st.src;
+        st.success = st.src.maxPos == src.str.length;
         st.result[0] = res;
         return st;
     });
