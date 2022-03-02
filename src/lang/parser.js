@@ -2,23 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = void 0;
 const ALL = Symbol("ALL");
-/*function extend(dst, src) {
-    var i;
-    for(i in src){
-        dst[i]=src[i];
-    }
-    return dst;
-}*/
 const options = { traceTap: false, optimizeFirst: true, profile: false,
     verboseFirst: false, traceFirstTbl: false, traceToken: false };
-/*var $:any={
-    consoleBuffer:"",
-    options: {traceTap:false, optimizeFirst: true, profile: false ,
-    verboseFirst: false,traceFirstTbl:false},
-    Parser: Parser,
-    StringParser: StringParser,
-    nc: nc
-};*/
 function dispTbl(tbl) {
     var buf = "";
     var h = {};
@@ -51,25 +36,7 @@ function nc(v, name) {
 }
 class Parser {
     constructor(parseFunc) {
-        if (options.traceTap) {
-            this.parse = function (s) {
-                console.log("tap: name=" + this.name + "  pos=" + (s ? s.pos : "?"));
-                var r = parseFunc.apply(this, [s]);
-                var img = "NOIMG";
-                if (r.src && r.src.str) {
-                    img = r.src.str.substring(r.pos - 3, r.pos) + "^" + r.src.str.substring(r.pos, r.pos + 3);
-                }
-                if (r.src && r.src.tokens) {
-                    img = r.src.tokens[r.pos - 1] + "[" + r.src.tokens[r.pos] + "]" + r.src.tokens[r.pos + 1];
-                }
-                console.log("/tap: name=" + this.name +
-                    " pos=" + (s ? s.pos : "?") + "->" + (r ? r.pos : "?") + " " + img + " res=" + (r ? r.success : "?"));
-                return r;
-            };
-        }
-        else {
-            this.parse = parseFunc;
-        }
+        this.parse = parseFunc;
     }
     // Parser.parse:: State->State
     static create(parserFunc) { return create(parserFunc); }
@@ -88,8 +55,6 @@ class Parser {
         var t = this;
         nc(p, "p");
         return this.and(Parser.create(function (res) {
-            //var res=t.parse(s);
-            //if (!res.success) return res;
             var res2 = p.parse(res);
             res.success = !res2.success;
             return res;
@@ -149,9 +114,6 @@ class Parser {
             if (!r1.success)
                 return r1;
             return p.parse(r1);
-            /*var r2=r1.clone();
-            r2.result=[ f.apply({}, r1.result) ];
-            return r2;*/
         }).setName("(" + this.name + " >= " + p.name + ")");
         return res;
     }
@@ -301,12 +263,6 @@ class Parser {
         }
         return this;
     }
-    /*profile (name) {
-        if (options.profile) {
-            this.parse=this.parse.profile(name || this.name);
-        }
-        return this;
-    }*/
     repN(min) {
         var p = this;
         if (!min)
@@ -389,36 +345,12 @@ class Parser {
     }
     tap(msg) {
         return this;
-        /*if (!$.options.traceTap) return this;
-        if (!msg) msg="";
-        var t=this;
-        var res=Parser.create(function(s){
-            console.log("tap:"+msg+" name:"+t.name+"  pos="+(s?s.pos:"?"));
-            var r=t.parse(s);
-            var img=r.src.str.substring(r.pos-3,r.pos)+"^"+r.src.str.substring(r.pos,r.pos+3);
-            console.log("/tap:"+msg+" name:"+t.name+" pos="+(s?s.pos:"?")+"->"+(r?r.pos:"?")+" "+img+" res="+(r?r.success:"?"));
-            return r;
-        });
-
-        return res.setName("(Tap "+t.name+")");*/
     }
     retN(i) {
         return this.ret(function () {
             return arguments[i];
         });
     }
-    parseStr(str, global) {
-        var st = new State(str, global);
-        return this.parse(st);
-    }
-    /*checkTbl () {
-        if (!this._first) return this;
-        var tbl=this._first.tbl;
-        for (var k in tbl) {
-            if (!tbl[k].parse) throw this.name+": tbl."+k+" is not a parser :"+tbl[k];
-        }
-        return this;
-    }*/
     static fromFirst(space, tbl) {
         if (space == "TOKEN") {
             return Parser.fromFirstTokens(tbl);
