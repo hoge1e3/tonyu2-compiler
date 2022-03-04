@@ -45,7 +45,7 @@ const Grammar=function () {
 					const ti=typeInfos.get(val);
 					if (ti) return ti.name;
 					const st=val.struct;
-					if (st.type==="lazy") return st.name;
+					if (st && st.type==="lazy") return st.name;
 					const res=st ? traverse(st, visited) : val.name; //ti.struct;
 					return res;
 				}
