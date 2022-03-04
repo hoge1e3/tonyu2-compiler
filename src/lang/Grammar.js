@@ -19,12 +19,17 @@ const Grammar = function () {
     function get(name) {
         if (defs[name])
             return defs[name];
-        return parser_1.lazy(function () {
-            var r = defs[name];
+        if (lazyDefs[name])
+            return lazyDefs[name];
+        const res = parser_1.lazy(function () {
+            const r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
             return r;
-        }).setName("(Lazy of " + name + ")");
+        }).setName("(Lazy of " + name + ")", { type: "lazy", name });
+        lazyDefs[name] = res;
+        typeInfos.set(res, { name, struct: "lazy" });
+        return res;
     }
     function chain(parsers, f) {
         const [first, ...rest] = parsers;
@@ -55,7 +60,10 @@ const Grammar = function () {
                 }
                 if (typeof val === "object") {
                     const res = {};
-                    for (const k of Object.keys(val)) {
+                    const keys = Object.keys(val);
+                    if (keys.length === 2 && val.type === "lazy" && typeof val.name === "string")
+                        return val.name;
+                    for (const k of keys) {
                         res[k] = traverse(val[k], visited);
                     }
                     return res;
@@ -78,10 +86,12 @@ const Grammar = function () {
         return parser;
     }*/
     const defs = {};
+    const lazyDefs = {};
     return comp((name) => {
         return {
             alias(parser) {
                 defs[name] = parser;
+                typeInfos.set(parser, { name, struct: parser.struct });
             },
             ands(...parsers) {
                 parsers = parsers.map(trans);

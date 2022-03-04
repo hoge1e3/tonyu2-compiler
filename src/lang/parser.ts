@@ -4,8 +4,9 @@ export type Or ={type:"or" , elems:Parser[]};
 export type Rept={type:"rept", elem:Parser};
 export type Opt={type:"opt", elem:Parser};
 export type Primitive={type:"primitive", name:string};
+export type Lazy={type:"lazy", name:string};
 //export type Alias={type: "alias", target:Parser};
-export type Struct=And|Or|Rept|Opt|Primitive;//|Alias;
+export type Struct=And|Or|Rept|Opt|Primitive|Lazy;//|Alias;
 const ALL=Symbol("ALL");
 type SpaceSpec =Parser|"TOKEN";
 type First={
@@ -164,7 +165,7 @@ export class Parser {// class Parser
 		}
 		return this;
 	}
-	firstTokens (tokens:string|string[]) {
+	firstTokens (tokens?:string|string[]) {
 		if (!options.optimizeFirst) return this;
 		if (typeof tokens=="string") tokens=[tokens];
 		const tbl:FirstTbl={};
@@ -249,7 +250,7 @@ export class Parser {// class Parser
 	setName (n:string, struct?: Struct|Parser) {
 		this.name=n;
 		if (struct instanceof Parser) {
-			this.struct=struct.struct || {type:"primitive", name:struct.name};//{type:"alias", target:struct};
+			this.struct=this.struct || struct.struct || {type:"primitive", name:struct.name};//{type:"alias", target:struct};
 		} else {
 			this.struct=struct;
 		}
@@ -524,14 +525,18 @@ export const TokensParser={
 	}).setName("EOT")
 };
 //$.TokensParser=TokensParser;
-export function lazy(pf) { //   ( ()->Parser ) ->Parser
-	var p=null;
-	return Parser.create(function (st) {
-		if (!p) p=pf();
-		if (!p) throw pf+" returned null!";
+export function lazy(pf:()=>Parser):Parser {
+	let p:Parser;
+	const self=Parser.create(function (st) {
+		if (!p) {
+			p=pf();
+			if (!p) throw new Error(pf+" returned null!");
+			//if (!self.struct) self.struct=p.struct;
+		}
 		this.name=pf.name;
 		return p.parse(st);
 	}).setName("LZ");
+	return self;
 }
 export function addRange(res, newr) {
 	if (newr==null) return res;

@@ -3,7 +3,7 @@
 import { Parser, setRange } from "./parser";
 
 //import Parser from "./parser";
-export= function ExpressionParser () {
+export= function ExpressionParser (name="Expression") {
 	var $:any={};
 	var EXPSTAT="EXPSTAT";
 	//  first 10     *  +  <>  &&  ||  =     0  later
@@ -119,7 +119,7 @@ export= function ExpressionParser () {
 		//prefixOrElement.build();
 		$.built= Parser.create(function (st) {
 			return parse(0,st);
-		}).setName("ExpBuilt");
+		}).setName(name);
 		return $.built;
 	};
 	function dump(st, lbl) {
@@ -265,7 +265,7 @@ export= function ExpressionParser () {
 	$.lazy = function () {
 		return Parser.create(function (st) {
 			return $.built.parse(st);
-		}).setName("(Lazy of ExpBuilt)");
+		}).setName(name,{type:"lazy",name});
 	};
 	return $;
 };

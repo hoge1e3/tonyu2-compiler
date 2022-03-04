@@ -1,7 +1,7 @@
 "use strict";
 // parser.js の補助ライブラリ．式の解析を担当する
 const parser_1 = require("./parser");
-module.exports = function ExpressionParser() {
+module.exports = function ExpressionParser(name = "Expression") {
     var $ = {};
     var EXPSTAT = "EXPSTAT";
     //  first 10     *  +  <>  &&  ||  =     0  later
@@ -121,7 +121,7 @@ module.exports = function ExpressionParser() {
         //prefixOrElement.build();
         $.built = parser_1.Parser.create(function (st) {
             return parse(0, st);
-        }).setName("ExpBuilt");
+        }).setName(name);
         return $.built;
     };
     function dump(st, lbl) {
@@ -273,7 +273,7 @@ module.exports = function ExpressionParser() {
     $.lazy = function () {
         return parser_1.Parser.create(function (st) {
             return $.built.parse(st);
-        }).setName("(Lazy of ExpBuilt)");
+        }).setName(name, { type: "lazy", name });
     };
     return $;
 };

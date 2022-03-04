@@ -259,7 +259,7 @@ class Parser {
     setName(n, struct) {
         this.name = n;
         if (struct instanceof Parser) {
-            this.struct = struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
+            this.struct = this.struct || struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
         }
         else {
             this.struct = struct;
@@ -550,15 +550,18 @@ exports.TokensParser = {
 };
 //$.TokensParser=TokensParser;
 function lazy(pf) {
-    var p = null;
-    return Parser.create(function (st) {
-        if (!p)
+    let p;
+    const self = Parser.create(function (st) {
+        if (!p) {
             p = pf();
-        if (!p)
-            throw pf + " returned null!";
+            if (!p)
+                throw new Error(pf + " returned null!");
+            //if (!self.struct) self.struct=p.struct;
+        }
         this.name = pf.name;
         return p.parse(st);
     }).setName("LZ");
+    return self;
 }
 exports.lazy = lazy;
 function addRange(res, newr) {
