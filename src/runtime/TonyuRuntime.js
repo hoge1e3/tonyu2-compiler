@@ -332,7 +332,7 @@ function getClass(n) {
                     found = nn + "." + n;
                 }
                 else
-                    throw new Error((0, R_1.default)("ambiguousClassName", nn, n, found));
+                    throw new Error(R_1.default("ambiguousClassName", nn, n, found));
             }
         }
     }
@@ -357,20 +357,20 @@ function bindFunc(t, meth) {
 }
 function invokeMethod(t, name, args, objName) {
     if (!t)
-        throw new Error((0, R_1.default)("cannotInvokeMethod", objName, t, name));
+        throw new Error(R_1.default("cannotInvokeMethod", objName, t, name));
     var f = t[name];
     if (typeof f != "function")
-        throw new Error((0, R_1.default)("notAMethod", (objName == "this" ? "" : objName + "."), name, f));
+        throw new Error(R_1.default("notAMethod", (objName == "this" ? "" : objName + "."), name, f));
     return f.apply(t, args);
 }
 function callFunc(f, args, fName) {
     if (typeof f != "function")
-        throw new Error((0, R_1.default)("notAFunction", fName));
+        throw new Error(R_1.default("notAFunction", fName));
     return f.apply({}, args);
 }
 function checkNonNull(v, name) {
     if (v != v || v == null)
-        throw new Error((0, R_1.default)("uninitialized", name, v));
+        throw new Error(R_1.default("uninitialized", name, v));
     return v;
 }
 function A(args) {
@@ -381,7 +381,7 @@ function A(args) {
     return res;
 }
 function useNew(c) {
-    throw new Error((0, R_1.default)("newIsRequiredOnInstanciate", c));
+    throw new Error(R_1.default("newIsRequiredOnInstanciate", c));
 }
 function not_a_tonyu_object(o) {
     console.log("Not a tonyu object: ", o);
@@ -393,7 +393,7 @@ function hasKey(k, obj) {
 function run(bootClassName) {
     var bootClass = getClass(bootClassName);
     if (!isConstructor(bootClass))
-        throw new Error((0, R_1.default)("bootClassIsNotFound", bootClassName));
+        throw new Error(R_1.default("bootClassIsNotFound", bootClassName));
     Tonyu.runMode = true;
     var boot = new bootClass();
     //var th=thread();
@@ -412,7 +412,7 @@ function checkLoop() {
     var now = root_1.default.performance.now();
     if (now - lastLoopCheck > 1000) {
         resetLoopCheck(10000);
-        throw new Error((0, R_1.default)("infiniteLoopDetected"));
+        throw new Error(R_1.default("infiniteLoopDetected"));
     }
     prevCheckLoopCalled = now;
 }
@@ -439,7 +439,7 @@ Tonyu = { thread: thread,
     iterator: TonyuIterator_1.default, run: run, checkLoop: checkLoop, resetLoopCheck: resetLoopCheck,
     VERSION: 1560828115159,
     A: A, ID: Math.random() };
-TT = (0, TonyuThread_1.default)(Tonyu);
+TT = TonyuThread_1.default(Tonyu);
 if (root_1.default.Tonyu) {
     console.error("Tonyu called twice!");
     throw new Error("Tonyu called twice!");

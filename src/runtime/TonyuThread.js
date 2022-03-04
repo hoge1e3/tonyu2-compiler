@@ -58,14 +58,14 @@ module.exports = function TonyuThreadF(Tonyu) {
             if (typeof methodName == "string") {
                 method = obj["fiber$" + methodName];
                 if (!method) {
-                    throw new Error((0, R_1.default)("undefinedMethod", methodName));
+                    throw new Error(R_1.default("undefinedMethod", methodName));
                 }
             }
             if (typeof methodName == "function") {
                 method = methodName.fiber;
                 if (!method) {
                     var n = methodName.methodInfo ? methodName.methodInfo.name : methodName.name;
-                    throw new Error((0, R_1.default)("notAWaitableMethod", n));
+                    throw new Error(R_1.default("notAWaitableMethod", n));
                 }
             }
             args = [this].concat(args);

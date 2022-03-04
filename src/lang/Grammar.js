@@ -19,7 +19,7 @@ const Grammar = function () {
     function get(name) {
         if (defs[name])
             return defs[name];
-        return (0, parser_1.lazy)(function () {
+        return parser_1.lazy(function () {
             var r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
@@ -35,41 +35,44 @@ const Grammar = function () {
         return p;
     }
     function buildTypes() {
-        function traverse(ti, visited, depth) {
+        function traverse(val, visited /*,depth:number*/) {
             //if (depth>10) return "DEPTH";
-            if (visited.has(ti))
+            if (visited.has(val))
                 return "LOOP";
-            visited.add(ti);
-            if (ti instanceof parser_1.Parser) {
-                const st = ti.struct;
-                if (st && st.name)
-                    return st.name;
-                const res = st ? traverse(st, visited, depth + 1) : ti.name; //ti.struct;
-                visited.delete(ti);
-                return res;
-            }
-            if (ti instanceof Array) {
-                const res = ti.map((e) => traverse(e, visited, depth + 1));
-                visited.delete(ti);
-                return res;
-            }
-            if (typeof ti === "object") {
-                const res = {};
-                for (const k of Object.keys(ti)) {
-                    res[k] = traverse(ti[k], visited, depth + 1);
+            try {
+                visited.add(val);
+                if (val instanceof parser_1.Parser) {
+                    const ti = typeInfos.get(val);
+                    if (ti)
+                        return ti.name;
+                    const st = val.struct;
+                    const res = st ? traverse(st, visited) : val.name; //ti.struct;
+                    return res;
                 }
-                visited.delete(ti);
-                return res;
+                if (val instanceof Array) {
+                    const res = val.map((e) => traverse(e, visited));
+                    return res;
+                }
+                if (typeof val === "object") {
+                    const res = {};
+                    for (const k of Object.keys(val)) {
+                        res[k] = traverse(val[k], visited);
+                    }
+                    return res;
+                }
+                return val;
             }
-            visited.delete(ti);
-            return ti;
+            finally {
+                visited.delete(val);
+            }
         }
         for (const k of Object.keys(defs)) {
             const v = defs[k];
             console.log("---", k);
-            console.dir(traverse(v.struct, new Set, 0), { depth: null });
+            console.dir(traverse(typeInfos.get(v), new Set), { depth: null });
         }
     }
+    const typeInfos = new WeakMap();
     /*function setTypeInfo(parser, name, fields={}) {
         parser.typeInfo={name, fields};
         return parser;
@@ -110,8 +113,8 @@ const Grammar = function () {
                             res[Grammar.SUBELEMENTS] = [];
                             for (var i = 0; i < args.length; i++) {
                                 var e = args[i];
-                                var rg = (0, parser_1.setRange)(e);
-                                (0, parser_1.addRange)(res, rg);
+                                var rg = parser_1.setRange(e);
+                                parser_1.addRange(res, rg);
                                 if (names[i]) {
                                     res[names[i]] = e;
                                 }
@@ -122,7 +125,7 @@ const Grammar = function () {
                             };
                             return fn(res);
                         }).setName(name);
-                        res.struct = { type: "object", name, fields };
+                        typeInfos.set(res, { name, struct: { type: "object", fields } });
                         //setTypeInfo(res,name,fields);
                         defs[name] = res;
                         return res;
@@ -133,7 +136,7 @@ const Grammar = function () {
                 parsers = parsers.map(trans);
                 const p = chain(parsers, (p, e) => p.or(e)).setName(name);
                 //p.parsers=parsers;
-                p.struct = { type: "or", name, elems: parsers };
+                typeInfos.set(p, { name, struct: { type: "or", elems: parsers } });
                 defs[name] = p; //setTypeInfo(p,"or",{});
                 return defs[name];
             }

@@ -65,11 +65,11 @@ function genJS(klass, env, genOptions) {
     }
     genOptions = genOptions || {};
     // env.codeBuffer is not recommended(if generate in parallel...?)
-    var buf = genOptions.codeBuffer || env.codeBuffer || (0, IndentBuffer_1.default)({ fixLazyLength: 6 });
+    var buf = genOptions.codeBuffer || env.codeBuffer || IndentBuffer_1.default({ fixLazyLength: 6 });
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = (0, context_1.context)();
+    var ctx = context_1.context();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -129,7 +129,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
+            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -166,7 +166,7 @@ function genJS(klass, env, genOptions) {
         };
     }
     var THNode = { type: "THNode" }; //G
-    const v = buf.visitor = (0, Visitor_1.default)({
+    const v = buf.visitor = Visitor_1.default({
         THNode: function (node) {
             buf.printf(TH);
         },
@@ -189,7 +189,7 @@ function genJS(klass, env, genOptions) {
         },
         "return": function (node) {
             if (ctx.inTry)
-                throw (0, TError_1.default)((0, R_1.default)("cannotWriteReturnInTryStatement"), srcFile, node.pos);
+                throw TError_1.default(R_1.default("cannotWriteReturnInTryStatement"), srcFile, node.pos);
             if (!ctx.noWait) {
                 if (node.value) {
                     var t = annotation(node.value).fiberCall;
@@ -416,12 +416,12 @@ function genJS(klass, env, genOptions) {
         "break": function (node) {
             if (!ctx.noWait) {
                 if (ctx.inTry && ctx.exitTryOnJump)
-                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteBreakInTryStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotWriteBreakInTryStatement"), srcFile, node.pos);
                 if (ctx.closestBrk) {
                     buf.printf("%s=%z; break;%n", FRMPC, ctx.closestBrk);
                 }
                 else {
-                    throw (0, TError_1.default)((0, R_1.default)("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
                 }
             }
             else {
@@ -431,7 +431,7 @@ function genJS(klass, env, genOptions) {
         "continue": function (node) {
             if (!ctx.noWait) {
                 if (ctx.inTry && ctx.exitTryOnJump)
-                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteContinueInTryStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotWriteContinueInTryStatement"), srcFile, node.pos);
                 if (typeof (ctx.closestCnt) == "number") {
                     buf.printf("%s=%s; break;%n", FRMPC, ctx.closestCnt);
                 }
@@ -439,7 +439,7 @@ function genJS(klass, env, genOptions) {
                     buf.printf("%s=%z; break;%n", FRMPC, ctx.closestCnt);
                 }
                 else {
-                    throw (0, TError_1.default)((0, R_1.default)("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
                 }
             }
             else {
@@ -452,7 +452,7 @@ function genJS(klass, env, genOptions) {
                 (an.fiberCallRequired || an.hasJump || an.hasReturn)) {
                 //buf.printf("/*try catch in wait mode is not yet supported*/%n");
                 if (node.catches.length != 1 || node.catches[0].type != "catch") {
-                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteTwoOrMoreCatch"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotWriteTwoOrMoreCatch"), srcFile, node.pos);
                 }
                 var ct = node.catches[0];
                 var catchPos = {}, finPos = {};

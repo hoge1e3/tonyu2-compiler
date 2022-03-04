@@ -84,37 +84,37 @@ module.exports = function ExpressionParser() {
         $.mkInfix.def = f;
     };
     $.mkInfix.def = function (left, op, right) {
-        return (0, parser_1.setRange)({ type: "infix", op: op, left: left, right: right });
+        return parser_1.setRange({ type: "infix", op: op, left: left, right: right });
     };
     $.mkInfixl = function (f) {
         $.mkInfixl.def = f;
     };
     $.mkInfixl.def = function (left, op, right) {
-        return (0, parser_1.setRange)({ type: "infixl", op: op, left: left, right: right });
+        return parser_1.setRange({ type: "infixl", op: op, left: left, right: right });
     };
     $.mkInfixr = function (f) {
         $.mkInfixr.def = f;
     };
     $.mkInfixr.def = function (left, op, right) {
-        return (0, parser_1.setRange)({ type: "infixr", op: op, left: left, right: right });
+        return parser_1.setRange({ type: "infixr", op: op, left: left, right: right });
     };
     $.mkPrefix = function (f) {
         $.mkPrefix.def = f;
     };
     $.mkPrefix.def = function (op, right) {
-        return (0, parser_1.setRange)({ type: "prefix", op: op, right: right });
+        return parser_1.setRange({ type: "prefix", op: op, right: right });
     };
     $.mkPostfix = function (f) {
         $.mkPostfix.def = f;
     };
     $.mkPostfix.def = function (left, op) {
-        return (0, parser_1.setRange)({ type: "postfix", left: left, op: op });
+        return parser_1.setRange({ type: "postfix", left: left, op: op });
     };
     $.mkTrifixr = function (f) {
         $.mkTrifixr.def = f;
     };
     $.mkTrifixr.def = function (left, op1, mid, op2, right) {
-        return (0, parser_1.setRange)({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
+        return parser_1.setRange({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
     };
     $.build = function () {
         //postfixOrInfix.build();
