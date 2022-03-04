@@ -35,7 +35,7 @@ export= function PF({TT}) {
 		n.value=(n.text-0);
 		if (isNaN(n.value)) throw new Error("No value for "+disp(n));
 		return n;
-	});
+	}).setName("numberLiteral");
 	var symbol=tk("symbol");
 	var symresv=tk("symbol");
 	for (var resvk in TT.reserved) {
@@ -73,15 +73,15 @@ export= function PF({TT}) {
 	var assign=tk("=");
 	var literal=tk("literal");
 	var regex=tk("regex");
-	function retF(n) {
+	/*function retF(n) {
 		return function () {
 			return arguments[n];
 		};
-	}
+	}*/
 	function comLastOpt(p) {
 		return p.sep0(tk(","),true).and(tk(",").opt()).ret(function (list,opt) {
 			return list;
-		});
+		}).setName(`comLastOpt ${p.name}`,{type:"rept", elem:p});
 	}
 	var e=ExpressionParser() ;
 	var arrayElem=g("arrayElem").ands(tk("["), e.lazy() , tk("]")).ret(null,"subscript");
@@ -117,13 +117,13 @@ export= function PF({TT}) {
 		return genCallBody(a,oof);
 	}).or(objOrFuncArg.rep1().ret(function (oof) {
 		return genCallBody(null,oof);
-	}));
-	var callBodyOld=argList.or(objlitArg);
+	})).setName("callBody");
+	//var callBodyOld=argList.or(objlitArg);
 	var call=g("call").ands( callBody ).ret("args");
 	var scall=g("scall").ands( callBody ).ret("args");//supercall
 	var newExpr = g("newExpr").ands(tk("new"),varAccess, call.opt()).ret(null, "klass","params");
 	var superExpr =g("superExpr").ands(
-			tk("super"), tk(".").and(symbol).ret(retF(1)).opt() , scall).ret(
+			tk("super"), tk(".").and(symbol).retN(1).opt() , scall).ret(
 			null,                 "name",                       "params");
 	var reservedConst = tk("true").or(tk("false")).
 	or(tk("null")).
@@ -133,7 +133,7 @@ export= function PF({TT}) {
 	or(tk("arguments")).ret(function (t) {
 		t.type="reservedConst";
 		return t;
-	});
+	}).setName("reservedConst");
 	e.element(num);
 	e.element(reservedConst);
 	e.element(regex);
@@ -222,13 +222,13 @@ export= function PF({TT}) {
 	/*e.mkPostfix(function (p) {
 		return {type:"postfix", expr:p};
 	});*/
-	var expr=e.build().setName("expr");//.profile();
+	const expr=e.build().setName("expr");//.profile();
+	g("elem").alias(e.getElement());
 	//var retF=function (i) { return function (){ return arguments[i];}; };
-
 	var stmt=G("stmt").firstTokens();
 	var exprstmt=g("exprstmt").ands(expr,tk(";")).ret("expr");
 	g("compound").ands(tk("{"), stmt.rep0(),tk("}")).ret(null,"stmts") ;
-	var elseP=tk("else").and(stmt).ret(retF(1));
+	var elseP=tk("else").and(stmt).retN(1);
 	var returns=g("return").ands(tk("return"),expr.opt(),tk(";") ).ret(null,"value");
 	var ifs=g("if").ands(tk("if"), tk("("), expr, tk(")"), stmt, elseP.opt() ).ret(null, null,"cond",null,"then","_else");
 	/*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
@@ -260,7 +260,7 @@ export= function PF({TT}) {
 	var throwSt=g("throw").ands(tk("throw"),expr,tk(";")).ret(null,"ex");
 	var typeExpr=g("typeExpr").ands(symbol).ret("name");
 	var typeDecl=g("typeDecl").ands(tk(":"),typeExpr).ret(null,"vtype");
-	var varDecl=g("varDecl").ands(symbol, typeDecl.opt(), tk("=").and(expr).ret(retF(1)).opt() ).ret("name","typeDecl","value");
+	var varDecl=g("varDecl").ands(symbol, typeDecl.opt(), tk("=").and(expr).retN(1).opt() ).ret("name","typeDecl","value");
 	var varsDecl= g("varsDecl").ands(tk("var"), varDecl.sep1(tk(","),true), tk(";") ).ret(null ,"decls");
 	var paramDecl= g("paramDecl").ands(symbol,typeDecl.opt() ).ret("name","typeDecl");
 	var paramDecls=g("paramDecls").ands(tk("("), comLastOpt(paramDecl), tk(")")  ).ret(null, "params");
@@ -281,7 +281,7 @@ export= function PF({TT}) {
 	var funcExpr=g("funcExpr").ands("funcExprHead","compound").ret("head","body");
 	var jsonElem=g("jsonElem").ands(
 			symbol.or(literal),
-			tk(":").or(tk("=")).and(expr).ret(function (c,v) {return v;}).opt()
+			tk(":").or(tk("=")).and(expr).retN(1).opt()
 	).ret("key","value");
 	var objlit=g("objlit").ands(tk("{"), comLastOpt( jsonElem ), tk("}")).ret(null, "elems");
 	var arylit=g("arylit").ands(tk("["), comLastOpt( expr ),  tk("]")).ret(null, "elems");

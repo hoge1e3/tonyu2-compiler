@@ -265,7 +265,7 @@ export= function ExpressionParser () {
 	$.lazy = function () {
 		return Parser.create(function (st) {
 			return $.built.parse(st);
-		});
+		}).setName("(Lazy of ExpBuilt)");
 	};
 	return $;
 };

@@ -273,7 +273,7 @@ module.exports = function ExpressionParser() {
     $.lazy = function () {
         return parser_1.Parser.create(function (st) {
             return $.built.parse(st);
-        });
+        }).setName("(Lazy of ExpBuilt)");
     };
     return $;
 };

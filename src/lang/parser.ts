@@ -1,10 +1,11 @@
 //const Parser=(function () {
-type And={type:"and", first:Parser, next:Parser};
-type Or ={type:"or" , a:Parser, b:Parser};
-type Rept={type:"rept", elem:Parser};
-type Opt={type:"opt", elem:Parser};
-type Alias={type: "alias", target:Parser};
-type Struct=And|Or|Rept|Opt|Alias;
+export type And={type:"and", elems:Parser[]};
+export type Or ={type:"or" , elems:Parser[]};
+export type Rept={type:"rept", elem:Parser};
+export type Opt={type:"opt", elem:Parser};
+export type Primitive={type:"primitive", name:string};
+//export type Alias={type: "alias", target:Parser};
+export type Struct=And|Or|Rept|Opt|Primitive;//|Alias;
 const ALL=Symbol("ALL");
 type SpaceSpec =Parser|"TOKEN";
 type First={
@@ -85,7 +86,8 @@ export class Parser {// class Parser
 			}
 			return r2;
 		});
-		return res.setName("("+this.name+" "+next.name+")",{type:"and",first:this,next:this});
+		const elems=(this.struct && this.struct.type==="and" ? this.struct.elems : [this]);
+		return res.setName("("+this.name+" "+next.name+")",{type:"and", elems:[...elems,next]});
 	}
 	and(next:Parser) {// Parser.and:: Parser  -> Parser
 		const _res=this.andNoUnify(next);
@@ -213,7 +215,8 @@ export class Parser {// class Parser
 		}
 		Object.assign(tbl, this._first.tbl);
 		mergeTbl();
-		var res=Parser.fromFirst(this._first.space, tbl).setName("("+this.name+")U("+other.name+")",{type:"or",a:this, b:this});
+		const elems=(this.struct && this.struct.type==="or" ? this.struct.elems : [this]);
+		var res=Parser.fromFirst(this._first.space, tbl).setName("("+this.name+")U("+other.name+")",{type:"or",elems:[...elems,other]});
 		if (options.verboseFirst) console.log("Created unify name=" +res.name+" tbl="+dispTbl(tbl));
 		return res;
 	}
@@ -231,6 +234,7 @@ export class Parser {// class Parser
 	}
 	orNoUnify (other:Parser) {
 			var t=this;  // t:Parser
+			const elems=(this.struct && this.struct.type==="or" ? this.struct.elems : [this]);
 		var res=Parser.create(function(s){
 			var r1=t.parse(s); // r1:State
 			if (!r1.success){
@@ -239,13 +243,13 @@ export class Parser {// class Parser
 			} else {
 				return r1;
 			}
-		}).setName("("+this.name+")|("+other.name+")",{type:"or", a:this, b:this} );
+		}).setName("("+this.name+")|("+other.name+")",{type:"or", elems:[...elems, other]} );
 		return res;
 	}
 	setName (n:string, struct?: Struct|Parser) {
 		this.name=n;
 		if (struct instanceof Parser) {
-			this.struct={type:"alias", target:struct};
+			this.struct=struct.struct || {type:"primitive", name:struct.name};//{type:"alias", target:struct};
 		} else {
 			this.struct=struct;
 		}
@@ -327,9 +331,14 @@ export class Parser {// class Parser
 		return this;
 	}
 	retN (i:number) {
-		return this.ret(function () {
+		const res=this.ret(function () {
 			return arguments[i];
 		});
+		let s=this.struct;
+		if (s && s.type==="and") {
+			return res.setName(`retN(${i})`, s.elems[i]);
+		}
+		return res;
 	}
 	static fromFirst (space:SpaceSpec, tbl:FirstTbl) {
 		if (space=="TOKEN") {
@@ -497,7 +506,7 @@ export const TokensParser={
 				s.result=[t];
 			}
 			return s;
-		}).setName(type).firstTokens(type);
+		}).setName(type,{type:"primitive", name:type}).firstTokens(type);
 	},
 	parse:function (parser, tokens, global) {
 		var st=new State(tokens,global);

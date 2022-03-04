@@ -1,5 +1,5 @@
 //import * as Parser from "./parser";
-import { addRange, lazy, Parser, setRange } from "./parser";
+import { addRange, lazy, Parser, setRange, Struct } from "./parser";
 
 const Grammar=function () {
 	function trans(name:any) {
@@ -17,11 +17,11 @@ const Grammar=function () {
 	}
 	function get(name:string) {
 		if (defs[name]) return defs[name];
-		return setTypeInfo( lazy(function () {
+		return lazy(function () {
 			var r=defs[name];
 			if (!r) throw "grammar named '"+name +"' is undefined";
 			return r;
-		}).setName("(Lazy of "+name+")") , name);
+		}).setName("(Lazy of "+name+")");
 	}
 	function chain<P>(parsers:P[], f:(p:P, e:P)=>P) {
 		const [first,...rest]=parsers;
@@ -32,45 +32,56 @@ const Grammar=function () {
 		return p;
 	}
 	function buildTypes() {
+		function traverse(ti:any,visited,depth:number) {
+			//if (depth>10) return "DEPTH";
+			if (visited.has(ti)) return "LOOP";
+			visited.add(ti);
+			if (ti instanceof Parser) {
+				const st=ti.struct;
+				if (st && (st as any).name) return (st as any).name;
+				const res=st ? traverse(st, visited,depth+1) : ti.name; //ti.struct;
+				visited.delete(ti);
+				return res;
+			}
+			if (ti instanceof Array) {
+				const res=ti.map((e)=>traverse(e,visited,depth+1));
+				visited.delete(ti);
+				return res;
+
+			}
+			if (typeof ti==="object") {
+				const res={};
+				for (const k of Object.keys(ti)) {
+					res[k]=traverse(ti[k],visited,depth+1);
+				}
+				visited.delete(ti);
+				return res;
+			}
+			visited.delete(ti);
+			return ti;
+		}
 		for (const k of Object.keys(defs)) {
 			const v=defs[k];
-			console.log(k,  v.typeInfo, v.struct);
+			console.log("---",k);
+			console.dir(traverse( v.struct , new Set,0), {depth:null}  );
 		}
 	}
-	function setTypeInfo(parser, name, fields={}) {
+	/*function setTypeInfo(parser, name, fields={}) {
 		parser.typeInfo={name, fields};
 		return parser;
-	}
+	}*/
 	const defs={};
 	return comp((name:string)=>{
 		return {
+			alias(parser) {
+				defs[name]=parser;
+			},
 			ands(...parsers) {
 				parsers=parsers.map(trans);
 				const p=chain(parsers, (p,e)=>p.and(e)).tap(name);
-				p.parsers=parsers;
-				/*let p=trans(first);
-				for (const e of rest) {
-					p=p.and( trans(e) );
-				}
-				p=p.tap(name);*/
+				//p.parsers=parsers;
 				defs[name]=p;
 				return {
-					/*autoNode() {
-						var res=p.ret(function (...args) {
-							const res={type:name};
-							for (var i=0 ; i<args.length ;i++) {
-								var e=args[i];
-								var rg=Parser.setRange(e);
-								Parser.addRange(res, rg);
-								res["-element"+i]=e;
-							}
-							res.toString=function () {
-								return "("+this.type+")";
-							};
-						}).setName(name);
-						defs[name]=res;
-						return res;
-					},*/
 					ret (...args) {
 						if (args.length==0) return p;
 						if (typeof args[0]=="function") {
@@ -86,7 +97,7 @@ const Grammar=function () {
 								break;
 							}
 							names[i]=args[i];
-							fields[names[i]]=parsers[i];
+							if (names[i]) fields[names[i]]=parsers[i];
 						}
 						const res=p.ret(function (...args) {
 							var res={type:name};
@@ -105,7 +116,8 @@ const Grammar=function () {
 							};
 							return fn(res);
 						}).setName(name);
-						setTypeInfo(res,name,fields);
+						res.struct={type:"object", name, fields};
+						//setTypeInfo(res,name,fields);
 						defs[name]=res;
 						return  res;
 					}
@@ -113,9 +125,10 @@ const Grammar=function () {
 			},
 			ors(...parsers) {
 				parsers=parsers.map(trans);
-				const p=chain(parsers, (p,e)=>p.or(e)).tap(name).setName(`(ors ${name})`);
-				p.parsers=parsers;
-				defs[name]=setTypeInfo(p,"or",{});
+				const p=chain(parsers, (p,e)=>p.or(e)).setName(name);
+				//p.parsers=parsers;
+				p.struct={type:"or", name, elems:parsers};
+				defs[name]=p;//setTypeInfo(p,"or",{});
 				return defs[name];
 			}
 		};

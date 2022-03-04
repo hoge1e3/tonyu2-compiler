@@ -73,7 +73,8 @@ class Parser {
             }
             return r2;
         });
-        return res.setName("(" + this.name + " " + next.name + ")", { type: "and", first: this, next: this });
+        const elems = (this.struct && this.struct.type === "and" ? this.struct.elems : [this]);
+        return res.setName("(" + this.name + " " + next.name + ")", { type: "and", elems: [...elems, next] });
     }
     and(next) {
         const _res = this.andNoUnify(next);
@@ -221,7 +222,8 @@ class Parser {
         }
         Object.assign(tbl, this._first.tbl);
         mergeTbl();
-        var res = Parser.fromFirst(this._first.space, tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", a: this, b: this });
+        const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
+        var res = Parser.fromFirst(this._first.space, tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", elems: [...elems, other] });
         if (options.verboseFirst)
             console.log("Created unify name=" + res.name + " tbl=" + dispTbl(tbl));
         return res;
@@ -241,6 +243,7 @@ class Parser {
     }
     orNoUnify(other) {
         var t = this; // t:Parser
+        const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
         var res = Parser.create(function (s) {
             var r1 = t.parse(s); // r1:State
             if (!r1.success) {
@@ -250,13 +253,13 @@ class Parser {
             else {
                 return r1;
             }
-        }).setName("(" + this.name + ")|(" + other.name + ")", { type: "or", a: this, b: this });
+        }).setName("(" + this.name + ")|(" + other.name + ")", { type: "or", elems: [...elems, other] });
         return res;
     }
     setName(n, struct) {
         this.name = n;
         if (struct instanceof Parser) {
-            this.struct = { type: "alias", target: struct };
+            this.struct = struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
         }
         else {
             this.struct = struct;
@@ -347,9 +350,14 @@ class Parser {
         return this;
     }
     retN(i) {
-        return this.ret(function () {
+        const res = this.ret(function () {
             return arguments[i];
         });
+        let s = this.struct;
+        if (s && s.type === "and") {
+            return res.setName(`retN(${i})`, s.elems[i]);
+        }
+        return res;
     }
     static fromFirst(space, tbl) {
         if (space == "TOKEN") {
@@ -523,7 +531,7 @@ exports.TokensParser = {
                 s.result = [t];
             }
             return s;
-        }).setName(type).firstTokens(type);
+        }).setName(type, { type: "primitive", name: type }).firstTokens(type);
     },
     parse: function (parser, tokens, global) {
         var st = new State(tokens, global);
