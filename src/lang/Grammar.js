@@ -21,14 +21,14 @@ const Grammar = function () {
             return defs[name];
         if (lazyDefs[name])
             return lazyDefs[name];
-        const res = parser_1.lazy(function () {
+        const res = (0, parser_1.lazy)(function () {
             const r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
             return r;
         }).setName("(Lazy of " + name + ")", { type: "lazy", name });
         lazyDefs[name] = res;
-        typeInfos.set(res, { name, struct: "lazy" });
+        typeInfos.set(res, { name, struct: { type: "lazy", name } });
         return res;
     }
     function chain(parsers, f) {
@@ -51,6 +51,8 @@ const Grammar = function () {
                     if (ti)
                         return ti.name;
                     const st = val.struct;
+                    if (st.type === "lazy")
+                        return st.name;
                     const res = st ? traverse(st, visited) : val.name; //ti.struct;
                     return res;
                 }
@@ -61,8 +63,6 @@ const Grammar = function () {
                 if (typeof val === "object") {
                     const res = {};
                     const keys = Object.keys(val);
-                    if (keys.length === 2 && val.type === "lazy" && typeof val.name === "string")
-                        return val.name;
                     for (const k of keys) {
                         res[k] = traverse(val[k], visited);
                     }
@@ -123,8 +123,8 @@ const Grammar = function () {
                             res[Grammar.SUBELEMENTS] = [];
                             for (var i = 0; i < args.length; i++) {
                                 var e = args[i];
-                                var rg = parser_1.setRange(e);
-                                parser_1.addRange(res, rg);
+                                var rg = (0, parser_1.setRange)(e);
+                                (0, parser_1.addRange)(res, rg);
                                 if (names[i]) {
                                     res[names[i]] = e;
                                 }

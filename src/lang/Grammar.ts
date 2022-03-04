@@ -24,7 +24,7 @@ const Grammar=function () {
 			return r;
 		}).setName("(Lazy of "+name+")", {type:"lazy",name});
 		lazyDefs[name]=res;
-		typeInfos.set(res,{name,struct:"lazy"});
+		typeInfos.set(res,{name,struct:{type:"lazy",name}});
 		return res;
 	}
 	function chain<P>(parsers:P[], f:(p:P, e:P)=>P) {
@@ -36,7 +36,7 @@ const Grammar=function () {
 		return p;
 	}
 	function buildTypes() {
-		function traverse(val:any,visited/*,depth:number*/) {
+		function traverse(val:any,visited:Set<any>/*,depth:number*/) {
 			//if (depth>10) return "DEPTH";
 			if (visited.has(val)) return "LOOP";
 			try {
@@ -45,18 +45,17 @@ const Grammar=function () {
 					const ti=typeInfos.get(val);
 					if (ti) return ti.name;
 					const st=val.struct;
+					if (st.type==="lazy") return st.name;
 					const res=st ? traverse(st, visited) : val.name; //ti.struct;
 					return res;
 				}
 				if (val instanceof Array) {
 					const res=val.map((e)=>traverse(e,visited));
 					return res;
-
 				}
 				if (typeof val==="object") {
 					const res={};
 					const keys=Object.keys(val);
-					if (keys.length===2 && val.type==="lazy" && typeof val.name==="string") return val.name;
 					for (const k of keys) {
 						res[k]=traverse(val[k],visited);
 					}
@@ -77,7 +76,7 @@ const Grammar=function () {
 	}
 	type TypeInfo={
 		name:string,
-		struct: Struct|{type:"object", fields:{[key:string]:Parser}}|"lazy"
+		struct: Struct|{type:"object", fields:{[key:string]:Parser}}
 	}
 	const typeInfos=new WeakMap<Parser, TypeInfo>();
 	/*function setTypeInfo(parser, name, fields={}) {
