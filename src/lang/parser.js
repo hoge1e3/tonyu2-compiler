@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = void 0;
-const ALL = Symbol("ALL");
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = exports.ALL = void 0;
+exports.ALL = Symbol("ALL");
 const options = { traceTap: false, optimizeFirst: true, profile: false,
     verboseFirst: false, traceFirstTbl: false, traceToken: false };
 function dispTbl(tbl) {
@@ -89,8 +89,8 @@ class Parser {
         for (var c in tbl) {
             ntbl[c] = tbl[c].andNoUnify(next);
         }
-        if (tbl[ALL])
-            ntbl[ALL] = tbl[ALL].andNoUnify(next);
+        if (tbl[exports.ALL])
+            ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next);
         const res = Parser.fromFirst(this._first.space, ntbl);
         res.setName("(" + this.name + " >> " + next.name + ")", _res);
         if (options.verboseFirst) {
@@ -152,7 +152,7 @@ class Parser {
             //        		this._first={space: space, chars:ct};
         }
         else if (ct == null) {
-            return Parser.fromFirst(space, { [ALL]: this }).setName("(fst " + this.name + ")", this);
+            return Parser.fromFirst(space, { [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
             //this._first={space:space, tbl:{ALL:this}};
         }
         else if (typeof ct == "object") {
@@ -172,7 +172,7 @@ class Parser {
             }
         }
         else {
-            tbl[ALL] = this;
+            tbl[exports.ALL] = this;
         }
         return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
     }
@@ -202,8 +202,8 @@ class Parser {
                 keys[k] = 1;
             }
             //delete keys[ALL];
-            if (tbl[ALL] || t2[ALL]) {
-                tbl[ALL] = or(tbl[ALL], t2[ALL]);
+            if (tbl[exports.ALL] || t2[exports.ALL]) {
+                tbl[exports.ALL] = or(tbl[exports.ALL], t2[exports.ALL]);
             }
             for (let k in keys) {
                 //if (d) console.log("k="+k);
@@ -213,10 +213,10 @@ class Parser {
                     tbl[k] = or(tbl[k], t2[k]);
                 }
                 else if (tbl[k] && !t2[k]) {
-                    tbl[k] = or(tbl[k], t2[ALL]);
+                    tbl[k] = or(tbl[k], t2[exports.ALL]);
                 }
                 else if (!tbl[k] && t2[k]) {
-                    tbl[k] = or(tbl[ALL], t2[k]);
+                    tbl[k] = or(tbl[exports.ALL], t2[k]);
                 }
             }
         }
@@ -372,8 +372,8 @@ class Parser {
             if (tbl[f]) {
                 return tbl[f].parse(s);
             }
-            if (tbl[ALL])
-                return tbl[ALL].parse(s);
+            if (tbl[exports.ALL])
+                return tbl[exports.ALL].parse(s);
             s.success = false;
             return s;
         });
@@ -392,8 +392,8 @@ class Parser {
             if (f != null && tbl[f]) {
                 return tbl[f].parse(s);
             }
-            if (tbl[ALL])
-                return tbl[ALL].parse(s);
+            if (tbl[exports.ALL])
+                return tbl[exports.ALL].parse(s);
             s.success = false;
             return s;
         });
@@ -550,17 +550,22 @@ exports.TokensParser = {
 };
 //$.TokensParser=TokensParser;
 function lazy(pf) {
-    let p;
-    const self = Parser.create(function (st) {
-        if (!p) {
-            p = pf();
-            if (!p)
+    //let p:Parser;
+    function resolve() {
+        const l = self._lazy;
+        if (!l.resolved) {
+            l.resolved = pf();
+            if (!l.resolved)
                 throw new Error(pf + " returned null!");
             //if (!self.struct) self.struct=p.struct;
         }
-        this.name = pf.name;
-        return p.parse(st);
+        return l.resolved;
+    }
+    const self = Parser.create(function (st) {
+        //this.name=pf.name;
+        return resolve().parse(st);
     }).setName("LZ");
+    self._lazy = { resolve };
     return self;
 }
 exports.lazy = lazy;

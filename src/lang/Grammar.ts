@@ -1,5 +1,5 @@
 //import * as Parser from "./parser";
-import { addRange, lazy, Parser, setRange, Struct } from "./parser";
+import { addRange, ALL, lazy, Parser, setRange, Struct } from "./parser";
 
 const Grammar=function () {
 	function trans(name:any) {
@@ -35,43 +35,65 @@ const Grammar=function () {
 		}
 		return p;
 	}
-	function buildTypes() {
-		function traverse(val:any,visited:Set<any>/*,depth:number*/) {
-			//if (depth>10) return "DEPTH";
-			if (visited.has(val)) return "LOOP";
-			try {
-				visited.add(val);
-				if (val instanceof Parser) {
-					const ti=typeInfos.get(val);
-					if (ti) return ti.name;
-					const st=val.struct;
-					if (st && st.type==="lazy") return st.name;
-					const res=st ? traverse(st, visited) : val.name; //ti.struct;
-					return res;
-				}
-				if (val instanceof Array) {
-					const res=val.map((e)=>traverse(e,visited));
-					return res;
-				}
-				if (typeof val==="object") {
-					const res={};
-					const keys=Object.keys(val);
-					for (const k of keys) {
-						res[k]=traverse(val[k],visited);
-					}
-					return res;
-				}
-				return val;
-
-			} finally {
-				visited.delete(val);
-
+	function traverse(val:any,visited:Set<any>/*,depth:number*/) {
+		//if (depth>10) return "DEPTH";
+		if (visited.has(val)) return "LOOP";
+		try {
+			visited.add(val);
+			if (val instanceof Parser) {
+				const ti=typeInfos.get(val);
+				if (ti) return ti.name;
+				const st=val.struct;
+				if (st && st.type==="lazy") return st.name;
+				const res=st ? traverse(st, visited) : val.name; //ti.struct;
+				return res;
 			}
+			if (val instanceof Array) {
+				const res=val.map((e)=>traverse(e,visited));
+				return res;
+			}
+			if (typeof val==="object") {
+				const res={};
+				const keys=Object.keys(val);
+				for (const k of keys) {
+					res[k]=traverse(val[k],visited);
+				}
+				return res;
+			}
+			return val;
+
+		} finally {
+			visited.delete(val);
 		}
+	}
+	function buildTypes() {
 		for (const k of Object.keys(defs)) {
 			const v=defs[k];
 			console.log("---",k);
 			console.dir(traverse( typeInfos.get(v) , new Set), {depth:null}  );
+		}
+	}
+	function checkFirstTbl() {
+		for (const k of Object.keys(defs)) {
+			const v=defs[k];
+			console.log("---",k);
+			if (v._first) {
+				const tbl=v._first.tbl;
+				for (let f of Object.keys(tbl)) {
+					let p=tbl[f];
+					if (p._lazy) p=p._lazy.resolve();
+					//console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
+					console.log(f, p.name);
+				}
+				if (tbl[ALL]) {
+					let p=tbl[ALL];
+					if (p._lazy) p=p._lazy.resolve();
+					//console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
+					console.log("ALL", p.name);				
+				}
+			} else {
+				console.log("NO FIRST TBL");
+			}
 		}
 	}
 	type TypeInfo={
@@ -148,7 +170,7 @@ const Grammar=function () {
 			}
 		};
 		//return $$;
-	}, {defs,get,buildTypes});
+	}, {defs,get,buildTypes,checkFirstTbl});
 	//return $;
 };
 Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");

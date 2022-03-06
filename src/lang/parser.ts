@@ -7,7 +7,7 @@ export type Primitive={type:"primitive", name:string};
 export type Lazy={type:"lazy", name:string};
 //export type Alias={type: "alias", target:Parser};
 export type Struct=And|Or|Rept|Opt|Primitive|Lazy;//|Alias;
-const ALL=Symbol("ALL");
+export const ALL=Symbol("ALL");
 type SpaceSpec =Parser|"TOKEN";
 type First={
 	space: SpaceSpec,
@@ -50,6 +50,10 @@ export class Parser {// class Parser
 	struct: Struct;
 	name?: string;
 	_first?: First;
+	_lazy?: {
+		resolve: ()=>Parser,
+		resolved?: Parser
+	};
 	// Parser.parse:: State->State
 	static create(parserFunc:ParseFunc) { return create(parserFunc);}
 	constructor (parseFunc:ParseFunc){
@@ -526,16 +530,21 @@ export const TokensParser={
 };
 //$.TokensParser=TokensParser;
 export function lazy(pf:()=>Parser):Parser {
-	let p:Parser;
-	const self=Parser.create(function (st) {
-		if (!p) {
-			p=pf();
-			if (!p) throw new Error(pf+" returned null!");
+	//let p:Parser;
+	function resolve() {
+		const l=self._lazy!;
+		if (!l.resolved) {
+			l.resolved=pf();
+			if (!l.resolved) throw new Error(pf+" returned null!");
 			//if (!self.struct) self.struct=p.struct;
 		}
-		this.name=pf.name;
-		return p.parse(st);
+		return l.resolved;
+	}
+	const self=Parser.create(function (st) {
+		//this.name=pf.name;
+		return resolve().parse(st);
 	}).setName("LZ");
+	self._lazy={resolve};
 	return self;
 }
 export function addRange(res, newr) {

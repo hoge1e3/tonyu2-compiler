@@ -338,5 +338,6 @@ module.exports = function PF({ TT }) {
     };*/
     $.extension = "tonyu";
     g.buildTypes();
+    g.checkFirstTbl();
     return $;
 };
