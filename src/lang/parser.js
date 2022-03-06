@@ -126,6 +126,8 @@ class Parser {
         for (var c in tbl) {
             ntbl[c] = tbl[c].retNoUnify(next);
         }
+        if (tbl[exports.ALL])
+            ntbl[exports.ALL] = tbl[exports.ALL].retNoUnify(next);
         const res = Parser.fromFirst(this._first.space, ntbl);
         res.setName("(" + this.name + " >>= " + next.name + ")");
         if (options.verboseFirst) {

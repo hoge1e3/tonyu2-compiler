@@ -235,6 +235,13 @@ Tonyu.klass.define({
           _this.update();
           
         }
+        _this.x=0;for (; _this.x<3 ; _this.x++) {
+          Tonyu.checkLoop();
+          {
+            console.log(_this.x);
+            _this.update();
+          }
+        }
       },
       fiber$main :function _trc_Preya_f_main(_thread) {
         "use strict";
@@ -266,6 +273,19 @@ Tonyu.klass.define({
               
               __pc=2;break;
             case 5     :
+              
+              _this.x=0;
+            case 6:
+              if (!(_this.x<3)) { __pc=9     ; break; }
+              console.log(_this.x);
+              _this.fiber$update(_thread);
+              __pc=7;return;
+            case 7:
+              
+            case 8     :
+              _this.x++;
+              __pc=6;break;
+            case 9     :
               
               _thread.exit(_this);return;
             }
