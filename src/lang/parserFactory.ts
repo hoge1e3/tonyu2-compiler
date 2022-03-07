@@ -13,6 +13,7 @@ import TError from "../runtime/TError";
 import R from "../lib/R";
 import ExpressionParser from "./ExpressionParser2";
 import Grammar from "./Grammar";
+import { ALL } from "./parser";
 
 /*const Grammar=require("./Grammar");
 const IndentBuffer=require("./IndentBuffer");
@@ -84,16 +85,17 @@ export= function PF({TT}) {
 		}).setName(`comLastOpt ${p.name}`,{type:"rept", elem:p});
 	}
 	var e=ExpressionParser() ;
-	var arrayElem=g("arrayElem").ands(tk("["), e.lazy() , tk("]")).ret(null,"subscript");
-	var argList=g("argList").ands(tk("("), comLastOpt(e.lazy()) , tk(")")).ret(null,"args");
+	var explz=e.lazy().firstTokens(ALL);
+	var arrayElem=g("arrayElem").ands(tk("["), explz , tk("]")).ret(null,"subscript");
+	var argList=g("argList").ands(tk("("), comLastOpt(explz) , tk(")")).ret(null,"args");
 	var member=g("member").ands(tk(".") , symresv ).ret(null,     "name" );
-	var parenExpr = g("parenExpr").ands(tk("("), e.lazy() , tk(")")).ret(null,"expr");
+	var parenExpr = g("parenExpr").ands(tk("("), explz , tk(")")).ret(null,"expr");
 	var varAccess = g("varAccess").ands(symbol).ret("name");
 	var funcExpr_l=G("funcExpr").firstTokens(["function","\\"]);
 	var funcExprArg=g("funcExprArg").ands(funcExpr_l).ret("obj");
 	var objlit_l=G("objlit").firstTokens("{");
 	var objlitArg=g("objlitArg").ands(objlit_l).ret("obj");
-	var objOrFuncArg=objlitArg.or(funcExprArg);
+	var objOrFuncArg=g("objOrFuncArg").ors(objlitArg, funcExprArg);
 	function genCallBody(argList, oof) {
 		var res=[];
 		if (argList && !argList.args) {
@@ -113,11 +115,15 @@ export= function PF({TT}) {
 		});
 		return res;
 	}
-	var callBody=argList.and(objOrFuncArg.rep0()).ret(function(a,oof) {
+	const callBodyWithArgList=argList.and(objOrFuncArg.rep0()).ret(function(a,oof) {
 		return genCallBody(a,oof);
-	}).or(objOrFuncArg.rep1().ret(function (oof) {
+	});
+	g("callBodyWithArgList").alias(callBodyWithArgList);
+	const callBodyWithoutArgList=objOrFuncArg.rep1().ret(function (oof) {
 		return genCallBody(null,oof);
-	})).setName("callBody");
+	});
+	g("callBodyWithoutArgList").alias(callBodyWithoutArgList);
+	const callBody=g("callBody").ors(callBodyWithArgList,callBodyWithoutArgList);//or().setName("callBody");
 	//var callBodyOld=argList.or(objlitArg);
 	var call=g("call").ands( callBody ).ret("args");
 	var scall=g("scall").ands( callBody ).ret("args");//supercall
@@ -222,10 +228,11 @@ export= function PF({TT}) {
 	/*e.mkPostfix(function (p) {
 		return {type:"postfix", expr:p};
 	});*/
-	const expr=e.build().setName("expr");//.profile();
+	const expr=e.build().setName("expr").firstTokens(ALL);//.profile();
 	g("elem").alias(e.getElement());
+	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };
-	var stmt=G("stmt").firstTokens();
+	var stmt=G("stmt").firstTokens(ALL);
 	var exprstmt=g("exprstmt").ands(expr,tk(";")).ret("expr");
 	g("compound").ands(tk("{"), stmt.rep0(),tk("}")).ret(null,"stmts") ;
 	var elseP=tk("else").and(stmt).retN(1);

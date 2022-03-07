@@ -165,16 +165,17 @@ class Parser {
     firstTokens(tokens) {
         if (!options.optimizeFirst)
             return this;
-        if (typeof tokens == "string")
-            tokens = [tokens];
         const tbl = {};
-        if (tokens) {
-            for (const token of tokens) {
-                tbl[token] = this;
-            }
+        if (typeof tokens == "symbol") {
+            if (tokens !== exports.ALL)
+                throw new Error("except ALL not allowed ");
+            tbl[exports.ALL] = this;
         }
         else {
-            tbl[exports.ALL] = this;
+            const tka = (typeof tokens == "string" ? [tokens] : tokens);
+            for (const token of tka) {
+                tbl[token] = this;
+            }
         }
         return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
     }
@@ -298,7 +299,19 @@ class Parser {
                 }
             }
         });
-        //if (min>0) res._first=p._first;
+        if (min > 0 && p._first) {
+            const olf = p._first;
+            const nf = { space: olf.space, tbl: {} };
+            if (olf.tbl[exports.ALL]) {
+                nf.tbl[exports.ALL] = res;
+            }
+            else {
+                for (let k in olf.tbl) {
+                    nf.tbl[k] = res;
+                }
+            }
+            res._first = nf;
+        }
         return res.setName("(" + p.name + " * " + min + ")", { type: "rept", elem: p });
     }
     rep0() { return this.repN(0); }
