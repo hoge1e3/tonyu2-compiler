@@ -556,7 +556,7 @@ module.exports = class Builder {
 "use strict";
 // parser.js の補助ライブラリ．式の解析を担当する
 const parser_1 = require("./parser");
-module.exports = function ExpressionParser() {
+module.exports = function ExpressionParser(name = "Expression") {
     var $ = {};
     var EXPSTAT = "EXPSTAT";
     //  first 10     *  +  <>  &&  ||  =     0  later
@@ -676,7 +676,7 @@ module.exports = function ExpressionParser() {
         //prefixOrElement.build();
         $.built = parser_1.Parser.create(function (st) {
             return parse(0, st);
-        }).setName("ExpBuilt");
+        }).setName(name);
         return $.built;
     };
     function dump(st, lbl) {
@@ -828,7 +828,7 @@ module.exports = function ExpressionParser() {
     $.lazy = function () {
         return parser_1.Parser.create(function (st) {
             return $.built.parse(st);
-        });
+        }).setName(name, { type: "lazy", name });
     };
     return $;
 };
@@ -855,12 +855,17 @@ const Grammar = function () {
     function get(name) {
         if (defs[name])
             return defs[name];
-        return setTypeInfo((0, parser_1.lazy)(function () {
-            var r = defs[name];
+        if (lazyDefs[name])
+            return lazyDefs[name];
+        const res = (0, parser_1.lazy)(function () {
+            const r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
             return r;
-        }).setName("(Lazy of " + name + ")"), name);
+        }).setName("(Lazy of " + name + ")", { type: "lazy", name });
+        lazyDefs[name] = res;
+        typeInfos.set(res, { name, struct: { type: "lazy", name } });
+        return res;
     }
     function chain(parsers, f) {
         const [first, ...rest] = parsers;
@@ -870,71 +875,92 @@ const Grammar = function () {
         }
         return p;
     }
-    function buildTypes() {
-        function traverse(ti, visited, depth) {
-            if (depth > 5)
-                return "DEPTH";
-            if (visited.has(ti))
-                return "LOOP";
-            visited.add(ti);
-            if (ti instanceof parser_1.Parser) {
-                const sti = ti.typeInfo;
-                if (sti)
-                    return sti.name;
-                const res = ti.struct ? traverse(ti.struct, visited, depth + 1) : ti.name; //ti.struct;
-                visited.delete(ti);
+    function traverse(val, visited /*,depth:number*/) {
+        //if (depth>10) return "DEPTH";
+        if (visited.has(val))
+            return "LOOP";
+        try {
+            visited.add(val);
+            if (val instanceof parser_1.Parser) {
+                const ti = typeInfos.get(val);
+                if (ti)
+                    return ti.name;
+                const st = val.struct;
+                if (st && st.type === "lazy")
+                    return st.name;
+                const res = st ? traverse(st, visited) : val.name; //ti.struct;
                 return res;
             }
-            if (typeof ti === "object") {
+            if (val instanceof Array) {
+                const res = val.map((e) => traverse(e, visited));
+                return res;
+            }
+            if (typeof val === "object") {
                 const res = {};
-                for (const k of Object.keys(ti)) {
-                    res[k] = traverse(ti[k], visited, depth + 1);
+                const keys = Object.keys(val);
+                for (const k of keys) {
+                    res[k] = traverse(val[k], visited);
                 }
-                visited.delete(ti);
                 return res;
             }
-            visited.delete(ti);
-            return ti;
+            return val;
         }
+        finally {
+            visited.delete(val);
+        }
+    }
+    function buildTypes() {
         for (const k of Object.keys(defs)) {
             const v = defs[k];
-            console.log(k, traverse(v.typeInfo, new Set, 0), v.struct);
+            console.log("---", k);
+            console.dir(traverse(typeInfos.get(v), new Set), { depth: null });
         }
     }
-    function setTypeInfo(parser, name, fields = {}) {
-        parser.typeInfo = { name, fields };
-        return parser;
+    function checkFirstTbl() {
+        for (const k of Object.keys(defs)) {
+            const v = defs[k];
+            console.log("---", k);
+            if (v._first) {
+                const tbl = v._first.tbl;
+                for (let f of Object.keys(tbl)) {
+                    let p = tbl[f];
+                    if (p._lazy)
+                        p = p._lazy.resolve();
+                    //console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
+                    console.log(f, p.name);
+                }
+                if (tbl[parser_1.ALL]) {
+                    let p = tbl[parser_1.ALL];
+                    if (p._lazy)
+                        p = p._lazy.resolve();
+                    //console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
+                    console.log("ALL", p.name);
+                }
+            }
+            else {
+                console.log("NO FIRST TBL");
+            }
+        }
     }
+    const typeInfos = new WeakMap();
+    /*function setTypeInfo(parser, name, fields={}) {
+        parser.typeInfo={name, fields};
+        return parser;
+    }*/
     const defs = {};
+    const lazyDefs = {};
     return comp((name) => {
         return {
+            alias(parser) {
+                defs[name] = parser;
+                typeInfos.set(parser, { name, struct: parser.struct });
+            },
             ands(...parsers) {
                 parsers = parsers.map(trans);
                 const p = chain(parsers, (p, e) => p.and(e)).tap(name);
-                p.parsers = parsers;
-                /*let p=trans(first);
-                for (const e of rest) {
-                    p=p.and( trans(e) );
-                }
-                p=p.tap(name);*/
+                //p.parsers=parsers;
                 defs[name] = p;
                 return {
-                    /*autoNode() {
-                        var res=p.ret(function (...args) {
-                            const res={type:name};
-                            for (var i=0 ; i<args.length ;i++) {
-                                var e=args[i];
-                                var rg=Parser.setRange(e);
-                                Parser.addRange(res, rg);
-                                res["-element"+i]=e;
-                            }
-                            res.toString=function () {
-                                return "("+this.type+")";
-                            };
-                        }).setName(name);
-                        defs[name]=res;
-                        return res;
-                    },*/
                     ret(...args) {
                         if (args.length == 0)
                             return p;
@@ -971,7 +997,8 @@ const Grammar = function () {
                             };
                             return fn(res);
                         }).setName(name);
-                        setTypeInfo(res, name, fields);
+                        typeInfos.set(res, { name, struct: { type: "object", fields } });
+                        //setTypeInfo(res,name,fields);
                         defs[name] = res;
                         return res;
                     }
@@ -979,14 +1006,15 @@ const Grammar = function () {
             },
             ors(...parsers) {
                 parsers = parsers.map(trans);
-                const p = chain(parsers, (p, e) => p.or(e)).tap(name).setName(`(ors ${name})`);
-                p.parsers = parsers;
-                defs[name] = setTypeInfo(p, "or", {});
+                const p = chain(parsers, (p, e) => p.or(e)).setName(name);
+                //p.parsers=parsers;
+                typeInfos.set(p, { name, struct: { type: "or", elems: parsers } });
+                defs[name] = p; //setTypeInfo(p,"or",{});
                 return defs[name];
             }
         };
         //return $$;
-    }, { defs, get, buildTypes });
+    }, { defs, get, buildTypes, checkFirstTbl });
     //return $;
 };
 Grammar.SUBELEMENTS = Symbol("[SUBELEMENTS]");
@@ -3951,8 +3979,8 @@ module.exports = Tonyu2Lang;
 },{"./parserFactory":19,"./tonyu2_token":24}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = void 0;
-const ALL = Symbol("ALL");
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = exports.ALL = void 0;
+exports.ALL = Symbol("ALL");
 const options = { traceTap: false, optimizeFirst: true, profile: false,
     verboseFirst: false, traceFirstTbl: false, traceToken: false };
 function dispTbl(tbl) {
@@ -4040,8 +4068,8 @@ class Parser {
         for (var c in tbl) {
             ntbl[c] = tbl[c].andNoUnify(next);
         }
-        if (tbl[ALL])
-            ntbl[ALL] = tbl[ALL].andNoUnify(next);
+        if (tbl[exports.ALL])
+            ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next);
         const res = Parser.fromFirst(this._first.space, ntbl);
         res.setName("(" + this.name + " >> " + next.name + ")", _res);
         if (options.verboseFirst) {
@@ -4077,6 +4105,8 @@ class Parser {
         for (var c in tbl) {
             ntbl[c] = tbl[c].retNoUnify(next);
         }
+        if (tbl[exports.ALL])
+            ntbl[exports.ALL] = tbl[exports.ALL].retNoUnify(next);
         const res = Parser.fromFirst(this._first.space, ntbl);
         res.setName("(" + this.name + " >>= " + next.name + ")");
         if (options.verboseFirst) {
@@ -4103,7 +4133,7 @@ class Parser {
             //        		this._first={space: space, chars:ct};
         }
         else if (ct == null) {
-            return Parser.fromFirst(space, { [ALL]: this }).setName("(fst " + this.name + ")", this);
+            return Parser.fromFirst(space, { [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
             //this._first={space:space, tbl:{ALL:this}};
         }
         else if (typeof ct == "object") {
@@ -4123,7 +4153,7 @@ class Parser {
             }
         }
         else {
-            tbl[ALL] = this;
+            tbl[exports.ALL] = this;
         }
         return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
     }
@@ -4153,8 +4183,8 @@ class Parser {
                 keys[k] = 1;
             }
             //delete keys[ALL];
-            if (tbl[ALL] || t2[ALL]) {
-                tbl[ALL] = or(tbl[ALL], t2[ALL]);
+            if (tbl[exports.ALL] || t2[exports.ALL]) {
+                tbl[exports.ALL] = or(tbl[exports.ALL], t2[exports.ALL]);
             }
             for (let k in keys) {
                 //if (d) console.log("k="+k);
@@ -4164,10 +4194,10 @@ class Parser {
                     tbl[k] = or(tbl[k], t2[k]);
                 }
                 else if (tbl[k] && !t2[k]) {
-                    tbl[k] = or(tbl[k], t2[ALL]);
+                    tbl[k] = or(tbl[k], t2[exports.ALL]);
                 }
                 else if (!tbl[k] && t2[k]) {
-                    tbl[k] = or(tbl[ALL], t2[k]);
+                    tbl[k] = or(tbl[exports.ALL], t2[k]);
                 }
             }
         }
@@ -4210,7 +4240,7 @@ class Parser {
     setName(n, struct) {
         this.name = n;
         if (struct instanceof Parser) {
-            this.struct = struct.struct; //{type:"alias", target:struct};
+            this.struct = this.struct || struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
         }
         else {
             this.struct = struct;
@@ -4323,8 +4353,8 @@ class Parser {
             if (tbl[f]) {
                 return tbl[f].parse(s);
             }
-            if (tbl[ALL])
-                return tbl[ALL].parse(s);
+            if (tbl[exports.ALL])
+                return tbl[exports.ALL].parse(s);
             s.success = false;
             return s;
         });
@@ -4343,8 +4373,8 @@ class Parser {
             if (f != null && tbl[f]) {
                 return tbl[f].parse(s);
             }
-            if (tbl[ALL])
-                return tbl[ALL].parse(s);
+            if (tbl[exports.ALL])
+                return tbl[exports.ALL].parse(s);
             s.success = false;
             return s;
         });
@@ -4501,15 +4531,23 @@ exports.TokensParser = {
 };
 //$.TokensParser=TokensParser;
 function lazy(pf) {
-    var p = null;
-    return Parser.create(function (st) {
-        if (!p)
-            p = pf();
-        if (!p)
-            throw pf + " returned null!";
-        this.name = pf.name;
-        return p.parse(st);
+    //let p:Parser;
+    function resolve() {
+        const l = self._lazy;
+        if (!l.resolved) {
+            l.resolved = pf();
+            if (!l.resolved)
+                throw new Error(pf + " returned null!");
+            //if (!self.struct) self.struct=p.struct;
+        }
+        return l.resolved;
+    }
+    const self = Parser.create(function (st) {
+        //this.name=pf.name;
+        return resolve().parse(st);
     }).setName("LZ");
+    self._lazy = { resolve };
+    return self;
 }
 exports.lazy = lazy;
 function addRange(res, newr) {
@@ -4612,7 +4650,7 @@ module.exports = function PF({ TT }) {
         if (isNaN(n.value))
             throw new Error("No value for " + disp(n));
         return n;
-    });
+    }).setName("numberLiteral");
     var symbol = tk("symbol");
     var symresv = tk("symbol");
     for (var resvk in TT.reserved) {
@@ -4649,11 +4687,11 @@ module.exports = function PF({ TT }) {
     var assign = tk("=");
     var literal = tk("literal");
     var regex = tk("regex");
-    function retF(n) {
+    /*function retF(n) {
         return function () {
             return arguments[n];
         };
-    }
+    }*/
     function comLastOpt(p) {
         return p.sep0(tk(","), true).and(tk(",").opt()).ret(function (list, opt) {
             return list;
@@ -4693,7 +4731,7 @@ module.exports = function PF({ TT }) {
         return genCallBody(a, oof);
     }).or(objOrFuncArg.rep1().ret(function (oof) {
         return genCallBody(null, oof);
-    }));
+    })).setName("callBody");
     //var callBodyOld=argList.or(objlitArg);
     var call = g("call").ands(callBody).ret("args");
     var scall = g("scall").ands(callBody).ret("args"); //supercall
@@ -4707,7 +4745,7 @@ module.exports = function PF({ TT }) {
         or(tk("arguments")).ret(function (t) {
         t.type = "reservedConst";
         return t;
-    });
+    }).setName("reservedConst");
     e.element(num);
     e.element(reservedConst);
     e.element(regex);
@@ -4796,11 +4834,12 @@ module.exports = function PF({ TT }) {
         return {type:"postfix", expr:p};
     });*/
     const expr = e.build().setName("expr"); //.profile();
+    g("elem").alias(e.getElement());
     //var retF=function (i) { return function (){ return arguments[i];}; };
     var stmt = G("stmt").firstTokens();
     var exprstmt = g("exprstmt").ands(expr, tk(";")).ret("expr");
     g("compound").ands(tk("{"), stmt.rep0(), tk("}")).ret(null, "stmts");
-    var elseP = tk("else").and(stmt).ret(retF(1));
+    var elseP = tk("else").and(stmt).retN(1);
     var returns = g("return").ands(tk("return"), expr.opt(), tk(";")).ret(null, "value");
     var ifs = g("if").ands(tk("if"), tk("("), expr, tk(")"), stmt, elseP.opt()).ret(null, null, "cond", null, "then", "_else");
     /*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
@@ -4845,7 +4884,7 @@ module.exports = function PF({ TT }) {
     // ------- end of stmts
     g("funcExprHead").ands(tk("function").or(tk("\\")), symbol.opt(), paramDecls.opt()).ret(null, "name", "params");
     var funcExpr = g("funcExpr").ands("funcExprHead", "compound").ret("head", "body");
-    var jsonElem = g("jsonElem").ands(symbol.or(literal), tk(":").or(tk("=")).and(expr).ret(function (c, v) { return v; }).opt()).ret("key", "value");
+    var jsonElem = g("jsonElem").ands(symbol.or(literal), tk(":").or(tk("=")).and(expr).retN(1).opt()).ret("key", "value");
     var objlit = g("objlit").ands(tk("{"), comLastOpt(jsonElem), tk("}")).ret(null, "elems");
     var arylit = g("arylit").ands(tk("["), comLastOpt(expr), tk("]")).ret(null, "elems");
     var ext = g("extends").ands(tk("extends"), symbol.or(tk("null")), tk(";")).
@@ -4898,6 +4937,7 @@ module.exports = function PF({ TT }) {
     };*/
     $.extension = "tonyu";
     g.buildTypes();
+    g.checkFirstTbl();
     return $;
 };
 
