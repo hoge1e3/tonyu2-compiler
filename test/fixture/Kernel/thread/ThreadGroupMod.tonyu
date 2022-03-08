@@ -1,0 +1,16 @@
+extends null;
+
+\isDeadThreadGroup() {
+    return _isDeadThreadGroup=_isDeadThreadGroup ||
+    (_threadGroup && (
+      _threadGroup.objectPoolAge!=tGrpObjectPoolAge ||
+      _threadGroup.isDeadThreadGroup()
+    ));
+}
+\setThreadGroup(g) {
+    _threadGroup=g;
+    tGrpObjectPoolAge=g.objectPoolAge;
+}
+\killThreadGroup() {
+    _isDeadThreadGroup=true;
+}

@@ -36,6 +36,18 @@ function nc(v, name) {
 class ParserContext {
     constructor(space) {
         this.space = space;
+        this.optEmpty = this.create((s) => {
+            s = s.clone();
+            s.success = true;
+            s.result = [null]; // opt returns null
+            return s;
+        }).setName("optEmpty"); //,{type:"empty"});*/
+        this.repEmpty = this.create((s) => {
+            s = s.clone();
+            s.success = true;
+            s.result = [[]]; // rep0 returns empty array
+            return s;
+        }).setName("repEmpty"); //,{type:"empty"});*/
     }
     create(f) {
         return new Parser(this, f);
@@ -118,6 +130,7 @@ class Parser {
         }).setName("(" + t.name + " noFollow " + p.name + ")", this));
     }
     andNoUnify(next) {
+        //if (this.struct && this.struct.type==="empty") return next;
         nc(next, "next"); // next==next
         //var t=this; // Parser
         var res = this.create((s) => {
@@ -134,6 +147,7 @@ class Parser {
         return res.setName("(" + this.name + " " + next.name + ")", { type: "and", elems: [...elems, next] });
     }
     and(next) {
+        //if (this.struct && this.struct.type==="empty") return next;
         const _res = this.andNoUnify(next);
         if (!options.optimizeFirst)
             return _res;
@@ -325,11 +339,11 @@ class Parser {
         }
         return this;
     }
-    repN(min) {
+    repNNoUnify(min) {
         var p = this;
         if (!min)
             min = 0;
-        var res = this.create(function (s) {
+        const res = this.create((s) => {
             let current = s;
             var result = [];
             while (true) {
@@ -355,24 +369,31 @@ class Parser {
                 }
             }
         });
-        if (min > 0 && p._first) {
-            const olf = p._first;
-            const nf = {}; //{space: olf.space, tbl:{}};
-            if (olf[exports.ALL]) {
-                nf[exports.ALL] = res;
-            }
-            else {
-                for (let k in olf) {
-                    nf[k] = res;
-                }
-            }
-            res._first = nf;
-        }
         return res.setName("(" + p.name + " * " + min + ")", { type: "rept", elem: p });
+    }
+    repN(min) {
+        const _res = this.repNNoUnify(min);
+        //return _res;
+        if (!options.optimizeFirst || min == 0)
+            return _res;
+        const fst = this._first || { [exports.ALL]: this };
+        const nf = {}; //{space: olf.space, tbl:{}};
+        for (let k in fst) {
+            nf[k] = fst[k].repNNoUnify(min);
+        }
+        if (fst[exports.ALL]) {
+            nf[exports.ALL] = fst[exports.ALL].repNNoUnify(min);
+        }
+        else if (min == 0) {
+            nf[exports.ALL] = this.context.repEmpty;
+        }
+        if (min == 0)
+            console.log("rep0", dispTbl(nf));
+        return this.context.fromFirst(nf).setName(_res.name, _res.struct);
     }
     rep0() { return this.repN(0); }
     rep1() { return this.repN(1); }
-    opt() {
+    optNoUnify() {
         var t = this;
         return this.create(function (s) {
             var r = t.parse(s);
@@ -386,6 +407,24 @@ class Parser {
                 return s;
             }
         }).setName("(" + t.name + ")?", { type: "opt", elem: t });
+    }
+    opt() {
+        const _res = this.optNoUnify();
+        //return _res;
+        if (!options.optimizeFirst)
+            return _res;
+        const fst = this._first || { [exports.ALL]: this };
+        const nf = {};
+        for (let k in fst) {
+            nf[k] = fst[k].optNoUnify();
+        }
+        if (fst[exports.ALL]) {
+            nf[exports.ALL] = fst[exports.ALL].optNoUnify();
+        }
+        else {
+            nf[exports.ALL] = this.context.optEmpty;
+        }
+        return this.context.fromFirst(nf).setName(_res.name, _res.struct);
     }
     sep1(sep, valuesToArray) {
         var value = this;

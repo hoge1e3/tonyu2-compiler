@@ -1,0 +1,13 @@
+extends EventHandler;
+
+"field strict";
+// target: Actor
+\newListener(f/*:Function*/) {
+    var ts=$Screen.multiLayerTouches;
+    ts.add(target);
+    return {
+        dispose: \{
+            ts.remove(target);
+        }
+    };
+}

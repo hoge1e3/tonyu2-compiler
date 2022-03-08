@@ -1,0 +1,151 @@
+extends null;
+includes SchedulerMod,EventMod,EventHandlerCaller,MathMod,LifeCycleMod,SpriteMod;
+"field strict";
+var crashScale;
+
+native Tonyu;
+native Key;
+native console;
+native Math;
+native FS;
+native Array;
+
+nowait \hitTo(t) {//23D
+    return crashTo(t);
+}
+nowait \all(c) {//23D
+    //return layer.all.apply(layer,arguments); <- includes myself!
+    var res=new TQuery(this);
+    if (arguments.length>0 && typeof c!="function") {
+        return res;
+    }
+    getSpriteGroup().sprites.forEach \(s) {
+        if (s===this) return;
+        if (!c || s instanceof c) {
+            res.push(s);
+        }
+    };
+    return res;
+}
+nowait \allCrash(t) {//23D
+    var res=new TQuery(this);
+    var sp=this;
+    var t1=getCrashShape();
+    if (!t1) return res;
+    getSpriteGroup().sprites.forEach(\(s) {
+        var t2;
+        if (s!==this &&
+        //!s.excludeFromAll &&
+        s instanceof t &&
+        (t2=s.getCrashShape()) && t1.intersects(t2)) {
+            res.push(s);
+        }
+    });
+    return res;
+}
+\getCrashShape(){
+    throw new Error("getCrashShape::abstract");
+}
+nowait \crashTo(t) {//23D
+    if (!t) return false;
+    if (typeof t=="function") {
+        return allCrash(t)[0];
+    }
+    return crashTo1(t);
+}
+nowait \crashTo1(t) {//23D
+    if (!t || t._isDead) return false;
+    var t1=getCrashShape();
+    var t2=t.getCrashShape();
+    return t1 && t1.intersects(t2);
+}
+\crashToChecker(d,f){//23D
+    while(true){
+        if(typeof d=="function"){
+            for(var obj in allCrash(d)){
+                callEventHandler(f,[obj]);
+            }
+        }else if(crashTo(d)){
+            callEventHandler(f,[d]);
+        }
+        update();
+    }
+}
+
+nowait \allWithin(t,distance) {//23D (use dist with 3d)
+    var res=new TQuery(this);
+    var sp=this;
+    if (typeof t !=="function") throw new Error("allWithinの第一引数はクラスにしてください");
+    getSpriteGroup().sprites.forEach(\(s) {
+        if (s!==this &&
+        //!s.excludeFromAll &&
+        s instanceof t &&
+        dist(s)<distance) {
+            res.push(s);
+        }
+    });
+    return res;
+}
+nowait \within(t,distance){//23D
+    if(!t) return false;
+    if(typeof t=="function"){
+        return allWithin(t,distance)[0];
+    }
+    return within1(t,distance);
+}
+nowait \within1(t,distance){//23D (use dist with 3d)
+    if(!t || t._isDead) return false;
+//    if(Math.sqrt(Math.abs(x-t.x)*Math.abs(x-t.x)+ Math.abs(y-t.y)*Math.abs(y-t.y))<distance){
+    if (dist(t)<distance) {
+        return t;
+    }
+    return false;
+}
+\withinChecker(d,r,f){//23D
+    while(true){
+        if(typeof d=="function"){
+            for(var obj in allWithin(d,r)){
+                f(obj);
+            }
+        }else if(within(d,r)){
+            f(d);
+        }
+        update();
+    }
+}
+nowait \watchHit(typeA,typeB,onHit) {//23D
+    getSpriteGroup().watchHit(typeA , typeB, \(a,b) {
+        onHit.apply(this,[a,b]);
+    });
+}
+
+\screenOutChecker(d,f){//23D
+    while(true){
+        while(true){
+            if(screenOut()>d){
+                f();
+                break;
+            }
+            update();
+        }
+        while(true){
+            if(screenOut()<=d){
+                break;
+            }
+            update();
+        }
+        update();
+    }
+}
+\screenOut(){
+    throw new Error("screenOut::abstract");
+}
+nowait \findEventHandlerClass(type) {
+    var eventTypes={
+        "screenOut":ScreenOutHandler,
+        "crashTo":CrashToHandler,
+        "within":WithinHandler
+    };
+    if (eventTypes[type]) return eventTypes[type];
+    return super.findEventHandlerClass(type);
+}

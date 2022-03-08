@@ -240,7 +240,7 @@ export= function PF({TT}) {
 	/*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
 		return {cond: cond, next:next  };
 	});*/
-	var forin=g("forin").ands(tk("var").opt().firstTokens(["var","symbol"]), symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
+	var forin=g("forin").ands(tk("var").opt()/*.firstTokens(["var","symbol"])*/, symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
 										"isVar", "vars","inof", "set" );
 	var normalFor=g("normalFor").ands(stmt, expr.opt() , tk(";") , expr.opt()).ret(
 									"init", "cond",     null, "next");
@@ -341,7 +341,7 @@ export= function PF({TT}) {
 		return x.buf;
 	};*/
 	$.extension="tonyu";
-	g.buildTypes();
-	g.checkFirstTbl();
+	//g.buildTypes();
+	//g.checkFirstTbl();
 	return $;
 };

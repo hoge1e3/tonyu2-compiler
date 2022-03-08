@@ -1,0 +1,20 @@
+extends SpriteChar;
+
+\new (xx,yy,pp,ff,sz,rt,al){
+    super(xx,yy,pp,ff);
+    scaleX=1;
+    if (sz) scaleX=sz;
+    angle=0;
+    if (rt) angle=rt;
+    alpha=255;
+    if (al) alpha=al;
+}
+\draw(c) {
+    if (_isInvisible) return;
+    onDraw();
+    prepareImage();
+    drawDxSprite(x,y,p,f,zOrder,angle,alpha,scaleX,scaleY);
+    /*
+    rotation=angle;
+    super.draw(c);*/
+}

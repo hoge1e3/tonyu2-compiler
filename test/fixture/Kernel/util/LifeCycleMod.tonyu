@@ -1,0 +1,118 @@
+extends null;
+includes EventMod,EventHandlerCaller,MathMod,ThreadGroupMod;
+"field strict";
+var layer,_isDead,_poolArray,objectPoolAge,_lifeKeeper;
+native Tonyu;
+native Key;
+native console;
+native Math;
+native FS;
+native Array;
+
+
+nowait \hide() {
+    if(layer is SpriteGroup) {
+        layer.remove(this);
+    } else if (this.__addedToSprites is SpriteGroup) {
+        this.__addedToSprites.remove(this);
+    } else {
+        // Double kill ocurres when:
+        //   child=new {layer:parent};
+        //   child.die();
+        //   parent.die();
+        // console.log("hide::invalid layer" ,this);
+        //throw new Error("LifeCycleMod::hide invalid layer");
+    }
+}
+nowait \show(x,y,p) {
+    layer.add(this);
+    if (x!=null) this.x=x;
+    if (y!=null) this.y=y;
+    if (p!=null) this.p=p;
+}
+
+nowait \die() {
+    killThreadGroup();
+    hide();
+    if (!_isDead) {
+        fireEvent("die");
+        _isDead=true;
+        if (_poolArray) {
+            _poolArray.push(this);
+            objectPoolAge=(objectPoolAge||0)+1;
+        }
+    }
+}
+
+\lifeKeeper=v {
+    _lifeKeeper=v;
+    if (v && typeof v.on==="function") {
+        v.on("die",die);
+    }
+}
+\lifeKeeper {
+    return _lifeKeeper;
+}
+
+nowait \isDead() {
+    return _isDead;
+}
+
+
+\useObjectPool=value {
+    if (value) {
+        _poolArray=$ObjectPool.poolList(this.getClassInfo().fullName);
+    }
+}
+\appear(o,param) {
+    if (typeof o=="function") {
+        if (param) { param.layer=param.layer||layer; }
+        var p=$ObjectPool.withdraw(o.meta.fullName);
+        if (p) {
+            for (var k in Object.keys(p)) {
+                if (k!="objectPoolAge") delete p[k];
+            }
+            o.call(p,param);
+            return p;
+        } else {
+            return new o(param);
+        }
+    } else {
+        return o;
+    }
+}
+\getSpriteGroup() {
+    if (this.__addedToSprites is SpriteGroup) {
+        return this.__addedToSprites;
+    }
+    if (layer is SpriteGroup) {
+        // TODO may not be used
+        return layer;
+    }
+    return null;
+}
+\addToLayer() {
+    if(layer && typeof layer.addSubsprite==="function"){
+        layer.addSubsprite(this);
+    } else if(layer is SpriteGroup){
+        layer.add(this);
+    } else if(layer is ScreenLayer){
+        layer.group.add(this);
+    } else {
+        //TODO : may not be used
+        $Sprites.add(this);
+    }
+    onAppear();
+}
+\changeLayer(l) {
+    if (!l || typeof l.addSubsprite!=="function") return;
+    var curLayer=getSpriteGroup();
+    if (curLayer) {
+        curLayer.remove(this);
+    }
+    //if (layer) layer.remove(this);
+    l.addSubsprite(this);
+    layer=l;
+}
+\onAppear() {
+}

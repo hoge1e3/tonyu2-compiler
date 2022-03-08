@@ -1,0 +1,125 @@
+extends TObject;
+includes MathMod;
+"field strict";
+
+// q=(x, y, z, w)
+var x:Number,y:Number,z:Number,w:Number;
+
+// optional
+var axis:Vec3, r:Number, theta:Number;
+
+\new(p) {
+    super(p);
+    if (axis && typeof r==="number") {
+        theta=r/2;
+        //  q=(axis*sin(theta),cos(theta))
+        var v=axis.normalize(sin(theta));
+        x=v.x;y=v.y;z=v.z;
+        w=cos(theta);
+    } else {
+        x=x||0;
+        y=y||0;
+        z=z||0;
+        if (w==null) w=1;
+    }
+}
+\set(q:Quaternion) {
+    x=q.x;
+    y=q.y;
+    z=q.z;
+    w=q.w;
+    return this;
+}
+\length {
+    return sqrt(lengthSQ);
+}
+\lengthSQ {
+    return x*x+y*y+z*z+w*w;
+}
+\clone() {
+    return new Quaternion{x,y,z,w};
+}
+\addX(q:Quaternion) {
+    x+=q.x;
+    y+=q.y;
+    z+=q.z;
+    w+=q.w;
+    return this;
+}
+\add(q:Quaternion) {
+    return clone().addX(q);
+}
+\subX(q:Quaternion) {
+    x-=q.x;
+    y-=q.y;
+    z-=q.z;
+    w-=q.w;
+    return this;
+}
+\sub(q:Quaternion) {
+    return clone().subX(q);
+}
+
+\mulX(k:Number) {
+    x*=k;
+    y*=k;
+    z*=k;
+    w*=k;
+    return this;
+}
+
+\mul(k:Number) {
+    return clone().mulX(k);
+}
+\product(b:Quaternion,dst:Quaternion/*opt*/) {
+    // from three.js Quaterion
+    var a=this;
+
+    var qax = a.x, qay = a.y, qaz = a.z, qaw = a.w;
+    var qbx = b.x, qby = b.y, qbz = b.z, qbw = b.w;
+
+    if (!dst) dst=new Quaternion;
+    dst.x = qax * qbw + qaw * qbx + qay * qbz - qaz * qby;
+    dst.y = qay * qbw + qaw * qby + qaz * qbx - qax * qbz;
+    dst.z = qaz * qbw + qaw * qbz + qax * qby - qay * qbx;
+    dst.w = qaw * qbw - qax * qbx - qay * qby - qaz * qbz;
+    return dst;
+}
+\inverse {
+    return conjugate.mulX(1/lengthSQ);
+}
+\conjugate {
+    return new Quaternion{
+        x:-x,y:-y,z:-z,w
+    };
+}
+\rotate(p:Vec3,dst:Vec3/*opt*/) {
+    // from three.js Vector3
+
+    var x = p.x, y = p.y, z = p.z;
+    var q=this;
+    var qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+
+    // calculate quat * vector
+
+    var ix = qw * x + qy * z - qz * y;
+    var iy = qw * y + qz * x - qx * z;
+    var iz = qw * z + qx * y - qy * x;
+    var iw = - qx * x - qy * y - qz * z;
+
+    // calculate result * inverse quat
+    if (!dst) {
+        dst=new Vec3;
+    }
+    dst.x = ix * qw + iw * - qx + iy * - qz - iz * - qy;
+    dst.y = iy * qw + iw * - qy + iz * - qx - ix * - qz;
+    dst.z = iz * qw + iw * - qz + ix * - qy - iy * - qx;
+
+    return dst;
+}
+\calcTheta() {
+    // q=(axis*sin(theta),cos(theta))
+    theta=atanxy(w,sqrt(x*x+y*y+z*z));
+    r=theta*2;
+    return theta;
+}

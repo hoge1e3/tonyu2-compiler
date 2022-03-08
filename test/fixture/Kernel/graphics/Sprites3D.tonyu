@@ -1,0 +1,52 @@
+extends SpriteGroup;
+native console;
+"field strict";
+\new(p) {
+    super(p);
+    sprites=[];
+    transform=transform||new Transform;
+}
+\add(a:Actor3D) {
+    var curLayer=a.getSpriteGroup();
+    if (curLayer) {
+        curLayer.remove(a);
+    }
+    if (!a.transform.parent) {
+        a.transform.parent=transform;
+    } else {
+        a.transform.changeParent(transform);
+        /*a.transform=a.transform.parentChanged(transform);
+        a.position.set(a.transform.position);
+        a.transform.position=a.position;
+        a.direction=a.transform.direction;     */
+    }
+    sprites.push(a);
+    a.__addedToSprites=this;
+}
+\draw3D(ctx:Context3D) {
+    for (var s of sprites) {
+        s.draw3D(ctx);
+    }
+}
+//--- TODO : unify to Sprites(2D)
+nowait \remove(s) {
+    var idx=sprites.indexOf(s);
+    //console.log("RM",idx);
+    if (idx<0) return;
+    sprites.splice(idx,1);
+    delete s.__addedToSprites;
+    //console.log("RM",idx,sprites);
+}
+nowait \all(c) {
+    var res=new TQuery;
+    if (arguments.length>0 && typeof c!="function") {
+        return res;
+    }
+    sprites.forEach \(s) {
+        if (s===this) return;
+        if (!c || s instanceof c) {
+            res.push(s);
+        }
+    };
+    return res;
+}

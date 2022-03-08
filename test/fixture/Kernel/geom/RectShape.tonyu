@@ -1,0 +1,32 @@
+extends AbstractShape;
+"field strict";
+native Math;
+var x,y,width,height;// (x,y): center
+
+\clone() {
+    return new RectShape{x,y,width,height,_layer};
+}
+
+\changeLayer(newLayer) {
+    var c=screen.convert({x,y,layer:_layer}, newLayer);
+    var rb=screen.convert({x:x+width,y:y+height,layer:_layer}, newLayer);
+    x=c.x;
+    y=c.y;
+    width=(rb.x-c.x);
+    height=(rb.y-c.y);
+    _layer=newLayer;
+}
+\intersectsRaw(s:RectShape) {
+    if (s is RectShape) {
+        return Math.abs(x-s.x)*2<width+s.width &&
+            Math.abs(y-s.y)*2<height+s.height;
+    }
+    return containsRaw(s);
+}
+\containsRaw(p:Object/*{x,y}*/) {
+    return p.x>=xmin && p.x<=xmax && p.y>=ymin && p.y<=ymax;
+}
+\xmin {return x-width/2;}
+\xmax {return x+width/2;}
+\ymin {return y-height/2;}
+\ymax {return y+height/2;}

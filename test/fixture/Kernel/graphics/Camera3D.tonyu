@@ -1,0 +1,44 @@
+extends Actor3D;
+native console;
+"field strict";
+var z1:Number;// z where scale==1
+/*
+     C
+   z1|  S
+   \ | /|
+ p  \|/ |
+    /|\ |r
+   / | \|
+      z1
+
+p.z:z1 = p.x:r.x
+r.x= p.x*z1/p.z
+
+*/
+\new(p) {
+    super(p);
+    //spx=spx||$screenWidth/2;
+    //spy=spy||$screenHeight/2;
+    z1=z1||$screenWidth/2;
+    z=-z1;
+}
+\to2D(pos:Vec3) {
+    var c=pos;
+    var x=c.x;
+    var y=c.y;
+    var z=c.z;
+    if (z<=0) return null;
+    x=x*z1/z;//+spx;
+    y=y*z1/z;//+spy;
+    return {x,y,z,scale:z1/z};
+}
+\draw3D(ctx3d) {
+    if (ctx3d.camera===this) return;
+    //console.log("diffcam",ctx3d.camera, this);
+    super.draw3D(ctx3d);
+}
+\goBehind(target, dist) {
+    if (!dist) dist=z1;
+    position.set(target.position.sub(target.direction.forward.mul(dist)));
+    direction.set(target.direction);
+}

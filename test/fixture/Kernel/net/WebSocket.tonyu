@@ -1,0 +1,34 @@
+extends TObject;
+native Promise;
+"field strict";
+var impl;
+\getConnectionInfo() {
+    return $API.info().then \(r) {
+        var re=r.webSocket;
+        if (!re) {
+            throw new Error("Websocket の設定をしてください．ウィンドウ→プロジェクトオプション→API");
+        }
+        return re;
+    };
+}
+\connect() {
+    if (impl) return Promise.resolve(impl);
+    var services={Scaledrone:ScaledroneImpl, T2WebSocket: M_T2Web };
+    return getConnectionInfo().then\(info) {
+        var S=services[info.service];
+        if (!S) throw new Error(info.service+"には対応していません");
+        impl=new S{info};
+        /*for (var m of ["enterRoom"]) {
+            this[m]=impl[m].bind(impl);
+        }*/
+        return impl.connect();
+    };
+}
+\enterRoom(name) {
+    return connect().then \() {
+        return impl.enterRoom(name);  
+    }.then \(r) {
+        r.webSocket=this;
+        return r;
+    };
+}

@@ -1,0 +1,253 @@
+extends TObject;
+includes MathMod;
+"field strict";
+var length, context; 
+\new (context) {
+    length=0;
+    if (context is BaseActor) context={actor:context};
+    if (context is Screen) context={screen:context};
+    context=context||{};
+    context.is3D=(context.actor is Actor3D);
+    context.screen=context.screen||$Screen;
+    this.context=context;
+}
+\parent {
+    return context.actor;
+}
+\create() {
+    return new TQuery(context);
+}
+\contains(t) {
+    for (var o in this) {
+        if (o===t) return true;
+    }
+    return false;
+}
+\tonyuIterator(arity) {
+    var res={};
+    res.i=0;
+    if (arity==1) {
+        res.next=function () {
+            if (res.i<this.length) {
+                res[0]=this[res.i];
+                res.i++;
+                return true;
+            }
+            return false;
+        };
+    } else {
+        res.next=function () {
+            if (res.i<this.length) {
+                res[0]=res.i;
+                res[1]=this[res.i];
+                res.i++;
+                return true;
+            }
+            return false;
+        };
+    }
+    return res;
+}
+\attr() {
+    var values;
+    if (length==0) return;
+    if (arguments.length==1 && typeof arguments[0]=="string") {
+        return this[0][arguments[0]];
+    }
+    if (arguments.length>=2) {
+        values={};
+        for (var i=0 ; i<arguments.length-1 ;i+=2) {
+            values[arguments[i]]=arguments[i+1];
+        }
+    } else {
+        values=arguments[0];
+    }
+    if (values) {
+        for (var e in this) {
+            e.extend( values);
+        }
+    }
+}
+\genKeyfunc(key) {
+    if (typeof key!="function") {
+        return \(o) {return o[key];};
+    } else {
+        return key;
+    }
+}
+\applyArrayMethod(name,args) {
+    var res=create();
+    var a=toArray();
+    var r=a[name].apply(a,args);
+    res.push(r);
+    return res;
+}
+\toArray() {
+    var res=[];
+    for(var i=0;i<length;i++) res.push(this[i]);
+    return res;
+}
+\sort() {
+    return applyArrayMethod("sort",arguments);
+}
+\slice() {
+    return applyArrayMethod("slice",arguments);
+}
+\maxs(key) {
+    var f=genKeyfunc(key);
+    var res,reso=create();
+    for (var o in this) {
+        var v=f(o);
+        if (res==null || v>=res) {
+            if (v>res) reso=create();
+            reso.push(o);
+            res=v;
+        }
+    }
+    return reso;
+}
+\mins(key) {
+    var f=genKeyfunc(key);
+    var res,reso=create();
+    for (var o in this) {
+        var v=f(o);
+        if (res==null || v<=res) {
+            if (v<res) reso=create();
+            reso.push(o);
+            res=v;
+        }
+    }
+    return reso;
+}
+\minObj(key) {
+    return mins(key)[0];
+}
+\maxObj(key) {
+    return maxs(key)[0];
+}
+\nearests(x,y) {
+    var z;
+    if (x==null) {
+        if (!parent) throw new Error("nearests: 座標を指定してください");
+        x=parent.x;y=parent.y;
+        if (context.is3D) z=parent.z;
+    }
+    if (typeof x=="object") {y=x.y;x=x.x;}
+    if (context.is3D) {
+        return mins \(o) {
+            return context.actor.dist(o);
+        };
+    }
+    return mins \(o) {
+        return dist(o.x-x,o.y-y);
+    };
+}
+\nearest(x,y) {
+    return nearests(x,y)[0];
+}
+\withins(xo,yd,d) {
+    var x,y,z;
+    if (arguments.length==1) {
+        if (!parent) throw new Error("withins: 座標を指定してください");
+        x=parent.x;
+        y=parent.y;
+        if (context.is3D) z=parent.z;
+        d=xo;
+    } else if (typeof xo=="object") {
+        x=xo.x;y=xo.y;d=yd;
+    } else {
+        x=xo;y=yd;
+    }
+    if (context.is3D) {
+        return find \(o) {//3D
+            return context.actor.dist(o)<=d;
+        };
+    }
+    return find \(o) {//2D
+        return dist(o.x-x,o.y-y)<=d;
+    };
+}
+\within(xo,yd,d) {
+    return withins(xo,yd,d).nearest();
+}
+
+\max(key) {
+    var f=genKeyfunc(key);
+    var res;
+    for (var o in this) {
+        var v=f(o);
+        if (res==null || v>res) res=v;
+    }
+    return res;
+}
+\min(key) {
+    var f=genKeyfunc(key);
+    var res;
+    for (var o in this) {
+        var v=f(o);
+        if (res==null || v<res) res=v;
+    }
+    return res;
+}
+\push(e) {
+    if (e is TQuery || e is Array) {
+        for (var ee in e) push(ee);
+    } else {
+        this[length]=e;
+        length++;
+    }
+}
+\size() {return length;}
+\find(f) {
+    var no=create();
+    if (typeof f==="object") {
+        var q=f;
+        f=\(o) {
+            for (var k,v in q) {
+                if (o[k]!==v) return false;
+            }
+            return true;
+        };
+    }
+    for (var o in this) {
+        if (f(o)) no.push(o);
+    }
+    return no;
+}
+\find1(f) {
+    return find(f)[0];
+}
+\random() {
+    if (length===0) return null;
+    return this[rnd(length)];
+}
+\apply(name, args) {
+    var res;
+    if (!args) args=[];
+    for (var o in this) {
+        var f=o[name];
+        if (typeof f=="function") {
+            res=f.apply(o, args);
+        }
+    }
+    return res;
+}
+// \alive => find \(o) => !o.isDead()  //  (in future)
+\alive() {
+    return find \(o) {
+        return !o.isDead();
+    };
+}
+\die() {
+    var a=alive();
+    if (a.length==0) return false;
+    a.apply("die");
+    return true;
+}
+
+\klass(k) {
+    return find \(o) { return o instanceof k; };
+}
+\sendEvent() {
+    return apply.apply(this, ["sendEvent",arguments]);
+}

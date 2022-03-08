@@ -1,0 +1,180 @@
+extends Panel;
+
+\new(opt){
+    layers=[];
+    _color="black";
+    camera={screen=this};
+    super(opt);
+}
+
+\drawLayers() {
+    if (!_drawing) {
+        if (!canvas) {
+            throw new Error("canvas is null");
+        }
+        _drawing=true;
+        if (clearBG) {
+            clearRect(0,0,width,height);
+        }
+        fillStyle=_color+"";
+        fillRect(0,0,width,height);
+        var c=getContext();
+        for (var i=layers.length-1;i>=0;i--) {
+            var l=layers[i];
+            l.draw(c);
+        }
+        _drawing=false;
+    }
+}
+\draw(ctx) {
+    drawLayers();
+    super.draw(ctx);
+}
+\addLayer(group,at) {
+    var layer;
+    if (group is ScreenLayer) {
+        layer=group;
+    } else {
+        group=group||new Sprites;
+        // spx,spy  Screen pivot x,y
+        // wpx,wpy  World pivot x,y
+        layer=new Layer2D{
+            spx:0,spy:0,
+            wpx:0,wpy:0,rotation:0,scale:1,
+            group,screen:this,index:layers.length
+        };
+    }
+    if (at==null) layers.push(layer);
+    else {
+        if (at<0) at=layers.length-at;
+        layers.splice(at,0,layer);
+    }
+    if (layers.length==1 && index==null) {
+        selectLayer(layer);
+    }
+    return layer;
+}
+\removeLayer(i) {
+    var r=findLayerIndex(i);
+    if (r<0) return;
+    layers.splice(r,1);
+}
+\selectLayer(i) {
+    var r=findLayerIndex(i);
+    if (r!=null) index=r;
+}
+\findLayerIndex(i) {
+    if (typeof i=="number") {
+        if (layers[i]) return i;
+    } else {
+        for (var j=0; j<layers.length;j++) {
+            if (layers[j]==i || layers[j].group==i) {
+                return j;
+            }
+        }
+    }
+    return -1;
+}
+\findLayer(key) {
+    var idx=findLayerIndex(key);
+    if (idx>=0) return layers[idx];
+    return null;
+}
+\setPivot(x,y) {
+    layers[index].spx=x;
+    layers[index].spy=y;
+}
+\scrollTo(x,y,scl,rot) {
+    layers[index].wpx=x;
+    layers[index].wpy=y;
+    if (typeof scl=="number") layers[index].scale=scl;
+    if (typeof rot=="number") layers[index].rotation=rot;
+}
+\canvas2buf(p) {
+    p.layer=layer;
+    return convert(p, this);
+}
+/*\resize(w,h) {
+    super.resize(w,h);
+    if (layoutManager && !layoutManager.isDead()) {
+        layoutManager.doLayout();
+    }
+}*/
+
+\convert(obj, toLayer) {// toLayer: Sprites
+    if (toLayer==null) toLayer=this;
+    if (!obj.layer) obj.layer=this; //throw new Error("layer not set");
+    if (obj.layer===toLayer) return obj;
+    if (obj.layer!==this && toLayer!==this) {
+        var p=convert(obj,this);
+        return convert(p,toLayer);
+    } else if (obj.layer!==this && toLayer===this) {
+        var l=findLayer(obj.layer);
+        if (l!=null) {
+            return l.world2screen(obj);
+        } else {
+            // fail unless obj.layer===layer(parent of this)
+            return super.convert(obj,this);
+        }
+    } else if (obj.layer===this && toLayer!==this) {
+        var l=findLayer(toLayer);
+        if (l!=null) {
+            return l.screen2world(obj);
+        } else {
+            // fail unless toLayer===layer(parent of this)
+            return super.convert(obj,toLayer);
+        }
+    } else return obj;
+}
+\setBGColor(color){
+    this._color=color;
+}
+\all() {
+    var res=new TQuery{screen:this};
+    for (var l in layers) {
+        var q=l.group.all.apply(l.group,arguments);
+        res.push(q);
+    }
+    return res;
+}
+\saveAndClear(excludes:Array) {
+    var res=[];
+    excludes=excludes||$excludeFromAll.toArray();
+    for (var l of layers) {
+        res.push(l.group.saveAndClear(excludes));
+    }
+    return {
+        layers:res,
+        multiLayerTouches:multiLayerTouches&&multiLayerTouches.saveAndClear()
+    };
+}
+\restore(saved) {
+    var i=0;
+    for (var l of layers) {
+        l.group.restore(saved.layers[i]);
+        i++;
+    }
+    if(multiLayerTouches && saved.multiLayerTouches) {
+        multiLayerTouches.restore(saved.multiLayerTouches);
+    }
+}
+\touchedFingers(q:TQuery,options) {
+    //options: filter, layer
+    var res=[];
+    options=options||{};
+    for (var e of q) {
+        var r=e.getCrashRect();
+        for (var i=0;i<$touches.length;i++) {
+            var t=$touches[i];
+            if (t.touched==1) {
+                var p=convert(t,e.layer);
+                if (p.x>=r.x-r.width/2 && p.x<=r.x+r.width/2 &&
+                p.y>=r.y-r.height/2 && p.y<=r.y+r.height/2) {
+                    t.captured=e;
+                    res.push(t);
+                }
+            }
+        }
+    }
+    return res;
+}

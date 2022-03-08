@@ -1,0 +1,57 @@
+extends TObject;
+"field strict";
+var camera:Camera3D;
+var sprites2D:Array;// of ActorSprite
+//var parentChanger:ParentChanger;
+//var defaultTransform;
+var curTransform;
+var stack;
+\addSprite2D(s) {// called during draw3D
+    if (!(s is ActorSprite)) s=new ActorSprite(s);
+    sprites2D.push(s);
+}
+\addSprite3D(s) {
+    var pos3d=s.transform? s.transform.position:
+        (s.position || new Vec3(s.x||0,s.y||0,s.z||0));
+    var pt=to2D(pos3d);
+    if (pt) {
+        var scl=(s.transform? s.transform.scale : (s.scale||1) )*pt.scale;
+        addSprite2D{
+            x=pt.x,y=pt.y, zOrder=pt.z,
+            scaleX=(s.scaleX||1)*scl,
+            scaleY=(s.scaleY||s.scaleX||1)*scl,
+            p:s.p,text:s.text,fillStyle:s.fillStyle,
+            width:s.width,
+            height:s.height,
+            radius:s.radius,
+            rotation:s.rotation||0, alpha:s.alpha||255,
+        };
+    }
+}
+
+\new(p) {
+    super(p);
+    sprites2D=[];
+    //parentChanger=new ParentChanger(camera.transform);
+    curTransform=camera.transform.inverse;
+    //defaultTransform=camera.transform.parent;
+    stack=[];
+}
+\to2D(pos) {
+    if (!pos) {
+        return camera.to2D(curTransform.position);
+    }
+    return camera.to2D(curTransform.childToSibling(pos));
+}
+\setTransform(t) {
+    curTransform=t;
+}
+\transform(t) {
+    curTransform=curTransform.childToSibling(t);
+}
+\save() {
+    stack.push{curTransform};
+}
+\restore() {
+    extend(stack.pop());
+}

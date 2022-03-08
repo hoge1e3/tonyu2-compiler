@@ -1,0 +1,84 @@
+extends BaseActor;
+includes SpriteMod3D,QueryMod3D;
+"field strict";
+var z,direction;
+native Tonyu;
+\new(params) {
+    Tonyu.extend(this,params);
+    initSchedulerMod();
+    layer=layer||defaultLayer;
+    // TODO use forward, right ...   in param when layer is Actor3D
+    //if (layer.group instanceof SpriteGroup) layer=layer.group;
+    crashScale=1;
+    if (position) {
+        this.x=position.x;
+        this.y=position.y;
+        this.z=position.z;
+    }
+    initSpriteMod();
+    /*---Inserted from BaseActor(It should be inited before addToLayer)
+     -- moved to initSpriteMod->initTransform
+    direction=new Direction;
+    transform=layer.transform.child{
+        direction,position,scale:(_prescale||1),actor:this,
+    };
+    */
+    addToLayer();
+    initAnimMod();
+}
+\rotate(mode,angle,unit) {
+    direction.rotate(mode,angle,unit);
+    return this;
+}
+
+\defaultLayer{
+    return $mainLayer3D;
+}
+nowait \dist(dx,dy,dz) {
+    if (typeof dx=="object") {
+        var t=dx;
+        dx=t.x-x;dy=t.y-y;dz=t.z-z;
+    }
+    dz=dz||0;
+    return sqrt(dx*dx+dy*dy+dz*dz);
+}
+
+\addSubsprite(s) {
+    subsprites=subsprites||new Sprites3D{layer:this,transform};
+    subsprites.add(s);
+    if (!s.lifeKeeper) s.lifeKeeper=this;
+    /*
+    if (p is Sprites3D) {
+        p.add(s);
+        //if (s.transform) s.transform.parent=p.transform;
+        if (!s.lifeKeeper) s.lifeKeeper=this;
+    } else {
+        var pp=p;
+        p=new Sprites3D{layer:this,transform};
+        if (pp!=null) {
+            new Actor3D{x:0,y:0,p:pp,scale,scaleX,scaleY,alpha,layer:p};
+        }
+        addSubsprite(s);
+    }*/
+}
+\localToWorld(fru) {
+    var res=position.clone();
+    for (var name,k in fru) {
+        var vec=direction[name];
+        if (vec && vec.mul) res.addX_v(vec.mul(k));
+    }
+    return res;
+}
+\moveBy(by) {
+    if (typeof by==="number") return moveBy{forward:by};
+    position.set(localToWorld(by));
+    return this;
+}
+\rotate(axis,angle) {
+    direction.rotate(axis,angle);
+    return this;
+}
+// moveBy(1);
+// moveBy{forward:1,left:1};
+// rotate("roll",1);
+// $camra3D.chase(this) {backward:100, smoothing:0.1};
