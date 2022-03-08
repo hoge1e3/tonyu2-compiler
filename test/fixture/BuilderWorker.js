@@ -556,9 +556,8 @@ module.exports = class Builder {
 "use strict";
 // parser.js の補助ライブラリ．式の解析を担当する
 const parser_1 = require("./parser");
-module.exports = function ExpressionParser(name = "Expression") {
-    var $ = {};
-    var EXPSTAT = "EXPSTAT";
+module.exports = function ExpressionParser(context, name = "Expression") {
+    //var $:any={};
     //  first 10     *  +  <>  &&  ||  =     0  later
     function opType(type, prio) {
         return {
@@ -593,7 +592,7 @@ module.exports = function ExpressionParser(name = "Expression") {
         return {
             reg(type, prio, a) {
                 var opt = opType(type, prio);
-                built.add(a.ret(parser_1.Parser.create(function (r) {
+                built.add(a.ret(context.create(function (r) {
                     r.opType = opt;
                     return r;
                 })).setName("(opType " + opt + " " + a.name + ")"));
@@ -607,77 +606,85 @@ module.exports = function ExpressionParser(name = "Expression") {
     var prefixOrElement = typeComposite(), postfixOrInfix = typeComposite();
     var element = composite();
     var trifixes = [];
-    $.element = function (e) {
-        prefixOrElement.reg("element", -1, e);
-        element.add(e);
-    };
-    $.getElement = function () { return element.get(); };
-    $.prefix = function (prio, pre) {
-        prefixOrElement.reg("prefix", prio, pre);
-    };
-    $.postfix = function (prio, post) {
-        postfixOrInfix.reg("postfix", prio, post);
-    };
-    $.infixl = function (prio, inf) {
-        postfixOrInfix.reg("infixl", prio, inf);
-    };
-    $.infixr = function (prio, inf) {
-        postfixOrInfix.reg("infixr", prio, inf);
-    };
-    $.infix = function (prio, inf) {
-        postfixOrInfix.reg("infix", prio, inf);
-    };
-    $.trifixr = function (prio, tf1, tf2) {
-        postfixOrInfix.reg("trifixr", prio, tf1);
-        //postfixOrInfix.reg("trifixr2", prio, tf2);
-        trifixes[prio] = tf2;
-    };
-    $.custom = function (prio, func) {
-        // func :: Elem(of next higher) -> Parser
-    };
-    $.mkInfix = function (f) {
-        $.mkInfix.def = f;
-    };
-    $.mkInfix.def = function (left, op, right) {
-        return (0, parser_1.setRange)({ type: "infix", op: op, left: left, right: right });
-    };
-    $.mkInfixl = function (f) {
-        $.mkInfixl.def = f;
-    };
-    $.mkInfixl.def = function (left, op, right) {
-        return (0, parser_1.setRange)({ type: "infixl", op: op, left: left, right: right });
-    };
-    $.mkInfixr = function (f) {
-        $.mkInfixr.def = f;
-    };
-    $.mkInfixr.def = function (left, op, right) {
-        return (0, parser_1.setRange)({ type: "infixr", op: op, left: left, right: right });
-    };
-    $.mkPrefix = function (f) {
-        $.mkPrefix.def = f;
-    };
-    $.mkPrefix.def = function (op, right) {
-        return (0, parser_1.setRange)({ type: "prefix", op: op, right: right });
-    };
-    $.mkPostfix = function (f) {
-        $.mkPostfix.def = f;
-    };
-    $.mkPostfix.def = function (left, op) {
-        return (0, parser_1.setRange)({ type: "postfix", left: left, op: op });
-    };
-    $.mkTrifixr = function (f) {
-        $.mkTrifixr.def = f;
-    };
-    $.mkTrifixr.def = function (left, op1, mid, op2, right) {
-        return (0, parser_1.setRange)({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
-    };
-    $.build = function () {
-        //postfixOrInfix.build();
-        //prefixOrElement.build();
-        $.built = parser_1.Parser.create(function (st) {
-            return parse(0, st);
-        }).setName(name);
-        return $.built;
+    const $ = {
+        element(e) {
+            prefixOrElement.reg("element", -1, e);
+            element.add(e);
+        },
+        getElement() { return element.get(); },
+        prefix(prio, pre) {
+            prefixOrElement.reg("prefix", prio, pre);
+        },
+        postfix(prio, post) {
+            postfixOrInfix.reg("postfix", prio, post);
+        },
+        infixl(prio, inf) {
+            postfixOrInfix.reg("infixl", prio, inf);
+        },
+        infixr(prio, inf) {
+            postfixOrInfix.reg("infixr", prio, inf);
+        },
+        infix(prio, inf) {
+            postfixOrInfix.reg("infix", prio, inf);
+        },
+        trifixr(prio, tf1, tf2) {
+            postfixOrInfix.reg("trifixr", prio, tf1);
+            //postfixOrInfix.reg("trifixr2", prio, tf2);
+            trifixes[prio] = tf2;
+        },
+        custom(prio, func) {
+            // func :: Elem(of next higher) -> Parser
+        },
+        mkInfix(f) {
+            $.mkInfix_def = f;
+        },
+        mkInfixl(f) {
+            $.mkInfixl_def = f;
+        },
+        mkInfixr(f) {
+            $.mkInfixr_def = f;
+        },
+        mkPrefix(f) {
+            $.mkPrefix_def = f;
+        },
+        mkPostfix(f) {
+            $.mkPostfix_def = f;
+        },
+        mkTrifixr(f) {
+            $.mkTrifixr_def = f;
+        },
+        built: null,
+        build() {
+            //postfixOrInfix.build();
+            //prefixOrElement.build();
+            $.built = context.create(function (st) {
+                return parse(0, st);
+            }).setName(name);
+            return $.built;
+        },
+        mkInfix_def(left, op, right) {
+            return (0, parser_1.setRange)({ type: "infix", op: op, left: left, right: right });
+        },
+        mkInfixl_def(left, op, right) {
+            return (0, parser_1.setRange)({ type: "infixl", op: op, left: left, right: right });
+        },
+        mkInfixr_def(left, op, right) {
+            return (0, parser_1.setRange)({ type: "infixr", op: op, left: left, right: right });
+        },
+        mkPrefix_def(op, right) {
+            return (0, parser_1.setRange)({ type: "prefix", op: op, right: right });
+        },
+        mkPostfix_def(left, op) {
+            return (0, parser_1.setRange)({ type: "postfix", left: left, op: op });
+        },
+        mkTrifixr_def(left, op1, mid, op2, right) {
+            return (0, parser_1.setRange)({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
+        },
+        lazy() {
+            return context.create(function (st) {
+                return $.built.parse(st);
+            }).setName(name, { type: "lazy", name });
+        },
     };
     function dump(st, lbl) {
         /*var s=st.src.str;
@@ -702,7 +709,7 @@ module.exports = function ExpressionParser(name = "Expression") {
                 return st;
             }
             // st: Expr    st.pos = -elem^
-            var pex = $.mkPrefix.def(pre, st.result[0]);
+            var pex = $.mkPrefix_def(pre, st.result[0]);
             res = st.clone(); //  res:Expr
             res.result = [pex]; // res:prefixExpr  res.pos= -elem^
             if (!st.nextPostfixOrInfix) {
@@ -731,7 +738,7 @@ module.exports = function ExpressionParser(name = "Expression") {
             // assert st:postfixOrInfix  res:Expr
             if (opt.type("postfix")) {
                 // st:postfix
-                const pex = $.mkPostfix.def(res.result[0], st.result[0]);
+                const pex = $.mkPostfix_def(res.result[0], st.result[0]);
                 res = st.clone();
                 res.result = [pex]; // res.pos= expr++^
                 dump(st, "185");
@@ -748,7 +755,7 @@ module.exports = function ExpressionParser(name = "Expression") {
                     return res;
                 }
                 // st: expr   st.pos=  expr+expr^
-                const pex = $.mkInfixl.def(res.result[0], inf, st.result[0]);
+                const pex = $.mkInfixl_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixlExpr
                 if (!st.nextPostfixOrInfix) {
@@ -764,7 +771,7 @@ module.exports = function ExpressionParser(name = "Expression") {
                     return res;
                 }
                 // st: expr   st.pos=  a=b=c^
-                const pex = $.mkInfixr.def(res.result[0], inf, st.result[0]);
+                const pex = $.mkInfixr_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixrExpr
                 if (!st.nextPostfixOrInfix) {
@@ -794,7 +801,7 @@ module.exports = function ExpressionParser(name = "Expression") {
                 }
                 var right = st.result[0];
                 // st=right      st.pos= left?mid:right^;
-                const pex = $.mkTrifixr.def(left, inf1, mid, inf2, right);
+                const pex = $.mkTrifixr_def(left, inf1, mid, inf2, right);
                 res = st.clone();
                 res.result = [pex]; //res:infixrExpr
                 if (!st.nextPostfixOrInfix) {
@@ -810,7 +817,7 @@ module.exports = function ExpressionParser(name = "Expression") {
                     return res;
                 }
                 // st: expr   st.pos=  expr+expr^
-                const pex = $.mkInfix.def(res.result[0], inf, st.result[0]);
+                const pex = $.mkInfix_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixExpr
                 if (!st.nextPostfixOrInfix) {
@@ -825,11 +832,6 @@ module.exports = function ExpressionParser(name = "Expression") {
             // assert st:postfixOrInfix  res:Expr
         }
     }
-    $.lazy = function () {
-        return parser_1.Parser.create(function (st) {
-            return $.built.parse(st);
-        }).setName(name, { type: "lazy", name });
-    };
     return $;
 };
 
@@ -837,7 +839,7 @@ module.exports = function ExpressionParser(name = "Expression") {
 "use strict";
 //import * as Parser from "./parser";
 const parser_1 = require("./parser");
-const Grammar = function () {
+const Grammar = function (context) {
     function trans(name) {
         if (typeof name == "string")
             return get(name);
@@ -857,7 +859,7 @@ const Grammar = function () {
             return defs[name];
         if (lazyDefs[name])
             return lazyDefs[name];
-        const res = (0, parser_1.lazy)(function () {
+        const res = context.lazy(function () {
             const r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
@@ -921,7 +923,7 @@ const Grammar = function () {
             const v = defs[k];
             console.log("---", k);
             if (v._first) {
-                const tbl = v._first.tbl;
+                const tbl = v._first;
                 for (let f of Object.keys(tbl)) {
                     let p = tbl[f];
                     if (p._lazy)
@@ -3979,7 +3981,7 @@ module.exports = Tonyu2Lang;
 },{"./parserFactory":19,"./tonyu2_token":24}],18:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = exports.ALL = void 0;
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.tokensParserContext = exports.StringParser = exports.State = exports.Parser = exports.ParserContext = exports.ALL = void 0;
 exports.ALL = Symbol("ALL");
 const options = { traceTap: false, optimizeFirst: true, profile: false,
     verboseFirst: false, traceFirstTbl: false, traceToken: false };
@@ -3988,40 +3990,109 @@ function dispTbl(tbl) {
     var h = {};
     if (!tbl)
         return buf;
-    for (var i in tbl) { // tbl:{char:Parser}   i:char
+    for (let i in tbl) { // tbl:{char:Parser}   i:char
         const n = tbl[i].name;
-        if (!h[n])
-            h[n] = "";
-        h[n] += i;
+        h[n] = (h[n] || "") + i;
+    }
+    if (tbl[exports.ALL]) {
+        const n = tbl[exports.ALL].name;
+        h[n] = (h[n] || "") + "*";
     }
     for (let n in h) {
         buf += h[n] + "->" + n + ",";
     }
     return buf;
 }
-;
 //var console={log:function (s) { $.consoleBuffer+=s; }};
 function _debug(s) { console.log(s); }
 //export function Parser
-function create(parseFunc) {
+/*export function create(parseFunc:ParseFunc) { // (State->State)->Parser
     return new Parser(parseFunc);
-}
-exports.create = create;
-;
+};*/
 function nc(v, name) {
     if (v == null)
         throw name + " is null!";
     return v;
 }
+class ParserContext {
+    constructor(space) {
+        this.space = space;
+        this.optEmpty = this.create((s) => {
+            s = s.clone();
+            s.success = true;
+            s.result = [null]; // opt returns null
+            return s;
+        }).setName("optEmpty"); //,{type:"empty"});*/
+        this.repEmpty = this.create((s) => {
+            s = s.clone();
+            s.success = true;
+            s.result = [[]]; // rep0 returns empty array
+            return s;
+        }).setName("repEmpty"); //,{type:"empty"});*/
+    }
+    create(f) {
+        return new Parser(this, f);
+    }
+    lazy(pf) {
+        return lazy(this, pf);
+    }
+    fromFirst(tbl) {
+        if (this.space === "TOKEN") {
+            return this.fromFirstTokens(tbl);
+        }
+        else {
+            const res = this.create((s0) => {
+                var s = (this.space === "RAWSTR" || this.space === "TOKEN" ? s0 : this.space.parse(s0));
+                var f = s.src.str.substring(s.pos, s.pos + 1);
+                if (options.traceFirstTbl) {
+                    console.log(res.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
+                }
+                if (tbl[f]) {
+                    return tbl[f].parse(s);
+                }
+                if (tbl[exports.ALL])
+                    return tbl[exports.ALL].parse(s);
+                s.success = false;
+                return s;
+            });
+            res._first = tbl; //{space:space,tbl:tbl};
+            //res.checkTbl();
+            return res;
+        }
+    }
+    fromFirstTokens(tbl) {
+        var res = this.create(function (s) {
+            const src = s.src;
+            var t = src.tokens[s.pos];
+            var f = t ? t.type : null;
+            if (options.traceFirstTbl) {
+                console.log(this.name + ": firstT=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
+            }
+            if (f != null && tbl[f]) {
+                return tbl[f].parse(s);
+            }
+            if (tbl[exports.ALL])
+                return tbl[exports.ALL].parse(s);
+            s.success = false;
+            return s;
+        });
+        res._first = tbl; //{space:"TOKEN",tbl:tbl};
+        //res.checkTbl();
+        return res;
+    }
+}
+exports.ParserContext = ParserContext;
 class Parser {
-    constructor(parseFunc) {
+    constructor(context, parseFunc) {
+        this.context = context;
         this.parse = parseFunc;
     }
     // Parser.parse:: State->State
-    static create(parserFunc) { return create(parserFunc); }
+    //static create(parserFunc:ParseFunc) { return create(parserFunc);}
+    create(parserFunc) { return this.context.create(parserFunc); }
     except(f) {
         var t = this;
-        return this.and(Parser.create(function (res) {
+        return this.and(this.create((res) => {
             //var res=t.parse(s);
             //if (!res.success) return res;
             if (f.apply({}, res.result)) {
@@ -4033,17 +4104,18 @@ class Parser {
     noFollow(p) {
         var t = this;
         nc(p, "p");
-        return this.and(Parser.create(function (res) {
+        return this.and(this.create(function (res) {
             var res2 = p.parse(res);
             res.success = !res2.success;
             return res;
         }).setName("(" + t.name + " noFollow " + p.name + ")", this));
     }
     andNoUnify(next) {
+        //if (this.struct && this.struct.type==="empty") return next;
         nc(next, "next"); // next==next
-        var t = this; // Parser
-        var res = Parser.create(function (s) {
-            var r1 = t.parse(s); // r1:State
+        //var t=this; // Parser
+        var res = this.create((s) => {
+            var r1 = this.parse(s); // r1:State
             if (!r1.success)
                 return r1;
             var r2 = next.parse(r1); //r2:State
@@ -4056,11 +4128,12 @@ class Parser {
         return res.setName("(" + this.name + " " + next.name + ")", { type: "and", elems: [...elems, next] });
     }
     and(next) {
+        //if (this.struct && this.struct.type==="empty") return next;
         const _res = this.andNoUnify(next);
-        //if (!$.options.optimizeFirst) return res;
-        if (!this._first)
+        if (!options.optimizeFirst)
             return _res;
-        var tbl = this._first.tbl;
+        //if (!this._first) return _res;
+        var tbl = this._first || { [exports.ALL]: this };
         var ntbl = {};
         //  tbl           ALL:a1  b:b1     c:c1
         //  next.tbl      ALL:a2           c:c2     d:d2
@@ -4070,7 +4143,7 @@ class Parser {
         }
         if (tbl[exports.ALL])
             ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next);
-        const res = Parser.fromFirst(this._first.space, ntbl);
+        const res = this.context.fromFirst(ntbl);
         res.setName("(" + this.name + " >> " + next.name + ")", _res);
         if (options.verboseFirst) {
             console.log("Created aunify name=" + res.name + " tbl=" + dispTbl(ntbl));
@@ -4081,7 +4154,7 @@ class Parser {
         const t = this;
         let p;
         if (typeof f == "function") {
-            p = Parser.create(function (r1) {
+            p = this.create(function (r1) {
                 var r2 = r1.clone();
                 r2.result = [f.apply({}, r1.result)];
                 return r2;
@@ -4089,7 +4162,7 @@ class Parser {
         }
         else
             p = f;
-        var res = Parser.create(function (s) {
+        var res = this.create(function (s) {
             var r1 = t.parse(s); // r1:State
             if (!r1.success)
                 return r1;
@@ -4098,16 +4171,17 @@ class Parser {
         return res;
     }
     ret(next) {
-        if (!this._first)
+        if (!options.optimizeFirst)
             return this.retNoUnify(next);
-        var tbl = this._first.tbl;
+        //if (!this._first) return this.retNoUnify(next);
+        var tbl = this._first || { [exports.ALL]: this };
         var ntbl = {};
         for (var c in tbl) {
             ntbl[c] = tbl[c].retNoUnify(next);
         }
         if (tbl[exports.ALL])
             ntbl[exports.ALL] = tbl[exports.ALL].retNoUnify(next);
-        const res = Parser.fromFirst(this._first.space, ntbl);
+        const res = this.context.fromFirst(ntbl);
         res.setName("(" + this.name + " >>= " + next.name + ")");
         if (options.verboseFirst) {
             console.log("Created runify name=" + res.name + " tbl=" + dispTbl(ntbl));
@@ -4118,22 +4192,21 @@ class Parser {
     this._first={space: space, chars:String};
     this._first={space: space, tbl:{char:Parser}};
 */
-    first(space, ct) {
+    first(/*space:SpaceSpec,*/ ct) {
         if (!options.optimizeFirst)
             return this;
-        if (space == null)
-            throw "Space is null2!";
+        //if (space==null) throw "Space is null2!";
         if (typeof ct == "string") {
             var tbl = {};
             for (var i = 0; i < ct.length; i++) {
                 tbl[ct.substring(i, i + 1)] = this;
             }
             //this._first={space: space, tbl:tbl};
-            return Parser.fromFirst(space, tbl).setName("(fst " + this.name + ")", this);
+            return this.context.fromFirst(tbl).setName("(fst " + this.name + ")", this);
             //        		this._first={space: space, chars:ct};
         }
-        else if (ct == null) {
-            return Parser.fromFirst(space, { [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
+        else if (ct === exports.ALL) {
+            return this.context.fromFirst({ [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
             //this._first={space:space, tbl:{ALL:this}};
         }
         else if (typeof ct == "object") {
@@ -4144,18 +4217,19 @@ class Parser {
     firstTokens(tokens) {
         if (!options.optimizeFirst)
             return this;
-        if (typeof tokens == "string")
-            tokens = [tokens];
         const tbl = {};
-        if (tokens) {
-            for (const token of tokens) {
+        if (typeof tokens == "symbol") {
+            if (tokens !== exports.ALL)
+                throw new Error("except ALL not allowed ");
+            tbl[exports.ALL] = this;
+        }
+        else {
+            const tka = (typeof tokens == "string" ? [tokens] : tokens);
+            for (const token of tka) {
                 tbl[token] = this;
             }
         }
-        else {
-            tbl[exports.ALL] = this;
-        }
-        return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
+        return this.context.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
     }
     unifyFirst(other) {
         //var thiz=this;
@@ -4171,7 +4245,7 @@ class Parser {
         //other.checkTbl();
         function mergeTbl() {
             //   {except_ALL: contains_ALL}
-            var t2 = other._first.tbl;
+            var t2 = other._first || { [exports.ALL]: other };
             //before tbl={ALL:a1, b:b1, c:c1}   t2={ALL:a2,c:c2,d:d2}
             //       b1 conts a1  c1 conts a1     c2 conts a2   d2 conts a2
             //after  tbl={ALL:a1|a2 , b:b1|a2    c:c1|c2    d:a1|d2 }
@@ -4201,23 +4275,22 @@ class Parser {
                 }
             }
         }
-        Object.assign(tbl, this._first.tbl);
+        Object.assign(tbl, this._first || { [exports.ALL]: this });
         mergeTbl();
         const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
-        var res = Parser.fromFirst(this._first.space, tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", elems: [...elems, other] });
+        var res = this.context.fromFirst(tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", elems: [...elems, other] });
         if (options.verboseFirst)
             console.log("Created unify name=" + res.name + " tbl=" + dispTbl(tbl));
         return res;
     }
     or(other) {
         nc(other, "other");
-        if (this._first && other._first &&
-            this._first.space && this._first.space === other._first.space) {
+        if (this.context === other.context) {
             return this.unifyFirst(other);
         }
         else {
             if (options.verboseFirst) {
-                console.log("Cannot unify" + this.name + " || " + other.name + " " + this._first + " - " + other._first);
+                console.log("Cannot unify" + this.name + " || " + other.name, this.context, other.context);
             }
             return this.orNoUnify(other);
         }
@@ -4225,7 +4298,7 @@ class Parser {
     orNoUnify(other) {
         var t = this; // t:Parser
         const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
-        var res = Parser.create(function (s) {
+        var res = this.create(function (s) {
             var r1 = t.parse(s); // r1:State
             if (!r1.success) {
                 var r2 = other.parse(s); // r2:State
@@ -4240,18 +4313,18 @@ class Parser {
     setName(n, struct) {
         this.name = n;
         if (struct instanceof Parser) {
-            this.struct = this.struct || struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
+            this.struct = struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
         }
         else {
-            this.struct = struct;
+            this.struct = this.struct || struct;
         }
         return this;
     }
-    repN(min) {
+    repNNoUnify(min) {
         var p = this;
         if (!min)
             min = 0;
-        var res = Parser.create(function (s) {
+        const res = this.create((s) => {
             let current = s;
             var result = [];
             while (true) {
@@ -4277,14 +4350,33 @@ class Parser {
                 }
             }
         });
-        //if (min>0) res._first=p._first;
         return res.setName("(" + p.name + " * " + min + ")", { type: "rept", elem: p });
+    }
+    repN(min) {
+        const _res = this.repNNoUnify(min);
+        //return _res;
+        if (!options.optimizeFirst || min == 0)
+            return _res;
+        const fst = this._first || { [exports.ALL]: this };
+        const nf = {}; //{space: olf.space, tbl:{}};
+        for (let k in fst) {
+            nf[k] = fst[k].repNNoUnify(min);
+        }
+        if (fst[exports.ALL]) {
+            nf[exports.ALL] = fst[exports.ALL].repNNoUnify(min);
+        }
+        else if (min == 0) {
+            nf[exports.ALL] = this.context.repEmpty;
+        }
+        if (min == 0)
+            console.log("rep0", dispTbl(nf));
+        return this.context.fromFirst(nf).setName(_res.name, _res.struct);
     }
     rep0() { return this.repN(0); }
     rep1() { return this.repN(1); }
-    opt() {
+    optNoUnify() {
         var t = this;
-        return Parser.create(function (s) {
+        return this.create(function (s) {
             var r = t.parse(s);
             if (r.success) {
                 return r;
@@ -4296,6 +4388,24 @@ class Parser {
                 return s;
             }
         }).setName("(" + t.name + ")?", { type: "opt", elem: t });
+    }
+    opt() {
+        const _res = this.optNoUnify();
+        //return _res;
+        if (!options.optimizeFirst)
+            return _res;
+        const fst = this._first || { [exports.ALL]: this };
+        const nf = {};
+        for (let k in fst) {
+            nf[k] = fst[k].optNoUnify();
+        }
+        if (fst[exports.ALL]) {
+            nf[exports.ALL] = fst[exports.ALL].optNoUnify();
+        }
+        else {
+            nf[exports.ALL] = this.context.optEmpty;
+        }
+        return this.context.fromFirst(nf).setName(_res.name, _res.struct);
     }
     sep1(sep, valuesToArray) {
         var value = this;
@@ -4340,48 +4450,6 @@ class Parser {
         }
         return res;
     }
-    static fromFirst(space, tbl) {
-        if (space == "TOKEN") {
-            return Parser.fromFirstTokens(tbl);
-        }
-        var res = Parser.create(function (s0) {
-            var s = space.parse(s0);
-            var f = s.src.str.substring(s.pos, s.pos + 1);
-            if (options.traceFirstTbl) {
-                console.log(this.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
-            }
-            if (tbl[f]) {
-                return tbl[f].parse(s);
-            }
-            if (tbl[exports.ALL])
-                return tbl[exports.ALL].parse(s);
-            s.success = false;
-            return s;
-        });
-        res._first = { space: space, tbl: tbl };
-        //res.checkTbl();
-        return res;
-    }
-    static fromFirstTokens(tbl) {
-        var res = Parser.create(function (s) {
-            const src = s.src;
-            var t = src.tokens[s.pos];
-            var f = t ? t.type : null;
-            if (options.traceFirstTbl) {
-                console.log(this.name + ": firstT=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
-            }
-            if (f != null && tbl[f]) {
-                return tbl[f].parse(s);
-            }
-            if (tbl[exports.ALL])
-                return tbl[exports.ALL].parse(s);
-            s.success = false;
-            return s;
-        });
-        res._first = { space: "TOKEN", tbl: tbl };
-        //res.checkTbl();
-        return res;
-    }
 }
 exports.Parser = Parser;
 class State {
@@ -4422,48 +4490,78 @@ class State {
     }
 }
 exports.State = State;
-function strLike(func) {
-    // func :: str,pos, state? -> {len:int, other...}  (null for no match )
-    return Parser.create(function (state) {
-        const src = state.src;
-        const str = src.str;
-        if (str == null)
-            throw "strLike: str is null!";
-        var spos = state.pos;
-        //console.log(" strlike: "+str+" pos:"+spos);
-        var r1 = func(str, spos, state);
-        if (options.traceToken)
-            console.log("pos=" + spos + " r=" + r1);
-        if (r1) {
-            if (options.traceToken)
-                console.log("str:succ");
-            r1.pos = spos;
-            r1.src = state.src; // insert 2013/05/01
-            var ns = state.clone();
-            Object.assign(ns, { pos: spos + r1.len, success: true, result: [r1] });
-            state.updateMaxPos(ns.pos);
-            return ns;
-        }
-        else {
-            if (options.traceToken)
-                console.log("str:fail");
-            state.success = false;
-            return state;
-        }
-    }).setName("STRLIKE");
-}
+const rawStringParserContext = new ParserContext("RAWSTR");
 class StringParser {
-    static str(st) {
-        return this.strLike(function (str, pos) {
+    //context: ParserContext;
+    constructor(context = rawStringParserContext) {
+        this.context = context;
+        this.empty = this.create(function (state) {
+            var res = state.clone();
+            res.success = true;
+            res.result = [null]; //{length:0, isEmpty:true}];
+            return res;
+        }).setName("E");
+        this.fail = this.create(function (s) {
+            s.success = false;
+            return s;
+        }).setName("F");
+        this.eof = this.strLike(function (str, pos) {
+            if (pos == str.length)
+                return { len: 0 };
+            return null;
+        }).setName("EOF");
+    }
+    static withSpace(space) {
+        return new StringParser(new ParserContext(space));
+    }
+    create(pf) { return this.context.create(pf); }
+    str(st) {
+        let res = this.strLike((str, pos) => {
             if (str.substring(pos, pos + st.length) === st)
                 return { len: st.length };
             return null;
         }).setName(st);
+        if (st.length > 0)
+            res = res.first(st[0]);
+        return res;
     }
-    static reg(r) {
+    strLike(func) {
+        // func :: str,pos, state? -> {len:int, other...}  (null for no match )
+        return this.create((state) => {
+            if (this.context.space instanceof Parser) {
+                state = this.context.space.parse(state);
+            }
+            const src = state.src;
+            const str = src.str;
+            if (str == null)
+                throw "strLike: str is null!";
+            var spos = state.pos;
+            //console.log(" strlike: "+str+" pos:"+spos);
+            var r1 = func(str, spos, state);
+            if (options.traceToken)
+                console.log("pos=" + spos + " r=" + r1);
+            if (r1) {
+                if (options.traceToken)
+                    console.log("str:succ");
+                r1.pos = spos;
+                r1.src = state.src; // insert 2013/05/01
+                var ns = state.clone();
+                Object.assign(ns, { pos: spos + r1.len, success: true, result: [r1] });
+                state.updateMaxPos(ns.pos);
+                return ns;
+            }
+            else {
+                if (options.traceToken)
+                    console.log("str:fail");
+                state.success = false;
+                return state;
+            }
+        }).setName("STRLIKE");
+    }
+    reg(r) {
         if (!(r + "").match(/^\/\^/))
             console.log("Waring regex should have ^ at the head:" + (r + ""));
-        return strLike(function (str, pos) {
+        return this.strLike(function (str, pos) {
             var res = r.exec(str.substring(pos));
             if (res) {
                 res.len = res[0].length;
@@ -4472,33 +4570,22 @@ class StringParser {
             return null;
         }).setName(r + "");
     }
-    static parse(parser, str, global) {
+    parse(parser, str, global) {
         var st = new State(str, global);
         return parser.parse(st);
     }
 }
 exports.StringParser = StringParser;
-StringParser.empty = Parser.create(function (state) {
-    var res = state.clone();
-    res.success = true;
-    res.result = [null]; //{length:0, isEmpty:true}];
-    return res;
-}).setName("E");
-StringParser.fail = Parser.create(function (s) {
-    s.success = false;
-    return s;
-}).setName("F");
-StringParser.strLike = strLike;
-StringParser.eof = strLike(function (str, pos) {
-    if (pos == str.length)
-        return { len: 0 };
-    return null;
-}).setName("EOF");
 //  why not eof: ? because StringParser.strLike
 //$.StringParser=StringParser;
+exports.tokensParserContext = new ParserContext("TOKEN");
 exports.TokensParser = {
-    token: function (type) {
-        return Parser.create(function (s) {
+    context: exports.tokensParserContext,
+    create(pf) {
+        return exports.tokensParserContext.create(pf);
+    },
+    token(type) {
+        return exports.tokensParserContext.create(function (s) {
             const src = s.src;
             const t = src.tokens[s.pos];
             s.success = false;
@@ -4514,11 +4601,11 @@ exports.TokensParser = {
             return s;
         }).setName(type, { type: "primitive", name: type }).firstTokens(type);
     },
-    parse: function (parser, tokens, global) {
+    parse: function (parser, tokens, global = {}) {
         var st = new State(tokens, global);
         return parser.parse(st);
     },
-    eof: Parser.create(function (s) {
+    eof: exports.tokensParserContext.create(function (s) {
         const src = s.src;
         const suc = (s.pos >= src.tokens.length);
         s.success = suc;
@@ -4530,23 +4617,23 @@ exports.TokensParser = {
     }).setName("EOT")
 };
 //$.TokensParser=TokensParser;
-function lazy(pf) {
+function lazy(context, pf) {
     //let p:Parser;
+    const lz = { resolve, resolved: null };
     function resolve() {
-        const l = self._lazy;
-        if (!l.resolved) {
-            l.resolved = pf();
-            if (!l.resolved)
+        if (!lz.resolved) {
+            lz.resolved = pf();
+            if (!lz.resolved)
                 throw new Error(pf + " returned null!");
             //if (!self.struct) self.struct=p.struct;
         }
-        return l.resolved;
+        return lz.resolved;
     }
-    const self = Parser.create(function (st) {
+    const self = context.create(function (st) {
         //this.name=pf.name;
         return resolve().parse(st);
     }).setName("LZ");
-    self._lazy = { resolve };
+    self._lazy = lz;
     return self;
 }
 exports.lazy = lazy;
@@ -4607,40 +4694,21 @@ exports.getRange = getRange;
         "disp", "Parser", "ExpressionParser", "TError"],
 function (Grammar, XMLBuffer, IndentBuffer, TT,
         disp, Parser, ExpressionParser, TError) {*/
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-const Parser = __importStar(require("./parser"));
+//import * as Parser from "./parser";
 const TError_1 = __importDefault(require("../runtime/TError"));
 const R_1 = __importDefault(require("../lib/R"));
 const ExpressionParser2_1 = __importDefault(require("./ExpressionParser2"));
 const Grammar_1 = __importDefault(require("./Grammar"));
+const parser_1 = require("./parser");
 module.exports = function PF({ TT }) {
-    var p = Parser;
+    //var p:any=Parser;
     var $ = {};
-    var g = (0, Grammar_1.default)();
+    var g = (0, Grammar_1.default)(parser_1.TokensParser.context);
     var G = g.get;
-    var sp = p.StringParser; //(str);
-    var tk = p.TokensParser.token;
+    var tk = parser_1.TokensParser.token;
     function disp(n) { return JSON.stringify(n); }
     var num = tk("number").ret(function (n) {
         n.type = "number";
@@ -4656,7 +4724,7 @@ module.exports = function PF({ TT }) {
     for (var resvk in TT.reserved) {
         var resvp = tk(resvk);
         //console.log(resvk,resvp, resvp instanceof Parser.Parser);
-        if (resvp instanceof p.Parser && resvk !== "constructor") {
+        if (resvp instanceof parser_1.Parser && resvk !== "constructor") {
             /*if (resvk==="constructor") {
                 console.log("c");
             }*/
@@ -4697,41 +4765,46 @@ module.exports = function PF({ TT }) {
             return list;
         }).setName(`comLastOpt ${p.name}`, { type: "rept", elem: p });
     }
-    var e = (0, ExpressionParser2_1.default)();
-    var arrayElem = g("arrayElem").ands(tk("["), e.lazy(), tk("]")).ret(null, "subscript");
-    var argList = g("argList").ands(tk("("), comLastOpt(e.lazy()), tk(")")).ret(null, "args");
+    var e = (0, ExpressionParser2_1.default)(parser_1.TokensParser.context);
+    var explz = e.lazy().firstTokens(parser_1.ALL);
+    var arrayElem = g("arrayElem").ands(tk("["), explz, tk("]")).ret(null, "subscript");
+    var argList = g("argList").ands(tk("("), comLastOpt(explz), tk(")")).ret(null, "args");
     var member = g("member").ands(tk("."), symresv).ret(null, "name");
-    var parenExpr = g("parenExpr").ands(tk("("), e.lazy(), tk(")")).ret(null, "expr");
+    var parenExpr = g("parenExpr").ands(tk("("), explz, tk(")")).ret(null, "expr");
     var varAccess = g("varAccess").ands(symbol).ret("name");
     var funcExpr_l = G("funcExpr").firstTokens(["function", "\\"]);
     var funcExprArg = g("funcExprArg").ands(funcExpr_l).ret("obj");
     var objlit_l = G("objlit").firstTokens("{");
     var objlitArg = g("objlitArg").ands(objlit_l).ret("obj");
-    var objOrFuncArg = objlitArg.or(funcExprArg);
+    var objOrFuncArg = g("objOrFuncArg").ors(objlitArg, funcExprArg);
     function genCallBody(argList, oof) {
         var res = [];
         if (argList && !argList.args) {
             throw disp(argList);
         }
         if (argList) {
-            var rg = Parser.getRange(argList);
-            Parser.addRange(res, rg);
+            var rg = (0, parser_1.getRange)(argList);
+            (0, parser_1.addRange)(res, rg);
             argList.args.forEach(function (arg) {
                 res.push(arg);
             });
         }
         oof.forEach(function (o) {
-            var rg = Parser.getRange(o);
-            Parser.addRange(res, rg);
+            var rg = (0, parser_1.getRange)(o);
+            (0, parser_1.addRange)(res, rg);
             res.push(o.obj);
         });
         return res;
     }
-    var callBody = argList.and(objOrFuncArg.rep0()).ret(function (a, oof) {
+    const callBodyWithArgList = argList.and(objOrFuncArg.rep0()).ret(function (a, oof) {
         return genCallBody(a, oof);
-    }).or(objOrFuncArg.rep1().ret(function (oof) {
+    });
+    g("callBodyWithArgList").alias(callBodyWithArgList);
+    const callBodyWithoutArgList = objOrFuncArg.rep1().ret(function (oof) {
         return genCallBody(null, oof);
-    })).setName("callBody");
+    });
+    g("callBodyWithoutArgList").alias(callBodyWithoutArgList);
+    const callBody = g("callBody").ors(callBodyWithArgList, callBodyWithoutArgList); //or().setName("callBody");
     //var callBodyOld=argList.or(objlitArg);
     var call = g("call").ands(callBody).ret("args");
     var scall = g("scall").ands(callBody).ret("args"); //supercall
@@ -4822,7 +4895,7 @@ module.exports = function PF({ TT }) {
     e.postfix(prio, arrayElem);
     function mki(left, op, right) {
         var res = { type: "infix", left: left, op: op, right: right };
-        Parser.setRange(res);
+        (0, parser_1.setRange)(res);
         res.toString = function () {
             return "(" + left + op + right + ")";
         };
@@ -4833,10 +4906,11 @@ module.exports = function PF({ TT }) {
     /*e.mkPostfix(function (p) {
         return {type:"postfix", expr:p};
     });*/
-    const expr = e.build().setName("expr"); //.profile();
+    const expr = e.build().setName("expr").firstTokens(parser_1.ALL); //.profile();
     g("elem").alias(e.getElement());
+    g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };
-    var stmt = G("stmt").firstTokens();
+    var stmt = G("stmt").firstTokens(parser_1.ALL);
     var exprstmt = g("exprstmt").ands(expr, tk(";")).ret("expr");
     g("compound").ands(tk("{"), stmt.rep0(), tk("}")).ret(null, "stmts");
     var elseP = tk("else").and(stmt).retN(1);
@@ -4845,7 +4919,7 @@ module.exports = function PF({ TT }) {
     /*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
         return {cond: cond, next:next  };
     });*/
-    var forin = g("forin").ands(tk("var").opt(), symbol.sep1(tk(","), true), tk("in").or(tk("of")), expr).ret("isVar", "vars", "inof", "set");
+    var forin = g("forin").ands(tk("var").opt() /*.firstTokens(["var","symbol"])*/, symbol.sep1(tk(","), true), tk("in").or(tk("of")), expr).ret("isVar", "vars", "inof", "set");
     var normalFor = g("normalFor").ands(stmt, expr.opt(), tk(";"), expr.opt()).ret("init", "cond", null, "next");
     /*var infor=expr.and(trailFor.opt()).ret(function (a,b) {
         if (b==null) return {type:"forin", expr: a};
@@ -4892,7 +4966,7 @@ module.exports = function PF({ TT }) {
     var incl = g("includes").ands(tk("includes"), symbol.sep1(tk(","), true), tk(";")).
         ret(null, "includeClassNames");
     var program = g("program").
-        ands(ext.opt(), incl.opt(), stmt.rep0(), Parser.TokensParser.eof).
+        ands(ext.opt(), incl.opt(), stmt.rep0(), parser_1.TokensParser.eof).
         ret("ext", "incl", "stmts");
     /*for (var i in g.defs) {
         g.defs[i].profile();
@@ -4914,7 +4988,7 @@ module.exports = function PF({ TT }) {
         }
         var tokens = tokenRes.result[0];
         //console.log("Tokens: "+tokens.join(","));
-        var res = p.TokensParser.parse(program, tokens);
+        var res = parser_1.TokensParser.parse(program, tokens);
         //console.log("POS="+res.src.maxPos);
         if (res.isSuccess()) {
             var node = res.result[0];
@@ -4936,8 +5010,8 @@ module.exports = function PF({ TT }) {
         return x.buf;
     };*/
     $.extension = "tonyu";
-    g.buildTypes();
-    g.checkFirstTbl();
+    //g.buildTypes();
+    //g.checkFirstTbl();
     return $;
 };
 
@@ -8058,25 +8132,25 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     }
     //var sp=Parser.StringParser;
     var SAMENAME = "SAMENAME";
-    var DIV = 1, REG = 2;
+    const DIV = 1, REG = 2;
     //var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
-    var space = parser_1.StringParser.strLike(skipSpace).setName("space");
+    var space = new parser_1.StringParser().strLike(skipSpace).setName("space");
+    const sp = parser_1.StringParser.withSpace(space);
     function tk(r, name) {
-        var pat;
-        var fst;
+        let pat;
+        //let fst:string;
         if (typeof r == "string") {
-            pat = parser_1.StringParser.str(r);
-            if (r.length > 0)
-                fst = r.substring(0, 1);
+            pat = sp.str(r);
+            //if (r.length>0) fst=r.substring(0,1);
             if (!name)
                 name = r;
         }
         else {
-            pat = parser_1.StringParser.reg(r);
+            pat = sp.reg(r);
             if (!name)
                 name = r + "";
         }
-        var res = space.and(pat).ret(function (a, b) {
+        var res = pat.ret((b) => {
             var res = {};
             res.pos = b.pos;
             if (typeof res.pos != "number")
@@ -8091,16 +8165,15 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             res.isToken = true;
             return res;
         });
-        if (fst)
-            res = res.first(space, fst);
+        //if (fst) res=res.first(fst);
         return res.setName(name); //.profile();
     }
     var parsers = {}, posts = {};
-    function dtk2(prev, name, parser, post) {
+    function dtk2(prev, name, parser) {
         //console.log("2reg="+prev+" name="+name);
         if (typeof parser == "string")
-            parser = tk(parser);
-        parsers[prev] = or(parsers[prev], parser.ret(function (res) {
+            parser = tk(parser, name);
+        parsers[prev] = or(parsers[prev], parser.ret((res) => {
             res.type = name;
             return res;
         }).setName(name));
@@ -8113,7 +8186,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             //prev=2  -> m=1x,2
             //XXprev=3  -> m=1,2,3
             if ((prev & m) != 0)
-                dtk2(prev & m, name, parser, post);
+                dtk2(prev & m, name, parser);
         }
         posts[name] = post;
     }
@@ -8122,7 +8195,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             return b;
         return a.or(b);
     }
-    var all = parser_1.Parser.create(function (st) {
+    var all = sp.create(function (st) {
         var mode = REG;
         var res = [];
         while (true) {
@@ -8131,6 +8204,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
                 break;
             var e = st.result[0];
             mode = posts[e.type];
+            //console.log("Token",e, mode);
             res.push(e);
         }
         st = space.parse(st);
@@ -8145,7 +8219,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
         n.type = "number";
         n.value = n.text - 0; //parseInt(n.text);
         return n;
-    }).first(space, "0123456789");
+    }).first("0123456789");
     var literal = tk({ exec: function (s) {
             var head = s.substring(0, 1);
             if (head !== '"' && head !== "'")
@@ -8161,7 +8235,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             }
             return false;
         }, toString: function () { return "literal"; }
-    }).first(space, "\"'");
+    }).first("\"'");
     var regex = tk({ exec: function (s) {
             if (s.substring(0, 1) !== '/')
                 return false;
@@ -8180,7 +8254,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             }
             return false;
         }, toString: function () { return "regex"; }
-    }).first(space, "/");
+    }).first("/");
     dtk(REG | DIV, "number", num, DIV);
     dtk(REG, "regex", regex, DIV);
     dtk(REG | DIV, "literal", literal, DIV);
@@ -8220,7 +8294,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     dtk(REG | DIV, SAMENAME, "*", REG);
     dtk(REG | DIV, SAMENAME, "%", REG);
     dtk(DIV, SAMENAME, "/", REG);
-    dtk(DIV | REG, SAMENAME, "^", REG);
+    //dtk(DIV|REG, SAMENAME ,"^",REG );
     dtk(DIV | REG, SAMENAME, "~", REG);
     dtk(DIV | REG, SAMENAME, "\\", REG);
     dtk(DIV | REG, SAMENAME, ":", REG);
@@ -8236,7 +8310,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             s.text = s.text.toLowerCase();
         }
         return s;
-    }).first(space);
+    }).first(parser_1.ALL);
     for (var n in reserved) {
         posts[n] = REG;
     }
@@ -8244,12 +8318,15 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     posts.symbol = DIV;
     parsers[REG] = or(parsers[REG], symresv);
     parsers[DIV] = or(parsers[DIV], symresv);
+    //console.log(parsers[REG]);
+    //console.log(parsers[DIV]);
     function parse(str) {
-        var res = parser_1.StringParser.parse(all, str);
+        var res = sp.parse(all, str);
         if (res.success) {
         }
         else {
-            console.log("Stopped at " + str.substring(res.src.maxPos - 5, res.src.maxPos + 5));
+            console.log("Stopped at " +
+                str.substring(res.src.maxPos - 5, res.src.maxPos) + "!!HERE!!" + str.substring(res.src.maxPos, res.src.maxPos + 5));
         }
         return res;
     }
