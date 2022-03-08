@@ -135,10 +135,10 @@ class Parser {
     }
     and(next) {
         const _res = this.andNoUnify(next);
-        //if (!$.options.optimizeFirst) return res;
-        if (!this._first)
+        if (!options.optimizeFirst)
             return _res;
-        var tbl = this._first;
+        //if (!this._first) return _res;
+        var tbl = this._first || { [exports.ALL]: this };
         var ntbl = {};
         //  tbl           ALL:a1  b:b1     c:c1
         //  next.tbl      ALL:a2           c:c2     d:d2
@@ -176,9 +176,10 @@ class Parser {
         return res;
     }
     ret(next) {
-        if (!this._first)
+        if (!options.optimizeFirst)
             return this.retNoUnify(next);
-        var tbl = this._first;
+        //if (!this._first) return this.retNoUnify(next);
+        var tbl = this._first || { [exports.ALL]: this };
         var ntbl = {};
         for (var c in tbl) {
             ntbl[c] = tbl[c].retNoUnify(next);
@@ -196,11 +197,10 @@ class Parser {
     this._first={space: space, chars:String};
     this._first={space: space, tbl:{char:Parser}};
 */
-    first(space, ct) {
+    first(/*space:SpaceSpec,*/ ct) {
         if (!options.optimizeFirst)
             return this;
-        if (space == null)
-            throw "Space is null2!";
+        //if (space==null) throw "Space is null2!";
         if (typeof ct == "string") {
             var tbl = {};
             for (var i = 0; i < ct.length; i++) {
@@ -210,7 +210,7 @@ class Parser {
             return this.context.fromFirst(tbl).setName("(fst " + this.name + ")", this);
             //        		this._first={space: space, chars:ct};
         }
-        else if (ct == null) {
+        else if (ct === exports.ALL) {
             return this.context.fromFirst({ [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
             //this._first={space:space, tbl:{ALL:this}};
         }
@@ -250,7 +250,7 @@ class Parser {
         //other.checkTbl();
         function mergeTbl() {
             //   {except_ALL: contains_ALL}
-            var t2 = other._first;
+            var t2 = other._first || { [exports.ALL]: other };
             //before tbl={ALL:a1, b:b1, c:c1}   t2={ALL:a2,c:c2,d:d2}
             //       b1 conts a1  c1 conts a1     c2 conts a2   d2 conts a2
             //after  tbl={ALL:a1|a2 , b:b1|a2    c:c1|c2    d:a1|d2 }
@@ -280,7 +280,7 @@ class Parser {
                 }
             }
         }
-        Object.assign(tbl, this._first);
+        Object.assign(tbl, this._first || { [exports.ALL]: this });
         mergeTbl();
         const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
         var res = this.context.fromFirst(tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", elems: [...elems, other] });
@@ -290,13 +290,12 @@ class Parser {
     }
     or(other) {
         nc(other, "other");
-        if (this._first && other._first &&
-            this._first.space && this._first.space === other._first.space) {
+        if (this.context === other.context) {
             return this.unifyFirst(other);
         }
         else {
             if (options.verboseFirst) {
-                console.log("Cannot unify" + this.name + " || " + other.name + " " + this._first + " - " + other._first);
+                console.log("Cannot unify" + this.name + " || " + other.name, this.context, other.context);
             }
             return this.orNoUnify(other);
         }
@@ -505,7 +504,10 @@ class StringParser {
     }
     strLike(func) {
         // func :: str,pos, state? -> {len:int, other...}  (null for no match )
-        return this.create(function (state) {
+        return this.create((state) => {
+            if (this.context.space instanceof Parser) {
+                state = this.context.space.parse(state);
+            }
             const src = state.src;
             const str = src.str;
             if (str == null)

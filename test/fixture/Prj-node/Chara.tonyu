@@ -11,7 +11,7 @@ y=200;
 fillStyle="yellow";
 radius=16;　
 
-while(x<120) {
+while (x<120) {
     x+=5;
     console.log(x,y,"zen　kaku");
     update();

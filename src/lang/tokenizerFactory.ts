@@ -2,7 +2,7 @@
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
 
-import { StringParser, StrStateSrc } from "./parser";
+import { ALL, Parser, StringParser, StrStateSrc } from "./parser";
 
 //import Parser from "./parser";
 
@@ -20,7 +20,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		8200: 1, 8201: 1, 8202: 1, 8232: 1, 8233: 1, 8239: 1, 8287: 1,
 		12288: 1, 65279: 1
 	};
-	function skipSpace(str,pos) {
+	function skipSpace(str:string,pos:number) {
 		const spos=pos;
 		const max=str.length;
 		//const spcs={9:1,10:1,11:1,12:1,13:1,32:1};
@@ -56,13 +56,14 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 	}
 	//var sp=Parser.StringParser;
 	var SAMENAME="SAMENAME";
-	var DIV=1,REG=2;
+	const DIV=1,REG=2;
+	type Mode=number;
 	//var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
 	var space=new StringParser().strLike(skipSpace).setName("space");
 	const sp=StringParser.withSpace(space);
-	function tk(r, name?) {
-		var pat;
-		var fst;
+	function tk(r, name?:string) {
+		let pat:Parser;
+		let fst:string;
 		if (typeof r=="string") {
 			pat=sp.str(r);
 			if (r.length>0) fst=r.substring(0,1);
@@ -71,7 +72,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			pat=sp.reg(r);
 			if (!name) name=r+"";
 		}
-		var res=space.and(pat).ret(function(a, b) {
+		var res=pat.ret((b)=>{
 			var res:any={};
 			res.pos=b.pos;
 			if (typeof res.pos!="number") throw "no pos for "+name+" ";//+disp(b);
@@ -84,11 +85,11 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			res.isToken=true;
 			return res;
 		});
-		if (fst) res=res.first(space, fst);
+		if (fst) res=res.first(fst);
 		return res.setName(name);//.profile();
 	}
 	var parsers:any={},posts:any={};
-	function dtk2(prev, name, parser, post) {
+	function dtk2(prev:Mode, name:string, parser:Parser|string) {
 		//console.log("2reg="+prev+" name="+name);
 		if (typeof parser=="string") parser=tk(parser);
 		parsers[prev]=or(parsers[prev], parser.ret(function (res) {
@@ -96,13 +97,13 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			return res;
 		}).setName(name) );
 	}
-	function dtk(prev, name, parser, post) {
+	function dtk(prev:Mode, name:string, parser, post:Mode) {
 		if(name==SAMENAME) name=parser;
 		for (var m=1; m<=prev; m*=2) {
 			//prev=1  -> m=1
 			//prev=2  -> m=1x,2
 			//XXprev=3  -> m=1,2,3
-			if ((prev&m)!=0) dtk2(prev&m, name,parser,post);
+			if ((prev&m)!=0) dtk2(prev&m, name, parser);
 		}
 		posts[name]=post;
 	}
@@ -119,6 +120,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			if (!st.success) break;
 			var e=st.result[0];
 			mode=posts[e.type];
+			//console.log("Token",e, mode);
 			res.push(e);
 		}
 		st=space.parse(st);
@@ -133,7 +135,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		n.type="number";
 		n.value=n.text-0;//parseInt(n.text);
 		return n;
-	}).first(space,"0123456789");
+	}).first("0123456789");
 	var literal=tk({exec: function (s) {
 		var head=s.substring(0,1);
 		if (head!=='"' && head!=="'") return false;
@@ -147,7 +149,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		}
 		return false;
 	},toString:function(){return"literal";}
-	}).first(space,"\"'");
+	}).first("\"'");
 	var regex=tk({exec: function (s) {
 		if (s.substring(0,1)!=='/') return false;
 		for (var i=1 ;i<s.length ; i++) {
@@ -163,7 +165,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		}
 		return false;
 	},toString:function(){return"regex";}
-	}).first(space,"/");
+	}).first("/");
 
 	dtk(REG|DIV, "number", num,DIV );
 	dtk(REG,  "regex" ,regex,DIV );
@@ -233,7 +235,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			s.text=s.text.toLowerCase();
 		}
 		return s;
-	}).first(space);
+	}).first(ALL);
 	for (var n in reserved) {
 		posts[n]=REG;
 	}
@@ -241,12 +243,15 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 	posts.symbol=DIV;
 	parsers[REG]=or(parsers[REG],symresv);
 	parsers[DIV]=or(parsers[DIV],symresv);
+	console.log(parsers[REG]);
+	console.log(parsers[DIV]);
 
-	function parse(str) {
+	function parse(str:string) {
 		var res=sp.parse(all, str);
 		if (res.success) {
 		} else {
-			console.log("Stopped at "+str.substring( res.src.maxPos-5, res.src.maxPos+5));
+			console.log("Stopped at "+
+			str.substring( res.src.maxPos-5, res.src.maxPos)+"!!HERE!!"+str.substring(res.src.maxPos,res.src.maxPos+5));
 		}
 		return res;
 	}

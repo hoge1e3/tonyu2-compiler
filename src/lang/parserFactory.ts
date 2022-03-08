@@ -341,7 +341,7 @@ export= function PF({TT}) {
 		return x.buf;
 	};*/
 	$.extension="tonyu";
-	g.buildTypes();
-	g.checkFirstTbl();
+	//g.buildTypes();
+	//g.checkFirstTbl();
 	return $;
 };

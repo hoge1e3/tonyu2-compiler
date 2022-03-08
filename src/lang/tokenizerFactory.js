@@ -58,13 +58,13 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     }
     //var sp=Parser.StringParser;
     var SAMENAME = "SAMENAME";
-    var DIV = 1, REG = 2;
+    const DIV = 1, REG = 2;
     //var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
     var space = new parser_1.StringParser().strLike(skipSpace).setName("space");
     const sp = parser_1.StringParser.withSpace(space);
     function tk(r, name) {
-        var pat;
-        var fst;
+        let pat;
+        let fst;
         if (typeof r == "string") {
             pat = sp.str(r);
             if (r.length > 0)
@@ -77,7 +77,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             if (!name)
                 name = r + "";
         }
-        var res = space.and(pat).ret(function (a, b) {
+        var res = pat.ret((b) => {
             var res = {};
             res.pos = b.pos;
             if (typeof res.pos != "number")
@@ -93,11 +93,11 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             return res;
         });
         if (fst)
-            res = res.first(space, fst);
+            res = res.first(fst);
         return res.setName(name); //.profile();
     }
     var parsers = {}, posts = {};
-    function dtk2(prev, name, parser, post) {
+    function dtk2(prev, name, parser) {
         //console.log("2reg="+prev+" name="+name);
         if (typeof parser == "string")
             parser = tk(parser);
@@ -114,7 +114,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             //prev=2  -> m=1x,2
             //XXprev=3  -> m=1,2,3
             if ((prev & m) != 0)
-                dtk2(prev & m, name, parser, post);
+                dtk2(prev & m, name, parser);
         }
         posts[name] = post;
     }
@@ -132,6 +132,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
                 break;
             var e = st.result[0];
             mode = posts[e.type];
+            //console.log("Token",e, mode);
             res.push(e);
         }
         st = space.parse(st);
@@ -146,7 +147,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
         n.type = "number";
         n.value = n.text - 0; //parseInt(n.text);
         return n;
-    }).first(space, "0123456789");
+    }).first("0123456789");
     var literal = tk({ exec: function (s) {
             var head = s.substring(0, 1);
             if (head !== '"' && head !== "'")
@@ -162,7 +163,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             }
             return false;
         }, toString: function () { return "literal"; }
-    }).first(space, "\"'");
+    }).first("\"'");
     var regex = tk({ exec: function (s) {
             if (s.substring(0, 1) !== '/')
                 return false;
@@ -181,7 +182,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             }
             return false;
         }, toString: function () { return "regex"; }
-    }).first(space, "/");
+    }).first("/");
     dtk(REG | DIV, "number", num, DIV);
     dtk(REG, "regex", regex, DIV);
     dtk(REG | DIV, "literal", literal, DIV);
@@ -237,7 +238,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             s.text = s.text.toLowerCase();
         }
         return s;
-    }).first(space);
+    }).first(parser_1.ALL);
     for (var n in reserved) {
         posts[n] = REG;
     }
@@ -245,12 +246,15 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     posts.symbol = DIV;
     parsers[REG] = or(parsers[REG], symresv);
     parsers[DIV] = or(parsers[DIV], symresv);
+    console.log(parsers[REG]);
+    console.log(parsers[DIV]);
     function parse(str) {
         var res = sp.parse(all, str);
         if (res.success) {
         }
         else {
-            console.log("Stopped at " + str.substring(res.src.maxPos - 5, res.src.maxPos + 5));
+            console.log("Stopped at " +
+                str.substring(res.src.maxPos - 5, res.src.maxPos) + "!!HERE!!" + str.substring(res.src.maxPos, res.src.maxPos + 5));
         }
         return res;
     }
