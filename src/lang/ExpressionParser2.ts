@@ -1,11 +1,10 @@
 // parser.js の補助ライブラリ．式の解析を担当する
 
-import { Parser, setRange } from "./parser";
+import { Parser, ParserContext, setRange } from "./parser";
 
 //import Parser from "./parser";
-export= function ExpressionParser (name="Expression") {
+export= function ExpressionParser (context: ParserContext, name="Expression") {
 	//var $:any={};
-	var EXPSTAT="EXPSTAT";
 	//  first 10     *  +  <>  &&  ||  =     0  later
 	function opType(type, prio) {
 		return {
@@ -36,7 +35,7 @@ export= function ExpressionParser (name="Expression") {
 		return {
 			reg(type, prio, a) {
 				var opt=opType(type, prio);
-				built.add(a.ret(Parser.create(function (r) {
+				built.add(a.ret(context.create(function (r) {
 					(r as any).opType=opt;
 					return r;
 				})).setName("(opType "+opt+" "+a.name+")") );
@@ -101,7 +100,7 @@ export= function ExpressionParser (name="Expression") {
 	build() {
 		//postfixOrInfix.build();
 		//prefixOrElement.build();
-		$.built= Parser.create(function (st) {
+		$.built= context.create(function (st) {
 			return parse(0,st);
 		}).setName(name);
 		return $.built;
@@ -125,7 +124,7 @@ export= function ExpressionParser (name="Expression") {
 		return setRange({type:"trifixr", left:left, op1:op1, mid:mid, op2:op2, right:right});
 	},
 	lazy() {
-		return Parser.create(function (st) {
+		return context.create(function (st) {
 			return $.built.parse(st);
 		}).setName(name,{type:"lazy",name});
 	},

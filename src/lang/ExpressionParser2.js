@@ -1,9 +1,8 @@
 "use strict";
 // parser.js の補助ライブラリ．式の解析を担当する
 const parser_1 = require("./parser");
-module.exports = function ExpressionParser(name = "Expression") {
+module.exports = function ExpressionParser(context, name = "Expression") {
     //var $:any={};
-    var EXPSTAT = "EXPSTAT";
     //  first 10     *  +  <>  &&  ||  =     0  later
     function opType(type, prio) {
         return {
@@ -38,7 +37,7 @@ module.exports = function ExpressionParser(name = "Expression") {
         return {
             reg(type, prio, a) {
                 var opt = opType(type, prio);
-                built.add(a.ret(parser_1.Parser.create(function (r) {
+                built.add(a.ret(context.create(function (r) {
                     r.opType = opt;
                     return r;
                 })).setName("(opType " + opt + " " + a.name + ")"));
@@ -103,7 +102,7 @@ module.exports = function ExpressionParser(name = "Expression") {
         build() {
             //postfixOrInfix.build();
             //prefixOrElement.build();
-            $.built = parser_1.Parser.create(function (st) {
+            $.built = context.create(function (st) {
                 return parse(0, st);
             }).setName(name);
             return $.built;
@@ -127,7 +126,7 @@ module.exports = function ExpressionParser(name = "Expression") {
             return (0, parser_1.setRange)({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
         },
         lazy() {
-            return parser_1.Parser.create(function (st) {
+            return context.create(function (st) {
                 return $.built.parse(st);
             }).setName(name, { type: "lazy", name });
         },

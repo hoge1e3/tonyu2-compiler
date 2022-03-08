@@ -8,12 +8,12 @@
 function (Grammar, XMLBuffer, IndentBuffer, TT,
 		disp, Parser, ExpressionParser, TError) {*/
 
-import * as Parser from "./parser";
+//import * as Parser from "./parser";
 import TError from "../runtime/TError";
 import R from "../lib/R";
 import ExpressionParser from "./ExpressionParser2";
 import Grammar from "./Grammar";
-import { ALL } from "./parser";
+import { addRange, ALL, getRange, Parser, setRange, StringParser, TokensParser } from "./parser";
 
 /*const Grammar=require("./Grammar");
 const IndentBuffer=require("./IndentBuffer");
@@ -22,13 +22,12 @@ import R = require("../lib/R");
 const ExpressionParser=require("./ExpressionParser2");
 const TError=require("../runtime/TError");*/
 export= function PF({TT}) {
-	var p:any=Parser;
+	//var p:any=Parser;
 	var $:any={};
-	var g=Grammar();
+	var g=Grammar(TokensParser.context);
 	var G=g.get;
 
-	var sp=p.StringParser;//(str);
-	var tk=p.TokensParser.token;
+	var tk=TokensParser.token;
 	function disp(n) {return JSON.stringify(n);}
 	var num=tk("number").ret(function (n) {
 		n.type="number";
@@ -42,7 +41,7 @@ export= function PF({TT}) {
 	for (var resvk in TT.reserved) {
 		var resvp=tk(resvk);
 		//console.log(resvk,resvp, resvp instanceof Parser.Parser);
-		if (resvp instanceof p.Parser && resvk!=="constructor") {
+		if (resvp instanceof Parser && resvk!=="constructor") {
 			/*if (resvk==="constructor") {
 				console.log("c");
 			}*/
@@ -84,7 +83,7 @@ export= function PF({TT}) {
 			return list;
 		}).setName(`comLastOpt ${p.name}`,{type:"rept", elem:p});
 	}
-	var e=ExpressionParser() ;
+	var e=ExpressionParser(TokensParser.context) ;
 	var explz=e.lazy().firstTokens(ALL);
 	var arrayElem=g("arrayElem").ands(tk("["), explz , tk("]")).ret(null,"subscript");
 	var argList=g("argList").ands(tk("("), comLastOpt(explz) , tk(")")).ret(null,"args");
@@ -102,15 +101,15 @@ export= function PF({TT}) {
 			throw disp(argList);
 		}
 		if (argList) {
-			var rg=Parser.getRange(argList);
-			Parser.addRange(res,rg);
+			var rg=getRange(argList);
+			addRange(res,rg);
 			argList.args.forEach(function (arg) {
 				res.push(arg);
 			});
 		}
 		oof.forEach(function (o) {
-			var rg=Parser.getRange(o);
-			Parser.addRange(res,rg);
+			var rg=getRange(o);
+			addRange(res,rg);
 			res.push(o.obj);
 		});
 		return res;
@@ -217,7 +216,7 @@ export= function PF({TT}) {
 	e.postfix(prio,arrayElem);
 	function mki(left, op ,right) {
 		var res={type:"infix",left:left,op:op,right:right};
-		Parser.setRange(res);
+		setRange(res);
 		res.toString=function () {
 			return "("+left+op+right+")";
 		};
@@ -297,7 +296,7 @@ export= function PF({TT}) {
 	var incl=g("includes").ands(tk("includes"), symbol.sep1(tk(","),true),tk(";")).
 	ret(null, "includeClassNames");
 	var program=g("program").
-	ands(ext.opt(),incl.opt(),stmt.rep0(), Parser.TokensParser.eof).
+	ands(ext.opt(),incl.opt(),stmt.rep0(), TokensParser.eof).
 	ret("ext","incl","stmts");
 
 	/*for (var i in g.defs) {
@@ -319,7 +318,7 @@ export= function PF({TT}) {
 		}
 		var tokens=tokenRes.result[0];
 		//console.log("Tokens: "+tokens.join(","));
-		var res=p.TokensParser.parse(program, tokens);
+		var res=TokensParser.parse(program, tokens);
 		//console.log("POS="+res.src.maxPos);
 		if (res.isSuccess() ) {
 			var node=res.result[0];

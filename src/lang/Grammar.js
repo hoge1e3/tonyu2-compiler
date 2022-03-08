@@ -1,7 +1,7 @@
 "use strict";
 //import * as Parser from "./parser";
 const parser_1 = require("./parser");
-const Grammar = function () {
+const Grammar = function (context) {
     function trans(name) {
         if (typeof name == "string")
             return get(name);
@@ -21,7 +21,7 @@ const Grammar = function () {
             return defs[name];
         if (lazyDefs[name])
             return lazyDefs[name];
-        const res = (0, parser_1.lazy)(function () {
+        const res = context.lazy(function () {
             const r = defs[name];
             if (!r)
                 throw "grammar named '" + name + "' is undefined";
@@ -85,7 +85,7 @@ const Grammar = function () {
             const v = defs[k];
             console.log("---", k);
             if (v._first) {
-                const tbl = v._first.tbl;
+                const tbl = v._first;
                 for (let f of Object.keys(tbl)) {
                     let p = tbl[f];
                     if (p._lazy)

@@ -1,7 +1,7 @@
 //import * as Parser from "./parser";
-import { addRange, ALL, lazy, Parser, setRange, Struct } from "./parser";
+import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct } from "./parser";
 
-const Grammar=function () {
+const Grammar=function (context:ParserContext) {
 	function trans(name:any) {
 		if (typeof name=="string") return get(name);
 		return name;
@@ -18,7 +18,7 @@ const Grammar=function () {
 	function get(name:string):Parser {
 		if (defs[name]) return defs[name];
 		if (lazyDefs[name]) return lazyDefs[name];
-		const res=lazy(function () {
+		const res=context.lazy(function () {
 			const r=defs[name];
 			if (!r) throw "grammar named '"+name +"' is undefined";
 			return r;
@@ -78,7 +78,7 @@ const Grammar=function () {
 			const v=defs[k];
 			console.log("---",k);
 			if (v._first) {
-				const tbl=v._first.tbl;
+				const tbl=v._first;
 				for (let f of Object.keys(tbl)) {
 					let p=tbl[f];
 					if (p._lazy) p=p._lazy.resolve();
@@ -89,7 +89,7 @@ const Grammar=function () {
 					let p=tbl[ALL];
 					if (p._lazy) p=p._lazy.resolve();
 					//console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
-					console.log("ALL", p.name);				
+					console.log("ALL", p.name);
 				}
 			} else {
 				console.log("NO FIRST TBL");

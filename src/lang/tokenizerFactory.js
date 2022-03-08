@@ -60,19 +60,20 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     var SAMENAME = "SAMENAME";
     var DIV = 1, REG = 2;
     //var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
-    var space = parser_1.StringParser.strLike(skipSpace).setName("space");
+    var space = new parser_1.StringParser().strLike(skipSpace).setName("space");
+    const sp = parser_1.StringParser.withSpace(space);
     function tk(r, name) {
         var pat;
         var fst;
         if (typeof r == "string") {
-            pat = parser_1.StringParser.str(r);
+            pat = sp.str(r);
             if (r.length > 0)
                 fst = r.substring(0, 1);
             if (!name)
                 name = r;
         }
         else {
-            pat = parser_1.StringParser.reg(r);
+            pat = sp.reg(r);
             if (!name)
                 name = r + "";
         }
@@ -122,7 +123,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             return b;
         return a.or(b);
     }
-    var all = parser_1.Parser.create(function (st) {
+    var all = sp.create(function (st) {
         var mode = REG;
         var res = [];
         while (true) {
@@ -245,7 +246,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     parsers[REG] = or(parsers[REG], symresv);
     parsers[DIV] = or(parsers[DIV], symresv);
     function parse(str) {
-        var res = parser_1.StringParser.parse(all, str);
+        var res = sp.parse(all, str);
         if (res.success) {
         }
         else {

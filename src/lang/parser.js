@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.StringParser = exports.State = exports.Parser = exports.create = exports.ALL = void 0;
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.tokensParserContext = exports.StringParser = exports.State = exports.Parser = exports.ParserContext = exports.ALL = void 0;
 exports.ALL = Symbol("ALL");
 const options = { traceTap: false, optimizeFirst: true, profile: false,
     verboseFirst: false, traceFirstTbl: false, traceToken: false };
@@ -9,40 +9,97 @@ function dispTbl(tbl) {
     var h = {};
     if (!tbl)
         return buf;
-    for (var i in tbl) { // tbl:{char:Parser}   i:char
+    for (let i in tbl) { // tbl:{char:Parser}   i:char
         const n = tbl[i].name;
-        if (!h[n])
-            h[n] = "";
-        h[n] += i;
+        h[n] = (h[n] || "") + i;
+    }
+    if (tbl[exports.ALL]) {
+        const n = tbl[exports.ALL].name;
+        h[n] = (h[n] || "") + "*";
     }
     for (let n in h) {
         buf += h[n] + "->" + n + ",";
     }
     return buf;
 }
-;
 //var console={log:function (s) { $.consoleBuffer+=s; }};
 function _debug(s) { console.log(s); }
 //export function Parser
-function create(parseFunc) {
+/*export function create(parseFunc:ParseFunc) { // (State->State)->Parser
     return new Parser(parseFunc);
-}
-exports.create = create;
-;
+};*/
 function nc(v, name) {
     if (v == null)
         throw name + " is null!";
     return v;
 }
+class ParserContext {
+    constructor(space) {
+        this.space = space;
+    }
+    create(f) {
+        return new Parser(this, f);
+    }
+    lazy(pf) {
+        return lazy(this, pf);
+    }
+    fromFirst(tbl) {
+        if (this.space === "TOKEN") {
+            return this.fromFirstTokens(tbl);
+        }
+        else {
+            const res = this.create((s0) => {
+                var s = (this.space === "RAWSTR" || this.space === "TOKEN" ? s0 : this.space.parse(s0));
+                var f = s.src.str.substring(s.pos, s.pos + 1);
+                if (options.traceFirstTbl) {
+                    console.log(res.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
+                }
+                if (tbl[f]) {
+                    return tbl[f].parse(s);
+                }
+                if (tbl[exports.ALL])
+                    return tbl[exports.ALL].parse(s);
+                s.success = false;
+                return s;
+            });
+            res._first = tbl; //{space:space,tbl:tbl};
+            //res.checkTbl();
+            return res;
+        }
+    }
+    fromFirstTokens(tbl) {
+        var res = this.create(function (s) {
+            const src = s.src;
+            var t = src.tokens[s.pos];
+            var f = t ? t.type : null;
+            if (options.traceFirstTbl) {
+                console.log(this.name + ": firstT=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
+            }
+            if (f != null && tbl[f]) {
+                return tbl[f].parse(s);
+            }
+            if (tbl[exports.ALL])
+                return tbl[exports.ALL].parse(s);
+            s.success = false;
+            return s;
+        });
+        res._first = tbl; //{space:"TOKEN",tbl:tbl};
+        //res.checkTbl();
+        return res;
+    }
+}
+exports.ParserContext = ParserContext;
 class Parser {
-    constructor(parseFunc) {
+    constructor(context, parseFunc) {
+        this.context = context;
         this.parse = parseFunc;
     }
     // Parser.parse:: State->State
-    static create(parserFunc) { return create(parserFunc); }
+    //static create(parserFunc:ParseFunc) { return create(parserFunc);}
+    create(parserFunc) { return this.context.create(parserFunc); }
     except(f) {
         var t = this;
-        return this.and(Parser.create(function (res) {
+        return this.and(this.create((res) => {
             //var res=t.parse(s);
             //if (!res.success) return res;
             if (f.apply({}, res.result)) {
@@ -54,7 +111,7 @@ class Parser {
     noFollow(p) {
         var t = this;
         nc(p, "p");
-        return this.and(Parser.create(function (res) {
+        return this.and(this.create(function (res) {
             var res2 = p.parse(res);
             res.success = !res2.success;
             return res;
@@ -62,9 +119,9 @@ class Parser {
     }
     andNoUnify(next) {
         nc(next, "next"); // next==next
-        var t = this; // Parser
-        var res = Parser.create(function (s) {
-            var r1 = t.parse(s); // r1:State
+        //var t=this; // Parser
+        var res = this.create((s) => {
+            var r1 = this.parse(s); // r1:State
             if (!r1.success)
                 return r1;
             var r2 = next.parse(r1); //r2:State
@@ -81,7 +138,7 @@ class Parser {
         //if (!$.options.optimizeFirst) return res;
         if (!this._first)
             return _res;
-        var tbl = this._first.tbl;
+        var tbl = this._first;
         var ntbl = {};
         //  tbl           ALL:a1  b:b1     c:c1
         //  next.tbl      ALL:a2           c:c2     d:d2
@@ -91,7 +148,7 @@ class Parser {
         }
         if (tbl[exports.ALL])
             ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next);
-        const res = Parser.fromFirst(this._first.space, ntbl);
+        const res = this.context.fromFirst(ntbl);
         res.setName("(" + this.name + " >> " + next.name + ")", _res);
         if (options.verboseFirst) {
             console.log("Created aunify name=" + res.name + " tbl=" + dispTbl(ntbl));
@@ -102,7 +159,7 @@ class Parser {
         const t = this;
         let p;
         if (typeof f == "function") {
-            p = Parser.create(function (r1) {
+            p = this.create(function (r1) {
                 var r2 = r1.clone();
                 r2.result = [f.apply({}, r1.result)];
                 return r2;
@@ -110,7 +167,7 @@ class Parser {
         }
         else
             p = f;
-        var res = Parser.create(function (s) {
+        var res = this.create(function (s) {
             var r1 = t.parse(s); // r1:State
             if (!r1.success)
                 return r1;
@@ -121,14 +178,14 @@ class Parser {
     ret(next) {
         if (!this._first)
             return this.retNoUnify(next);
-        var tbl = this._first.tbl;
+        var tbl = this._first;
         var ntbl = {};
         for (var c in tbl) {
             ntbl[c] = tbl[c].retNoUnify(next);
         }
         if (tbl[exports.ALL])
             ntbl[exports.ALL] = tbl[exports.ALL].retNoUnify(next);
-        const res = Parser.fromFirst(this._first.space, ntbl);
+        const res = this.context.fromFirst(ntbl);
         res.setName("(" + this.name + " >>= " + next.name + ")");
         if (options.verboseFirst) {
             console.log("Created runify name=" + res.name + " tbl=" + dispTbl(ntbl));
@@ -150,11 +207,11 @@ class Parser {
                 tbl[ct.substring(i, i + 1)] = this;
             }
             //this._first={space: space, tbl:tbl};
-            return Parser.fromFirst(space, tbl).setName("(fst " + this.name + ")", this);
+            return this.context.fromFirst(tbl).setName("(fst " + this.name + ")", this);
             //        		this._first={space: space, chars:ct};
         }
         else if (ct == null) {
-            return Parser.fromFirst(space, { [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
+            return this.context.fromFirst({ [exports.ALL]: this }).setName("(fst " + this.name + ")", this);
             //this._first={space:space, tbl:{ALL:this}};
         }
         else if (typeof ct == "object") {
@@ -177,7 +234,7 @@ class Parser {
                 tbl[token] = this;
             }
         }
-        return Parser.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
+        return this.context.fromFirstTokens(tbl).setName("(fstT " + this.name + ")", this);
     }
     unifyFirst(other) {
         //var thiz=this;
@@ -193,7 +250,7 @@ class Parser {
         //other.checkTbl();
         function mergeTbl() {
             //   {except_ALL: contains_ALL}
-            var t2 = other._first.tbl;
+            var t2 = other._first;
             //before tbl={ALL:a1, b:b1, c:c1}   t2={ALL:a2,c:c2,d:d2}
             //       b1 conts a1  c1 conts a1     c2 conts a2   d2 conts a2
             //after  tbl={ALL:a1|a2 , b:b1|a2    c:c1|c2    d:a1|d2 }
@@ -223,10 +280,10 @@ class Parser {
                 }
             }
         }
-        Object.assign(tbl, this._first.tbl);
+        Object.assign(tbl, this._first);
         mergeTbl();
         const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
-        var res = Parser.fromFirst(this._first.space, tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", elems: [...elems, other] });
+        var res = this.context.fromFirst(tbl).setName("(" + this.name + ")U(" + other.name + ")", { type: "or", elems: [...elems, other] });
         if (options.verboseFirst)
             console.log("Created unify name=" + res.name + " tbl=" + dispTbl(tbl));
         return res;
@@ -247,7 +304,7 @@ class Parser {
     orNoUnify(other) {
         var t = this; // t:Parser
         const elems = (this.struct && this.struct.type === "or" ? this.struct.elems : [this]);
-        var res = Parser.create(function (s) {
+        var res = this.create(function (s) {
             var r1 = t.parse(s); // r1:State
             if (!r1.success) {
                 var r2 = other.parse(s); // r2:State
@@ -273,7 +330,7 @@ class Parser {
         var p = this;
         if (!min)
             min = 0;
-        var res = Parser.create(function (s) {
+        var res = this.create(function (s) {
             let current = s;
             var result = [];
             while (true) {
@@ -301,13 +358,13 @@ class Parser {
         });
         if (min > 0 && p._first) {
             const olf = p._first;
-            const nf = { space: olf.space, tbl: {} };
-            if (olf.tbl[exports.ALL]) {
-                nf.tbl[exports.ALL] = res;
+            const nf = {}; //{space: olf.space, tbl:{}};
+            if (olf[exports.ALL]) {
+                nf[exports.ALL] = res;
             }
             else {
-                for (let k in olf.tbl) {
-                    nf.tbl[k] = res;
+                for (let k in olf) {
+                    nf[k] = res;
                 }
             }
             res._first = nf;
@@ -318,7 +375,7 @@ class Parser {
     rep1() { return this.repN(1); }
     opt() {
         var t = this;
-        return Parser.create(function (s) {
+        return this.create(function (s) {
             var r = t.parse(s);
             if (r.success) {
                 return r;
@@ -374,48 +431,6 @@ class Parser {
         }
         return res;
     }
-    static fromFirst(space, tbl) {
-        if (space == "TOKEN") {
-            return Parser.fromFirstTokens(tbl);
-        }
-        var res = Parser.create(function (s0) {
-            var s = space.parse(s0);
-            var f = s.src.str.substring(s.pos, s.pos + 1);
-            if (options.traceFirstTbl) {
-                console.log(this.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
-            }
-            if (tbl[f]) {
-                return tbl[f].parse(s);
-            }
-            if (tbl[exports.ALL])
-                return tbl[exports.ALL].parse(s);
-            s.success = false;
-            return s;
-        });
-        res._first = { space: space, tbl: tbl };
-        //res.checkTbl();
-        return res;
-    }
-    static fromFirstTokens(tbl) {
-        var res = Parser.create(function (s) {
-            const src = s.src;
-            var t = src.tokens[s.pos];
-            var f = t ? t.type : null;
-            if (options.traceFirstTbl) {
-                console.log(this.name + ": firstT=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
-            }
-            if (f != null && tbl[f]) {
-                return tbl[f].parse(s);
-            }
-            if (tbl[exports.ALL])
-                return tbl[exports.ALL].parse(s);
-            s.success = false;
-            return s;
-        });
-        res._first = { space: "TOKEN", tbl: tbl };
-        //res.checkTbl();
-        return res;
-    }
 }
 exports.Parser = Parser;
 class State {
@@ -456,48 +471,72 @@ class State {
     }
 }
 exports.State = State;
-function strLike(func) {
-    // func :: str,pos, state? -> {len:int, other...}  (null for no match )
-    return Parser.create(function (state) {
-        const src = state.src;
-        const str = src.str;
-        if (str == null)
-            throw "strLike: str is null!";
-        var spos = state.pos;
-        //console.log(" strlike: "+str+" pos:"+spos);
-        var r1 = func(str, spos, state);
-        if (options.traceToken)
-            console.log("pos=" + spos + " r=" + r1);
-        if (r1) {
-            if (options.traceToken)
-                console.log("str:succ");
-            r1.pos = spos;
-            r1.src = state.src; // insert 2013/05/01
-            var ns = state.clone();
-            Object.assign(ns, { pos: spos + r1.len, success: true, result: [r1] });
-            state.updateMaxPos(ns.pos);
-            return ns;
-        }
-        else {
-            if (options.traceToken)
-                console.log("str:fail");
-            state.success = false;
-            return state;
-        }
-    }).setName("STRLIKE");
-}
+const rawStringParserContext = new ParserContext("RAWSTR");
 class StringParser {
-    static str(st) {
+    //context: ParserContext;
+    constructor(context = rawStringParserContext) {
+        this.context = context;
+        this.empty = this.create(function (state) {
+            var res = state.clone();
+            res.success = true;
+            res.result = [null]; //{length:0, isEmpty:true}];
+            return res;
+        }).setName("E");
+        this.fail = this.create(function (s) {
+            s.success = false;
+            return s;
+        }).setName("F");
+        this.eof = this.strLike(function (str, pos) {
+            if (pos == str.length)
+                return { len: 0 };
+            return null;
+        }).setName("EOF");
+    }
+    static withSpace(space) {
+        return new StringParser(new ParserContext(space));
+    }
+    create(pf) { return this.context.create(pf); }
+    str(st) {
         return this.strLike(function (str, pos) {
             if (str.substring(pos, pos + st.length) === st)
                 return { len: st.length };
             return null;
         }).setName(st);
     }
-    static reg(r) {
+    strLike(func) {
+        // func :: str,pos, state? -> {len:int, other...}  (null for no match )
+        return this.create(function (state) {
+            const src = state.src;
+            const str = src.str;
+            if (str == null)
+                throw "strLike: str is null!";
+            var spos = state.pos;
+            //console.log(" strlike: "+str+" pos:"+spos);
+            var r1 = func(str, spos, state);
+            if (options.traceToken)
+                console.log("pos=" + spos + " r=" + r1);
+            if (r1) {
+                if (options.traceToken)
+                    console.log("str:succ");
+                r1.pos = spos;
+                r1.src = state.src; // insert 2013/05/01
+                var ns = state.clone();
+                Object.assign(ns, { pos: spos + r1.len, success: true, result: [r1] });
+                state.updateMaxPos(ns.pos);
+                return ns;
+            }
+            else {
+                if (options.traceToken)
+                    console.log("str:fail");
+                state.success = false;
+                return state;
+            }
+        }).setName("STRLIKE");
+    }
+    reg(r) {
         if (!(r + "").match(/^\/\^/))
             console.log("Waring regex should have ^ at the head:" + (r + ""));
-        return strLike(function (str, pos) {
+        return this.strLike(function (str, pos) {
             var res = r.exec(str.substring(pos));
             if (res) {
                 res.len = res[0].length;
@@ -506,33 +545,22 @@ class StringParser {
             return null;
         }).setName(r + "");
     }
-    static parse(parser, str, global) {
+    parse(parser, str, global) {
         var st = new State(str, global);
         return parser.parse(st);
     }
 }
 exports.StringParser = StringParser;
-StringParser.empty = Parser.create(function (state) {
-    var res = state.clone();
-    res.success = true;
-    res.result = [null]; //{length:0, isEmpty:true}];
-    return res;
-}).setName("E");
-StringParser.fail = Parser.create(function (s) {
-    s.success = false;
-    return s;
-}).setName("F");
-StringParser.strLike = strLike;
-StringParser.eof = strLike(function (str, pos) {
-    if (pos == str.length)
-        return { len: 0 };
-    return null;
-}).setName("EOF");
 //  why not eof: ? because StringParser.strLike
 //$.StringParser=StringParser;
+exports.tokensParserContext = new ParserContext("TOKEN");
 exports.TokensParser = {
-    token: function (type) {
-        return Parser.create(function (s) {
+    context: exports.tokensParserContext,
+    create(pf) {
+        return exports.tokensParserContext.create(pf);
+    },
+    token(type) {
+        return exports.tokensParserContext.create(function (s) {
             const src = s.src;
             const t = src.tokens[s.pos];
             s.success = false;
@@ -548,11 +576,11 @@ exports.TokensParser = {
             return s;
         }).setName(type, { type: "primitive", name: type }).firstTokens(type);
     },
-    parse: function (parser, tokens, global) {
+    parse: function (parser, tokens, global = {}) {
         var st = new State(tokens, global);
         return parser.parse(st);
     },
-    eof: Parser.create(function (s) {
+    eof: exports.tokensParserContext.create(function (s) {
         const src = s.src;
         const suc = (s.pos >= src.tokens.length);
         s.success = suc;
@@ -564,23 +592,23 @@ exports.TokensParser = {
     }).setName("EOT")
 };
 //$.TokensParser=TokensParser;
-function lazy(pf) {
+function lazy(context, pf) {
     //let p:Parser;
+    const lz = { resolve, resolved: null };
     function resolve() {
-        const l = self._lazy;
-        if (!l.resolved) {
-            l.resolved = pf();
-            if (!l.resolved)
+        if (!lz.resolved) {
+            lz.resolved = pf();
+            if (!lz.resolved)
                 throw new Error(pf + " returned null!");
             //if (!self.struct) self.struct=p.struct;
         }
-        return l.resolved;
+        return lz.resolved;
     }
-    const self = Parser.create(function (st) {
+    const self = context.create(function (st) {
         //this.name=pf.name;
         return resolve().parse(st);
     }).setName("LZ");
-    self._lazy = { resolve };
+    self._lazy = lz;
     return self;
 }
 exports.lazy = lazy;
