@@ -64,11 +64,10 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     const sp = parser_1.StringParser.withSpace(space);
     function tk(r, name) {
         let pat;
-        let fst;
+        //let fst:string;
         if (typeof r == "string") {
             pat = sp.str(r);
-            if (r.length > 0)
-                fst = r.substring(0, 1);
+            //if (r.length>0) fst=r.substring(0,1);
             if (!name)
                 name = r;
         }
@@ -92,16 +91,15 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             res.isToken = true;
             return res;
         });
-        if (fst)
-            res = res.first(fst);
+        //if (fst) res=res.first(fst);
         return res.setName(name); //.profile();
     }
     var parsers = {}, posts = {};
     function dtk2(prev, name, parser) {
         //console.log("2reg="+prev+" name="+name);
         if (typeof parser == "string")
-            parser = tk(parser);
-        parsers[prev] = or(parsers[prev], parser.ret(function (res) {
+            parser = tk(parser, name);
+        parsers[prev] = or(parsers[prev], parser.ret((res) => {
             res.type = name;
             return res;
         }).setName(name));
@@ -222,7 +220,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     dtk(REG | DIV, SAMENAME, "*", REG);
     dtk(REG | DIV, SAMENAME, "%", REG);
     dtk(DIV, SAMENAME, "/", REG);
-    dtk(DIV | REG, SAMENAME, "^", REG);
+    //dtk(DIV|REG, SAMENAME ,"^",REG );
     dtk(DIV | REG, SAMENAME, "~", REG);
     dtk(DIV | REG, SAMENAME, "\\", REG);
     dtk(DIV | REG, SAMENAME, ":", REG);
@@ -246,8 +244,8 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
     posts.symbol = DIV;
     parsers[REG] = or(parsers[REG], symresv);
     parsers[DIV] = or(parsers[DIV], symresv);
-    console.log(parsers[REG]);
-    console.log(parsers[DIV]);
+    //console.log(parsers[REG]);
+    //console.log(parsers[DIV]);
     function parse(str) {
         var res = sp.parse(all, str);
         if (res.success) {

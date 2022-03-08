@@ -318,10 +318,10 @@ class Parser {
     setName(n, struct) {
         this.name = n;
         if (struct instanceof Parser) {
-            this.struct = this.struct || struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
+            this.struct = struct.struct || { type: "primitive", name: struct.name }; //{type:"alias", target:struct};
         }
         else {
-            this.struct = struct;
+            this.struct = this.struct || struct;
         }
         return this;
     }
@@ -496,11 +496,14 @@ class StringParser {
     }
     create(pf) { return this.context.create(pf); }
     str(st) {
-        return this.strLike(function (str, pos) {
+        let res = this.strLike((str, pos) => {
             if (str.substring(pos, pos + st.length) === st)
                 return { len: st.length };
             return null;
         }).setName(st);
+        if (st.length > 0)
+            res = res.first(st[0]);
+        return res;
     }
     strLike(func) {
         // func :: str,pos, state? -> {len:int, other...}  (null for no match )

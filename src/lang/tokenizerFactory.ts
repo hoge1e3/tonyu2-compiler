@@ -63,10 +63,10 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 	const sp=StringParser.withSpace(space);
 	function tk(r, name?:string) {
 		let pat:Parser;
-		let fst:string;
+		//let fst:string;
 		if (typeof r=="string") {
 			pat=sp.str(r);
-			if (r.length>0) fst=r.substring(0,1);
+			//if (r.length>0) fst=r.substring(0,1);
 			if (!name) name=r;
 		} else {
 			pat=sp.reg(r);
@@ -85,14 +85,14 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			res.isToken=true;
 			return res;
 		});
-		if (fst) res=res.first(fst);
+		//if (fst) res=res.first(fst);
 		return res.setName(name);//.profile();
 	}
 	var parsers:any={},posts:any={};
 	function dtk2(prev:Mode, name:string, parser:Parser|string) {
 		//console.log("2reg="+prev+" name="+name);
-		if (typeof parser=="string") parser=tk(parser);
-		parsers[prev]=or(parsers[prev], parser.ret(function (res) {
+		if (typeof parser=="string") parser=tk(parser, name);
+		parsers[prev]=or(parsers[prev], parser.ret((res)=>{
 			res.type=name;
 			return res;
 		}).setName(name) );
@@ -217,7 +217,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 	dtk(REG|DIV, SAMENAME ,"%",REG );
 	dtk(DIV, SAMENAME ,"/",REG );
 
-	dtk(DIV|REG, SAMENAME ,"^",REG );
+	//dtk(DIV|REG, SAMENAME ,"^",REG );
 	dtk(DIV|REG, SAMENAME ,"~",REG );
 
 	dtk(DIV|REG, SAMENAME ,"\\",REG );
@@ -243,8 +243,8 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 	posts.symbol=DIV;
 	parsers[REG]=or(parsers[REG],symresv);
 	parsers[DIV]=or(parsers[DIV],symresv);
-	console.log(parsers[REG]);
-	console.log(parsers[DIV]);
+	//console.log(parsers[REG]);
+	//console.log(parsers[DIV]);
 
 	function parse(str:string) {
 		var res=sp.parse(all, str);

@@ -313,9 +313,9 @@ export class Parser {// class Parser
 	setName (n:string, struct?: Struct|Parser) {
 		this.name=n;
 		if (struct instanceof Parser) {
-			this.struct=this.struct || struct.struct || {type:"primitive", name:struct.name};//{type:"alias", target:struct};
+			this.struct=struct.struct || {type:"primitive", name:struct.name};//{type:"alias", target:struct};
 		} else {
-			this.struct=struct;
+			this.struct=this.struct || struct;
 		}
 		return this;
 	}
@@ -481,10 +481,12 @@ export class StringParser{
 		return s;
 	}).setName("F");
 	str(st:string) {
-		return this.strLike(function (str:string,pos:number) {
+		let res=this.strLike((str:string,pos:number)=>{
 			if (str.substring(pos, pos+st.length)===st) return {len:st.length};
 			return null;
 		}).setName(st);
+		if (st.length>0) res=res.first(st[0]);
+		return res;
 	}
 	strLike(func:(str:string,pos:number, state?:State)=>{pos?:number, len:number, src?:StateSrc} ) {
 		// func :: str,pos, state? -> {len:int, other...}  (null for no match )
