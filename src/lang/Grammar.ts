@@ -109,9 +109,10 @@ const Grammar=function (context:ParserContext) {
 	const lazyDefs:{[key:string]:Parser}={};
 	return comp((name:string)=>{
 		return {
-			alias(parser) {
+			alias(parser:Parser):Parser {
 				defs[name]=parser;
 				typeInfos.set(parser,{name, struct:parser.struct});
+				return parser;
 			},
 			ands(...parsers) {
 				parsers=parsers.map(trans);

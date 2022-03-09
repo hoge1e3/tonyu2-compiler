@@ -118,6 +118,7 @@ const Grammar = function (context) {
             alias(parser) {
                 defs[name] = parser;
                 typeInfos.set(parser, { name, struct: parser.struct });
+                return parser;
             },
             ands(...parsers) {
                 parsers = parsers.map(trans);

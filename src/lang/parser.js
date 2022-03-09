@@ -30,7 +30,7 @@ function _debug(s) { console.log(s); }
 };*/
 function nc(v, name) {
     if (v == null)
-        throw name + " is null!";
+        throw new Error(name + " is null!");
     return v;
 }
 class ParserContext {
@@ -104,7 +104,25 @@ exports.ParserContext = ParserContext;
 class Parser {
     constructor(context, parseFunc) {
         this.context = context;
-        this.parse = parseFunc;
+        if (!options.traceTap) {
+            this.parse = parseFunc;
+        }
+        else {
+            this.parse = function (s) {
+                console.log("tap: name=" + this.name + "  pos=" + (s ? s.pos : "?"));
+                const r = parseFunc.apply(this, [s]);
+                let img = "NOIMG";
+                if (isStrStateSrc(r.src)) {
+                    img = r.src.str.substring(r.pos - 3, r.pos) + "^" + r.src.str.substring(r.pos, r.pos + 3);
+                }
+                if (isTokenStateSrc(r.src)) {
+                    img = r.src.tokens[r.pos - 1] + "[" + r.src.tokens[r.pos] + "]" + r.src.tokens[r.pos + 1];
+                }
+                console.log("/tap: name=" + this.name +
+                    " pos=" + (s ? s.pos : "?") + "->" + (r ? r.pos : "?") + " " + img + " res=" + (r ? r.success : "?"));
+                return r;
+            };
+        }
     }
     // Parser.parse:: State->State
     //static create(parserFunc:ParseFunc) { return create(parserFunc);}
@@ -407,18 +425,22 @@ class Parser {
     repN(min) {
         const _res = this.repNNoUnify(min);
         //return _res;
-        if (!options.optimizeFirst || min == 0)
+        if (!options.optimizeFirst /*|| min==0*/)
             return _res;
         const fst = this._first || { [exports.ALL]: this };
         const nf = {}; //{space: olf.space, tbl:{}};
-        for (let k in fst) {
-            nf[k] = fst[k].repNNoUnify(min);
-        }
         if (fst[exports.ALL]) {
-            nf[exports.ALL] = fst[exports.ALL].repNNoUnify(min);
+            nf[exports.ALL] = _res; //fst[ALL].repNNoUnify(min);
         }
-        else if (min == 0) {
-            nf[exports.ALL] = this.context.repEmpty;
+        else {
+            for (let k in fst) {
+                // fst[k].repNNoUnify(min); is BAD.
+                // suppose, k="if", first stmt is "if", seconds is "while"->KOWARERU
+                nf[k] = _res; //fst[k].repNNoUnify(min);
+            }
+            if (min == 0) {
+                nf[exports.ALL] = this.context.repEmpty;
+            }
         }
         const res = this.context.fromFirst(nf).setAlias(_res);
         //if (min==0)	{console.log( "rep0 of ", this.name); res.dispTbl(); }
@@ -504,6 +526,8 @@ class Parser {
     }
 }
 exports.Parser = Parser;
+function isStrStateSrc(src) { return typeof src.str === "string"; }
+function isTokenStateSrc(src) { return src.tokens; }
 class State {
     constructor(strOrTokens, global) {
         if (strOrTokens != null) {
@@ -600,7 +624,7 @@ class StringParser {
             const src = state.src;
             const str = src.str;
             if (str == null)
-                throw "strLike: str is null!";
+                throw new Error("strLike: str is null!");
             var spos = state.pos;
             //console.log(" strlike: "+str+" pos:"+spos);
             const r1 = func(str, spos, state);

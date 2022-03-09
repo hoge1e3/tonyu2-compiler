@@ -224,9 +224,10 @@ module.exports = function PF({ TT }) {
     g("elem").alias(e.getElement());
     g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };
-    var stmt = G("stmt").firstTokens(parser_1.ALL);
+    const stmt = G("stmt").firstTokens(parser_1.ALL);
+    const stmtList = g("stmtList").alias(stmt.rep0());
     var exprstmt = g("exprstmt").ands(expr, tk(";")).ret("expr");
-    g("compound").ands(tk("{"), stmt.rep0(), tk("}")).ret(null, "stmts");
+    g("compound").ands(tk("{"), stmtList, tk("}")).ret(null, "stmts");
     var elseP = tk("else").and(stmt).retN(1);
     var returns = g("return").ands(tk("return"), expr.opt(), tk(";")).ret(null, "value");
     var ifs = g("if").ands(tk("if"), tk("("), expr, tk(")"), stmt, elseP.opt()).ret(null, null, "cond", null, "then", "_else");
@@ -244,8 +245,8 @@ module.exports = function PF({ TT }) {
     //var fors=g("for").ands(tk("for"),tk("("), tk("var").opt() , infor , tk(")"),"stmt" ).ret(null,null,"isVar", "inFor",null, "loop");
     var whiles = g("while").ands(tk("while"), tk("("), expr, tk(")"), "stmt").ret(null, null, "cond", null, "loop");
     var dos = g("do").ands(tk("do"), "stmt", tk("while"), tk("("), expr, tk(")"), tk(";")).ret(null, "loop", null, null, "cond", null, null);
-    var cases = g("case").ands(tk("case"), expr, tk(":"), stmt.rep0()).ret(null, "value", null, "stmts");
-    var defaults = g("default").ands(tk("default"), tk(":"), stmt.rep0()).ret(null, null, "stmts");
+    var cases = g("case").ands(tk("case"), expr, tk(":"), stmtList).ret(null, "value", null, "stmts");
+    var defaults = g("default").ands(tk("default"), tk(":"), stmtList).ret(null, null, "stmts");
     var switchs = g("switch").ands(tk("switch"), tk("("), expr, tk(")"), tk("{"), cases.rep1(), defaults.opt(), tk("}")).ret(null, null, "value", null, null, "cases", "defs");
     var breaks = g("break").ands(tk("break"), tk(";")).ret("brk");
     var continues = g("continue").ands(tk("continue"), tk(";")).ret("cont");
@@ -268,7 +269,7 @@ module.exports = function PF({ TT }) {
     var ifwait = g("ifWait").ands(tk("ifwait"), "stmt", elseP.opt()).ret(null, "then", "_else");
     //var useThread=g("useThread").ands(tk("usethread"),symbol,"stmt").ret(null, "threadVarName","stmt");
     var empty = g("empty").ands(tk(";")).ret(null);
-    stmt = g("stmt").ors("return", "if", "for", "while", "do", "break", "continue", "switch", "ifWait", "try", "throw", "nativeDecl", "funcDecl", "compound", "exprstmt", "varsDecl", "empty");
+    const stmt_built = g("stmt").ors("return", "if", "for", "while", "do", "break", "continue", "switch", "ifWait", "try", "throw", "nativeDecl", "funcDecl", "compound", "exprstmt", "varsDecl", "empty");
     // ------- end of stmts
     g("funcExprHead").ands(tk("function").or(tk("\\")), symbol.opt(), paramDecls.opt()).ret(null, "name", "params");
     var funcExpr = g("funcExpr").ands("funcExprHead", "compound").ret("head", "body");
@@ -280,8 +281,9 @@ module.exports = function PF({ TT }) {
     var incl = g("includes").ands(tk("includes"), symbol.sep1(tk(","), true), tk(";")).
         ret(null, "includeClassNames");
     var program = g("program").
-        ands(ext.opt(), incl.opt(), stmt.rep0(), parser_1.TokensParser.eof).
+        ands(ext.opt(), incl.opt(), stmt_built.rep0(), parser_1.TokensParser.eof).
         ret("ext", "incl", "stmts");
+    stmt_built.rep0().dispTbl();
     /*for (var i in g.defs) {
         g.defs[i].profile();
     }*/

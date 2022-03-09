@@ -46,7 +46,7 @@ function _debug(s:any) {console.log(s);}
 	return new Parser(parseFunc);
 };*/
 function nc(v:any,name:string) {
-	if (v==null) throw name+" is null!";
+	if (v==null) throw new Error(name+" is null!");
 	return v;
 }
 export class ParserContext {
@@ -127,7 +127,24 @@ export class Parser {// class Parser
 	//static create(parserFunc:ParseFunc) { return create(parserFunc);}
 	create(parserFunc:ParseFunc) { return this.context.create(parserFunc);}
 	constructor (public context:ParserContext, parseFunc:ParseFunc){
-		this.parse=parseFunc;
+		if (!options.traceTap) {
+			this.parse=parseFunc;
+		} else {
+			this.parse=function(s:State){
+				console.log("tap: name="+this.name+"  pos="+(s?s.pos:"?"));
+				const r=parseFunc.apply(this,[s]) as State;
+				let img="NOIMG";
+				if (isStrStateSrc(r.src)) {
+					img=r.src.str.substring(r.pos-3,r.pos)+"^"+r.src.str.substring(r.pos,r.pos+3);
+				}
+				if (isTokenStateSrc(r.src)) {
+					img=r.src.tokens[r.pos-1]+"["+r.src.tokens[r.pos]+"]"+r.src.tokens[r.pos+1];
+				}
+				console.log("/tap: name="+this.name+
+						" pos="+(s?s.pos:"?")+"->"+(r?r.pos:"?")+" "+img+" res="+(r?r.success:"?"));
+				return r;
+			};
+		}
 	}
 	dispTbl() {
 		if (!this._first) {
@@ -397,16 +414,20 @@ export class Parser {// class Parser
 	repN(min:number) {
 		const _res=this.repNNoUnify(min);
 		//return _res;
-		if (!options.optimizeFirst || min==0) return _res;
+		if (!options.optimizeFirst /*|| min==0*/) return _res;
 		const fst=this._first||{[ALL]:this};
 		const nf:FirstTbl={};//{space: olf.space, tbl:{}};
-		for (let k in fst) {
-			nf[k]=fst[k].repNNoUnify(min);
-		}
 		if (fst[ALL]) {
-			nf[ALL]=fst[ALL].repNNoUnify(min);
-		} else if (min==0) {
-			nf[ALL]=this.context.repEmpty;
+			nf[ALL]=_res;//fst[ALL].repNNoUnify(min);
+		} else {
+			for (let k in fst) {
+				// fst[k].repNNoUnify(min); is KOWARERU.
+				// suppose, k="if", first stmt is "if", seconds SHOULD ALSO be "if",
+				nf[k]=_res;//fst[k].repNNoUnify(min);
+			}
+			if (min==0) {
+				nf[ALL]=this.context.repEmpty;
+			}
 		}
 		const res=this.context.fromFirst(nf).setAlias(_res);
 		//if (min==0)	{console.log( "rep0 of ", this.name); res.dispTbl(); }
@@ -492,6 +513,8 @@ export type MaxErrors={pos:number, errors:ParseError[]};
 export type TokenStateSrc={tokens?:Token[], maxErrors:MaxErrors, global?:any};
 export type StrStateSrc={str:string, maxErrors:MaxErrors, global?:any};
 export type StateSrc=TokenStateSrc|StrStateSrc;
+function isStrStateSrc(src:StateSrc):src is StrStateSrc {return typeof (src as any).str==="string";}
+function isTokenStateSrc(src:StateSrc):src is TokenStateSrc {return (src as any).tokens;}
 export class State{
 	src:StateSrc;//{maxPos:number, global?:any, str?:string, tokens?:any[]};
 	pos:number;
@@ -582,7 +605,7 @@ export class StringParser{
 			}
 			const src=state.src as StrStateSrc;
 			const str= src.str;
-			if (str==null) throw "strLike: str is null!";
+			if (str==null) throw new Error("strLike: str is null!");
 			var spos=state.pos;
 			//console.log(" strlike: "+str+" pos:"+spos);
 			const r1=func(str, spos, state);

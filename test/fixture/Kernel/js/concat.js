@@ -13482,14 +13482,14 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        return new Promise((function anonymous_182(s,e) {
+        return new Promise((function anonymous_191(s,e) {
           
           _this.m=new Tonyu.classes.kernel.T2WebSocket();
-          _this.m.on("open",(function anonymous_243() {
+          _this.m.on("open",(function anonymous_254() {
             
           }));
           _this.m.on("error",e);
-          _this.m.on("message",(function anonymous_306(me) {
+          _this.m.on("message",(function anonymous_320(me) {
             var data;
             var i;
             var newMember;
@@ -13515,7 +13515,7 @@ Tonyu.klass.define({
               case "_connection":
                 newMember = {id: data.playerNo};
                 
-                if (! _this.members.some((function anonymous_857(m) {
+                if (! _this.members.some((function anonymous_886(m) {
                   
                   return m.id===newMember.id;
                 }))) {
@@ -13566,14 +13566,14 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              _thread.exit(new Promise((function anonymous_182(s,e) {
+              _thread.exit(new Promise((function anonymous_191(s,e) {
                 
                 _this.m=new Tonyu.classes.kernel.T2WebSocket();
-                _this.m.on("open",(function anonymous_243() {
+                _this.m.on("open",(function anonymous_254() {
                   
                 }));
                 _this.m.on("error",e);
-                _this.m.on("message",(function anonymous_306(me) {
+                _this.m.on("message",(function anonymous_320(me) {
                   var data;
                   var i;
                   var newMember;
@@ -13599,7 +13599,7 @@ Tonyu.klass.define({
                     case "_connection":
                       newMember = {id: data.playerNo};
                       
-                      if (! _this.members.some((function anonymous_857(m) {
+                      if (! _this.members.some((function anonymous_886(m) {
                         
                         return m.id===newMember.id;
                       }))) {
@@ -13736,7 +13736,7 @@ Tonyu.klass.define({
         if (_this.timer) {
           clearTimeout(_this.timer);
         }
-        _this.timer=setTimeout((function anonymous_2105() {
+        _this.timer=setTimeout((function anonymous_2177() {
           
           _this.send({type: "keepalive"});
         }),25*1000);
@@ -13756,7 +13756,7 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              _this.timer=setTimeout((function anonymous_2105() {
+              _this.timer=setTimeout((function anonymous_2177() {
                 
                 _this.send({type: "keepalive"});
               }),25*1000);
@@ -13930,7 +13930,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        return _this.loadScript().then((function anonymous_344() {
+        return _this.loadScript().then((function anonymous_360() {
           
           console.log("KEY",_this.info.key);
           _this.drone=new Scaledrone(_this.info.key);
@@ -13943,7 +13943,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        _thread.retVal=_this.loadScript().then((function anonymous_344() {
+        _thread.retVal=_this.loadScript().then((function anonymous_360() {
           
           console.log("KEY",_this.info.key);
           _this.drone=new Scaledrone(_this.info.key);
@@ -13985,7 +13985,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        return new Promise((function anonymous_553(s,e) {
+        return new Promise((function anonymous_579(s,e) {
           var observable;
           var res;
           
@@ -13994,7 +13994,7 @@ Tonyu.klass.define({
           console.log("clientId",_this.drone.clientId);
           res = new Tonyu.classes.kernel.ScaledroneRoom({drone: _this.drone,observable: observable,name: name,myId: _this.drone.clientId});
           
-          res.on('open',(function anonymous_743(error) {
+          res.on('open',(function anonymous_773(error) {
             
             console.log("coned",error);
             if (error) {
@@ -14011,7 +14011,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        _thread.retVal=new Promise((function anonymous_553(s,e) {
+        _thread.retVal=new Promise((function anonymous_579(s,e) {
           var observable;
           var res;
           
@@ -14020,7 +14020,7 @@ Tonyu.klass.define({
           console.log("clientId",_this.drone.clientId);
           res = new Tonyu.classes.kernel.ScaledroneRoom({drone: _this.drone,observable: observable,name: name,myId: _this.drone.clientId});
           
-          res.on('open',(function anonymous_743(error) {
+          res.on('open',(function anonymous_773(error) {
             
             console.log("coned",error);
             if (error) {
@@ -14087,25 +14087,25 @@ Tonyu.klass.define({
         
         __superClass.apply( _this, [params]);
         _this.room=_this.drone.subscribe(_this.rawName);
-        _this.room.on("open",(function anonymous_267(error) {
+        _this.room.on("open",(function anonymous_279(error) {
           
           _this.fireEvent("open",error);
         }));
-        _this.room.on("message",(function anonymous_341(mesg) {
+        _this.room.on("message",(function anonymous_356(mesg) {
           
           _this.fireEvent("message",mesg);
         }));
-        _this.room.on("members",(function anonymous_417(members) {
+        _this.room.on("members",(function anonymous_435(members) {
           
           _this.members=members;
           _this.fireEvent("members_list",members);
         }));
-        _this.room.on('member_join',(function anonymous_537(member) {
+        _this.room.on('member_join',(function anonymous_559(member) {
           
           _this.members.push(member);
           _this.fireEvent("member_join",member);
         }));
-        _this.room.on('member_leave',(function anonymous_668(member) {
+        _this.room.on('member_leave',(function anonymous_694(member) {
           var i;
           
           i = _this.members.length-1;
@@ -14161,9 +14161,9 @@ Tonyu.klass.define({
           return Promise.resolve(_this.members);
           
         }
-        return new Promise((function anonymous_1151(s) {
+        return new Promise((function anonymous_1199(s) {
           
-          _this.on("members_list",(function anonymous_1185(members) {
+          _this.on("members_list",(function anonymous_1234(members) {
             
             s(members);
           }));
@@ -14180,9 +14180,9 @@ Tonyu.klass.define({
           
           
         }
-        _thread.retVal=new Promise((function anonymous_1151(s) {
+        _thread.retVal=new Promise((function anonymous_1199(s) {
           
-          _this.on("members_list",(function anonymous_1185(members) {
+          _this.on("members_list",(function anonymous_1234(members) {
             
             s(members);
           }));
@@ -14486,7 +14486,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        return Tonyu.globals.$API.info().then((function anonymous_110(r) {
+        return Tonyu.globals.$API.info().then((function anonymous_115(r) {
           var re;
           
           re = r.webSocket;
@@ -14505,7 +14505,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        _thread.retVal=Tonyu.globals.$API.info().then((function anonymous_110(r) {
+        _thread.retVal=Tonyu.globals.$API.info().then((function anonymous_115(r) {
           var re;
           
           re = r.webSocket;
@@ -14531,7 +14531,7 @@ Tonyu.klass.define({
         }
         services = {Scaledrone: Tonyu.classes.kernel.ScaledroneImpl,T2WebSocket: Tonyu.classes.kernel.M_T2Web};
         
-        return _this.getConnectionInfo().then((function anonymous_438(info) {
+        return _this.getConnectionInfo().then((function anonymous_454(info) {
           var S;
           
           S = services[info.service];
@@ -14557,7 +14557,7 @@ Tonyu.klass.define({
         }
         services = {Scaledrone: Tonyu.classes.kernel.ScaledroneImpl,T2WebSocket: Tonyu.classes.kernel.M_T2Web};
         
-        _thread.retVal=_this.getConnectionInfo().then((function anonymous_438(info) {
+        _thread.retVal=_this.getConnectionInfo().then((function anonymous_454(info) {
           var S;
           
           S = services[info.service];
@@ -14577,10 +14577,10 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        return _this.connect().then((function anonymous_750() {
+        return _this.connect().then((function anonymous_777() {
           
           return _this.impl.enterRoom(name);
-        })).then((function anonymous_806(r) {
+        })).then((function anonymous_835(r) {
           
           r.webSocket=_this;
           return r;
@@ -14592,10 +14592,10 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        _thread.retVal=_this.connect().then((function anonymous_750() {
+        _thread.retVal=_this.connect().then((function anonymous_777() {
           
           return _this.impl.enterRoom(name);
-        })).then((function anonymous_806(r) {
+        })).then((function anonymous_835(r) {
           
           r.webSocket=_this;
           return r;
@@ -17451,14 +17451,14 @@ Tonyu.klass.define({
           e.keyName=e.name=e.code+"";
         }
         e.sendUps=[];
-        e.on=(function anonymous_227(name,f) {
+        e.on=(function anonymous_236(name,f) {
           
           if (name==="keyUp"||name==="up") {
             e.sendUps.push(f);
             
           }
         });
-        e.sendUp=(function anonymous_345() {
+        e.sendUp=(function anonymous_359() {
           var f;
           var _it_30;
           
@@ -17486,14 +17486,14 @@ Tonyu.klass.define({
           e.keyName=e.name=e.code+"";
         }
         e.sendUps=[];
-        e.on=(function anonymous_227(name,f) {
+        e.on=(function anonymous_236(name,f) {
           
           if (name==="keyUp"||name==="up") {
             e.sendUps.push(f);
             
           }
         });
-        e.sendUp=(function anonymous_345() {
+        e.sendUp=(function anonymous_359() {
           var f;
           var _it_30;
           
@@ -17516,7 +17516,7 @@ Tonyu.klass.define({
         __superClass.apply( _this, []);
         _this.handlers={};
         _this.pressState={};
-        Tonyu.globals.$InputDevice.on("keyDownRaw",(function anonymous_532(raw) {
+        Tonyu.globals.$InputDevice.on("keyDownRaw",(function anonymous_556(raw) {
           var a;
           var e;
           var f;
@@ -17552,7 +17552,7 @@ Tonyu.klass.define({
             
           }
         }));
-        Tonyu.globals.$InputDevice.on("keyUpRaw",(function anonymous_968(e) {
+        Tonyu.globals.$InputDevice.on("keyUpRaw",(function anonymous_1008(e) {
           var a;
           var e;
           var _it_33;
@@ -17587,7 +17587,7 @@ Tonyu.klass.define({
           
         }
         a.push(f);
-        return {dispose: (function anonymous_1449() {
+        return {dispose: (function anonymous_1508() {
           var i;
           
           i = a.indexOf(f);
@@ -23116,7 +23116,7 @@ Tonyu.klass.define({
           r={x: _this.x,y: _this.y,width: r.width*params.scale,height: r.height*params.scale};
           
         }
-        res = Tonyu.globals.$touches.findTouch((function anonymous_578(t) {
+        res = Tonyu.globals.$touches.findTouch((function anonymous_599(t) {
           var tt;
           
           if (params.pickup||t.touched==1) {
