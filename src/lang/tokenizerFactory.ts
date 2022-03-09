@@ -2,11 +2,16 @@
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
 
-import { ALL, Parser, StringParser, StrStateSrc } from "./parser";
+import { ALL, Parser, State, StringParser, StrLikeResult, StrStateSrc } from "./parser";
 
 //import Parser from "./parser";
-
-export= function tokenizerFactory({reserved, caseInsensitive}) {
+export type ReservedList={[key: string]:boolean};
+export type Tokenizer={
+	parse:(str:string)=>State,
+	extension: string,
+	reserved: ReservedList,
+};
+export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedList, caseInsensitive:boolean}):Tokenizer {
 	/*function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
@@ -72,7 +77,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 			pat=sp.reg(r);
 			if (!name) name=r+"";
 		}
-		var res=pat.ret((b)=>{
+		var res=pat.ret((b:StrLikeResult)=>{
 			var res:any={};
 			res.pos=b.pos;
 			if (typeof res.pos!="number") throw "no pos for "+name+" ";//+disp(b);
@@ -112,7 +117,7 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		return a.or(b);
 	}
 
-	var all=sp.create(function (st) {
+	var all=sp.create((st:State)=>{
 		var mode=REG;
 		var res=[];
 		while (true) {
@@ -126,7 +131,12 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		st=space.parse(st);
 		//console.log(st.src.maxPos+"=="+st.src.str.length)
 		const src=st.src as StrStateSrc;
-		st.success=st.src.maxPos==src.str.length;
+		if (st.pos===src.str.length) {
+			st.error=null;
+		} else {
+			st.error=st.src.maxErrors.errors.join(" or ");
+		}
+		//st.success=st.src.maxPos==src.str.length;
 		st.result[0]=res;
 		return st;
 	});
@@ -250,8 +260,10 @@ export= function tokenizerFactory({reserved, caseInsensitive}) {
 		var res=sp.parse(all, str);
 		if (res.success) {
 		} else {
+			console.log ("Stopped with ",res.src.maxErrors);
+			const maxPos=res.src.maxErrors.pos;
 			console.log("Stopped at "+
-			str.substring( res.src.maxPos-5, res.src.maxPos)+"!!HERE!!"+str.substring(res.src.maxPos,res.src.maxPos+5));
+			str.substring( maxPos-5, maxPos)+"!!HERE!!"+str.substring(maxPos,maxPos+5));
 		}
 		return res;
 	}

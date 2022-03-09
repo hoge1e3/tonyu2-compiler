@@ -2,8 +2,10 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.tokenizerFactory = void 0;
 const parser_1 = require("./parser");
-module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
+function tokenizerFactory({ reserved, caseInsensitive }) {
     /*function profileTbl(parser, name) {
         var tbl=parser._first.tbl;
         for (var c in tbl) {
@@ -121,7 +123,7 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
             return b;
         return a.or(b);
     }
-    var all = sp.create(function (st) {
+    var all = sp.create((st) => {
         var mode = REG;
         var res = [];
         while (true) {
@@ -136,7 +138,13 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
         st = space.parse(st);
         //console.log(st.src.maxPos+"=="+st.src.str.length)
         const src = st.src;
-        st.success = st.src.maxPos == src.str.length;
+        if (st.pos === src.str.length) {
+            st.error = null;
+        }
+        else {
+            st.error = st.src.maxErrors.errors.join(" or ");
+        }
+        //st.success=st.src.maxPos==src.str.length;
         st.result[0] = res;
         return st;
     });
@@ -251,10 +259,14 @@ module.exports = function tokenizerFactory({ reserved, caseInsensitive }) {
         if (res.success) {
         }
         else {
+            console.log("Stopped with ", res.src.maxErrors);
+            const maxPos = res.src.maxErrors.pos;
             console.log("Stopped at " +
-                str.substring(res.src.maxPos - 5, res.src.maxPos) + "!!HERE!!" + str.substring(res.src.maxPos, res.src.maxPos + 5));
+                str.substring(maxPos - 5, maxPos) + "!!HERE!!" + str.substring(maxPos, maxPos + 5));
         }
         return res;
     }
     return { parse: parse, extension: "js", reserved: reserved };
-};
+}
+exports.tokenizerFactory = tokenizerFactory;
+;

@@ -2,7 +2,7 @@
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
 
-import tokenizerFactory from "./tokenizerFactory";
+import {tokenizerFactory} from "./tokenizerFactory";
 
 export= tokenizerFactory({
 	caseInsensitive: true,

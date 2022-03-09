@@ -2,11 +2,8 @@
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
 */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-const tokenizerFactory_1 = __importDefault(require("./tokenizerFactory"));
-module.exports = (0, tokenizerFactory_1.default)({
+const tokenizerFactory_1 = require("./tokenizerFactory");
+module.exports = (0, tokenizerFactory_1.tokenizerFactory)({
     caseInsensitive: true,
     reserved: {
         'while': true,

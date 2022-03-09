@@ -1,4 +1,4 @@
-import tokenizerFactory from "./tokenizerFactory";
+import {tokenizerFactory} from "./tokenizerFactory";
 
 /*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
 function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {

@@ -38,13 +38,13 @@ class ParserContext {
         this.space = space;
         this.optEmpty = this.create((s) => {
             s = s.clone();
-            s.success = true;
+            s.error = null;
             s.result = [null]; // opt returns null
             return s;
         }).setName("optEmpty"); //,{type:"empty"});*/
         this.repEmpty = this.create((s) => {
             s = s.clone();
-            s.success = true;
+            s.error = null;
             s.result = [[]]; // rep0 returns empty array
             return s;
         }).setName("repEmpty"); //,{type:"empty"});*/
@@ -62,7 +62,7 @@ class ParserContext {
         else {
             const res = this.create((s0) => {
                 var s = (this.space === "RAWSTR" || this.space === "TOKEN" ? s0 : this.space.parse(s0));
-                var f = s.src.str.substring(s.pos, s.pos + 1);
+                var f = s.src.str[s.pos];
                 if (options.traceFirstTbl) {
                     console.log(res.name + ": first=" + f + " tbl=" + (tbl[f] ? tbl[f].name : "-"));
                 }
@@ -71,7 +71,7 @@ class ParserContext {
                 }
                 if (tbl[exports.ALL])
                     return tbl[exports.ALL].parse(s);
-                s.success = false;
+                s.error = `Read: '${f}', Expected: ${Object.keys(tbl).join("")}.`;
                 return s;
             });
             res._first = tbl; //{space:space,tbl:tbl};
@@ -92,7 +92,7 @@ class ParserContext {
             }
             if (tbl[exports.ALL])
                 return tbl[exports.ALL].parse(s);
-            s.success = false;
+            s.error = `Read: '${t ? f : "EOF"}', Expected: ${Object.keys(tbl).join(", ")}.`;
             return s;
         });
         res._first = tbl; //{space:"TOKEN",tbl:tbl};
@@ -115,7 +115,10 @@ class Parser {
             //var res=t.parse(s);
             //if (!res.success) return res;
             if (f.apply({}, res.result)) {
-                res.success = false;
+                res.error = "Except";
+            }
+            else {
+                res.error = null;
             }
             return res;
         }).setName("(except " + t.name + ")", this));
@@ -125,7 +128,13 @@ class Parser {
         nc(p, "p");
         return this.and(this.create(function (res) {
             var res2 = p.parse(res);
-            res.success = !res2.success;
+            if (res2.success) {
+                res.error = `Should not follow ${p.name}`;
+            }
+            else {
+                res.error = null;
+            }
+            //res.success=!res2.success;
             return res;
         }).setName("(" + t.name + " noFollow " + p.name + ")", this));
     }
@@ -353,13 +362,13 @@ class Parser {
                     if (result.length >= min) {
                         res = current.clone();
                         res.result = [result];
-                        res.success = true;
+                        res.error = null;
                         //console.log("rep0 res="+disp(res.result));
                         return res;
                     }
                     else {
                         res = s.clone();
-                        res.success = false;
+                        res.error = next.error;
                         return res;
                     }
                 }
@@ -402,7 +411,7 @@ class Parser {
             }
             else {
                 s = s.clone();
-                s.success = true;
+                s.error = null;
                 s.result = [null];
                 return s;
             }
@@ -476,29 +485,43 @@ class State {
         if (strOrTokens != null) {
             //this.src={maxPos:0, global:global};// maxPos is shared by all state
             if (typeof strOrTokens == "string") {
-                this.src = { maxPos: 0, global, str: strOrTokens };
+                this.src = { maxErrors: { pos: 0, errors: [] }, global, str: strOrTokens };
             }
             if (strOrTokens instanceof Array) {
-                this.src = { maxPos: 0, global, tokens: strOrTokens };
+                this.src = { maxErrors: { pos: 0, errors: [] }, global, tokens: strOrTokens };
             }
             this.pos = 0;
             this.result = [];
-            this.success = true;
+            //this.success=true;
         }
     }
+    get success() { return !this._error; }
     clone() {
         var s = new State();
         s.src = this.src;
         s.pos = this.pos;
         s.result = this.result.slice();
-        s.success = this.success;
+        //s.success=this.success;
+        s._error = this._error;
         return s;
     }
-    updateMaxPos(npos) {
+    /*updateMaxPos(npos:number) {
         if (npos > this.src.maxPos) {
-            this.src.maxPos = npos;
+            this.src.maxPos=npos;
+        }
+    }*/
+    set error(error) {
+        this._error = error;
+        if (!error)
+            return;
+        if (this.pos == this.src.maxErrors.pos) {
+            this.src.maxErrors.errors.push(error);
+        }
+        else if (this.pos > this.src.maxErrors.pos) {
+            this.src.maxErrors = { pos: this.pos, errors: [error] };
         }
     }
+    get error() { return this._error; }
     isSuccess() {
         return this.success;
     }
@@ -516,18 +539,18 @@ class StringParser {
         this.context = context;
         this.empty = this.create(function (state) {
             var res = state.clone();
-            res.success = true;
+            res.error = null;
             res.result = [null]; //{length:0, isEmpty:true}];
             return res;
         }).setName("E");
         this.fail = this.create(function (s) {
-            s.success = false;
+            s.error = "FAIL";
             return s;
         }).setName("F");
         this.eof = this.strLike(function (str, pos) {
             if (pos == str.length)
                 return { len: 0 };
-            return null;
+            return { error: `Not EOF: pos=${pos}/${str.length}` };
         }).setName("EOF");
     }
     static withSpace(space) {
@@ -538,7 +561,7 @@ class StringParser {
         let res = this.strLike((str, pos) => {
             if (str.substring(pos, pos + st.length) === st)
                 return { len: st.length };
-            return null;
+            return { error: `Cannot read ${str}` };
         }).setName(st);
         if (st.length > 0)
             res = res.first(st[0]);
@@ -556,23 +579,27 @@ class StringParser {
                 throw "strLike: str is null!";
             var spos = state.pos;
             //console.log(" strlike: "+str+" pos:"+spos);
-            var r1 = func(str, spos, state);
+            const r1 = func(str, spos, state);
             if (options.traceToken)
                 console.log("pos=" + spos + " r=" + r1);
-            if (r1) {
+            if (r1 && typeof r1.len === "number") {
                 if (options.traceToken)
                     console.log("str:succ");
-                r1.pos = spos;
-                r1.src = state.src; // insert 2013/05/01
-                var ns = state.clone();
-                Object.assign(ns, { pos: spos + r1.len, success: true, result: [r1] });
-                state.updateMaxPos(ns.pos);
+                const rv = { pos: spos, src, len: r1.len };
+                //r1.pos=spos;
+                //r1.src=state.src; // insert 2013/05/01
+                const ns = state.clone();
+                ns.pos = spos + rv.len;
+                ns.error = null;
+                ns.result = [rv];
+                //Object.assign(ns, {pos:spos+r1.len, success:true, result:[r1]});
+                //state.updateMaxPos(ns.pos);
                 return ns;
             }
             else {
                 if (options.traceToken)
                     console.log("str:fail");
-                state.success = false;
+                state.error = (r1 && r1.error) || "Tokenize Error";
                 return state;
             }
         }).setName("STRLIKE");
@@ -580,13 +607,13 @@ class StringParser {
     reg(r) {
         if (!(r + "").match(/^\/\^/))
             console.log("Waring regex should have ^ at the head:" + (r + ""));
-        return this.strLike(function (str, pos) {
+        return this.strLike((str, pos) => {
             var res = r.exec(str.substring(pos));
             if (res) {
-                res.len = res[0].length;
-                return res;
+                //res.len=res[0].length;
+                return { len: res[0].length };
             }
-            return null;
+            return { error: `Cannot read reg ${r}` };
         }).setName(r + "");
     }
     parse(parser, str, global) {
@@ -607,15 +634,15 @@ exports.TokensParser = {
         return exports.tokensParserContext.create(function (s) {
             const src = s.src;
             const t = src.tokens[s.pos];
-            s.success = false;
-            if (!t)
-                return s;
-            if (t.type == type) {
+            if (t && t.type === type) {
                 s = s.clone();
-                s.updateMaxPos(s.pos);
+                //s.updateMaxPos(s.pos);
                 s.pos++;
-                s.success = true;
+                s.error = null;
                 s.result = [t];
+            }
+            else {
+                s.error = `Reading ${t ? t.type : "EOF"}, expected ${type}.`;
             }
             return s;
         }).setName(type, { type: "primitive", name: type }).firstTokens(type);
@@ -624,10 +651,15 @@ exports.TokensParser = {
         var st = new State(tokens, global);
         return parser.parse(st);
     },
-    eof: exports.tokensParserContext.create(function (s) {
+    eof: exports.tokensParserContext.create((s) => {
         const src = s.src;
         const suc = (s.pos >= src.tokens.length);
-        s.success = suc;
+        if (!suc) {
+            s.error = `Not EOF: ${src.tokens.length - s.pos} Token remains`;
+        }
+        else {
+            s.error = null;
+        }
         if (suc) {
             s = s.clone();
             s.result = [{ type: "EOF" }];

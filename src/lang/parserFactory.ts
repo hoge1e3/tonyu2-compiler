@@ -14,6 +14,7 @@ import R from "../lib/R";
 import ExpressionParser from "./ExpressionParser2";
 import Grammar from "./Grammar";
 import { addRange, ALL, getRange, Parser, setRange, StringParser, TokensParser } from "./parser";
+import { Tokenizer } from "./tokenizerFactory";
 
 /*const Grammar=require("./Grammar");
 const IndentBuffer=require("./IndentBuffer");
@@ -21,7 +22,7 @@ const Parser=require("./parser");
 import R = require("../lib/R");
 const ExpressionParser=require("./ExpressionParser2");
 const TError=require("../runtime/TError");*/
-export= function PF({TT}) {
+export= function PF({TT}:{TT:Tokenizer}) {
 	//var p:any=Parser;
 	var $:any={};
 	var g=Grammar(TokensParser.context);
@@ -303,7 +304,7 @@ export= function PF({TT}) {
 		g.defs[i].profile();
 	}*/
 	$.parse = function (file) {
-		let str;
+		let str:string;
 		if (typeof file=="string") {
 			str=file;
 		} else {
@@ -314,7 +315,7 @@ export= function PF({TT}) {
 		if (!tokenRes.isSuccess() ) {
 			//return "ERROR\nToken error at "+tokenRes.src.maxPos+"\n"+
 			//	str.substring(0,tokenRes.src.maxPos)+"!!HERE!!"+str.substring(tokenRes.src.maxPos);
-			throw TError(R("lexicalError"), file ,  tokenRes.src.maxPos);
+			throw TError(R("lexicalError")+": "+tokenRes.error, file ,  tokenRes.src.maxErrors.pos);
 		}
 		var tokens=tokenRes.result[0];
 		//console.log("Tokens: "+tokens.join(","));
@@ -328,10 +329,11 @@ export= function PF({TT}) {
 			//return "<program>"+xmlsrc+"</program>";
 
 		}
-		var lt=tokens[res.src.maxPos];
+		const maxErrors=res.src.maxErrors;
+		var lt=tokens[maxErrors.pos];
 		var mp=(lt?lt.pos : str.length);
 		const len=(lt?lt.len:0);
-		throw TError(R("parseError"), file ,  mp, len );
+		throw TError(R("parseError")+`: ${maxErrors.errors.join(", ")}`, file ,  mp, len );
 		/*return "ERROR\nSyntax error at "+mp+"\n"+
 		str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
 	};

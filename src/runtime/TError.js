@@ -40,12 +40,21 @@ function TError(message, src, pos, len = 0) {
 }
 ;
 TError.calcRowCol = function (text, pos) {
-    var lines = text.split("\n");
-    var pp = 0, row, col;
+    const lines = text.split("\n");
+    let pp = 0, row, col;
+    /*
+aaa\n
+bb\n
+cc!cc
+pp = 4  7   11
+row=2  pp=11  pos=9
+lines[row].length=4
+    */
     for (row = 0; row < lines.length; row++) {
+        const ppp = pp;
         pp += lines[row].length + 1;
         if (pp > pos) {
-            col = pos - (pp - lines[row].length);
+            col = pos - ppp;
             break;
         }
     }

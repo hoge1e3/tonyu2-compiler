@@ -63,7 +63,7 @@ export class ParserContext {
 		} else {
 			const res=this.create((s0:State)=>{
 				var s=(this.space==="RAWSTR" || this.space==="TOKEN" ? s0 : this.space.parse(s0));
-				var f=s.src.str.substring(s.pos,s.pos+1);
+				var f=(s.src as StrStateSrc).str[s.pos];
 				if (options.traceFirstTbl) {
 					console.log(res.name+": first="+f+" tbl="+( tbl[f]?tbl[f].name:"-") );
 				}
@@ -71,7 +71,7 @@ export class ParserContext {
 					return tbl[f].parse(s);
 				}
 				if (tbl[ALL]) return tbl[ALL].parse(s);
-				s.success=false;
+				s.error=`Read: '${f}', Expected: ${Object.keys(tbl).join("")}.`;
 				return s;
 			});
 			res._first=tbl;//{space:space,tbl:tbl};
@@ -92,7 +92,7 @@ export class ParserContext {
 				return tbl[f].parse(s);
 			}
 			if (tbl[ALL]) return tbl[ALL].parse(s);
-			s.success=false;
+			s.error=`Read: '${t?f:"EOF"}', Expected: ${Object.keys(tbl).join(", ")}.`;
 			return s;
 		});
 		res._first=tbl;//{space:"TOKEN",tbl:tbl};
@@ -101,13 +101,13 @@ export class ParserContext {
 	}
 	optEmpty=this.create((s:State)=>{
 		s=s.clone();
-		s.success=true;
+		s.error=null;
 		s.result=[null]; // opt returns null
 		return s;
 	}).setName("optEmpty");//,{type:"empty"});*/
 	repEmpty=this.create((s:State)=>{
 		s=s.clone();
-		s.success=true;
+		s.error=null;
 		s.result=[ [] ]; // rep0 returns empty array
 		return s;
 	}).setName("repEmpty");//,{type:"empty"});*/
@@ -117,7 +117,7 @@ type LazyInfo={
 	resolved?: Parser
 };
 export class Parser {// class Parser
-	parse: Function;
+	parse: (s:State)=>State;
 	struct: Struct;
 	name?: string;
 	//context: ParserContext;
@@ -135,7 +135,9 @@ export class Parser {// class Parser
 			//var res=t.parse(s);
 			//if (!res.success) return res;
 			if (f.apply({}, res.result)) {
-				res.success=false;
+				res.error="Except";
+			} else {
+				res.error=null;
 			}
 			return res;
 		}).setName("(except "+t.name+")",this));
@@ -145,7 +147,12 @@ export class Parser {// class Parser
 		nc(p,"p");
 		return this.and(this.create(function (res) {
 			var res2=p.parse(res);
-			res.success=!res2.success;
+			if (res2.success) {
+				res.error=`Should not follow ${p.name}`;
+			} else {
+				res.error=null;
+			}
+			//res.success=!res2.success;
 			return res;
 		}).setName("("+t.name+" noFollow "+p.name+")",this));
 	}
@@ -347,12 +354,12 @@ export class Parser {// class Parser
 					if (result.length>=min) {
 						res=current.clone();
 						res.result=[result];
-						res.success=true;
+						res.error=null;
 						//console.log("rep0 res="+disp(res.result));
 						return res;
 					} else {
 						res=s.clone();
-						res.success=false;
+						res.error=next.error;
 						return res;
 					}
 				} else {
@@ -391,7 +398,7 @@ export class Parser {// class Parser
 				return r;
 			} else {
 				s=s.clone();
-				s.success=true;
+				s.error=null;
 				s.result=[null];
 				return s;
 			}
@@ -456,26 +463,29 @@ export class Parser {// class Parser
 
 }
 type Token={type:string};
-export type TokenStateSrc={tokens?:Token[], maxPos:number, global?:any};
-export type StrStateSrc={str:string, maxPos:number, global?:any};
+export type ParseError=string;
+export type MaxErrors={pos:number, errors:ParseError[]};
+export type TokenStateSrc={tokens?:Token[], maxErrors:MaxErrors, global?:any};
+export type StrStateSrc={str:string, maxErrors:MaxErrors, global?:any};
 export type StateSrc=TokenStateSrc|StrStateSrc;
 export class State{
 	src:StateSrc;//{maxPos:number, global?:any, str?:string, tokens?:any[]};
 	pos:number;
 	result:any[];
-	success:boolean;
+	get success():boolean {return !this._error;}
+	_error?:ParseError;
 	constructor(strOrTokens?: string|Token[], global?:any) { // class State
 		if (strOrTokens!=null) {
 			//this.src={maxPos:0, global:global};// maxPos is shared by all state
 			if (typeof strOrTokens=="string") {
-				this.src={maxPos:0, global, str:strOrTokens};
+				this.src={maxErrors:{pos:0, errors:[]}, global, str:strOrTokens};
 			}
 			if (strOrTokens instanceof Array) {
-				this.src={maxPos:0, global, tokens:strOrTokens};
+				this.src={maxErrors:{pos:0, errors:[]}, global, tokens:strOrTokens};
 			}
 			this.pos=0;
 			this.result=[];
-			this.success=true;
+			//this.success=true;
 		}
 	}
 	clone() {
@@ -483,14 +493,25 @@ export class State{
 		s.src=this.src;
 		s.pos=this.pos;
 		s.result=this.result.slice();
-		s.success=this.success;
+		//s.success=this.success;
+		s._error=this._error;
 		return s;
 	}
-	updateMaxPos(npos:number) {
+	/*updateMaxPos(npos:number) {
 		if (npos > this.src.maxPos) {
 			this.src.maxPos=npos;
 		}
+	}*/
+	set error(error:ParseError|null) {
+		this._error=error;
+		if (!error) return;
+		if (this.pos==this.src.maxErrors.pos) {
+			this.src.maxErrors.errors.push(error);
+		} else if (this.pos>this.src.maxErrors.pos) {
+			this.src.maxErrors={pos:this.pos, errors:[error]};
+		}
 	}
+	get error() {return this._error;}
 	isSuccess() {
 		return this.success;
 	}
@@ -500,6 +521,9 @@ export class State{
 	}
 }
 const rawStringParserContext=new ParserContext("RAWSTR");
+export type StrLikeResult={
+	pos: number, len:number, src:StrStateSrc
+}
 export class StringParser{
 	//context: ParserContext;
 	constructor(public context:ParserContext=rawStringParserContext) {
@@ -510,23 +534,23 @@ export class StringParser{
 	create(pf:ParseFunc) {return this.context.create(pf);}
 	empty=this.create(function(state:State) {
 		var res=state.clone();
-		res.success=true;
+		res.error=null;
 		res.result=[null]; //{length:0, isEmpty:true}];
 		return res;
 	}).setName("E");
 	fail=this.create(function(s:State){
-		s.success=false;
+		s.error="FAIL";
 		return s;
 	}).setName("F");
 	str(st:string) {
 		let res=this.strLike((str:string,pos:number)=>{
 			if (str.substring(pos, pos+st.length)===st) return {len:st.length};
-			return null;
+			return {error:`Cannot read ${str}`};
 		}).setName(st);
 		if (st.length>0) res=res.first(st[0]);
 		return res;
 	}
-	strLike(func:(str:string,pos:number, state?:State)=>{pos?:number, len:number, src?:StateSrc} ) {
+	strLike(func:(str:string,pos:number, state?:State)=>{len?:number, error?:string} ) {
 		// func :: str,pos, state? -> {len:int, other...}  (null for no match )
 		return this.create((state:State)=>{
 			if (this.context.space instanceof Parser) {
@@ -537,32 +561,36 @@ export class StringParser{
 			if (str==null) throw "strLike: str is null!";
 			var spos=state.pos;
 			//console.log(" strlike: "+str+" pos:"+spos);
-			var r1=func(str, spos, state);
+			const r1=func(str, spos, state);
 			if (options.traceToken) console.log("pos="+spos+" r="+r1);
-			if(r1) {
+			if(r1 && typeof r1.len==="number") {
 				if (options.traceToken) console.log("str:succ");
-				r1.pos=spos;
-				r1.src=state.src; // insert 2013/05/01
-				var ns=state.clone();
-				Object.assign(ns, {pos:spos+r1.len, success:true, result:[r1]});
-				state.updateMaxPos(ns.pos);
+				const rv:StrLikeResult={pos:spos, src, len:r1.len};
+				//r1.pos=spos;
+				//r1.src=state.src; // insert 2013/05/01
+				const ns=state.clone();
+				ns.pos=spos+rv.len;
+				ns.error=null;
+				ns.result=[rv];
+				//Object.assign(ns, {pos:spos+r1.len, success:true, result:[r1]});
+				//state.updateMaxPos(ns.pos);
 				return ns;
 			}else{
 				if (options.traceToken) console.log("str:fail");
-				state.success=false;
+				state.error=(r1 && r1.error) || "Tokenize Error";
 				return state;
 			}
 		}).setName("STRLIKE");
 	}
 	reg(r:RegExp) {//r: regex (must have ^ at the head)
 		if (!(r+"").match(/^\/\^/)) console.log("Waring regex should have ^ at the head:"+(r+""));
-		return this.strLike(function (str:string,pos:number) {
+		return this.strLike((str:string,pos:number)=>{
 			var res:any=r.exec( str.substring(pos) );
 			if (res) {
-				res.len=res[0].length;
-				return res;
+				//res.len=res[0].length;
+				return {len:res[0].length};
 			}
-			return null;
+			return {error:`Cannot read reg ${r}`};
 		}).setName(r+"");
 	}
 	parse(parser:Parser, str:string, global?) {
@@ -571,7 +599,7 @@ export class StringParser{
 	}
 	eof=this.strLike(function (str:string,pos:number) {
 		if (pos==str.length) return {len:0};
-		return null;
+		return {error:`Not EOF: pos=${pos}/${str.length}`};
 	}).setName("EOF");
 }
 //  why not eof: ? because StringParser.strLike
@@ -587,14 +615,14 @@ export const TokensParser={
 		return tokensParserContext.create(function (s:State) {
 			const src=s.src as TokenStateSrc;
 			const t=src.tokens[s.pos];
-			s.success=false;
-			if (!t) return s;
-			if (t.type==type) {
+			if (t && t.type===type) {
 				s=s.clone();
-				s.updateMaxPos(s.pos);
-			s.pos++;
-				s.success=true;
+				//s.updateMaxPos(s.pos);
+				s.pos++;
+				s.error=null;
 				s.result=[t];
+			} else {
+				s.error=`Reading ${t?t.type:"EOF"}, expected ${type}.`;
 			}
 			return s;
 		}).setName(type,{type:"primitive", name:type}).firstTokens(type);
@@ -603,10 +631,14 @@ export const TokensParser={
 		var st=new State(tokens,global);
 		return parser.parse(st);
 	},
-	eof: tokensParserContext.create(function (s) {
+	eof: tokensParserContext.create((s:State)=>{
 		const src=s.src as TokenStateSrc;
 		const suc=(s.pos>=src.tokens.length);
-		s.success=suc;
+		if (!suc) {
+			s.error=`Not EOF: ${src.tokens.length-s.pos} Token remains`;
+		} else {
+			s.error=null;
+		}
 		if (suc) {
 			s=s.clone();
 			s.result=[{type:"EOF"}];

@@ -298,7 +298,7 @@ module.exports = function PF({ TT }) {
         if (!tokenRes.isSuccess()) {
             //return "ERROR\nToken error at "+tokenRes.src.maxPos+"\n"+
             //	str.substring(0,tokenRes.src.maxPos)+"!!HERE!!"+str.substring(tokenRes.src.maxPos);
-            throw (0, TError_1.default)((0, R_1.default)("lexicalError"), file, tokenRes.src.maxPos);
+            throw (0, TError_1.default)((0, R_1.default)("lexicalError") + ": " + tokenRes.error, file, tokenRes.src.maxErrors.pos);
         }
         var tokens = tokenRes.result[0];
         //console.log("Tokens: "+tokens.join(","));
@@ -311,10 +311,11 @@ module.exports = function PF({ TT }) {
             //var xmlsrc=$.genXML(str, node);
             //return "<program>"+xmlsrc+"</program>";
         }
-        var lt = tokens[res.src.maxPos];
+        const maxErrors = res.src.maxErrors;
+        var lt = tokens[maxErrors.pos];
         var mp = (lt ? lt.pos : str.length);
         const len = (lt ? lt.len : 0);
-        throw (0, TError_1.default)((0, R_1.default)("parseError"), file, mp, len);
+        throw (0, TError_1.default)((0, R_1.default)("parseError") + `: ${maxErrors.errors.join(", ")}`, file, mp, len);
         /*return "ERROR\nSyntax error at "+mp+"\n"+
         str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
     };
