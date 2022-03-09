@@ -70,14 +70,14 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		let pat:Parser;
 		//let fst:string;
 		if (typeof r=="string") {
-			pat=sp.str(r);
-			//if (r.length>0) fst=r.substring(0,1);
 			if (!name) name=r;
+			pat=sp.str(r,name);
+			//if (r.length>0) fst=r.substring(0,1);
 		} else {
-			pat=sp.reg(r);
 			if (!name) name=r+"";
+			pat=sp.reg(r, name);
 		}
-		var res=pat.ret((b:StrLikeResult)=>{
+		return pat.ret((b:StrLikeResult)=>{
 			var res:any={};
 			res.pos=b.pos;
 			if (typeof res.pos!="number") throw "no pos for "+name+" ";//+disp(b);
@@ -91,7 +91,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			return res;
 		});
 		//if (fst) res=res.first(fst);
-		return res.setName(name);//.profile();
+		//return res;//.profile();
 	}
 	var parsers:any={},posts:any={};
 	function dtk2(prev:Mode, name:string, parser:Parser|string) {
@@ -112,7 +112,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		}
 		posts[name]=post;
 	}
-	function or(a,b){
+	function or(a:Parser,b:Parser){
 		if (!a) return b;
 		return a.or(b);
 	}
@@ -141,7 +141,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		return st;
 	});
 	// Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
-	var num=tk(/^(?:0x[0-9a-f]+|0b[01]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e-?[0-9]+)?)/i).ret(function (n) {
+	var num=tk(/^(?:0x[0-9a-f]+|0b[01]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e-?[0-9]+)?)/i,"'number'").ret(function (n) {
 		n.type="number";
 		n.value=n.text-0;//parseInt(n.text);
 		return n;
@@ -158,7 +158,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			}
 		}
 		return false;
-	},toString:function(){return"literal";}
+	},toString:function(){return"'literal'";}
 	}).first("\"'");
 	var regex=tk({exec: function (s) {
 		if (s.substring(0,1)!=='/') return false;
@@ -174,7 +174,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			}
 		}
 		return false;
-	},toString:function(){return"regex";}
+	},toString:function(){return"'regex'";}
 	}).first("/");
 
 	dtk(REG|DIV, "number", num,DIV );

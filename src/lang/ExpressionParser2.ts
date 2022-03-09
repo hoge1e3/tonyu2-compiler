@@ -1,6 +1,6 @@
 // parser.js の補助ライブラリ．式の解析を担当する
 
-import { Parser, ParserContext, setRange } from "./parser";
+import { Parser, ParserContext, setRange, State } from "./parser";
 
 //import Parser from "./parser";
 export= function ExpressionParser (context: ParserContext, name="Expression") {
@@ -33,12 +33,13 @@ export= function ExpressionParser (context: ParserContext, name="Expression") {
 		var built=composite();
 		//var lastOP , isBuilt;
 		return {
-			reg(type, prio, a) {
+			reg(type:string, prio:number, a:Parser) {
 				var opt=opType(type, prio);
-				built.add(a.ret(context.create(function (r) {
-					(r as any).opType=opt;
-					return r;
-				})).setName("(opType "+opt+" "+a.name+")") );
+				built.add(context.create((r:State)=>{
+					const r2=a.parse(r);
+					(r2 as any).opType=opt;
+					return r2;
+				}).setName("(opType "+opt+" "+a.name+")") );
 			},
 			get() {return built.get();},
 			parse(st) {

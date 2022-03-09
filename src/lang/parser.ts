@@ -129,6 +129,23 @@ export class Parser {// class Parser
 	constructor (public context:ParserContext, parseFunc:ParseFunc){
 		this.parse=parseFunc;
 	}
+	dispTbl() {
+		if (!this._first) {
+			console.log("No table for "+this.name);
+		} else {
+			console.log("Table for "+this.name+":");
+			const tbl=this._first;
+			//const h={};
+			for (let i in tbl) {// tbl:{char:Parser}   i:char
+				const n=tbl[i].name;
+				console.log("  "+i+": "+n)
+			}
+			if (tbl[ALL]) {
+				const n=tbl[ALL].name;
+				console.log("  ALL: "+n)
+			}
+		}
+	}
 	except(f:Function) {
 		var t=this;
 		return this.and(this.create((res:State)=>{
@@ -169,8 +186,9 @@ export class Parser {// class Parser
 			}
 			return r2;
 		});
-		const elems=(this.struct && this.struct.type==="and" ? this.struct.elems : [this]);
-		return res.setName("("+this.name+" "+next.name+")",{type:"and", elems:[...elems,next]});
+		const elems=this.structToArray("and");//(this.struct && this.struct.type==="and" ? this.struct.elems : [this]);
+		const nelems=[...elems,next];
+		return res.setName("("+nelems.map((p:Parser)=>p.name).join(" ")+")",{type:"and", elems:nelems});
 	}
 	and(next:Parser) {// Parser.and:: Parser  -> Parser
 		//if (this.struct && this.struct.type==="empty") return next;
@@ -187,31 +205,29 @@ export class Parser {// class Parser
 		}
 		if (tbl[ALL]) ntbl[ALL]=tbl[ALL].andNoUnify(next);
 		const res=this.context.fromFirst(ntbl);
-		res.setName("("+this.name+" >> "+next.name+")",_res);
+		res.setAlias(_res);
 		if (options.verboseFirst) {
 			console.log("Created aunify name=" +res.name+" tbl="+dispTbl(ntbl));
 		}
 		return res;
 	}
 	retNoUnify(f:Function) {
-		const t=this;
-		let p:Parser;
-		if (typeof f=="function") {
-			p=this.create(function (r1) {
-				var r2=r1.clone();
-				r2.result=[ f.apply({}, r1.result) ];
-				return r2;
-			}).setName("retfunc");
-		} else p=f;
-		var res=this.create(function(s){ //s:State
-			var r1=t.parse(s); // r1:State
+		const p=this.create((r1:State)=>{
+			const r2=r1.clone();
+			r2.result=[ f(...r1.result) ];
+			return r2;
+		});
+		var res=this.create((s:State)=>{
+			const r1=this.parse(s);
 			if (!r1.success) return r1;
 			return p.parse(r1);
-		}).setName("("+this.name+" >= "+p.name+")");
+		}).setName(this.name+"@");
 		return res;
 	}
-	ret(next:Function) {// Parser.ret:: (Function|Parser)  -> Parser
-		if (!options.optimizeFirst) return this.retNoUnify(next);
+	ret(next:Function):Parser {
+		if (typeof next!=="function") throw new Error("Not function "+next);
+		const _res=this.retNoUnify(next);
+		if (!options.optimizeFirst) return _res;
 		//if (!this._first) return this.retNoUnify(next);
 		var tbl=this._first || {[ALL]:this};
 		var ntbl={};
@@ -220,7 +236,7 @@ export class Parser {// class Parser
 		}
 		if (tbl[ALL]) ntbl[ALL]=tbl[ALL].retNoUnify(next);
 		const res=this.context.fromFirst( ntbl);
-		res.setName("("+this.name+" >>= "+next.name+")");
+		res.setAlias(_res);
 		if (options.verboseFirst) {
 			console.log("Created runify name=" +res.name+" tbl="+dispTbl(ntbl));
 		}
@@ -240,10 +256,10 @@ export class Parser {// class Parser
 					tbl[ct.substring(i,i+1)]=this;
 				}
 			//this._first={space: space, tbl:tbl};
-			return this.context.fromFirst(tbl).setName("(fst "+this.name+")",this);
+			return this.context.fromFirst(tbl).setAlias(this);
 //        		this._first={space: space, chars:ct};
 		} else if (ct===ALL) {
-			return this.context.fromFirst({[ALL]:this}).setName("(fst "+this.name+")",this);
+			return this.context.fromFirst({[ALL]:this}).setAlias(this);
 			//this._first={space:space, tbl:{ALL:this}};
 		} else if (typeof ct=="object") {
 			throw "this._first={space: space, tbl:ct}";
@@ -262,7 +278,7 @@ export class Parser {// class Parser
 				tbl[token]=this;
 			}
 		}
-		return this.context.fromFirstTokens(tbl).setName("(fstT "+this.name+")",this);
+		return this.context.fromFirstTokens(tbl).setAlias(this);
 	}
 	unifyFirst (other:Parser) {
 		//var thiz=this;
@@ -302,8 +318,9 @@ export class Parser {// class Parser
 		}
 		Object.assign(tbl, this._first || {[ALL]: this});
 		mergeTbl();
-		const elems=(this.struct && this.struct.type==="or" ? this.struct.elems : [this]);
-		var res=this.context.fromFirst(tbl).setName("("+this.name+")U("+other.name+")",{type:"or",elems:[...elems,other]});
+		const elems=this.structToArray("or");
+		const nelems=[...elems,other];
+		var res=this.context.fromFirst(tbl).setName(`(${nelems.map((p:Parser)=>p.name).join("|")})`,{type:"or",elems:nelems});
 		if (options.verboseFirst) console.log("Created unify name=" +res.name+" tbl="+dispTbl(tbl));
 		return res;
 	}
@@ -318,9 +335,13 @@ export class Parser {// class Parser
 			return this.orNoUnify(other);
 		}
 	}
+	structToArray(type:"and"|"or"):Parser[] {
+		return (this.struct && this.struct.type===type ? this.struct.elems : [this]);
+	}
 	orNoUnify (other:Parser) {
-			var t=this;  // t:Parser
-			const elems=(this.struct && this.struct.type==="or" ? this.struct.elems : [this]);
+		var t=this;  // t:Parser
+		const elems=this.structToArray("or");
+		const nelems=[...elems, other];
 		var res=this.create(function(s){
 			var r1=t.parse(s); // r1:State
 			if (!r1.success){
@@ -329,8 +350,11 @@ export class Parser {// class Parser
 			} else {
 				return r1;
 			}
-		}).setName("("+this.name+")|("+other.name+")",{type:"or", elems:[...elems, other]} );
+		}).setName(`(${nelems.map((p:Parser)=>p.name).join("|")})`,{type:"or", elems:nelems} );
 		return res;
+	}
+	setAlias(p:Parser){
+		return this.setName(p.name, p.struct);
 	}
 	setName (n:string, struct?: Struct|Parser) {
 		this.name=n;
@@ -368,7 +392,7 @@ export class Parser {// class Parser
 				}
 			}
 		});
-		return res.setName("("+p.name+" * "+min+")",{type:"rept", elem:p});
+		return res.setName(`[${p.name}]x${min}`,{type:"rept", elem:p});
 	}
 	repN(min:number) {
 		const _res=this.repNNoUnify(min);
@@ -384,9 +408,9 @@ export class Parser {// class Parser
 		} else if (min==0) {
 			nf[ALL]=this.context.repEmpty;
 		}
-		if (min==0)			console.log( "rep0", dispTbl(nf));
-
-		return this.context.fromFirst(nf).setName(_res.name, _res.struct);
+		const res=this.context.fromFirst(nf).setAlias(_res);
+		//if (min==0)	{console.log( "rep0 of ", this.name); res.dispTbl(); }
+		return res;
 	}
 	rep0 () { return this.repN(0); }
 	rep1 () { return this.repN(1); }
@@ -419,7 +443,7 @@ export class Parser {// class Parser
 		} else {
 			nf[ALL]=this.context.optEmpty;
 		}
-		return this.context.fromFirst(nf).setName(_res.name, _res.struct);
+		return this.context.fromFirst(nf).setAlias(_res);
 	}
 	sep1(sep:Parser, valuesToArray:boolean) {
 		var value=this;
@@ -542,11 +566,11 @@ export class StringParser{
 		s.error="FAIL";
 		return s;
 	}).setName("F");
-	str(st:string) {
+	str(st:string, name=st) {
 		let res=this.strLike((str:string,pos:number)=>{
 			if (str.substring(pos, pos+st.length)===st) return {len:st.length};
 			return {error:`Cannot read ${str}`};
-		}).setName(st);
+		}).setName(name);
 		if (st.length>0) res=res.first(st[0]);
 		return res;
 	}
@@ -582,7 +606,7 @@ export class StringParser{
 			}
 		}).setName("STRLIKE");
 	}
-	reg(r:RegExp) {//r: regex (must have ^ at the head)
+	reg(r:RegExp, name=r+"") {//r: regex (must have ^ at the head)
 		if (!(r+"").match(/^\/\^/)) console.log("Waring regex should have ^ at the head:"+(r+""));
 		return this.strLike((str:string,pos:number)=>{
 			var res:any=r.exec( str.substring(pos) );
@@ -591,7 +615,7 @@ export class StringParser{
 				return {len:res[0].length};
 			}
 			return {error:`Cannot read reg ${r}`};
-		}).setName(r+"");
+		}).setName(name);
 	}
 	parse(parser:Parser, str:string, global?) {
 		var st=new State(str,global);
@@ -625,7 +649,7 @@ export const TokensParser={
 				s.error=`Reading ${t?t.type:"EOF"}, expected ${type}.`;
 			}
 			return s;
-		}).setName(type,{type:"primitive", name:type}).firstTokens(type);
+		}).setName("'"+type+"'",{type:"primitive", name:type}).firstTokens(type);
 	},
 	parse:function (parser:Parser, tokens:any[], global:any={}) {
 		var st=new State(tokens,global);

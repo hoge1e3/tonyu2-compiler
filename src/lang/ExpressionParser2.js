@@ -37,10 +37,11 @@ module.exports = function ExpressionParser(context, name = "Expression") {
         return {
             reg(type, prio, a) {
                 var opt = opType(type, prio);
-                built.add(a.ret(context.create(function (r) {
-                    r.opType = opt;
-                    return r;
-                })).setName("(opType " + opt + " " + a.name + ")"));
+                built.add(context.create((r) => {
+                    const r2 = a.parse(r);
+                    r2.opType = opt;
+                    return r2;
+                }).setName("(opType " + opt + " " + a.name + ")"));
             },
             get() { return built.get(); },
             parse(st) {

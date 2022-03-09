@@ -344,6 +344,6 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	};*/
 	$.extension="tonyu";
 	//g.buildTypes();
-	//g.checkFirstTbl();
+	g.checkFirstTbl();
 	return $;
 };

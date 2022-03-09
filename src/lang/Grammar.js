@@ -91,14 +91,14 @@ const Grammar = function (context) {
                     if (p._lazy)
                         p = p._lazy.resolve();
                     //console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
-                    console.log(f, p.name);
+                    console.log("  " + f + "=>", p.name);
                 }
                 if (tbl[parser_1.ALL]) {
                     let p = tbl[parser_1.ALL];
                     if (p._lazy)
                         p = p._lazy.resolve();
                     //console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
-                    console.log("ALL", p.name);
+                    console.log("  ALL=>", p.name);
                 }
             }
             else {

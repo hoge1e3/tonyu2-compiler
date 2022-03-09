@@ -83,13 +83,13 @@ const Grammar=function (context:ParserContext) {
 					let p=tbl[f];
 					if (p._lazy) p=p._lazy.resolve();
 					//console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
-					console.log(f, p.name);
+					console.log("  "+f+"=>", p.name);
 				}
 				if (tbl[ALL]) {
 					let p=tbl[ALL];
 					if (p._lazy) p=p._lazy.resolve();
 					//console.dir({[f]: traverse( /*typeInfos.get*/(p) , new Set)}, {depth:null}  );
-					console.log("ALL", p.name);
+					console.log("  ALL=>", p.name);
 				}
 			} else {
 				console.log("NO FIRST TBL");
