@@ -1,0 +1,7 @@
+{
+    "compiler":{
+        "dependingProjects": [],
+        "outputFile": "js/concat.js","namespace":"user"
+    },
+    "run":{}
+}

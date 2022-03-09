@@ -9,7 +9,7 @@ x=100;
 //break;
 y=200;
 fillStyle="yellow";
-radius= 16;　
+radius=16;　
 
 while (x<120) {
     x+=5;
