@@ -228,7 +228,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	/*e.mkPostfix(function (p) {
 		return {type:"postfix", expr:p};
 	});*/
-	const expr=e.build().setName("expr").firstTokens(ALL);//.profile();
+	const expr=e.build();//.profile();
 	g("elem").alias(e.getElement());
 	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };

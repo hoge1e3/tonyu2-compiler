@@ -1,6 +1,6 @@
 // parser.js の補助ライブラリ．式の解析を担当する
 
-import { Parser, ParserContext, setRange, State } from "./parser";
+import { ALL, Parser, ParserContext, setRange, State } from "./parser";
 
 //import Parser from "./parser";
 export= function ExpressionParser (context: ParserContext, name="Expression") {
@@ -14,10 +14,10 @@ export= function ExpressionParser (context: ParserContext, name="Expression") {
 			toString() {return "["+type+":"+prio+"]"; },
 		};
 	}
-	function composite(a?) {
-		var e=a;
+	function composite(a?:Parser) {
+		let e=a;
 		return {
-			add(a) {
+			add(a:Parser) {
 				if (!e) {
 					e=a;
 				} else {
@@ -30,7 +30,7 @@ export= function ExpressionParser (context: ParserContext, name="Expression") {
 		};
 	}
 	function typeComposite() {
-		var built=composite();
+		const built=composite();
 		//var lastOP , isBuilt;
 		return {
 			reg(type:string, prio:number, a:Parser) {
@@ -39,10 +39,10 @@ export= function ExpressionParser (context: ParserContext, name="Expression") {
 					const r2=a.parse(r);
 					(r2 as any).opType=opt;
 					return r2;
-				}).setName("(opType "+opt+" "+a.name+")") );
+				}).setName("(opType "+opt+" "+a.name+")").copyFirst(a) );
 			},
 			get() {return built.get();},
-			parse(st) {
+			parse(st:State) {
 				return this.get().parse(st);
 			}
 		};
@@ -101,10 +101,18 @@ export= function ExpressionParser (context: ParserContext, name="Expression") {
 	build() {
 		//postfixOrInfix.build();
 		//prefixOrElement.build();
-		$.built= context.create(function (st) {
+		console.log("BUILT fst ");
+		prefixOrElement.get().dispTbl();
+		let built= context.create(function (st) {
 			return parse(0,st);
-		}).setName(name);
-		return $.built;
+		}).setName(name).copyFirst(prefixOrElement.get());
+		//const fst=prefixOrElement.get()._first;
+		built.dispTbl();
+		/*if (fst && !fst[ALL] && context.space==="TOKEN") {
+			built=built.firstTokens(Object.keys(fst));
+		}*/
+		$.built=built;
+		return built;
 	},
 	mkInfix_def(left,op,right) {
 		return setRange({type:"infix", op:op, left: left, right: right});

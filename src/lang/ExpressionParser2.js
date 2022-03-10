@@ -16,7 +16,7 @@ module.exports = function ExpressionParser(context, name = "Expression") {
         };
     }
     function composite(a) {
-        var e = a;
+        let e = a;
         return {
             add(a) {
                 if (!e) {
@@ -32,7 +32,7 @@ module.exports = function ExpressionParser(context, name = "Expression") {
         };
     }
     function typeComposite() {
-        var built = composite();
+        const built = composite();
         //var lastOP , isBuilt;
         return {
             reg(type, prio, a) {
@@ -41,7 +41,7 @@ module.exports = function ExpressionParser(context, name = "Expression") {
                     const r2 = a.parse(r);
                     r2.opType = opt;
                     return r2;
-                }).setName("(opType " + opt + " " + a.name + ")"));
+                }).setName("(opType " + opt + " " + a.name + ")").copyFirst(a));
             },
             get() { return built.get(); },
             parse(st) {
@@ -103,10 +103,18 @@ module.exports = function ExpressionParser(context, name = "Expression") {
         build() {
             //postfixOrInfix.build();
             //prefixOrElement.build();
-            $.built = context.create(function (st) {
+            console.log("BUILT fst ");
+            prefixOrElement.get().dispTbl();
+            let built = context.create(function (st) {
                 return parse(0, st);
-            }).setName(name);
-            return $.built;
+            }).setName(name).copyFirst(prefixOrElement.get());
+            //const fst=prefixOrElement.get()._first;
+            built.dispTbl();
+            /*if (fst && !fst[ALL] && context.space==="TOKEN") {
+                built=built.firstTokens(Object.keys(fst));
+            }*/
+            $.built = built;
+            return built;
         },
         mkInfix_def(left, op, right) {
             return (0, parser_1.setRange)({ type: "infix", op: op, left: left, right: right });

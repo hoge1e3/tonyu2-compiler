@@ -316,6 +316,15 @@ export class Parser {// class Parser
 		}
 		return this.context.fromFirstTokens(tbl).setAlias(this);
 	}
+	copyFirst(src:Parser) {
+		const fst=src._first;
+		if (!fst || fst[ALL]) return this;
+		if (this.context.space==="TOKEN") {
+			return this.firstTokens(Object.keys(fst));
+		} else {
+			return this.first(Object.keys(fst).join(""));
+		}
+	}
 	unifyFirst (other:Parser) {
 		//var thiz=this;
 		function or(a:Parser,b:Parser) {

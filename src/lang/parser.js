@@ -318,6 +318,17 @@ class Parser {
         }
         return this.context.fromFirstTokens(tbl).setAlias(this);
     }
+    copyFirst(src) {
+        const fst = src._first;
+        if (!fst || fst[exports.ALL])
+            return this;
+        if (this.context.space === "TOKEN") {
+            return this.firstTokens(Object.keys(fst));
+        }
+        else {
+            return this.first(Object.keys(fst).join(""));
+        }
+    }
     unifyFirst(other) {
         //var thiz=this;
         function or(a, b) {

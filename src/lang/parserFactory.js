@@ -220,7 +220,7 @@ module.exports = function PF({ TT }) {
     /*e.mkPostfix(function (p) {
         return {type:"postfix", expr:p};
     });*/
-    const expr = e.build().setName("expr").firstTokens(parser_1.ALL); //.profile();
+    const expr = e.build(); //.profile();
     g("elem").alias(e.getElement());
     g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };
