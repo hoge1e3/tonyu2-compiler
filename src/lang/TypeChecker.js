@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
-const Grammar_1 = __importDefault(require("./Grammar"));
+const parser_1 = require("./parser");
 const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 var ScopeTypes = cu.ScopeTypes;
@@ -47,7 +47,7 @@ function visitSub(node) {
     if (node instanceof Array)
         es = node;
     else
-        es = node[Grammar_1.default.SUBELEMENTS];
+        es = node[parser_1.SUBELEMENTS];
     if (!es) {
         es = [];
         for (var i in node) {

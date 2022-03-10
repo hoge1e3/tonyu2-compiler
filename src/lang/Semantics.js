@@ -36,7 +36,7 @@ const assert_1 = __importDefault(require("../lib/assert"));
 const cu = __importStar(require("./compiler"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 const context_1 = require("./context");
-const Grammar_1 = __importDefault(require("./Grammar"));
+const parser_1 = require("./parser");
 function isPostfix(n) {
     return n.type == "postfix";
 }
@@ -60,7 +60,7 @@ function visitSub(node) {
     if (node instanceof Array)
         es = node;
     else
-        es = node[Grammar_1.default.SUBELEMENTS];
+        es = node[parser_1.SUBELEMENTS];
     if (!es) {
         es = [];
         for (var i in node) {

@@ -1,5 +1,5 @@
 //import * as Parser from "./parser";
-import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct } from "./parser";
+import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct, SUBELEMENTS } from "./parser";
 
 const Grammar=function (context:ParserContext) {
 	function trans(name:any) {
@@ -120,7 +120,7 @@ const Grammar=function (context:ParserContext) {
 				//p.parsers=parsers;
 				defs[name]=p;
 				return {
-					ret (...args) {
+					ret (...args:(string|null)[]) {
 						if (args.length==0) return p;
 						if (typeof args[0]=="function") {
 							defs[name]=p.ret(args[0]);
@@ -128,18 +128,18 @@ const Grammar=function (context:ParserContext) {
 						}
 						const names=[];
 						const fields={};
-						let fn=(e:any)=>e;//(e){return e;};
+						//let fn=(e:any)=>e;//(e){return e;};
 						for (var i=0 ; i<args.length ;i++) {
-							if (typeof args[i]=="function") {
+							/*if (typeof args[i]=="function") {
 								fn=args[i];
 								break;
-							}
+							}*/
 							names[i]=args[i];
 							if (names[i]) fields[names[i]]=parsers[i];
 						}
 						const res=p.ret(function (...args) {
 							var res={type:name};
-							res[Grammar.SUBELEMENTS]=[];
+							res[SUBELEMENTS]=[];
 							for (var i=0 ; i<args.length ;i++) {
 								var e=args[i];
 								var rg=setRange(e);
@@ -147,12 +147,12 @@ const Grammar=function (context:ParserContext) {
 								if (names[i]) {
 									res[names[i]]=e;
 								}
-								res[Grammar.SUBELEMENTS].push(e);
+								res[SUBELEMENTS].push(e);
 							}
 							res.toString=function () {
 								return "("+this.type+")";
 							};
-							return fn(res);
+							return (res);
 						}).setName(name);
 						typeInfos.set(res,{name, struct:{type:"object", fields}});
 						//setTypeInfo(res,name,fields);
@@ -174,5 +174,5 @@ const Grammar=function (context:ParserContext) {
 	}, {defs,get,buildTypes,checkFirstTbl});
 	//return $;
 };
-Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
+//Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
 export=  Grammar;

@@ -1,6 +1,7 @@
 import * as cu from "./compiler";
 import {context} from "./context";
 import Grammar from "./Grammar";
+import { SUBELEMENTS } from "./parser";
 import Visitor from "./Visitor";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -22,7 +23,7 @@ function visitSub(node) {//S
 	//console.log("TCV",node.type,node);
 	var es;
 	if (node instanceof Array) es=node;
-	else es=node[Grammar.SUBELEMENTS];
+	else es=node[SUBELEMENTS];
 	if (!es) {
 		es=[];
 		for (var i in node) {

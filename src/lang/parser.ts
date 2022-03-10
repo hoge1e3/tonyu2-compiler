@@ -4,13 +4,15 @@ export type Or ={type:"or" , elems:Parser[]};
 export type Rept={type:"rept", elem:Parser};
 export type Opt={type:"opt", elem:Parser};
 export type RetN={type:"retN", index:number, elems:Parser[]};
-export type RetObj={type:"object", fields:{[key:string]: Parser}, elems:Parser[]};
+// retobj= elems[ fields[name] ]:Parser
+export type RetObj={type:"object", fields:{[key:string]: number}, elems:Parser[]};
 export type Empty={type:"empty"};
 export type Primitive={type:"primitive", name:string};
 export type Lazy={type:"lazy", name:string};
 //export type Alias={type: "alias", target:Parser};
 export type Struct=And|Or|Rept|RetN|RetObj|Opt|Primitive|Lazy|Empty;//|Alias;
 export const ALL=Symbol("ALL");
+export const SUBELEMENTS=Symbol("SUBELEMENTS");
 type SpaceSpec =Parser|"TOKEN"|"RAWSTR";
 /*type First={
 	space: SpaceSpec,
@@ -534,7 +536,32 @@ export class Parser {// class Parser
 			(p:Parser, i2:number)=> (i==i2 ? `[${p.name}]`: p.name)
 		).join(" ")+")", {type:"retN", index:i, elems});
 	}
-
+	obj(...names:(string|null)[]) {
+		const elems=this.structToArray("and");
+		if (names.length > elems.length) throw new Error(`${this.name} requires ${names.length} fields(${names.join(", ")}). Only ${elems.length} provided.`);
+		const fields:{[key:string]:number}={};
+		const pnames=[];
+		for (let i=0 ; i<names.length ;i++) {
+			if (names[i]) {
+				fields[names[i]]=i;
+				pnames.push(`${names[i]}:${elems[i].name}`);
+			} else {
+				pnames.push(elems[i].name);
+			}
+		}
+		return this.ret((...args:any[])=>{
+			const res={[SUBELEMENTS]:args};
+			for (let e of args) {
+				const rg=setRange(e);
+				addRange(res, rg);
+			}
+			for (let name in fields) {
+				const idx=fields[name];
+				res[name]=args[idx];
+			}
+			return res;
+		}).setName(`{${pnames.join(", ")}}`,{type:"object", fields, elems});
+	}
 }
 type Token={type:string};
 export type ParseError=string;

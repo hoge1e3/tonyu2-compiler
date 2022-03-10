@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.tokensParserContext = exports.StringParser = exports.State = exports.Parser = exports.ParserContext = exports.ALL = void 0;
+exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.tokensParserContext = exports.StringParser = exports.State = exports.Parser = exports.ParserContext = exports.SUBELEMENTS = exports.ALL = void 0;
 exports.ALL = Symbol("ALL");
+exports.SUBELEMENTS = Symbol("SUBELEMENTS");
 const options = { traceTap: false, optimizeFirst: true, profile: false,
     verboseFirst: false, traceFirstTbl: false, traceToken: false };
 function dispTbl(tbl) {
@@ -557,6 +558,34 @@ class Parser {
         return this.ret(function () {
             return arguments[i];
         }).setName("(retN " + elems.map((p, i2) => (i == i2 ? `[${p.name}]` : p.name)).join(" ") + ")", { type: "retN", index: i, elems });
+    }
+    obj(...names) {
+        const elems = this.structToArray("and");
+        if (names.length > elems.length)
+            throw new Error(`${this.name} requires ${names.length} fields(${names.join(", ")}). Only ${elems.length} provided.`);
+        const fields = {};
+        const pnames = [];
+        for (let i = 0; i < names.length; i++) {
+            if (names[i]) {
+                fields[names[i]] = i;
+                pnames.push(`${names[i]}:${elems[i].name}`);
+            }
+            else {
+                pnames.push(elems[i].name);
+            }
+        }
+        return this.ret((...args) => {
+            const res = { [exports.SUBELEMENTS]: args };
+            for (let e of args) {
+                const rg = setRange(e);
+                addRange(res, rg);
+            }
+            for (let name in fields) {
+                const idx = fields[name];
+                res[name] = args[idx];
+            }
+            return res;
+        }).setName(`{${pnames.join(", ")}}`, { type: "object", fields, elems });
     }
 }
 exports.Parser = Parser;

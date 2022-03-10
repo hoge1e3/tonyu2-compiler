@@ -135,19 +135,19 @@ const Grammar = function (context) {
                         }
                         const names = [];
                         const fields = {};
-                        let fn = (e) => e; //(e){return e;};
+                        //let fn=(e:any)=>e;//(e){return e;};
                         for (var i = 0; i < args.length; i++) {
-                            if (typeof args[i] == "function") {
-                                fn = args[i];
+                            /*if (typeof args[i]=="function") {
+                                fn=args[i];
                                 break;
-                            }
+                            }*/
                             names[i] = args[i];
                             if (names[i])
                                 fields[names[i]] = parsers[i];
                         }
                         const res = p.ret(function (...args) {
                             var res = { type: name };
-                            res[Grammar.SUBELEMENTS] = [];
+                            res[parser_1.SUBELEMENTS] = [];
                             for (var i = 0; i < args.length; i++) {
                                 var e = args[i];
                                 var rg = (0, parser_1.setRange)(e);
@@ -155,12 +155,12 @@ const Grammar = function (context) {
                                 if (names[i]) {
                                     res[names[i]] = e;
                                 }
-                                res[Grammar.SUBELEMENTS].push(e);
+                                res[parser_1.SUBELEMENTS].push(e);
                             }
                             res.toString = function () {
                                 return "(" + this.type + ")";
                             };
-                            return fn(res);
+                            return (res);
                         }).setName(name);
                         typeInfos.set(res, { name, struct: { type: "object", fields } });
                         //setTypeInfo(res,name,fields);
@@ -182,5 +182,4 @@ const Grammar = function (context) {
     }, { defs, get, buildTypes, checkFirstTbl });
     //return $;
 };
-Grammar.SUBELEMENTS = Symbol("[SUBELEMENTS]");
 module.exports = Grammar;

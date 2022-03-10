@@ -12,6 +12,7 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import Grammar from "./Grammar";
+import { SUBELEMENTS } from "./parser";
 
 type NodeBase={type:string, pos:{}};
 type TextNode={text:string};
@@ -39,7 +40,7 @@ function visitSub(node: Node) {//S
 	if (!node || typeof node!="object") return;
 	var es;
 	if (node instanceof Array) es=node;
-	else es=node[Grammar.SUBELEMENTS];
+	else es=node[SUBELEMENTS];
 	if (!es) {
 		es=[];
 		for (var i in node) {
