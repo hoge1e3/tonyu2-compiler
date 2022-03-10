@@ -103,13 +103,13 @@ module.exports = function ExpressionParser(context, name = "Expression") {
         build() {
             //postfixOrInfix.build();
             //prefixOrElement.build();
-            console.log("BUILT fst ");
-            prefixOrElement.get().dispTbl();
+            //console.log("BUILT fst ");
+            //prefixOrElement.get().dispTbl();
             let built = context.create(function (st) {
                 return parse(0, st);
             }).setName(name).copyFirst(prefixOrElement.get());
             //const fst=prefixOrElement.get()._first;
-            built.dispTbl();
+            //built.dispTbl();
             /*if (fst && !fst[ALL] && context.space==="TOKEN") {
                 built=built.firstTokens(Object.keys(fst));
             }*/

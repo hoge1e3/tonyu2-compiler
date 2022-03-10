@@ -85,7 +85,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 		}).setName(`comLastOpt ${p.name}`,{type:"rept", elem:p});
 	}
 	var e=ExpressionParser(TokensParser.context) ;
-	var explz=e.lazy().firstTokens(ALL);
+	var explz=e.lazy();//.firstTokens(ALL);
 	var arrayElem=g("arrayElem").ands(tk("["), explz , tk("]")).ret(null,"subscript");
 	var argList=g("argList").ands(tk("("), comLastOpt(explz) , tk(")")).ret(null,"args");
 	var member=g("member").ands(tk(".") , symresv ).ret(null,     "name" );
@@ -232,7 +232,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	g("elem").alias(e.getElement());
 	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };
-	const stmt=G("stmt").firstTokens(ALL);
+	const stmt=G("stmt");//.firstTokens(ALL);
 	const stmtList=g("stmtList").alias(stmt.rep0());
 	var exprstmt=g("exprstmt").ands(expr,tk(";")).ret("expr");
 	g("compound").ands(tk("{"), stmtList, tk("}")).ret(null,"stmts") ;
@@ -301,7 +301,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	ands(ext.opt(),incl.opt(),stmt_built.rep0(), TokensParser.eof).
 	ret("ext","incl","stmts");
 
-	stmt_built.rep0().dispTbl();
+	//stmt_built.rep0().dispTbl();
 	/*for (var i in g.defs) {
 		g.defs[i].profile();
 	}*/
@@ -345,7 +345,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 		return x.buf;
 	};*/
 	$.extension="tonyu";
-	//g.buildTypes();
-	g.checkFirstTbl();
+	g.buildTypes();
+	//g.checkFirstTbl();
 	return $;
 };

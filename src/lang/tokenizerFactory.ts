@@ -245,15 +245,16 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			s.text=s.text.toLowerCase();
 		}
 		return s;
-	}).first(ALL);
+	});//.first(ALL);
 	for (var n in reserved) {
 		posts[n]=REG;
 	}
 	posts.tk_constructor=REG;
 	posts.symbol=DIV;
-	parsers[REG]=or(parsers[REG],symresv);
-	parsers[DIV]=or(parsers[DIV],symresv);
-	//console.log(parsers[REG]);
+	parsers[REG]=or(parsers[REG],symresv).setName("Token_REG");
+	parsers[DIV]=or(parsers[DIV],symresv).setName("Token_DIV");
+	parsers[REG].dispTbl();
+	parsers[DIV].dispTbl();
 	//console.log(parsers[DIV]);
 
 	function parse(str:string) {

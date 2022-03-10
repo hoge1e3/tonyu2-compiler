@@ -283,7 +283,7 @@ export class Parser {// class Parser
 	this._first={space: space, chars:String};
 	this._first={space: space, tbl:{char:Parser}};
 */
-	first (/*space:SpaceSpec,*/ ct:string|Symbol) {
+	first (/*space:SpaceSpec,*/ ct:string/*|Symbol*/) {
 		if (!options.optimizeFirst) return this;
 		//if (space==null) throw "Space is null2!";
 		if (typeof ct=="string") {
@@ -302,7 +302,7 @@ export class Parser {// class Parser
 		}
 		return this;
 	}
-	firstTokens (tokens:string|string[]|symbol) {
+	firstTokens (tokens:string|string[]/*|symbol*/) {
 		if (!options.optimizeFirst) return this;
 		const tbl:FirstTbl={};
 		if (typeof tokens=="symbol") {

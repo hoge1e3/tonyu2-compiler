@@ -80,7 +80,7 @@ module.exports = function PF({ TT }) {
         }).setName(`comLastOpt ${p.name}`, { type: "rept", elem: p });
     }
     var e = (0, ExpressionParser2_1.default)(parser_1.TokensParser.context);
-    var explz = e.lazy().firstTokens(parser_1.ALL);
+    var explz = e.lazy(); //.firstTokens(ALL);
     var arrayElem = g("arrayElem").ands(tk("["), explz, tk("]")).ret(null, "subscript");
     var argList = g("argList").ands(tk("("), comLastOpt(explz), tk(")")).ret(null, "args");
     var member = g("member").ands(tk("."), symresv).ret(null, "name");
@@ -224,7 +224,7 @@ module.exports = function PF({ TT }) {
     g("elem").alias(e.getElement());
     g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };
-    const stmt = G("stmt").firstTokens(parser_1.ALL);
+    const stmt = G("stmt"); //.firstTokens(ALL);
     const stmtList = g("stmtList").alias(stmt.rep0());
     var exprstmt = g("exprstmt").ands(expr, tk(";")).ret("expr");
     g("compound").ands(tk("{"), stmtList, tk("}")).ret(null, "stmts");
@@ -283,7 +283,7 @@ module.exports = function PF({ TT }) {
     var program = g("program").
         ands(ext.opt(), incl.opt(), stmt_built.rep0(), parser_1.TokensParser.eof).
         ret("ext", "incl", "stmts");
-    stmt_built.rep0().dispTbl();
+    //stmt_built.rep0().dispTbl();
     /*for (var i in g.defs) {
         g.defs[i].profile();
     }*/
@@ -327,7 +327,7 @@ module.exports = function PF({ TT }) {
         return x.buf;
     };*/
     $.extension = "tonyu";
-    //g.buildTypes();
-    g.checkFirstTbl();
+    g.buildTypes();
+    //g.checkFirstTbl();
     return $;
 };

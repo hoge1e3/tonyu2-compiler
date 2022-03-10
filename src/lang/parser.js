@@ -279,7 +279,7 @@ class Parser {
     this._first={space: space, chars:String};
     this._first={space: space, tbl:{char:Parser}};
 */
-    first(/*space:SpaceSpec,*/ ct) {
+    first(/*space:SpaceSpec,*/ ct /*|Symbol*/) {
         if (!options.optimizeFirst)
             return this;
         //if (space==null) throw "Space is null2!";
@@ -301,7 +301,7 @@ class Parser {
         }
         return this;
     }
-    firstTokens(tokens) {
+    firstTokens(tokens /*|symbol*/) {
         if (!options.optimizeFirst)
             return this;
         const tbl = {};
