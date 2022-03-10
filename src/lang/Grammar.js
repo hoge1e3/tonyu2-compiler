@@ -28,7 +28,7 @@ const Grammar = function (context) {
             return r;
         }).setName("(Lazy of " + name + ")", { type: "lazy", name });
         lazyDefs[name] = res;
-        typeInfos.set(res, { name, struct: { type: "lazy", name } });
+        typeInfos.set(res, { name }); //,struct:{type:"lazy",name}});
         return res;
     }
     function chain(parsers, f) {
@@ -38,6 +38,24 @@ const Grammar = function (context) {
             p = f(p, e);
         }
         return p;
+    }
+    function traverseStruct(st, visited) {
+        if (st && st.type === "lazy")
+            return st.name;
+        if (st && st.type === "retN") {
+            return traverse(st.elems[st.index], visited);
+        }
+        if (st && st.type === "object") {
+            const fields = {};
+            for (let k in st.fields) {
+                fields[k] = st.elems[st.fields[k]];
+            }
+            return {
+                type: "object",
+                fields: traverse(fields, visited),
+            };
+        }
+        return traverse(st, visited);
     }
     function traverse(val, visited /*,depth:number*/) {
         //if (depth>10) return "DEPTH";
@@ -50,10 +68,9 @@ const Grammar = function (context) {
                 if (ti)
                     return ti.name;
                 const st = val.struct;
-                if (st && st.type === "lazy")
-                    return st.name;
-                const res = st ? traverse(st, visited) : val.name; //ti.struct;
-                return res;
+                if (st)
+                    return traverseStruct(st, visited);
+                return val.name;
             }
             if (val instanceof Array) {
                 const res = val.map((e) => traverse(e, visited));
@@ -77,7 +94,7 @@ const Grammar = function (context) {
         for (const k of Object.keys(defs)) {
             const v = defs[k];
             console.log("---", k);
-            console.dir(traverse(typeInfos.get(v), new Set), { depth: null });
+            console.dir(traverseStruct(v.struct, new Set), { depth: null });
         }
     }
     function checkFirstTbl() {
@@ -117,7 +134,7 @@ const Grammar = function (context) {
         return {
             alias(parser) {
                 defs[name] = parser;
-                typeInfos.set(parser, { name, struct: parser.struct });
+                typeInfos.set(parser, { name }); //, struct:parser.struct});
                 return parser;
             },
             ands(..._parsers) {
@@ -168,7 +185,7 @@ const Grammar = function (context) {
                             };
                             return obj;
                         }).setAlias(res0);
-                        typeInfos.set(res, { name, struct: res.struct });
+                        typeInfos.set(res, { name }); //, struct:res.struct});
                         //setTypeInfo(res,name,fields);
                         defs[name] = res;
                         return res;
@@ -179,7 +196,7 @@ const Grammar = function (context) {
                 parsers = parsers.map(trans);
                 const p = chain(parsers, (p, e) => p.or(e)).setName(name);
                 //p.parsers=parsers;
-                typeInfos.set(p, { name, struct: { type: "or", elems: parsers } });
+                typeInfos.set(p, { name }); //, struct:{type:"or", elems:parsers}});
                 defs[name] = p; //setTypeInfo(p,"or",{});
                 return defs[name];
             }

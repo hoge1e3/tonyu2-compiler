@@ -532,19 +532,19 @@ class Parser {
         var value = this;
         nc(value, "value");
         nc(sep, "sep");
-        var tail = sep.and(value).ret(function (r1, r2) {
-            if (valuesToArray)
-                return r2;
-            return { sep: r1, value: r2 };
-        });
+        const tailSV = sep.and(value);
+        const tail = (valuesToArray ? tailSV.retN(1) : tailSV.obj("sep", "value")); /*.ret(function(r1, r2) {
+            if(valuesToArray) return r2;
+            return {sep:r1, value:r2};
+        });*/
         return value.and(tail.rep0()).ret(function (r1, r2) {
             //var i;
             if (valuesToArray) {
-                var r = [r1];
+                /*var r=[r1];
                 for (let i in r2) {
                     r.push(r2[i]);
-                }
-                return r;
+                }*/
+                return [r1, ...r2];
             }
             else {
                 return { head: r1, tails: r2 };
@@ -556,7 +556,7 @@ class Parser {
             if (!r)
                 return [];
             return r;
-        });
+        }).setName(`(sep0 ${this.name})`, { type: "rept", elem: this });
     }
     tap(msg) {
         return this;
