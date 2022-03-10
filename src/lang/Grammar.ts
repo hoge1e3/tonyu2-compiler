@@ -2,7 +2,7 @@
 import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct, SUBELEMENTS } from "./parser";
 
 const Grammar=function (context:ParserContext) {
-	function trans(name:any) {
+	function trans(name:Parser|string):Parser {
 		if (typeof name=="string") return get(name);
 		return name;
 	}
@@ -27,7 +27,7 @@ const Grammar=function (context:ParserContext) {
 		typeInfos.set(res,{name,struct:{type:"lazy",name}});
 		return res;
 	}
-	function chain<P>(parsers:P[], f:(p:P, e:P)=>P) {
+	function chain<P>(parsers:P[], f:(p:P, e:P)=>P):P {
 		const [first,...rest]=parsers;
 		let p=first;
 		for (const e of rest) {
@@ -98,7 +98,7 @@ const Grammar=function (context:ParserContext) {
 	}
 	type TypeInfo={
 		name:string,
-		struct: Struct|{type:"object", fields:{[key:string]:Parser}}
+		struct: Struct,
 	}
 	const typeInfos=new WeakMap<Parser, TypeInfo>();
 	/*function setTypeInfo(parser, name, fields={}) {
@@ -114,26 +114,21 @@ const Grammar=function (context:ParserContext) {
 				typeInfos.set(parser,{name, struct:parser.struct});
 				return parser;
 			},
-			ands(...parsers) {
-				parsers=parsers.map(trans);
+			ands(..._parsers:(Parser|string)[]) {
+				const parsers=_parsers.map(trans);
 				const p=chain(parsers, (p,e)=>p.and(e)).tap(name);
 				//p.parsers=parsers;
 				defs[name]=p;
 				return {
 					ret (...args:(string|null)[]) {
-						if (args.length==0) return p;
-						if (typeof args[0]=="function") {
-							defs[name]=p.ret(args[0]);
-							return defs[name];
+						if (args.some((e)=>e==="type")) {
+							throw new Error("Cannot use field name 'type' which is reserved.");
 						}
+						if (args.length==0) return p;
 						const names=[];
 						const fields={};
 						//let fn=(e:any)=>e;//(e){return e;};
 						for (var i=0 ; i<args.length ;i++) {
-							/*if (typeof args[i]=="function") {
-								fn=args[i];
-								break;
-							}*/
 							names[i]=args[i];
 							if (names[i]) fields[names[i]]=parsers[i];
 						}
@@ -154,7 +149,15 @@ const Grammar=function (context:ParserContext) {
 							};
 							return (res);
 						}).setName(name);
-						typeInfos.set(res,{name, struct:{type:"object", fields}});
+						/*
+						const res0=p.obj(...args).setName(name);
+						const res=res0.ret((obj:any)=>{
+							obj.type=name;
+							obj.toString=function () {
+								return "("+this.type+")";
+							};
+						}).setAlias(res0);*/
+						typeInfos.set(res,{name, struct:res.struct});
 						//setTypeInfo(res,name,fields);
 						defs[name]=res;
 						return  res;

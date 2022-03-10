@@ -582,8 +582,14 @@ class Parser {
             }
             for (let name in fields) {
                 const idx = fields[name];
+                if (idx < 0 || idx >= args.length)
+                    throw new Error("Index out");
+                /*if (args[idx]===undefined) {
+                    throw new Error(`${this.name}: Undef ${names} ${idx} ${name}`);
+                }*/
                 res[name] = args[idx];
             }
+            console.log("GEN", this.name, res);
             return res;
         }).setName(`{${pnames.join(", ")}}`, { type: "object", fields, elems });
     }

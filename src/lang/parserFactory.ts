@@ -232,19 +232,19 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	g("elem").alias(e.getElement());
 	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };
-	const stmt=G("stmt");//.firstTokens(ALL);
-	const stmtList=g("stmtList").alias(stmt.rep0());
+	const stmt_l=G("stmt");//.firstTokens(ALL);
+	const stmtList=g("stmtList").alias(stmt_l.rep0());
 	var exprstmt=g("exprstmt").ands(expr,tk(";")).ret("expr");
 	g("compound").ands(tk("{"), stmtList, tk("}")).ret(null,"stmts") ;
-	var elseP=tk("else").and(stmt).retN(1);
+	var elseP=tk("else").and(stmt_l).retN(1);
 	var returns=g("return").ands(tk("return"),expr.opt(),tk(";") ).ret(null,"value");
-	var ifs=g("if").ands(tk("if"), tk("("), expr, tk(")"), stmt, elseP.opt() ).ret(null, null,"cond",null,"then","_else");
+	var ifs=g("if").ands(tk("if"), tk("("), expr, tk(")"), stmt_l, elseP.opt() ).ret(null, null,"cond",null,"then","_else");
 	/*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
 		return {cond: cond, next:next  };
 	});*/
 	var forin=g("forin").ands(tk("var").opt()/*.firstTokens(["var","symbol"])*/, symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
 										"isVar", "vars","inof", "set" );
-	var normalFor=g("normalFor").ands(stmt, expr.opt() , tk(";") , expr.opt()).ret(
+	var normalFor=g("normalFor").ands(stmt_l, expr.opt() , tk(";") , expr.opt()).ret(
 									"init", "cond",     null, "next");
 	/*var infor=expr.and(trailFor.opt()).ret(function (a,b) {
 		if (b==null) return {type:"forin", expr: a};
