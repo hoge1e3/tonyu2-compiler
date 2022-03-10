@@ -11,10 +11,9 @@ import assert from "../lib/assert";
 import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
-import Grammar from "./Grammar";
 import { SUBELEMENTS } from "./parser";
-
-type NodeBase={type:string, pos:{}};
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, Node, Program, Stmt, Token, VarDecl} from "./NodeTypes";
+/*type NodeBase={type:string, pos:{}};
 type TextNode={text:string};
 type Program=NodeBase & {stmts: Statement[]};
 type Statement=NodeBase &{name: TextNode, head:any, body:{stmts:Statement[]}};
@@ -22,7 +21,7 @@ type Postfix=NodeBase & {op:Node};
 type Node=Program | Statement | Postfix;
 function isPostfix(n:Node): n is Postfix {
 	return n.type=="postfix";
-}
+}*/
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -102,7 +101,7 @@ export function initClassDecls(klass, env ) {//S
 		klass.includes=[];
 		t=OM.match( program , {incl:{includeClassNames:OM.C}});
 		if (t) {
-			t.C.forEach(function (i) {
+			t.C.forEach(function (i:Token) {
 				var n=i.text;/*ENVC*/
 				var p=i.pos;
 				var incc=env.classes[env.aliases[n] || n];/*ENVC*/ //CFN env.classes[env.aliases[n]]
@@ -123,7 +122,7 @@ export function initClassDecls(klass, env ) {//S
 		}
 		klass.directives={};
 		//--
-		function addField(name,node=undefined) {// name should be node
+		function addField(name:Token,node=undefined) {// name should be node
 			node=node||name;
 			fields[name+""]={
 				node:node,
@@ -133,24 +132,24 @@ export function initClassDecls(klass, env ) {//S
 			};
 		}
 		var fieldsCollector=Visitor({
-			varDecl: function (node) {
+			varDecl: function (node:VarDecl) {
 				addField(node.name, node);
 			},
-			nativeDecl: function (node) {//-- Unify later
+			nativeDecl: function (node:NativeDecl) {//-- Unify later
 			},
-			funcDecl: function (node) {//-- Unify later
+			funcDecl: function (node:FuncDecl) {//-- Unify later
 			},
-			funcExpr: function (node) {
+			funcExpr: function (node:FuncExpr) {
 			},
-			"catch": function (node) {
+			"catch": function (node:Catch) {
 			},
-			exprstmt: function (node) {
+			exprstmt: function (node:Exprstmt) {
 				if (node.expr.type==="literal" &&
 					node.expr.text.match(/^.field strict.$/)) {
 					klass.directives.field_strict=true;
 				}
 			},
-			"forin": function (node) {
+			"forin": function (node:Forin) {
 				var isVar=node.isVar;
 				if (isVar) {
 					node.vars.forEach(function (v) {
@@ -162,7 +161,7 @@ export function initClassDecls(klass, env ) {//S
 		fieldsCollector.def=visitSub;
 		fieldsCollector.visit(program.stmts);
 		//-- end of fieldsCollector
-		program.stmts.forEach(function (stmt:Statement) {
+		program.stmts.forEach(function (stmt:Stmt) {
 			if (stmt.type=="funcDecl") {
 				var head=stmt.head;
 				var ftype="function";
@@ -339,7 +338,7 @@ function annotateSource2(klass, env) {//B
 		!getMethod(name).nowait ;
 	}
 	function checkLVal(node: Node) {//S
-		if (node.type=="varAccess" ||
+		if (isVarAccess(node) ||
 				isPostfix(node) && (node.op.type=="member" || node.op.type=="arrayElem") ) {
 			if (node.type=="varAccess") {
 				annotation(node,{noBind:true});

@@ -96,6 +96,53 @@ const Grammar = function (context) {
             console.log("---", k);
             console.dir(traverseStruct(v.struct, new Set), { depth: null });
         }
+        let buf = "";
+        function c(n) {
+            return n[0].toUpperCase() + n.substring(1);
+        }
+        function uniq(a) {
+            return Array.from(new Set(a));
+        }
+        function toType(st, type) {
+            if (!st)
+                return;
+            if (st.type === "or") {
+                return uniq(st.elems.map(toType)).join("|");
+            }
+            else if (st.type === "object") {
+                return "{\n" +
+                    (type ? `  type: "${type}";\n` : "") +
+                    Object.keys(st.fields).map((f) => `  ${f}: ${toType(st.fields[f])}`).join(", \n") + "\n}";
+            }
+            else if (st.type === "opt") {
+                return toType(st.elem) + "|null";
+            }
+            else if (st.type === "rept") {
+                return toType(st.elem) + "[]";
+            }
+            else if (st.type === "primitive") {
+                return "Token";
+            }
+            return c(st + "");
+        }
+        const cands = [];
+        for (const k of Object.keys(defs)) {
+            const v = defs[k];
+            if (!v.struct)
+                continue;
+            buf += `export type ${c(k)}=${v.struct.type === "object" ? "NodeBase&" : ""}`;
+            buf += toType(traverseStruct(v.struct, new Set), k);
+            buf += ";\n";
+            if (v.struct.type === "object") {
+                buf += `export function is${c(k)}(n:Node):n is ${c(k)} {
+   return n && n.type==="${k}";
+}
+`;
+                cands.push(c(k));
+            }
+        }
+        buf += `export type Node=${cands.join("|")};\n`;
+        console.log(buf);
     }
     function checkFirstTbl() {
         for (const k of Object.keys(defs)) {

@@ -37,9 +37,16 @@ const cu = __importStar(require("./compiler"));
 const Visitor_1 = __importDefault(require("./Visitor"));
 const context_1 = require("./context");
 const parser_1 = require("./parser");
-function isPostfix(n) {
-    return n.type == "postfix";
-}
+const NodeTypes_1 = require("./NodeTypes");
+/*type NodeBase={type:string, pos:{}};
+type TextNode={text:string};
+type Program=NodeBase & {stmts: Statement[]};
+type Statement=NodeBase &{name: TextNode, head:any, body:{stmts:Statement[]}};
+type Postfix=NodeBase & {op:Node};
+type Node=Program | Statement | Postfix;
+function isPostfix(n:Node): n is Postfix {
+    return n.type=="postfix";
+}*/
 var ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype = cu.getScopeType;
@@ -356,8 +363,8 @@ function annotateSource2(klass, env) {
             !getMethod(name).nowait;
     }
     function checkLVal(node) {
-        if (node.type == "varAccess" ||
-            isPostfix(node) && (node.op.type == "member" || node.op.type == "arrayElem")) {
+        if ((0, NodeTypes_1.isVarAccess)(node) ||
+            (0, NodeTypes_1.isPostfix)(node) && (node.op.type == "member" || node.op.type == "arrayElem")) {
             if (node.type == "varAccess") {
                 annotation(node, { noBind: true });
             }
