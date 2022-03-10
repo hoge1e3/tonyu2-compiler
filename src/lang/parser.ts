@@ -3,17 +3,17 @@ export type And={type:"and", elems:Parser[]};
 export type Or ={type:"or" , elems:Parser[]};
 export type Rept={type:"rept", elem:Parser};
 export type Opt={type:"opt", elem:Parser};
-//export type Empty={type:"empty"};
+export type Empty={type:"empty"};
 export type Primitive={type:"primitive", name:string};
 export type Lazy={type:"lazy", name:string};
 //export type Alias={type: "alias", target:Parser};
-export type Struct=And|Or|Rept|Opt|Primitive|Lazy;//|Empty;//|Alias;
+export type Struct=And|Or|Rept|Opt|Primitive|Lazy|Empty;//|Alias;
 export const ALL=Symbol("ALL");
 type SpaceSpec =Parser|"TOKEN"|"RAWSTR";
-type First={
+/*type First={
 	space: SpaceSpec,
 	tbl: FirstTbl,
-};
+};*/
 type FirstTbl={
 	[ALL]?: Parser;
 } & {[key: string]:Parser};
@@ -99,18 +99,14 @@ export class ParserContext {
 		//res.checkTbl();
 		return res;
 	}
-	optEmpty=this.create((s:State)=>{
-		s=s.clone();
-		s.error=null;
-		s.result=[null]; // opt returns null
-		return s;
-	}).setName("optEmpty");//,{type:"empty"});*/
-	repEmpty=this.create((s:State)=>{
-		s=s.clone();
-		s.error=null;
-		s.result=[ [] ]; // rep0 returns empty array
-		return s;
-	}).setName("repEmpty");//,{type:"empty"});*/
+	empty(result:any[]){
+		return this.create((s:State)=>{
+			s=s.clone();
+			s.error=null;
+			s.result=result;
+			return s;
+		}).setName("empty",{type:"empty"});
+	}
 }
 type LazyInfo={
 	resolve: ()=>Parser,
@@ -123,6 +119,17 @@ export class Parser {// class Parser
 	//context: ParserContext;
 	_first?: FirstTbl;
 	_lazy?: LazyInfo;
+	get isEmpty() {
+		if (!this.struct) return false;
+		if (this.struct.type==="empty") return true;
+		if (this.struct.type==="and" || this.struct.type==="or" ) {
+			for (let p of this.struct.elems) {
+				if (!p.isEmpty) return false;
+			}
+			return true;
+		}
+		return false;
+	}
 	// Parser.parse:: State->State
 	//static create(parserFunc:ParseFunc) { return create(parserFunc);}
 	create(parserFunc:ParseFunc) { return this.context.create(parserFunc);}
@@ -217,10 +224,22 @@ export class Parser {// class Parser
 		//  tbl           ALL:a1  b:b1     c:c1
 		//  next.tbl      ALL:a2           c:c2     d:d2
 		//           ALL:a1>>next   b:b1>>next c:c1>>next
-		for (var c in tbl) {
+		for (let c in tbl) {
 			ntbl[c]=tbl[c].andNoUnify(next);
 		}
-		if (tbl[ALL]) ntbl[ALL]=tbl[ALL].andNoUnify(next);
+		if (tbl[ALL]) {
+			if (tbl[ALL].isEmpty &&
+				next._first && (!next._first[ALL] || next._first[ALL].isEmpty)) {
+				for (let c in next._first) {
+					const p=tbl[ALL].andNoUnify(next._first[c]);
+					if (ntbl[c]) ntbl[c]=ntbl[c].orNoUnify(p);
+					else ntbl[c]=p;
+				}
+				if (next._first[ALL]) ntbl[ALL]=tbl[ALL].andNoUnify(next._first[ALL]);
+			} else {
+				ntbl[ALL]=tbl[ALL].andNoUnify(next);
+			}
+		}
 		const res=this.context.fromFirst(ntbl);
 		res.setAlias(_res);
 		if (options.verboseFirst) {
@@ -426,7 +445,7 @@ export class Parser {// class Parser
 				nf[k]=_res;//fst[k].repNNoUnify(min);
 			}
 			if (min==0) {
-				nf[ALL]=this.context.repEmpty;
+				nf[ALL]=this.context.empty([ [] ]).setName("repEmpty");
 			}
 		}
 		const res=this.context.fromFirst(nf).setAlias(_res);
@@ -462,7 +481,7 @@ export class Parser {// class Parser
 		if (fst[ALL]) {
 			nf[ALL]=fst[ALL].optNoUnify();
 		} else {
-			nf[ALL]=this.context.optEmpty;
+			nf[ALL]=this.context.empty([null]).setName("optEmpty");
 		}
 		return this.context.fromFirst(nf).setAlias(_res);
 	}

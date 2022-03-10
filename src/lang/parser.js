@@ -36,18 +36,6 @@ function nc(v, name) {
 class ParserContext {
     constructor(space) {
         this.space = space;
-        this.optEmpty = this.create((s) => {
-            s = s.clone();
-            s.error = null;
-            s.result = [null]; // opt returns null
-            return s;
-        }).setName("optEmpty"); //,{type:"empty"});*/
-        this.repEmpty = this.create((s) => {
-            s = s.clone();
-            s.error = null;
-            s.result = [[]]; // rep0 returns empty array
-            return s;
-        }).setName("repEmpty"); //,{type:"empty"});*/
     }
     create(f) {
         return new Parser(this, f);
@@ -99,6 +87,14 @@ class ParserContext {
         //res.checkTbl();
         return res;
     }
+    empty(result) {
+        return this.create((s) => {
+            s = s.clone();
+            s.error = null;
+            s.result = result;
+            return s;
+        }).setName("empty", { type: "empty" });
+    }
 }
 exports.ParserContext = ParserContext;
 class Parser {
@@ -123,6 +119,20 @@ class Parser {
                 return r;
             };
         }
+    }
+    get isEmpty() {
+        if (!this.struct)
+            return false;
+        if (this.struct.type === "empty")
+            return true;
+        if (this.struct.type === "and" || this.struct.type === "or") {
+            for (let p of this.struct.elems) {
+                if (!p.isEmpty)
+                    return false;
+            }
+            return true;
+        }
+        return false;
     }
     // Parser.parse:: State->State
     //static create(parserFunc:ParseFunc) { return create(parserFunc);}
@@ -203,11 +213,26 @@ class Parser {
         //  tbl           ALL:a1  b:b1     c:c1
         //  next.tbl      ALL:a2           c:c2     d:d2
         //           ALL:a1>>next   b:b1>>next c:c1>>next
-        for (var c in tbl) {
+        for (let c in tbl) {
             ntbl[c] = tbl[c].andNoUnify(next);
         }
-        if (tbl[exports.ALL])
-            ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next);
+        if (tbl[exports.ALL]) {
+            if (tbl[exports.ALL].isEmpty &&
+                next._first && (!next._first[exports.ALL] || next._first[exports.ALL].isEmpty)) {
+                for (let c in next._first) {
+                    const p = tbl[exports.ALL].andNoUnify(next._first[c]);
+                    if (ntbl[c])
+                        ntbl[c] = ntbl[c].orNoUnify(p);
+                    else
+                        ntbl[c] = p;
+                }
+                if (next._first[exports.ALL])
+                    ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next._first[exports.ALL]);
+            }
+            else {
+                ntbl[exports.ALL] = tbl[exports.ALL].andNoUnify(next);
+            }
+        }
         const res = this.context.fromFirst(ntbl);
         res.setAlias(_res);
         if (options.verboseFirst) {
@@ -434,12 +459,12 @@ class Parser {
         }
         else {
             for (let k in fst) {
-                // fst[k].repNNoUnify(min); is BAD.
-                // suppose, k="if", first stmt is "if", seconds is "while"->KOWARERU
+                // fst[k].repNNoUnify(min); is KOWARERU.
+                // suppose, k="if", first stmt is "if", seconds SHOULD ALSO be "if",
                 nf[k] = _res; //fst[k].repNNoUnify(min);
             }
             if (min == 0) {
-                nf[exports.ALL] = this.context.repEmpty;
+                nf[exports.ALL] = this.context.empty([[]]).setName("repEmpty");
             }
         }
         const res = this.context.fromFirst(nf).setAlias(_res);
@@ -477,7 +502,7 @@ class Parser {
             nf[exports.ALL] = fst[exports.ALL].optNoUnify();
         }
         else {
-            nf[exports.ALL] = this.context.optEmpty;
+            nf[exports.ALL] = this.context.empty([null]).setName("optEmpty");
         }
         return this.context.fromFirst(nf).setAlias(_res);
     }
