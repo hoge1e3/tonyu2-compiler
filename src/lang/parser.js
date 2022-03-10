@@ -125,6 +125,7 @@ class Parser {
                     " pos=" + (s ? s.pos : "?") + "->" + (r ? r.pos : "?") + " " + img + " " +
                     (r.success ? "res=[" + r.result.join(",") + "]" : ""));
                 if (r.result.some((e) => e === undefined)) {
+                    console.log(r.result);
                     throw new Error(this.name + " Has undefined");
                 }
                 return r;
@@ -258,6 +259,9 @@ class Parser {
                 return r1;
             const r2 = r1.clone();
             r2.result = [f(...r1.result)];
+            if (r2.result[0] === undefined) {
+                throw new Error(`${this.name}: ${f} returned undefined`);
+            }
             return r2;
         }).setName(this.name + "@");
     }
@@ -595,7 +599,7 @@ class Parser {
                 }*/
                 res[name] = args[idx];
             }
-            console.log("GEN", this.name, res);
+            //console.log("GEN", this.name, res);
             return res;
         }).setName(`{${pnames.join(", ")}}`, { type: "object", fields, elems });
     }

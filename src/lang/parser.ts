@@ -160,9 +160,10 @@ export class Parser {// class Parser
 				console.log("/tap: name="+this.name+
 						" pos="+(s?s.pos:"?")+"->"+(r?r.pos:"?")+" "+img+" "+
 						(r.success?"res=["+r.result.join(",")+"]":""));
-					if (r.result.some((e)=>e===undefined)) {
-						throw new Error(this.name+" Has undefined");
-					}
+				if (r.result.some((e)=>e===undefined)) {
+					console.log(r.result);
+					throw new Error(this.name+" Has undefined");
+				}
 				return r;
 			};
 		}
@@ -267,6 +268,9 @@ export class Parser {// class Parser
 			if (!r1.success) return r1;
 			const r2=r1.clone();
 			r2.result=[ f(...r1.result) ];
+			if (r2.result[0]===undefined) {
+				throw new Error(`${this.name}: ${f} returned undefined`);
+			}
 			return r2;
 		}).setName(this.name+"@");
 	}
@@ -542,7 +546,7 @@ export class Parser {// class Parser
 			(p:Parser, i2:number)=> (i==i2 ? `[${p.name}]`: p.name)
 		).join(" ")+")", {type:"retN", index:i, elems});
 	}
-	obj(...names:(string|null)[]) {
+	obj(...names:(string|null)[]):Parser {
 		const elems=this.structToArray("and");
 		if (names.length > elems.length) throw new Error(`${this.name} requires ${names.length} fields(${names.join(", ")}). Only ${elems.length} provided.`);
 		const fields:{[key:string]:number}={};
@@ -569,7 +573,7 @@ export class Parser {// class Parser
 				}*/
 				res[name]=args[idx];
 			}
-			console.log("GEN", this.name, res);
+			//console.log("GEN", this.name, res);
 			return res;
 		}).setName(`{${pnames.join(", ")}}`,{type:"object", fields, elems});
 	}

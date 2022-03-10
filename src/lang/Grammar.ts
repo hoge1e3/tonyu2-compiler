@@ -125,41 +125,44 @@ const Grammar=function (context:ParserContext) {
 							throw new Error("Cannot use field name 'type' which is reserved.");
 						}
 
-						
-						if (args.length==0) return p;
-						const names=[];
-						const fields={};
-						for (var i=0 ; i<args.length ;i++) {
-							names[i]=args[i];
-							if (names[i]) fields[names[i]]=parsers[i];
-						}
-						const res=p.ret(function (...args) {
-							var res={type:name};
-							res[SUBELEMENTS]=[];
+						/*if (false) {
+							if (args.length==0) return p;
+							const names=[];
+							const fields={};
 							for (var i=0 ; i<args.length ;i++) {
-								var e=args[i];
-								var rg=setRange(e);
-								addRange(res, rg);
-								if (names[i]) {
-									res[names[i]]=e;
-								}
-								res[SUBELEMENTS].push(e);
+								names[i]=args[i];
+								if (names[i]) fields[names[i]]=parsers[i];
 							}
-							res.toString=function () {
-								return "("+this.type+")";
-							};
-							return (res);
-						}).setName(name);
-
-						/*
+							const res=p.ret(function (...args) {
+								var res={type:name};
+								res[SUBELEMENTS]=[];
+								for (var i=0 ; i<args.length ;i++) {
+									var e=args[i];
+									var rg=setRange(e);
+									addRange(res, rg);
+									if (names[i]) {
+										res[names[i]]=e;
+									}
+									res[SUBELEMENTS].push(e);
+								}
+								res.toString=function () {
+									return "("+this.type+")";
+								};
+								return (res);
+							}).setName(name);
+							typeInfos.set(res,{name, struct:res.struct});
+							//setTypeInfo(res,name,fields);
+							defs[name]=res;
+							return  res;
+						}*/
 						const res0=p.obj(...args).setName(name);
 						const res=res0.ret((obj:any)=>{
 							obj.type=name;
 							obj.toString=function () {
 								return "("+this.type+")";
 							};
+							return obj;
 						}).setAlias(res0);
-						*/
 						typeInfos.set(res,{name, struct:res.struct});
 						//setTypeInfo(res,name,fields);
 						defs[name]=res;
