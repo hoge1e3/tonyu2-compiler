@@ -551,14 +551,12 @@ class Parser {
         return this;
     }
     retN(i) {
-        const res = this.ret(function () {
+        const elems = this.structToArray("and");
+        if (i >= elems.length)
+            throw new Error(`${this.name}: index must be 0 to ${elems.length - 1}`);
+        return this.ret(function () {
             return arguments[i];
-        });
-        let s = this.struct;
-        if (s && s.type === "and") {
-            return res.setName(`retN(${i})`, s.elems[i]);
-        }
-        return res;
+        }).setName("(retN " + elems.map((p, i2) => (i == i2 ? `[${p.name}]` : p.name)).join(" ") + ")", { type: "retN", index: i, elems });
     }
 }
 exports.Parser = Parser;

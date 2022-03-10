@@ -3,11 +3,13 @@ export type And={type:"and", elems:Parser[]};
 export type Or ={type:"or" , elems:Parser[]};
 export type Rept={type:"rept", elem:Parser};
 export type Opt={type:"opt", elem:Parser};
+export type RetN={type:"retN", index:number, elems:Parser[]};
+export type RetObj={type:"object", fields:{[key:string]: Parser}, elems:Parser[]};
 export type Empty={type:"empty"};
 export type Primitive={type:"primitive", name:string};
 export type Lazy={type:"lazy", name:string};
 //export type Alias={type: "alias", target:Parser};
-export type Struct=And|Or|Rept|Opt|Primitive|Lazy|Empty;//|Alias;
+export type Struct=And|Or|Rept|RetN|RetObj|Opt|Primitive|Lazy|Empty;//|Alias;
 export const ALL=Symbol("ALL");
 type SpaceSpec =Parser|"TOKEN"|"RAWSTR";
 /*type First={
@@ -524,14 +526,13 @@ export class Parser {// class Parser
 		return this;
 	}
 	retN (i:number) {
-		const res=this.ret(function () {
+		const elems=this.structToArray("and");
+		if (i>=elems.length) throw new Error(`${this.name}: index must be 0 to ${elems.length-1}`);
+		return this.ret(function () {
 			return arguments[i];
-		});
-		let s=this.struct;
-		if (s && s.type==="and") {
-			return res.setName(`retN(${i})`, s.elems[i]);
-		}
-		return res;
+		}).setName("(retN "+elems.map(
+			(p:Parser, i2:number)=> (i==i2 ? `[${p.name}]`: p.name)
+		).join(" ")+")", {type:"retN", index:i, elems});
 	}
 
 }
