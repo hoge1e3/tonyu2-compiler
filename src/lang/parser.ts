@@ -142,6 +142,10 @@ export class Parser {// class Parser
 			this.parse=parseFunc;
 		} else {
 			this.parse=function(s:State){
+				if( this.name===undefined) {
+					console.log(this);
+					throw new Error ("undefined name");
+				}
 				console.log("tap: name="+this.name+"  pos="+(s?s.pos:"?"));
 				const r=parseFunc.apply(this,[s]) as State;
 				let img="NOIMG";
@@ -149,10 +153,16 @@ export class Parser {// class Parser
 					img=r.src.str.substring(r.pos-3,r.pos)+"^"+r.src.str.substring(r.pos,r.pos+3);
 				}
 				if (isTokenStateSrc(r.src)) {
-					img=r.src.tokens[r.pos-1]+"["+r.src.tokens[r.pos]+"]"+r.src.tokens[r.pos+1];
+					const ts=r.src.tokens;
+					const f=(idx)=> idx==ts.length ? "EOT" :idx>ts.length ? "" :ts[idx];
+					img=f(r.pos-1)+"["+f(r.pos)+"]"+f(r.pos+1);
 				}
 				console.log("/tap: name="+this.name+
-						" pos="+(s?s.pos:"?")+"->"+(r?r.pos:"?")+" "+img+" res="+(r?r.success:"?"));
+						" pos="+(s?s.pos:"?")+"->"+(r?r.pos:"?")+" "+img+" "+
+						(r.success?"res=["+r.result.join(",")+"]":""));
+					if (r.result.some((e)=>e===undefined)) {
+						throw new Error(this.name+" Has undefined");
+					}
 				return r;
 			};
 		}
@@ -252,17 +262,13 @@ export class Parser {// class Parser
 		return res;
 	}
 	retNoUnify(f:Function) {
-		const p=this.create((r1:State)=>{
+		return this.create((s:State)=>{
+			const r1=this.parse(s);
+			if (!r1.success) return r1;
 			const r2=r1.clone();
 			r2.result=[ f(...r1.result) ];
 			return r2;
-		});
-		var res=this.create((s:State)=>{
-			const r1=this.parse(s);
-			if (!r1.success) return r1;
-			return p.parse(r1);
 		}).setName(this.name+"@");
-		return res;
 	}
 	ret(next:Function):Parser {
 		if (typeof next!=="function") throw new Error("Not function "+next);
@@ -275,7 +281,7 @@ export class Parser {// class Parser
 			ntbl[c]=tbl[c].retNoUnify(next);
 		}
 		if (tbl[ALL]) ntbl[ALL]=tbl[ALL].retNoUnify(next);
-		const res=this.context.fromFirst( ntbl);
+		const res=this.context.fromFirst(ntbl);
 		res.setAlias(_res);
 		if (options.verboseFirst) {
 			console.log("Created runify name=" +res.name+" tbl="+dispTbl(ntbl));
@@ -516,7 +522,7 @@ export class Parser {// class Parser
 			} else {
 				return {head:r1,tails:r2};
 			}
-		}).setName("(sep1 "+value.name+"~~"+sep.name+")",{type:"rept", elem:this});
+		}).setName("(sep1 "+value.name+" "+sep.name+")",{type:"rept", elem:this});
 	}
 	sep0(s:Parser){
 		return this.sep1(s,true).opt().ret(function (r) {

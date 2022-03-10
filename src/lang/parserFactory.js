@@ -75,9 +75,7 @@ module.exports = function PF({ TT }) {
         };
     }*/
     function comLastOpt(p) {
-        return p.sep0(tk(","), true).and(tk(",").opt()).ret(function (list, opt) {
-            return list;
-        }).setName(`comLastOpt ${p.name}`, { type: "rept", elem: p });
+        return p.sep0(tk(",")).and(tk(",").opt()).retN(0).setName(`comLastOpt ${p.name}`, { type: "rept", elem: p });
     }
     var e = (0, ExpressionParser2_1.default)(parser_1.TokensParser.context);
     var explz = e.lazy(); //.firstTokens(ALL);

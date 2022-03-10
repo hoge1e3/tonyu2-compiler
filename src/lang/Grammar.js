@@ -134,7 +134,6 @@ const Grammar = function (context) {
                             return p;
                         const names = [];
                         const fields = {};
-                        //let fn=(e:any)=>e;//(e){return e;};
                         for (var i = 0; i < args.length; i++) {
                             names[i] = args[i];
                             if (names[i])
@@ -164,7 +163,8 @@ const Grammar = function (context) {
                             obj.toString=function () {
                                 return "("+this.type+")";
                             };
-                        }).setAlias(res0);*/
+                        }).setAlias(res0);
+                        */
                         typeInfos.set(res, { name, struct: res.struct });
                         //setTypeInfo(res,name,fields);
                         defs[name] = res;

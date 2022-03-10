@@ -79,10 +79,8 @@ export= function PF({TT}:{TT:Tokenizer}) {
 			return arguments[n];
 		};
 	}*/
-	function comLastOpt(p) {
-		return p.sep0(tk(","),true).and(tk(",").opt()).ret(function (list,opt) {
-			return list;
-		}).setName(`comLastOpt ${p.name}`,{type:"rept", elem:p});
+	function comLastOpt(p:Parser) {
+		return p.sep0(tk(",")).and(tk(",").opt()).retN(0).setName(`(comLastOpt ${p.name})`,{type:"rept", elem:p});
 	}
 	var e=ExpressionParser(TokensParser.context) ;
 	var explz=e.lazy();//.firstTokens(ALL);

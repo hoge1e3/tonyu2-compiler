@@ -147,7 +147,7 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
         //st.success=st.src.maxPos==src.str.length;
         st.result[0] = res;
         return st;
-    });
+    }).setName("tokens:all");
     // Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
     var num = tk(/^(?:0x[0-9a-f]+|0b[01]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e-?[0-9]+)?)/i, "'number'").ret(function (n) {
         n.type = "number";

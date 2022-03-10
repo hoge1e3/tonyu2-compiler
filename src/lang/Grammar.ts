@@ -124,10 +124,11 @@ const Grammar=function (context:ParserContext) {
 						if (args.some((e)=>e==="type")) {
 							throw new Error("Cannot use field name 'type' which is reserved.");
 						}
+
+						
 						if (args.length==0) return p;
 						const names=[];
 						const fields={};
-						//let fn=(e:any)=>e;//(e){return e;};
 						for (var i=0 ; i<args.length ;i++) {
 							names[i]=args[i];
 							if (names[i]) fields[names[i]]=parsers[i];
@@ -149,6 +150,7 @@ const Grammar=function (context:ParserContext) {
 							};
 							return (res);
 						}).setName(name);
+
 						/*
 						const res0=p.obj(...args).setName(name);
 						const res=res0.ret((obj:any)=>{
@@ -156,7 +158,8 @@ const Grammar=function (context:ParserContext) {
 							obj.toString=function () {
 								return "("+this.type+")";
 							};
-						}).setAlias(res0);*/
+						}).setAlias(res0);
+						*/
 						typeInfos.set(res,{name, struct:res.struct});
 						//setTypeInfo(res,name,fields);
 						defs[name]=res;
