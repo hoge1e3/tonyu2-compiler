@@ -137,6 +137,7 @@ function ExpressionParser(context, name = "Expression") {
         /*var s=st.src.str;
         console.log("["+lbl+"] "+s.substring(0,st.pos)+"^"+s.substring(st.pos)+
                 " opType="+ st.opType+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
+        //console.log(lbl,st+"");
     }
     function parse(minPrio, st) {
         let res = st, opt;

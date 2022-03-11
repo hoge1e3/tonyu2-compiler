@@ -138,6 +138,7 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
         st = space.parse(st);
         //console.log(st.src.maxPos+"=="+st.src.str.length)
         const src = st.src;
+        st = st.clone();
         if (st.pos === src.str.length) {
             st.error = null;
         }

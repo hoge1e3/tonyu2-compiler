@@ -11,17 +11,12 @@ function (Grammar, XMLBuffer, IndentBuffer, TT,
 //import * as Parser from "./parser";
 import TError from "../runtime/TError";
 import R from "../lib/R";
-import {ExpressionParser} from "./ExpressionParser2";
+import {ExpressionParser} from "./ExpressionParser";
 import Grammar from "./Grammar";
-import { addRange, ALL, getRange, Parser, setRange, StringParser, TokensParser } from "./parser";
+import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
 import { Tokenizer } from "./tokenizerFactory";
 
-/*const Grammar=require("./Grammar");
-const IndentBuffer=require("./IndentBuffer");
-const Parser=require("./parser");
-import R = require("../lib/R");
-const ExpressionParser=require("./ExpressionParser2");
-const TError=require("../runtime/TError");*/
+
 export= function PF({TT}:{TT:Tokenizer}) {
 	//var p:any=Parser;
 	var $:any={};
@@ -214,7 +209,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	e.postfix(prio,member);
 	e.postfix(prio,arrayElem);
 	function mki(left, op ,right) {
-		var res={type:"infix",left:left,op:op,right:right};
+		const res={type:"infix",left,op,right};
 		setRange(res);
 		res.toString=function () {
 			return "("+left+op+right+")";
@@ -226,7 +221,10 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	/*e.mkPostfix(function (p) {
 		return {type:"postfix", expr:p};
 	});*/
-	const expr=e.build();//.profile();
+	const expr=e.build()/*.ret((s:any)=>{
+		console.log(s+"");
+		return s;
+	})*/;//.profile();
 	g("elem").alias(e.getElement());
 	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };

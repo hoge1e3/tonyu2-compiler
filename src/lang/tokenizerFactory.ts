@@ -131,6 +131,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		st=space.parse(st);
 		//console.log(st.src.maxPos+"=="+st.src.str.length)
 		const src=st.src as StrStateSrc;
+		st=st.clone();
 		if (st.pos===src.str.length) {
 			st.error=null;
 		} else {

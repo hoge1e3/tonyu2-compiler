@@ -9,7 +9,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        _this.x=3;
+        _this.x=3+_this.a*2>5?2*3+4*5:! _this.x;
         while (true) {
           Tonyu.checkLoop();
           
@@ -22,7 +22,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
         
-        _this.x=3;
+        _this.x=3+_this.a*2>5?2*3+4*5:! _this.x;
         
         _thread.enter(function _trc_Chara_ent_main(_thread) {
           if (_thread.lastEx) __pc=_thread.catchPC;
@@ -44,7 +44,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"a":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

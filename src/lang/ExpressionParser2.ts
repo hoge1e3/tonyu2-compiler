@@ -144,10 +144,11 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		).setName(name,{type:"lazy",name});
 	},
 	};
-	function dump(st, lbl) {
+	function dump(st:State, lbl:string) {
 		/*var s=st.src.str;
 		console.log("["+lbl+"] "+s.substring(0,st.pos)+"^"+s.substring(st.pos)+
 				" opType="+ st.opType+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
+		//console.log(lbl,st+"");
 	}
 	function parse(minPrio:number, st:State) {
 		let res=st ,  opt: OpDesc;

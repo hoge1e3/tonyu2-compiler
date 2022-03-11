@@ -225,12 +225,9 @@ const Grammar = function (context) {
                             return  res;
                         }*/
                         const res0 = p.obj(...args).setName(name);
-                        const res = res0.ret((obj) => {
-                            obj.type = name;
-                            obj.toString = function () {
-                                return "(" + this.type + ")";
-                            };
-                            return obj;
+                        const res = res0.assign({
+                            type: name,
+                            toString: () => `(${name})`,
                         }).setAlias(res0);
                         typeInfos.set(res, { name }); //, struct:res.struct});
                         //setTypeInfo(res,name,fields);
