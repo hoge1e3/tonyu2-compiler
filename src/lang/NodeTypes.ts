@@ -1,11 +1,13 @@
-export type Token=NodeBase &{
+import { NodeBase, Token } from "./parser";
+
+/*export type Token=NodeBase &{
     type: string,
     text: string,
 };
 export type NodeBase={
     pos:number,
     len:number,
-};
+};*/
 export type Expression=Elem|Prefix|Postfix|Infix|Trifix;
 export type Prefix=NodeBase&{
     type:"prefix",

@@ -13,6 +13,14 @@ export type Lazy={type:"lazy", name:string};
 export type Struct=And|Or|Rept|RetN|RetObj|Opt|Primitive|Lazy|Empty;//|Alias;
 export const ALL=Symbol("ALL");
 export const SUBELEMENTS=Symbol("SUBELEMENTS");
+export type NodeBase={
+    pos:number,
+    len:number,
+};
+export type Token=NodeBase &{
+    type: string,
+    text: string,
+};
 type SpaceSpec =Parser|"TOKEN"|"RAWSTR";
 /*type First={
 	space: SpaceSpec,
@@ -581,7 +589,7 @@ export class Parser {// class Parser
 		return this.ret((r:any)=>Object.assign(r,a)).setAlias(this);
 	}
 }
-type Token={type:string};
+//type Token={type:string};
 export type ParseError=string;
 export type MaxErrors={pos:number, errors:ParseError[]};
 export type TokenStateSrc={tokens?:Token[], maxErrors:MaxErrors, global?:any};
