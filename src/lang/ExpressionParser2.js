@@ -169,11 +169,11 @@ function ExpressionParser(context, name = "Expression") {
             const pex = $.mkPrefix_def(pre, st.result[0]);
             res = st.clone(); //  res:Expr
             res.result = [pex]; // res:prefixExpr  res.pos= -elem^
-            if (!st.nextPostfixOrInfix) {
+            if (!getNextPostfixOrInfix(st)) {
                 return res;
             }
             // st.next =  -elem+^elem
-            st = st.nextPostfixOrInfix; // st: postfixOrInfix
+            st = getNextPostfixOrInfix(st); // st: postfixOrInfix
         }
         else { //elem
             //p=p2;
@@ -189,8 +189,7 @@ function ExpressionParser(context, name = "Expression") {
             dump(res, "res:ex");
             opt = getOpType(st);
             if (opt.prio() < minPrio) {
-                res.nextPostfixOrInfix = st;
-                return res;
+                return setNextPostfixOrInfix(res, st);
             }
             // assert st:postfixOrInfix  res:Expr
             if (opt.type("postfix")) {
@@ -215,10 +214,10 @@ function ExpressionParser(context, name = "Expression") {
                 const pex = $.mkInfixl_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixlExpr
-                if (!st.nextPostfixOrInfix) {
+                if (!getNextPostfixOrInfix(st)) {
                     return res;
                 }
-                st = st.nextPostfixOrInfix;
+                st = getNextPostfixOrInfix(st);
             }
             else if (opt.type("infixr")) { //a=^b=c
                 // st: infixr
@@ -231,10 +230,10 @@ function ExpressionParser(context, name = "Expression") {
                 const pex = $.mkInfixr_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixrExpr
-                if (!st.nextPostfixOrInfix) {
+                if (!getNextPostfixOrInfix(st)) {
                     return res;
                 }
-                st = st.nextPostfixOrInfix;
+                st = getNextPostfixOrInfix(st);
             }
             else if (opt.type("trifixr")) { //left?^mid:right
                 // st: trifixr
@@ -261,10 +260,10 @@ function ExpressionParser(context, name = "Expression") {
                 const pex = $.mkTrifixr_def(left, inf1, mid, inf2, right);
                 res = st.clone();
                 res.result = [pex]; //res:infixrExpr
-                if (!st.nextPostfixOrInfix) {
+                if (!getNextPostfixOrInfix(st)) {
                     return res;
                 }
-                st = st.nextPostfixOrInfix;
+                st = getNextPostfixOrInfix(st);
             }
             else { // infix
                 // st: infixl
@@ -277,10 +276,10 @@ function ExpressionParser(context, name = "Expression") {
                 const pex = $.mkInfix_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixExpr
-                if (!st.nextPostfixOrInfix) {
+                if (!getNextPostfixOrInfix(st)) {
                     return res;
                 }
-                st = st.nextPostfixOrInfix;
+                st = getNextPostfixOrInfix(st);
                 if (opt.prio() == getOpType(st).prio()) {
                     res.error = "error"; //success=false;
                     return res;
@@ -288,6 +287,14 @@ function ExpressionParser(context, name = "Expression") {
             }
             // assert st:postfixOrInfix  res:Expr
         }
+    }
+    const NEXT = Symbol("NEXT");
+    function getNextPostfixOrInfix(st) {
+        return st.result[0][NEXT];
+    }
+    function setNextPostfixOrInfix(res, next) {
+        res.result[0][NEXT] = next;
+        return res;
     }
     return $;
 }

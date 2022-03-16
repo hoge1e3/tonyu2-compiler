@@ -218,10 +218,10 @@ module.exports = function PF({ TT }) {
     /*e.mkPostfix(function (p) {
         return {type:"postfix", expr:p};
     });*/
-    const expr = e.build().ret((s) => {
-        console.log(s + "");
+    const expr = e.build(); /*.ret((s:any)=>{
+        console.log(s+"");
         return s;
-    }); //.profile();
+    });*/ //.profile();
     g("elem").alias(e.getElement());
     g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };
@@ -305,10 +305,12 @@ module.exports = function PF({ TT }) {
         }
         var tokens = tokenRes.result[0];
         //console.log("Tokens: "+tokens.join(","));
-        var res = parser_1.TokensParser.parse(program, tokens);
+        const global = { backtrackCount: 0 };
+        var res = parser_1.TokensParser.parse(program, tokens, global);
         //console.log("POS="+res.src.maxPos);
         if (res.isSuccess()) {
             var node = res.result[0];
+            //console.log("backtrackCount: ", global.backtrackCount+"/"+tokens.length);
             //console.log(disp(node));
             return node;
             //var xmlsrc=$.genXML(str, node);

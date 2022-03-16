@@ -221,10 +221,10 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	/*e.mkPostfix(function (p) {
 		return {type:"postfix", expr:p};
 	});*/
-	const expr=e.build().ret((s:any)=>{
+	const expr=e.build();/*.ret((s:any)=>{
 		console.log(s+"");
 		return s;
-	});//.profile();
+	});*///.profile();
 	g("elem").alias(e.getElement());
 	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };
@@ -317,10 +317,12 @@ export= function PF({TT}:{TT:Tokenizer}) {
 		}
 		var tokens=tokenRes.result[0];
 		//console.log("Tokens: "+tokens.join(","));
-		var res=TokensParser.parse(program, tokens);
+		const global={backtrackCount:0};
+		var res=TokensParser.parse(program, tokens, global);
 		//console.log("POS="+res.src.maxPos);
 		if (res.isSuccess() ) {
 			var node=res.result[0];
+			//console.log("backtrackCount: ", global.backtrackCount+"/"+tokens.length);
 			//console.log(disp(node));
 			return node;
 			//var xmlsrc=$.genXML(str, node);
@@ -341,7 +343,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 		return x.buf;
 	};*/
 	$.extension="tonyu";
-	g.buildTypes();
+	//g.buildTypes();
 	//g.checkFirstTbl();
 	return $;
 };

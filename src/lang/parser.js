@@ -648,6 +648,9 @@ class State {
         this._error = error;
         if (!error)
             return;
+        if (this.src.global && typeof this.src.global.backtrackCount === "number") {
+            this.src.global.backtrackCount++;
+        }
         if (this.pos == this.src.maxErrors.pos) {
             this.src.maxErrors.errors.push(error);
         }
