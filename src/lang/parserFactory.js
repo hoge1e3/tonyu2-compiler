@@ -218,10 +218,10 @@ module.exports = function PF({ TT }) {
     /*e.mkPostfix(function (p) {
         return {type:"postfix", expr:p};
     });*/
-    const expr = e.build() /*.ret((s:any)=>{
-        console.log(s+"");
+    const expr = e.build().ret((s) => {
+        console.log(s + "");
         return s;
-    })*/; //.profile();
+    }); //.profile();
     g("elem").alias(e.getElement());
     g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };

@@ -49,6 +49,15 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 			}
 		};
 	}
+	function toStrF(...attrs:string[]) {
+		return function () {
+			let buf="(";
+			for (let a of attrs) {
+				buf+=this[a];
+			}
+			return buf+")";
+		};
+	}
 	const prefixOrElement=typeComposite(), postfixOrInfix=typeComposite();
 	const element=composite();
 	const trifixes=[] as Parser[];
@@ -118,22 +127,22 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		return built;
 	},
 	mkInfix_def(left:any, op:any,right:any) {
-		return setRange({type:"infix", op:op, left: left, right: right});
+		return setRange({type:"infix", op, left, right, toString:toStrF("left","op","right") });
 	},
 	mkInfixl_def(left:any, op:any , right:any) {
-		return setRange({type:"infixl",op:op ,left:left, right:right});
+		return setRange({type:"infixl",op ,left, right, toString:toStrF("left","op","right") });
 	},
 	mkInfixr_def(left:any, op:any , right:any) {
-		return setRange({type:"infixr",op:op ,left:left, right:right});
+		return setRange({type:"infixr",op ,left, right, toString:toStrF("left","op","right")});
 	},
 	mkPrefix_def (op:any , right:any) {
-		return setRange({type:"prefix", op:op, right:right});
+		return setRange({type:"prefix", op, right, toString:toStrF("op","right")});
 	},
 	mkPostfix_def (left:any, op:any) {
-		return setRange({type:"postfix", left:left, op:op});
+		return setRange({type:"postfix", left, op, toString:toStrF("left","op")});
 	},
 	mkTrifixr_def(left:any, op1:any, mid:any, op2:any, right:any) {
-		return setRange({type:"trifixr", left:left, op1:op1, mid:mid, op2:op2, right:right});
+		return setRange({type:"trifixr", left, op1, mid, op2, right, toString:toStrF("left","op1","mid","op2","right")});
 	},
 	lazy() {
 		return context.create(

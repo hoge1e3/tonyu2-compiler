@@ -221,10 +221,10 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	/*e.mkPostfix(function (p) {
 		return {type:"postfix", expr:p};
 	});*/
-	const expr=e.build()/*.ret((s:any)=>{
+	const expr=e.build().ret((s:any)=>{
 		console.log(s+"");
 		return s;
-	})*/;//.profile();
+	});//.profile();
 	g("elem").alias(e.getElement());
 	g("expr").alias(expr);
 	//var retF=function (i) { return function (){ return arguments[i];}; };

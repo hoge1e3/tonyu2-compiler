@@ -46,6 +46,15 @@ function ExpressionParser(context, name = "Expression") {
             }
         };
     }
+    function toStrF(...attrs) {
+        return function () {
+            let buf = "(";
+            for (let a of attrs) {
+                buf += this[a];
+            }
+            return buf + ")";
+        };
+    }
     const prefixOrElement = typeComposite(), postfixOrInfix = typeComposite();
     const element = composite();
     const trifixes = [];
@@ -109,22 +118,22 @@ function ExpressionParser(context, name = "Expression") {
             return built;
         },
         mkInfix_def(left, op, right) {
-            return (0, parser_1.setRange)({ type: "infix", op: op, left: left, right: right });
+            return (0, parser_1.setRange)({ type: "infix", op, left, right, toString: toStrF("left", "op", "right") });
         },
         mkInfixl_def(left, op, right) {
-            return (0, parser_1.setRange)({ type: "infixl", op: op, left: left, right: right });
+            return (0, parser_1.setRange)({ type: "infixl", op, left, right, toString: toStrF("left", "op", "right") });
         },
         mkInfixr_def(left, op, right) {
-            return (0, parser_1.setRange)({ type: "infixr", op: op, left: left, right: right });
+            return (0, parser_1.setRange)({ type: "infixr", op, left, right, toString: toStrF("left", "op", "right") });
         },
         mkPrefix_def(op, right) {
-            return (0, parser_1.setRange)({ type: "prefix", op: op, right: right });
+            return (0, parser_1.setRange)({ type: "prefix", op, right, toString: toStrF("op", "right") });
         },
         mkPostfix_def(left, op) {
-            return (0, parser_1.setRange)({ type: "postfix", left: left, op: op });
+            return (0, parser_1.setRange)({ type: "postfix", left, op, toString: toStrF("left", "op") });
         },
         mkTrifixr_def(left, op1, mid, op2, right) {
-            return (0, parser_1.setRange)({ type: "trifixr", left: left, op1: op1, mid: mid, op2: op2, right: right });
+            return (0, parser_1.setRange)({ type: "trifixr", left, op1, mid, op2, right, toString: toStrF("left", "op1", "mid", "op2", "right") });
         },
         lazy() {
             return context.create((st) => $.built.parse(st)).setName(name, { type: "lazy", name });
