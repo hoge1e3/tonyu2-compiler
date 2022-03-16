@@ -11,7 +11,7 @@ function (Grammar, XMLBuffer, IndentBuffer, TT,
 //import * as Parser from "./parser";
 import TError from "../runtime/TError";
 import R from "../lib/R";
-import {ExpressionParser} from "./ExpressionParser";
+import {ExpressionParser} from "./ExpressionParser2";
 import Grammar from "./Grammar";
 import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
 import { Tokenizer } from "./tokenizerFactory";

@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 //import * as Parser from "./parser";
 const TError_1 = __importDefault(require("../runtime/TError"));
 const R_1 = __importDefault(require("../lib/R"));
-const ExpressionParser_1 = require("./ExpressionParser");
+const ExpressionParser2_1 = require("./ExpressionParser2");
 const Grammar_1 = __importDefault(require("./Grammar"));
 const parser_1 = require("./parser");
 module.exports = function PF({ TT }) {
@@ -77,7 +77,7 @@ module.exports = function PF({ TT }) {
     function comLastOpt(p) {
         return p.sep0(tk(",")).and(tk(",").opt()).retN(0).setName(`(comLastOpt ${p.name})`, { type: "rept", elem: p });
     }
-    var e = (0, ExpressionParser_1.ExpressionParser)(parser_1.TokensParser.context);
+    var e = (0, ExpressionParser2_1.ExpressionParser)(parser_1.TokensParser.context);
     var explz = e.lazy(); //.firstTokens(ALL);
     var arrayElem = g("arrayElem").ands(tk("["), explz, tk("]")).ret(null, "subscript");
     var argList = g("argList").ands(tk("("), comLastOpt(explz), tk(")")).ret(null, "args");

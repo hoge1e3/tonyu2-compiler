@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExpressionParser = void 0;
 const parser_1 = require("./parser");
 //import Parser from "./parser";
+const OPTYPE = Symbol("OPTYPE");
 function ExpressionParser(context, name = "Expression") {
     function opType(type, prio) {
         return {
@@ -37,11 +38,7 @@ function ExpressionParser(context, name = "Expression") {
         return {
             reg(type, prio, a) {
                 const opt = opType(type, prio);
-                built.add(context.create((r) => {
-                    const r2 = a.parse(r);
-                    r2.opType = opt;
-                    return r2;
-                }).setName("(opType " + opt + " " + a.name + ")").copyFirst(a));
+                built.add(a.assign({ [OPTYPE]: opt }));
             },
             get() { return built.get(); },
             parse(st) {
@@ -136,8 +133,11 @@ function ExpressionParser(context, name = "Expression") {
     function dump(st, lbl) {
         /*var s=st.src.str;
         console.log("["+lbl+"] "+s.substring(0,st.pos)+"^"+s.substring(st.pos)+
-                " opType="+ st.opType+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
+                " opType="+ getOpType(s)+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
         //console.log(lbl,st+"");
+    }
+    function getOpType(s) {
+        return s.result[0][OPTYPE];
     }
     function parse(minPrio, st) {
         let res = st, opt;
@@ -148,7 +148,7 @@ function ExpressionParser(context, name = "Expression") {
             return st;
         }
         //p2=st.result[0];
-        opt = st.opType;
+        opt = getOpType(st);
         if (opt.type("prefix")) {
             // st = -^elem
             const pre = st.result[0];
@@ -178,7 +178,7 @@ function ExpressionParser(context, name = "Expression") {
         while (true) {
             dump(st, "st:pi");
             dump(res, "res:ex");
-            opt = st.opType;
+            opt = getOpType(st);
             if (opt.prio() < minPrio) {
                 res.nextPostfixOrInfix = st;
                 return res;
@@ -272,7 +272,7 @@ function ExpressionParser(context, name = "Expression") {
                     return res;
                 }
                 st = st.nextPostfixOrInfix;
-                if (opt.prio() == st.opType.prio()) {
+                if (opt.prio() == getOpType(st).prio()) {
                     res.error = "error"; //success=false;
                     return res;
                 }

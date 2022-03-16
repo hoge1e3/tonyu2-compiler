@@ -4,6 +4,7 @@ import { Parser, ParserContext, setRange, State } from "./parser";
 
 export type OpType="infixl"|"infixr"|"infix"|"prefix"|"postfix"|"trifixr"|"element";
 //import Parser from "./parser";
+const OPTYPE=Symbol("OPTYPE");
 export function ExpressionParser (context: ParserContext, name="Expression") {
 	//  first 10     *  +  <>  &&  ||  =     0  later
 	type OpDesc={
@@ -40,11 +41,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		return {
 			reg(type:OpType, prio:number, a:Parser) {
 				const opt=opType(type, prio);
-				built.add(context.create((r:State)=>{
-					const r2=a.parse(r);
-					(r2 as any).opType=opt;
-					return r2;
-				}).setName("(opType "+opt+" "+a.name+")").copyFirst(a) );
+				built.add(a.assign({[OPTYPE]:opt}));
 			},
 			get() {return built.get();},
 			parse(st:State) {
@@ -147,8 +144,11 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 	function dump(st:State, lbl:string) {
 		/*var s=st.src.str;
 		console.log("["+lbl+"] "+s.substring(0,st.pos)+"^"+s.substring(st.pos)+
-				" opType="+ st.opType+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
+				" opType="+ getOpType(s)+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
 		//console.log(lbl,st+"");
+	}
+	function getOpType(s:State) {
+		return s.result[0][OPTYPE];
 	}
 	function parse(minPrio:number, st:State) {
 		let res=st ,  opt: OpDesc;
@@ -159,7 +159,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 			return st;
 		}
 		//p2=st.result[0];
-		opt=(st as any).opType;
+		opt=getOpType(st);
 		if (opt.type("prefix") ) {
 			// st = -^elem
 			const pre=st.result[0];
@@ -187,7 +187,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		// assert st:postfixOrInfix  res:Expr
 		while (true) {
 			dump(st,"st:pi"); dump(res,"res:ex");
-			opt=(st as any).opType;
+			opt=getOpType(st);
 			if (opt.prio()<minPrio) {
 				(res as any).nextPostfixOrInfix=st;
 				return res;
@@ -277,7 +277,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 					return res;
 				}
 				st=(st as any).nextPostfixOrInfix;
-				if (opt.prio()==(st as any).opType.prio()) {
+				if (opt.prio()==getOpType(st).prio()) {
 					res.error="error";//success=false;
 					return res;
 				}
