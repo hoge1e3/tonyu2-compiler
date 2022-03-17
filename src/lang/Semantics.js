@@ -38,15 +38,6 @@ const Visitor_1 = __importDefault(require("./Visitor"));
 const context_1 = require("./context");
 const parser_1 = require("./parser");
 const NodeTypes_1 = require("./NodeTypes");
-/*type NodeBase={type:string, pos:{}};
-type TextNode={text:string};
-type Program=NodeBase & {stmts: Statement[]};
-type Statement=NodeBase &{name: TextNode, head:any, body:{stmts:Statement[]}};
-type Postfix=NodeBase & {op:Node};
-type Node=Program | Statement | Postfix;
-function isPostfix(n:Node): n is Postfix {
-    return n.type=="postfix";
-}*/
 var ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype = cu.getScopeType;
@@ -110,11 +101,10 @@ function initClassDecls(klass, env) {
         klass.jsNotUpToDate = true;
     }
     const node = parse(klass, env.options);
-    var MAIN = { name: "main", stmts: [], pos: 0, isMain: true };
+    var MAIN = { name: "main", stmts: [], pos: 0, isMain: true, nowait: false };
     // method := fiber | function
-    var fields = {}, methods = { main: MAIN }, natives = {}, amds = {}, softRefClasses = {};
-    klass.decls = { fields: fields, methods: methods, natives: natives, amds: amds,
-        softRefClasses: softRefClasses };
+    const fields = {}, methods = { main: MAIN }, natives = {}, amds = {}, softRefClasses = {};
+    klass.decls = { fields, methods, natives, amds, softRefClasses };
     // ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，AMDモジュール変数
     //   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
     klass.node = node;
@@ -141,7 +131,7 @@ function initClassDecls(klass, env) {
             });
         }
         if (spcn == "Array") {
-            klass.superclass = { name: "Array", fullName: "Array", builtin: true };
+            klass.superclass = { shortName: "Array", fullName: "Array", builtin: true };
         }
         else if (spcn) {
             var spc = env.classes[env.aliases[spcn] || spcn]; /*ENVC*/ //CFN env.classes[env.aliases[spcn]]

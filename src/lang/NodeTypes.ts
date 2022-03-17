@@ -14,7 +14,7 @@ export type Prefix=NodeBase&{
     op:Token,
     left: Expression,
 };
-export function isPrefix(n:Node): n is Prefix {
+export function isPrefix(n:TNode): n is Prefix {
 	return n.type=="prefix";
 }
 export type Postfix=NodeBase&{
@@ -22,7 +22,7 @@ export type Postfix=NodeBase&{
     right: Expression,
     op:Token,
 };
-export function isPostfix(n:Node): n is Postfix {
+export function isPostfix(n:TNode): n is Postfix {
 	return n.type=="postfix";
 }
 export type Infix=NodeBase&{
@@ -31,7 +31,7 @@ export type Infix=NodeBase&{
     op:Token,
     right: Expression,
 };
-export function isInfix(n:Node): n is Infix {
+export function isInfix(n:TNode): n is Infix {
 	return n.type=="infix";
 }
 export type Trifix=NodeBase&{
@@ -42,7 +42,7 @@ export type Trifix=NodeBase&{
     op2:Token,
     right: Expression,
 };
-export function isTrifix(n:Node): n is Trifix {
+export function isTrifix(n:TNode): n is Trifix {
 	return n.type=="trifix";
 }
 export type Expr=Expression;
@@ -53,49 +53,49 @@ export type ArrayElem=NodeBase&{
   type: "arrayElem";
   subscript: Expression
 };
-export function isArrayElem(n:Node):n is ArrayElem {
+export function isArrayElem(n:TNode):n is ArrayElem {
    return n && n.type==="arrayElem";
 }
 export type ArgList=NodeBase&{
   type: "argList";
   args: Expression[]
 };
-export function isArgList(n:Node):n is ArgList {
+export function isArgList(n:TNode):n is ArgList {
    return n && n.type==="argList";
 }
 export type Member=NodeBase&{
   type: "member";
   name: Token
 };
-export function isMember(n:Node):n is Member {
+export function isMember(n:TNode):n is Member {
    return n && n.type==="member";
 }
 export type ParenExpr=NodeBase&{
   type: "parenExpr";
   expr: Expression
 };
-export function isParenExpr(n:Node):n is ParenExpr {
+export function isParenExpr(n:TNode):n is ParenExpr {
    return n && n.type==="parenExpr";
 }
 export type VarAccess=NodeBase&{
   type: "varAccess";
   name: Token
 };
-export function isVarAccess(n:Node):n is VarAccess {
+export function isVarAccess(n:TNode):n is VarAccess {
    return n && n.type==="varAccess";
 }
 export type FuncExprArg=NodeBase&{
   type: "funcExprArg";
   obj: FuncExpr
 };
-export function isFuncExprArg(n:Node):n is FuncExprArg {
+export function isFuncExprArg(n:TNode):n is FuncExprArg {
    return n && n.type==="funcExprArg";
 }
 export type ObjlitArg=NodeBase&{
   type: "objlitArg";
   obj: Objlit
 };
-export function isObjlitArg(n:Node):n is ObjlitArg {
+export function isObjlitArg(n:TNode):n is ObjlitArg {
    return n && n.type==="objlitArg";
 }
 export type ObjOrFuncArg=ObjlitArg|FuncExprArg;
@@ -104,14 +104,14 @@ export type Call=NodeBase&{
   type: "call";
   args: CallBody
 };
-export function isCall(n:Node):n is Call {
+export function isCall(n:TNode):n is Call {
    return n && n.type==="call";
 }
 export type Scall=NodeBase&{
   type: "scall";
   args: CallBody
 };
-export function isScall(n:Node):n is Scall {
+export function isScall(n:TNode):n is Scall {
    return n && n.type==="scall";
 }
 export type NewExpr=NodeBase&{
@@ -119,7 +119,7 @@ export type NewExpr=NodeBase&{
   klass: VarAccess,
   params: Call|null
 };
-export function isNewExpr(n:Node):n is NewExpr {
+export function isNewExpr(n:TNode):n is NewExpr {
    return n && n.type==="newExpr";
 }
 export type SuperExpr=NodeBase&{
@@ -127,7 +127,7 @@ export type SuperExpr=NodeBase&{
   name: Token|null,
   params: Scall
 };
-export function isSuperExpr(n:Node):n is SuperExpr {
+export function isSuperExpr(n:TNode):n is SuperExpr {
    return n && n.type==="superExpr";
 }
 export type Elem=Token|ParenExpr|NewExpr|SuperExpr|FuncExpr|Objlit|Arylit|VarAccess;
@@ -136,21 +136,21 @@ export type Exprstmt=NodeBase&{
   type: "exprstmt";
   expr: Expr
 };
-export function isExprstmt(n:Node):n is Exprstmt {
+export function isExprstmt(n:TNode):n is Exprstmt {
    return n && n.type==="exprstmt";
 }
 export type Compound=NodeBase&{
   type: "compound";
   stmts: StmtList
 };
-export function isCompound(n:Node):n is Compound {
+export function isCompound(n:TNode):n is Compound {
    return n && n.type==="compound";
 }
 export type Return=NodeBase&{
   type: "return";
   value: Expr|null
 };
-export function isReturn(n:Node):n is Return {
+export function isReturn(n:TNode):n is Return {
    return n && n.type==="return";
 }
 export type If=NodeBase&{
@@ -159,7 +159,7 @@ export type If=NodeBase&{
   then: Stmt,
   _else: Stmt|null
 };
-export function isIf(n:Node):n is If {
+export function isIf(n:TNode):n is If {
    return n && n.type==="if";
 }
 export type Forin=NodeBase&{
@@ -169,7 +169,7 @@ export type Forin=NodeBase&{
   inof: Token,
   set: Expr
 };
-export function isForin(n:Node):n is Forin {
+export function isForin(n:TNode):n is Forin {
    return n && n.type==="forin";
 }
 export type NormalFor=NodeBase&{
@@ -178,7 +178,7 @@ export type NormalFor=NodeBase&{
   cond: Expr|null,
   next: Expr|null
 };
-export function isNormalFor(n:Node):n is NormalFor {
+export function isNormalFor(n:TNode):n is NormalFor {
    return n && n.type==="normalFor";
 }
 export type For=NodeBase&{
@@ -186,7 +186,7 @@ export type For=NodeBase&{
   inFor: NormalFor|Forin,
   loop: Stmt
 };
-export function isFor(n:Node):n is For {
+export function isFor(n:TNode):n is For {
    return n && n.type==="for";
 }
 export type While=NodeBase&{
@@ -194,7 +194,7 @@ export type While=NodeBase&{
   cond: Expr,
   loop: Stmt
 };
-export function isWhile(n:Node):n is While {
+export function isWhile(n:TNode):n is While {
    return n && n.type==="while";
 }
 export type Do=NodeBase&{
@@ -202,7 +202,7 @@ export type Do=NodeBase&{
   loop: Stmt,
   cond: Expr
 };
-export function isDo(n:Node):n is Do {
+export function isDo(n:TNode):n is Do {
    return n && n.type==="do";
 }
 export type Case=NodeBase&{
@@ -210,14 +210,14 @@ export type Case=NodeBase&{
   value: Expr,
   stmts: StmtList
 };
-export function isCase(n:Node):n is Case {
+export function isCase(n:TNode):n is Case {
    return n && n.type==="case";
 }
 export type Default=NodeBase&{
   type: "default";
   stmts: StmtList
 };
-export function isDefault(n:Node):n is Default {
+export function isDefault(n:TNode):n is Default {
    return n && n.type==="default";
 }
 export type Switch=NodeBase&{
@@ -226,28 +226,28 @@ export type Switch=NodeBase&{
   cases: Case[],
   defs: Default|null
 };
-export function isSwitch(n:Node):n is Switch {
+export function isSwitch(n:TNode):n is Switch {
    return n && n.type==="switch";
 }
 export type Break=NodeBase&{
   type: "break";
   brk: Token
 };
-export function isBreak(n:Node):n is Break {
+export function isBreak(n:TNode):n is Break {
    return n && n.type==="break";
 }
 export type Continue=NodeBase&{
   type: "continue";
   cont: Token
 };
-export function isContinue(n:Node):n is Continue {
+export function isContinue(n:TNode):n is Continue {
    return n && n.type==="continue";
 }
 export type Finally=NodeBase&{
   type: "finally";
   stmt: Stmt
 };
-export function isFinally(n:Node):n is Finally {
+export function isFinally(n:TNode):n is Finally {
    return n && n.type==="finally";
 }
 export type Catch=NodeBase&{
@@ -255,7 +255,7 @@ export type Catch=NodeBase&{
   name: Token,
   stmt: Stmt
 };
-export function isCatch(n:Node):n is Catch {
+export function isCatch(n:TNode):n is Catch {
    return n && n.type==="catch";
 }
 export type Catches=Catch|Finally;
@@ -264,28 +264,28 @@ export type Try=NodeBase&{
   stmt: Stmt,
   catches: Catches[]
 };
-export function isTry(n:Node):n is Try {
+export function isTry(n:TNode):n is Try {
    return n && n.type==="try";
 }
 export type Throw=NodeBase&{
   type: "throw";
   ex: Expr
 };
-export function isThrow(n:Node):n is Throw {
+export function isThrow(n:TNode):n is Throw {
    return n && n.type==="throw";
 }
 export type TypeExpr=NodeBase&{
   type: "typeExpr";
   name: Token
 };
-export function isTypeExpr(n:Node):n is TypeExpr {
+export function isTypeExpr(n:TNode):n is TypeExpr {
    return n && n.type==="typeExpr";
 }
 export type TypeDecl=NodeBase&{
   type: "typeDecl";
   vtype: TypeExpr
 };
-export function isTypeDecl(n:Node):n is TypeDecl {
+export function isTypeDecl(n:TNode):n is TypeDecl {
    return n && n.type==="typeDecl";
 }
 export type VarDecl=NodeBase&{
@@ -294,14 +294,14 @@ export type VarDecl=NodeBase&{
   typeDecl: TypeDecl|null,
   value: Expr|null
 };
-export function isVarDecl(n:Node):n is VarDecl {
+export function isVarDecl(n:TNode):n is VarDecl {
    return n && n.type==="varDecl";
 }
 export type VarsDecl=NodeBase&{
   type: "varsDecl";
   decls: VarDecl[]
 };
-export function isVarsDecl(n:Node):n is VarsDecl {
+export function isVarsDecl(n:TNode):n is VarsDecl {
    return n && n.type==="varsDecl";
 }
 export type ParamDecl=NodeBase&{
@@ -309,21 +309,21 @@ export type ParamDecl=NodeBase&{
   name: Token,
   typeDecl: TypeDecl|null
 };
-export function isParamDecl(n:Node):n is ParamDecl {
+export function isParamDecl(n:TNode):n is ParamDecl {
    return n && n.type==="paramDecl";
 }
 export type ParamDecls=NodeBase&{
   type: "paramDecls";
   params: ParamDecl[]
 };
-export function isParamDecls(n:Node):n is ParamDecls {
+export function isParamDecls(n:TNode):n is ParamDecls {
    return n && n.type==="paramDecls";
 }
 export type SetterDecl=NodeBase&{
   type: "setterDecl";
   value: ParamDecl
 };
-export function isSetterDecl(n:Node):n is SetterDecl {
+export function isSetterDecl(n:TNode):n is SetterDecl {
    return n && n.type==="setterDecl";
 }
 export type FuncDeclHead=NodeBase&{
@@ -335,7 +335,7 @@ export type FuncDeclHead=NodeBase&{
   params: ParamDecls|null,
   rtype: TypeDecl|null
 };
-export function isFuncDeclHead(n:Node):n is FuncDeclHead {
+export function isFuncDeclHead(n:TNode):n is FuncDeclHead {
    return n && n.type==="funcDeclHead";
 }
 export type FuncDecl=NodeBase&{
@@ -343,14 +343,14 @@ export type FuncDecl=NodeBase&{
   head: FuncDeclHead,
   body: Compound
 };
-export function isFuncDecl(n:Node):n is FuncDecl {
+export function isFuncDecl(n:TNode):n is FuncDecl {
    return n && n.type==="funcDecl";
 }
 export type NativeDecl=NodeBase&{
   type: "nativeDecl";
   name: Token
 };
-export function isNativeDecl(n:Node):n is NativeDecl {
+export function isNativeDecl(n:TNode):n is NativeDecl {
    return n && n.type==="nativeDecl";
 }
 export type IfWait=NodeBase&{
@@ -358,14 +358,14 @@ export type IfWait=NodeBase&{
   then: Stmt,
   _else: Stmt|null
 };
-export function isIfWait(n:Node):n is IfWait {
+export function isIfWait(n:TNode):n is IfWait {
    return n && n.type==="ifWait";
 }
 export type Empty=NodeBase&{
   type: "empty";
 
 };
-export function isEmpty(n:Node):n is Empty {
+export function isEmpty(n:TNode):n is Empty {
    return n && n.type==="empty";
 }
 export type Stmt=Return|If|For|While|Do|Break|Continue|Switch|IfWait|Try|Throw|NativeDecl|FuncDecl|Compound|Exprstmt|VarsDecl|Empty;
@@ -374,7 +374,7 @@ export type FuncExprHead=NodeBase&{
   name: Token|null,
   params: ParamDecls|null
 };
-export function isFuncExprHead(n:Node):n is FuncExprHead {
+export function isFuncExprHead(n:TNode):n is FuncExprHead {
    return n && n.type==="funcExprHead";
 }
 export type FuncExpr=NodeBase&{
@@ -382,7 +382,7 @@ export type FuncExpr=NodeBase&{
   head: FuncExprHead,
   body: Compound
 };
-export function isFuncExpr(n:Node):n is FuncExpr {
+export function isFuncExpr(n:TNode):n is FuncExpr {
    return n && n.type==="funcExpr";
 }
 export type JsonElem=NodeBase&{
@@ -390,35 +390,35 @@ export type JsonElem=NodeBase&{
   key: Token,
   value: Expr|null
 };
-export function isJsonElem(n:Node):n is JsonElem {
+export function isJsonElem(n:TNode):n is JsonElem {
    return n && n.type==="jsonElem";
 }
 export type Objlit=NodeBase&{
   type: "objlit";
   elems: JsonElem[]
 };
-export function isObjlit(n:Node):n is Objlit {
+export function isObjlit(n:TNode):n is Objlit {
    return n && n.type==="objlit";
 }
 export type Arylit=NodeBase&{
   type: "arylit";
   elems: Expr[]
 };
-export function isArylit(n:Node):n is Arylit {
+export function isArylit(n:TNode):n is Arylit {
    return n && n.type==="arylit";
 }
 export type Extends=NodeBase&{
   type: "extends";
   superclassName: Token
 };
-export function isExtends(n:Node):n is Extends {
+export function isExtends(n:TNode):n is Extends {
    return n && n.type==="extends";
 }
 export type Includes=NodeBase&{
   type: "includes";
   includeClassNames: Token[]
 };
-export function isIncludes(n:Node):n is Includes {
+export function isIncludes(n:TNode):n is Includes {
    return n && n.type==="includes";
 }
 export type Program=NodeBase&{
@@ -427,7 +427,7 @@ export type Program=NodeBase&{
   incl: Includes|null,
   stmts: Stmt[]
 };
-export function isProgram(n:Node):n is Program {
+export function isProgram(n:TNode):n is Program {
    return n && n.type==="program";
 }
-export type Node=ArrayElem|ArgList|Member|ParenExpr|VarAccess|FuncExprArg|ObjlitArg|Call|Scall|NewExpr|SuperExpr|Exprstmt|Compound|Return|If|Forin|NormalFor|For|While|Do|Case|Default|Switch|Break|Continue|Finally|Catch|Try|Throw|TypeExpr|TypeDecl|VarDecl|VarsDecl|ParamDecl|ParamDecls|SetterDecl|FuncDeclHead|FuncDecl|NativeDecl|IfWait|Empty|FuncExprHead|FuncExpr|JsonElem|Objlit|Arylit|Extends|Includes|Program|Expression;
+export type TNode=ArrayElem|ArgList|Member|ParenExpr|VarAccess|FuncExprArg|ObjlitArg|Call|Scall|NewExpr|SuperExpr|Exprstmt|Compound|Return|If|Forin|NormalFor|For|While|Do|Case|Default|Switch|Break|Continue|Finally|Catch|Try|Throw|TypeExpr|TypeDecl|VarDecl|VarsDecl|ParamDecl|ParamDecls|SetterDecl|FuncDeclHead|FuncDecl|NativeDecl|IfWait|Empty|FuncExprHead|FuncExpr|JsonElem|Objlit|Arylit|Extends|Includes|Program|Expression;

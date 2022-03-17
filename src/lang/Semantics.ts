@@ -12,16 +12,8 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, Node, Program, Stmt, VarDecl} from "./NodeTypes";
-/*type NodeBase={type:string, pos:{}};
-type TextNode={text:string};
-type Program=NodeBase & {stmts: Statement[]};
-type Statement=NodeBase &{name: TextNode, head:any, body:{stmts:Statement[]}};
-type Postfix=NodeBase & {op:Node};
-type Node=Program | Statement | Postfix;
-function isPostfix(n:Node): n is Postfix {
-	return n.type=="postfix";
-}*/
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl} from "./NodeTypes";
+import { Meta } from "./RuntimeTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -71,7 +63,7 @@ export function parse(klass, options={}) {
 	return node;
 }
 //-----------
-export function initClassDecls(klass, env ) {//S
+export function initClassDecls(klass:Meta, env ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
 	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
@@ -80,11 +72,10 @@ export function initClassDecls(klass, env ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	var MAIN={name:"main",stmts:[],pos:0, isMain:true};
+	var MAIN={name:"main",stmts:[],pos:0, isMain:true, nowait: false};
 	// method := fiber | function
-	var fields={}, methods={main: MAIN}, natives={}, amds={},softRefClasses={};
-	klass.decls={fields:fields, methods:methods, natives: natives, amds:amds,
-	softRefClasses:softRefClasses};
+	const fields={}, methods={main: MAIN}, natives={}, amds={},softRefClasses={};
+	klass.decls={fields, methods, natives, amds, softRefClasses};
 	// ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，AMDモジュール変数
 	//   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
 	klass.node=node;
@@ -110,7 +101,7 @@ export function initClassDecls(klass, env ) {//S
 			});
 		}
 		if (spcn=="Array") {
-			klass.superclass={name:"Array",fullName:"Array",builtin:true};
+			klass.superclass={shortName:"Array",fullName:"Array",builtin:true} as Meta;
 		} else if (spcn) {
 			var spc=env.classes[env.aliases[spcn] || spcn];/*ENVC*/  //CFN env.classes[env.aliases[spcn]]
 			if (!spc) {
@@ -198,7 +189,7 @@ function annotateSource2(klass, env) {//B
 	klass.hasSemanticError=true;
 	var srcFile=klass.src.tonyu; //file object  //S
 	var srcCont=srcFile.text();
-	function getSource(node: Node) {
+	function getSource(node: TNode) {
 		return cu.getSource(srcCont,node);
 	}
 	//var traceTbl=env.traceTbl;
@@ -269,7 +260,7 @@ function annotateSource2(klass, env) {//B
 			}
 		};
 	klass.annotation={};
-	function annotation(node: Node, aobj=undefined) {//B
+	function annotation(node: TNode, aobj=undefined) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	function initTopLevelScope2(klass) {//S
@@ -337,7 +328,7 @@ function annotateSource2(klass, env) {//B
 		return stype(ctx.scope[name])==ST.METHOD &&
 		!getMethod(name).nowait ;
 	}
-	function checkLVal(node: Node) {//S
+	function checkLVal(node: TNode) {//S
 		if (isVarAccess(node) ||
 				isPostfix(node) && (node.op.type=="member" || node.op.type=="arrayElem") ) {
 			if (node.type=="varAccess") {
