@@ -1,8 +1,9 @@
 import R from "../lib/R";
 import IT from "./TonyuIterator";
-import TonyuThreadF from "./TonyuThread";
+import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
+import { Meta } from "../lang/RuntimeTypes";
 
 
 // old browser support
@@ -15,7 +16,7 @@ if (!root.performance.now) {
 	};
 }
 function thread() {
-	var t=new TT();
+	var t=new TonyuThread(Tonyu);
 	t.handleEx=handleEx;
 	return t;
 }
@@ -41,7 +42,7 @@ const property={
 function handleEx(e:Error) {
 	Tonyu.onRuntimeError(e);
 }
-function addMeta(fn:string,m) {
+function addMeta(fn:string,m:Partial<Meta>):Meta {
 	// why use addMeta?
 	// because when compiled from source, additional info(src file) is contained.
 	// k.meta={...} erases these info
@@ -53,18 +54,18 @@ var klass={
 	removeMeta(n:string) {
 		delete classMetas[n];
 	},
-	removeMetaAll(ns) {
+	removeMetaAll(ns:string) {
 		ns+=".";
 		for (let n in classMetas) {
 			if (n.substring(0,ns.length)===ns) delete classMetas[n];
 		}
 	},
-	getMeta(k) {// Class or fullName
+	getMeta(k:string):Meta {// Class or fullName
 		if (typeof k=="function") {
-			return k.meta;
+			return (k as any).meta as Meta;
 		} else if (typeof k=="string"){
 			var mm = classMetas[k];
-			if (!mm) classMetas[k]=mm={};
+			if (!mm) classMetas[k]=mm={} as Meta;
 			return mm;
 		}
 	},
@@ -277,7 +278,7 @@ function isConstructor(v:any):v is Constructor {
 }
 type ClassMap={[key:string]:ClassMap}|Constructor;
 var classes:ClassMap={};// classes.namespace.classname= function
-var classMetas={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
+var classMetas:{[key:string]:Meta}={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 function setGlobal(n,v) {
 	globals[n]=v;
 }
@@ -396,6 +397,7 @@ const Tonyu={thread, /*threadGroup:threadGroup,*/
 		hasKey, invokeMethod, callFunc, checkNonNull,
 		iterator:IT, run, checkLoop, resetLoopCheck,
 		currentProject: null,
+		currentThread: null as TonyuThread,
 		runMode: false,
 		onRuntimeError: (e:Error)=>{
 			if (root.alert) root.alert("Error: "+e);
@@ -404,7 +406,7 @@ const Tonyu={thread, /*threadGroup:threadGroup,*/
 		},
 		VERSION:1560828115159,//EMBED_VERSION
 		A, ID:Math.random()};
-const TT=TonyuThreadF(Tonyu);
+//const TT=TonyuThreadF(Tonyu);
 if (root.Tonyu) {
 	console.error("Tonyu called twice!");
 	throw new Error("Tonyu called twice!");

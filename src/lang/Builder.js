@@ -232,8 +232,7 @@ module.exports = class Builder {
         const shortCn = this.fileToShortClassName(f);
         const myNsp = this.getNamespace();
         const fullCn = myNsp + "." + shortCn;
-        var m = TonyuRuntime_1.default.klass.getMeta(fullCn);
-        TonyuRuntime_1.default.extend(m, {
+        const m = TonyuRuntime_1.default.klass.addMeta(fullCn, {
             fullName: fullCn,
             shortName: shortCn,
             namespace: myNsp

@@ -7,12 +7,15 @@ interface ThreadGroup {
     isDeadThreadGroup(): boolean;
     objectPoolAge: any;
 }
-export= function TonyuThreadF(Tonyu) {
-	var cnts={enterC:{},exitC:0};
-	var idSeq=1;
+type Frame={
+    prev?:Frame, func:Function,
+};
+type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
+//export= function TonyuThreadF(Tonyu) {
+	let idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
-	class TonyuThread {
-        frame: any;
+	export class TonyuThread {
+        frame: Frame;
         private _isDead: boolean;
         cnt: number;
         private _isWaiting: boolean;
@@ -32,7 +35,7 @@ export= function TonyuThreadF(Tonyu) {
         catchPC: any;
         handleEx: any;
         tGrpObjectPoolAge: any;
-		constructor() {
+		constructor(public Tonyu:{currentThread:TonyuThread}) {
 			this.frame=null;
 			this._isDead=false;
 			//this._isAlive=true;
@@ -58,7 +61,7 @@ export= function TonyuThreadF(Tonyu) {
 			));
 			return this._isDead;
 		}
-		setThreadGroup(g) {// g:TonyuThread
+		setThreadGroup(g:ThreadGroup) {// g:TonyuThread
 			this._threadGroup=g;
 			this.tGrpObjectPoolAge=g.objectPoolAge;
 			//if (g) g.add(fb);
@@ -70,14 +73,14 @@ export= function TonyuThreadF(Tonyu) {
 			this.fSuspended=true;
 			this.cnt=0;
 		}
-		enter(frameFunc) {
+		enter(frameFunc: Function) {
 			//var n=frameFunc.name;
 			//cnts.enterC[n]=(cnts.enterC[n]||0)+1;
 			this.frame={prev:this.frame, func:frameFunc};
 		}
-		apply(obj, methodName, args) {
+		apply(obj:any, methodName:string, args:any[]) {
 			if (!args) args=[];
-			var method;
+		    let method: TonyuMethod;
 			if (typeof methodName=="string") {
 				method=obj["fiber$"+methodName];
 				if (!method) {
@@ -85,9 +88,10 @@ export= function TonyuThreadF(Tonyu) {
 				}
 			}
 			if (typeof methodName=="function") {
-				method=methodName.fiber;
+                const fmethod:TonyuMethod=methodName ;
+				method=fmethod.fiber;
 				if (!method) {
-					var n=methodName.methodInfo ? methodName.methodInfo.name : methodName.name;
+					var n=fmethod.methodInfo ? fmethod.methodInfo.name : fmethod.name;
 					throw new Error(R("notAWaitableMethod",n));
 				}
 			}
@@ -219,7 +223,7 @@ export= function TonyuThreadF(Tonyu) {
 				f(succ,err);
 			},0);
 		}
-		waitFor(j) {
+		waitFor(j:any):Promise<any> {
 			var fb=this;
 			fb._isWaiting=true;
 			fb.suspend();
@@ -232,21 +236,21 @@ export= function TonyuThreadF(Tonyu) {
 				fb.stepsLoop();
 			});
 		}
-		wrapError(e) {
+		wrapError(e:any) {
 			if (e instanceof Error) return e;
 			var re:any=new Error(e);
 			re.original=e;
-			return re;
+			return re as Error;
 		}
-		resume(retVal) {
+		resume(retVal:any) {
 			this.retVal=retVal;
 			this.steps();
 		}
 		steps() {
-			var fb=this;
+			const fb=this;
 			if (fb.isDead()) return;
-			var sv=Tonyu.currentThread;
-			Tonyu.currentThread=fb;
+			const sv=this.Tonyu.currentThread;
+			this.Tonyu.currentThread=fb;
 			fb.cnt=fb.preemptionTime;
 			fb.preempted=false;
 			fb.fSuspended=false;
@@ -261,7 +265,7 @@ export= function TonyuThreadF(Tonyu) {
 					fb.gotoCatch(e);
 				}
 			}
-			Tonyu.currentThread=sv;
+			this.Tonyu.currentThread=sv;
 		}
 		stepsLoop() {
 			var fb=this;
@@ -287,5 +291,3 @@ export= function TonyuThreadF(Tonyu) {
 			this.tryStack=[];
 		}
 	}
-	return TonyuThread;
-}

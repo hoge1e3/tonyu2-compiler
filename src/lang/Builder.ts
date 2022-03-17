@@ -115,7 +115,7 @@ export = class Builder {
     }
     getOptions() {return this.prj.getOptions();}
     getOutputFile(...f) {return this.prj.getOutputFile(...f);}
-    getNamespace() {return this.prj.getNamespace();}
+    getNamespace():string {return this.prj.getNamespace();}
     getDir(){return this.prj.getDir();}
     getEXT(){return this.prj.getEXT();}
     sourceFiles(ns?:string){return this.prj.sourceFiles();}
@@ -205,7 +205,7 @@ export = class Builder {
         const klass=this.addMetaFromFile(f);
         return Semantics.parse(klass);
     }
-    fileToShortClassName(f) {
+    fileToShortClassName(f):string {
         const s=f.truncExt(this.getEXT());
         return this.isTonyu1()?s.toLowerCase():s;
     }
@@ -214,8 +214,7 @@ export = class Builder {
 		const shortCn=this.fileToShortClassName(f);
         const myNsp=this.getNamespace();
 		const fullCn=myNsp+"."+shortCn;
-		var m=Tonyu.klass.getMeta(fullCn);
-		Tonyu.extend(m,{
+		const m=Tonyu.klass.addMeta(fullCn,{
 			fullName:  fullCn,
 			shortName: shortCn,
 			namespace: myNsp
