@@ -17,7 +17,6 @@ if (!root_1.default.performance.now) {
     };
 }
 var preemptionTime = 60;
-var Tonyu, TT;
 function thread() {
     var t = new TT();
     t.handleEx = handleEx;
@@ -43,16 +42,7 @@ const property = {
     }
 };
 function handleEx(e) {
-    if (Tonyu.onRuntimeError) {
-        Tonyu.onRuntimeError(e);
-    }
-    else {
-        //if (typeof $LASTPOS=="undefined") $LASTPOS=0;
-        if (root_1.default.alert)
-            root_1.default.alert("Error: " + e);
-        console.log(e.stack);
-        throw e;
-    }
+    Tonyu.onRuntimeError(e);
 }
 function addMeta(fn, m) {
     // why use addMeta?
@@ -301,7 +291,7 @@ function extend(dst, src) {
     return dst;
 }
 //alert("init");
-var globals = {};
+const globals = {};
 function isConstructor(v) {
     return typeof v === "function";
 }
@@ -430,16 +420,24 @@ function is(obj, klass) {
     return false;
 }
 //setInterval(resetLoopCheck,16);
-Tonyu = { thread: thread,
-    klass: klass, bless: bless, extend: extend,
-    globals: globals, classes: classes, classMetas: classMetas, setGlobal: setGlobal, getGlobal: getGlobal, getClass: getClass,
-    timeout: timeout,
-    bindFunc: bindFunc, not_a_tonyu_object: not_a_tonyu_object, is: is,
-    hasKey: hasKey, invokeMethod: invokeMethod, callFunc: callFunc, checkNonNull: checkNonNull,
-    iterator: TonyuIterator_1.default, run: run, checkLoop: checkLoop, resetLoopCheck: resetLoopCheck,
+const Tonyu = { thread,
+    klass, bless, extend,
+    globals, classes, classMetas, setGlobal, getGlobal, getClass,
+    timeout,
+    bindFunc, not_a_tonyu_object, is,
+    hasKey, invokeMethod, callFunc, checkNonNull,
+    iterator: TonyuIterator_1.default, run, checkLoop, resetLoopCheck,
+    currentProject: null,
+    runMode: false,
+    onRuntimeError: (e) => {
+        if (root_1.default.alert)
+            root_1.default.alert("Error: " + e);
+        console.log(e.stack);
+        throw e;
+    },
     VERSION: 1560828115159,
-    A: A, ID: Math.random() };
-TT = (0, TonyuThread_1.default)(Tonyu);
+    A, ID: Math.random() };
+const TT = (0, TonyuThread_1.default)(Tonyu);
 if (root_1.default.Tonyu) {
     console.error("Tonyu called twice!");
     throw new Error("Tonyu called twice!");

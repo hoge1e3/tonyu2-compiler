@@ -14,14 +14,12 @@ if (!root.performance.now) {
 		return Date.now();
 	};
 }
-var preemptionTime=60;
-var Tonyu,TT;
 function thread() {
 	var t=new TT();
 	t.handleEx=handleEx;
 	return t;
 }
-function timeout(t) {
+function timeout(t:number) {
 	return new Promise(function (s) {
 		setTimeout(s,t);
 	});
@@ -33,24 +31,17 @@ function timeout(t) {
 }*/
 const propReg=/^__([gs]et)ter__(.*)$/;
 const property={
-	isPropertyMethod(name) {
+	isPropertyMethod(name:string) {
 		return propReg.exec(name);
 	},
-	methodFor(type, name) {
+	methodFor(type:"get"|"set", name:string) {
 		return `__${type}ter__${name}`;
 	}
 };
-function handleEx(e) {
-	if (Tonyu.onRuntimeError) {
-		Tonyu.onRuntimeError(e);
-	} else {
-		//if (typeof $LASTPOS=="undefined") $LASTPOS=0;
-		if (root.alert) root.alert("Error: "+e);
-		console.log(e.stack);
-		throw e;
-	}
+function handleEx(e:Error) {
+	Tonyu.onRuntimeError(e);
 }
-function addMeta(fn,m) {
+function addMeta(fn:string,m) {
 	// why use addMeta?
 	// because when compiled from source, additional info(src file) is contained.
 	// k.meta={...} erases these info
@@ -59,7 +50,7 @@ function addMeta(fn,m) {
 }
 var klass={
 	addMeta,
-	removeMeta(n) {
+	removeMeta(n:string) {
 		delete classMetas[n];
 	},
 	removeMetaAll(ns) {
@@ -212,7 +203,7 @@ var klass={
 			//console.log("Prots1",props);
 			for (let k of Object.keys(props)) {
 				const desc={};
-				for (let type of ["get", "set"]) {
+				for (let type of ["get", "set"] as ("get"|"set")[]) {
 					const tter=prot[property.methodFor(type, k)];
 					if (tter) {
 						desc[type]=tter;
@@ -279,7 +270,7 @@ function extend (dst, src) {
 }
 
 //alert("init");
-var globals={};
+const globals:{[key:string]:any}={};
 type Constructor = new (...args: any[]) => any;
 function isConstructor(v:any):v is Constructor {
 	return typeof v==="function";
@@ -397,16 +388,23 @@ function is(obj,klass) {
 	return false;
 }
 //setInterval(resetLoopCheck,16);
-Tonyu={thread:thread, /*threadGroup:threadGroup,*/
-		klass:klass, bless:bless, extend:extend,
-		globals:globals, classes:classes, classMetas:classMetas, setGlobal:setGlobal, getGlobal:getGlobal, getClass:getClass,
-		timeout:timeout,//animationFrame:animationFrame, /*asyncResult:asyncResult,*/
-		bindFunc:bindFunc,not_a_tonyu_object:not_a_tonyu_object,is:is,
-		hasKey:hasKey,invokeMethod:invokeMethod, callFunc:callFunc,checkNonNull:checkNonNull,
-		iterator:IT,run:run,checkLoop:checkLoop,resetLoopCheck:resetLoopCheck,//DeferredUtil:DU,
+const Tonyu={thread, /*threadGroup:threadGroup,*/
+		klass, bless, extend,
+		globals, classes, classMetas, setGlobal, getGlobal, getClass,
+		timeout,
+		bindFunc, not_a_tonyu_object, is,
+		hasKey, invokeMethod, callFunc, checkNonNull,
+		iterator:IT, run, checkLoop, resetLoopCheck,
+		currentProject: null,
+		runMode: false,
+		onRuntimeError: (e:Error)=>{
+			if (root.alert) root.alert("Error: "+e);
+			console.log(e.stack);
+			throw e;
+		},
 		VERSION:1560828115159,//EMBED_VERSION
-		A:A,ID:Math.random()};
-TT=TonyuThreadF(Tonyu);
+		A, ID:Math.random()};
+const TT=TonyuThreadF(Tonyu);
 if (root.Tonyu) {
 	console.error("Tonyu called twice!");
 	throw new Error("Tonyu called twice!");
