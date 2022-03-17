@@ -559,42 +559,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExpressionParser = void 0;
 const parser_1 = require("./parser");
 //import Parser from "./parser";
-const OPTYPE = Symbol("OPTYPE"), TF2 = Symbol("TF2");
-const ELEMENTPRIO = -1;
+const OPTYPE = Symbol("OPTYPE");
 function ExpressionParser(context, name = "Expression") {
-    const opDescs = [];
-    function err(p) { throw new Error(); }
-    function opDesc(type, prio) {
-        if (opDescs[prio])
-            return opDescs[prio];
-        const res = {
-            eq(o) { return type == o.type() && prio == o.prio; },
+    function opType(type, prio) {
+        return {
+            eq(o) { return type == o.type() && prio == o.prio(); },
             type(t) { if (!t)
                 return type;
             else
                 return t == type; },
-            prio,
+            prio() { return prio; },
             toString() { return "[" + type + ":" + prio + "]"; },
-            reg(type, p) {
-                p = p.assign({ [OPTYPE]: res });
-                if (type === "infixl" || type === "infixr" || type === "infix"
-                    || type === "postfix" || type === "trifixr") {
-                    postfixOrInfix.reg(prio, p);
-                }
-                else if (type === "element") {
-                    element.add(p);
-                    prefixOrElement.add(p);
-                }
-                else if (type === "prefix") {
-                    prefixOrElement.add(p);
-                }
-                else {
-                    throw err(type);
-                }
-            }
         };
-        opDescs[prio] = res;
-        return res;
     }
     function composite(a) {
         let e = a;
@@ -612,53 +588,18 @@ function ExpressionParser(context, name = "Expression") {
             }
         };
     }
-    function compositeWithPrio() {
-        const prioParsers = [];
-        function get(minPrio) {
-            const r = prioParsers.filter((pp) => pp.prio >= minPrio || pp.prio === ELEMENTPRIO).map((pp) => pp.p);
-            let res = r[0];
-            for (let i = 1; i < r.length; i++) {
-                res = res.or(r[i]);
-            }
-            return res;
-        }
-        ;
+    function typeComposite() {
+        const built = composite();
         return {
-            reg(prio, p) {
-                prioParsers.push({ p, prio });
+            reg(type, prio, a) {
+                const opt = opType(type, prio);
+                built.add(a.assign({ [OPTYPE]: opt }));
             },
-            get,
-            build() {
-                const res = [];
-                for (let i = 0; i < prioParsers.length; i++) {
-                    res[i] = get(i);
-                }
-                return res;
-            }
-        };
-    }
-    /*function typeComposite() {
-        const built=composite();
-        return {
-            reg(type:OpType, prio:number, a:Parser) {
-                const opt=opDesc(type, prio);
-                built.add(context.create((r:State)=>{
-                    const r2=a.parse(r);
-                    (r2 as any).opType=opt;
-                    return r2;
-                }).setName("(opType "+opt+" "+a.name+")").copyFirst(a) );
-            },
-            get() {return built.get();},
-            parse(st:State) {
+            get() { return built.get(); },
+            parse(st) {
                 return this.get().parse(st);
             }
         };
-    }*/
-    const prefixOrElement = composite(), postfixOrInfix = compositeWithPrio();
-    const element = composite();
-    function reg(type, prio, p) {
-        const opt = opDesc(type, prio);
-        opt.reg(type, p);
     }
     function toStrF(...attrs) {
         return function () {
@@ -669,32 +610,34 @@ function ExpressionParser(context, name = "Expression") {
             return buf + ")";
         };
     }
-    let prefixOrElement_built, postfixOrInfix_built;
+    const prefixOrElement = typeComposite(), postfixOrInfix = typeComposite();
+    const element = composite();
+    const trifixes = [];
     const $ = {
         element(e) {
-            reg("element", ELEMENTPRIO, e);
+            prefixOrElement.reg("element", -1, e);
             element.add(e);
         },
         getElement() { return element.get(); },
         prefix(prio, pre) {
-            reg("prefix", prio, pre);
+            prefixOrElement.reg("prefix", prio, pre);
         },
         postfix(prio, post) {
-            reg("postfix", prio, post);
+            postfixOrInfix.reg("postfix", prio, post);
         },
         infixl(prio, inf) {
-            reg("infixl", prio, inf);
+            postfixOrInfix.reg("infixl", prio, inf);
         },
         infixr(prio, inf) {
-            reg("infixr", prio, inf);
+            postfixOrInfix.reg("infixr", prio, inf);
         },
         infix(prio, inf) {
-            reg("infix", prio, inf);
+            postfixOrInfix.reg("infix", prio, inf);
         },
         trifixr(prio, tf1, tf2) {
-            reg("trifixr", prio, tf1.assign({ [TF2]: tf2 }));
+            postfixOrInfix.reg("trifixr", prio, tf1);
             //postfixOrInfix.reg("trifixr2", prio, tf2);
-            //trifixes.set(tf1,tf2);
+            trifixes[prio] = tf2;
         },
         mkInfix(f) {
             $.mkInfix_def = f;
@@ -720,9 +663,7 @@ function ExpressionParser(context, name = "Expression") {
             //prefixOrElement.build();
             //console.log("BUILT fst ");
             //prefixOrElement.get().dispTbl();
-            prefixOrElement_built = prefixOrElement.get();
-            postfixOrInfix_built = postfixOrInfix.build();
-            let built = context.create((st) => parse(0, st)).setName(name).copyFirst(prefixOrElement_built);
+            let built = context.create((st) => parse(0, st)).setName(name).copyFirst(prefixOrElement.get());
             //const fst=prefixOrElement.get()._first;
             //built.dispTbl();
             /*if (fst && !fst[ALL] && context.space==="TOKEN") {
@@ -756,120 +697,159 @@ function ExpressionParser(context, name = "Expression") {
     function dump(st, lbl) {
         /*var s=st.src.str;
         console.log("["+lbl+"] "+s.substring(0,st.pos)+"^"+s.substring(st.pos)+
-                " opType="+ st.opType+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
+                " opType="+ getOpType(s)+"  Succ = "+st.isSuccess()+" res="+st.result[0]);*/
         //console.log(lbl,st+"");
-        return st;
+    }
+    function getOpType(s) {
+        return s.result[0][OPTYPE];
     }
     function parse(minPrio, st) {
-        dump(st, "start minPrio=" + minPrio);
-        function parsePrefixOrElement(st) {
-            const svst = st;
-            st = prefixOrElement_built.parse(st);
-            dump(st, "prefixorelem minPrio=" + minPrio);
-            if (!st.success)
-                return svst.withError(st.error);
-            let res; // res.success is always true
-            const pre = st.result[0];
-            const opt = pre[OPTYPE];
-            if (opt.type("prefix")) {
-                // st = -^elem
-                //const pre=st.result[0];
-                st = parse(opt.prio, st);
-                if (!st.success)
-                    return svst.withError(st.error);
-                // st: Expr    st.pos = -elem^
-                const pex = $.mkPrefix_def(pre, st.result[0]);
-                res = st.clone();
-                res.result = [pex]; // res:prefixExpr  res.pos= -elem^
-            }
-            else { //elem
-                res = st;
-            }
-            return res;
+        let res = st, opt;
+        dump(st, " start minprio= " + minPrio);
+        st = prefixOrElement.parse(st);
+        dump(st, " prefixorelem " + minPrio);
+        if (!st.isSuccess()) {
+            return st;
         }
-        const svst = st;
-        st = parsePrefixOrElement(st);
-        if (!st.success)
-            return svst.withError(st.error);
-        let res = st; // res.success is always true
+        //p2=st.result[0];
+        opt = getOpType(st);
+        if (opt.type("prefix")) {
+            // st = -^elem
+            const pre = st.result[0];
+            st = parse(opt.prio(), st);
+            if (!st.isSuccess()) {
+                return st;
+            }
+            // st: Expr    st.pos = -elem^
+            const pex = $.mkPrefix_def(pre, st.result[0]);
+            res = st.clone(); //  res:Expr
+            res.result = [pex]; // res:prefixExpr  res.pos= -elem^
+            if (!getNextPostfixOrInfix(st)) {
+                return res;
+            }
+            // st.next =  -elem+^elem
+            st = getNextPostfixOrInfix(st); // st: postfixOrInfix
+        }
+        else { //elem
+            //p=p2;
+            res = st.clone(); // res:elemExpr   res =  elem^
+            st = postfixOrInfix.parse(st);
+            if (!st.isSuccess()) {
+                return res;
+            }
+        }
         // assert st:postfixOrInfix  res:Expr
-        if (!postfixOrInfix_built[minPrio])
-            return dump(res, "noprio");
         while (true) {
             dump(st, "st:pi");
-            dump(res, "res:pi");
-            st = postfixOrInfix_built[minPrio].parse(st);
-            if (!st.success)
-                return dump(res, "noop" + (st === res));
-            const left = res.result[0];
-            const op = st.result[0];
-            const opt = op[OPTYPE];
-            dump(res, "res:ex newprio=" + opt.prio);
+            dump(res, "res:ex");
+            opt = getOpType(st);
+            if (opt.prio() < minPrio) {
+                return setNextPostfixOrInfix(res, st);
+            }
             // assert st:postfixOrInfix  res:Expr
             if (opt.type("postfix")) {
                 // st:postfix
-                const pex = $.mkPostfix_def(left, op);
+                const pex = $.mkPostfix_def(res.result[0], st.result[0]);
                 res = st.clone();
                 res.result = [pex]; // res.pos= expr++^
+                dump(st, "185");
+                st = postfixOrInfix.parse(st); // st. pos= expr++--^
+                if (!st.isSuccess()) {
+                    return res;
+                }
             }
             else if (opt.type("infixl")) { //x+y+z
                 // st: infixl
-                st = parse(opt.prio + 1, st);
-                if (!st.success)
-                    return dump(res, "noinf");
-                const right = st.result[0];
+                var inf = st.result[0];
+                st = parse(opt.prio() + 1, st);
+                if (!st.isSuccess()) {
+                    return res;
+                }
                 // st: expr   st.pos=  expr+expr^
-                const pex = $.mkInfixl_def(left, op, right);
+                const pex = $.mkInfixl_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixlExpr
+                if (!getNextPostfixOrInfix(st)) {
+                    return res;
+                }
+                st = getNextPostfixOrInfix(st);
             }
             else if (opt.type("infixr")) { //a=^b=c
                 // st: infixr
-                st = parse(opt.prio, st);
-                if (!st.success)
-                    return dump(res, "noinf");
+                const inf = st.result[0];
+                st = parse(opt.prio(), st);
+                if (!st.isSuccess()) {
+                    return res;
+                }
                 // st: expr   st.pos=  a=b=c^
-                const right = st.result[0];
-                const pex = $.mkInfixr_def(left, op, right);
+                const pex = $.mkInfixr_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixrExpr
+                if (!getNextPostfixOrInfix(st)) {
+                    return res;
+                }
+                st = getNextPostfixOrInfix(st);
             }
             else if (opt.type("trifixr")) { //left?^mid:right
                 // st: trifixr
-                const inf1 = op; // inf1 =  ?
-                st = parse(opt.prio + 1, st);
-                if (!st.success)
-                    return dump(res, "notrif1");
+                var left = res.result[0];
+                var inf1 = st.result[0]; // inf1 =  ?
+                st = parse(opt.prio() + 1, st);
+                if (!st.isSuccess()) {
+                    return res;
+                }
                 // st= expr   st.pos=  left?mid^:right
-                const mid = st.result[0];
-                const inf2p = op[TF2];
-                st = inf2p.parse(st);
+                var mid = st.result[0];
+                st = trifixes[opt.prio()].parse(st);
                 // st= :      st.pos= left?mid:^right;
-                if (!st.success)
-                    return dump(res, "notrif_mid");
-                const inf2 = st.result[0];
-                st = parse(opt.prio, st);
-                if (!st.success)
-                    return dump(res, "notrif2");
-                const right = st.result[0];
+                if (!st.isSuccess()) {
+                    return res;
+                }
+                var inf2 = st.result[0];
+                st = parse(opt.prio(), st);
+                if (!st.isSuccess()) {
+                    return res;
+                }
+                var right = st.result[0];
                 // st=right      st.pos= left?mid:right^;
                 const pex = $.mkTrifixr_def(left, inf1, mid, inf2, right);
                 res = st.clone();
                 res.result = [pex]; //res:infixrExpr
+                if (!getNextPostfixOrInfix(st)) {
+                    return res;
+                }
+                st = getNextPostfixOrInfix(st);
             }
             else { // infix
                 // st: infixl
                 const inf = st.result[0];
-                st = parse(opt.prio + 1, st);
-                if (!st.success)
-                    return dump(res, "noinf");
+                st = parse(opt.prio() + 1, st);
+                if (!st.isSuccess()) {
+                    return res;
+                }
                 // st: expr   st.pos=  expr+expr^
                 const pex = $.mkInfix_def(res.result[0], inf, st.result[0]);
                 res = st.clone();
                 res.result = [pex]; //res:infixExpr
+                if (!getNextPostfixOrInfix(st)) {
+                    return res;
+                }
+                st = getNextPostfixOrInfix(st);
+                if (opt.prio() == getOpType(st).prio()) {
+                    res.error = "error"; //success=false;
+                    return res;
+                }
             }
             // assert st:postfixOrInfix  res:Expr
         }
+    }
+    const NEXT = Symbol("NEXT");
+    function getNextPostfixOrInfix(st) {
+        return st.result[0][NEXT];
+    }
+    function setNextPostfixOrInfix(res, next) {
+        res.result[0][NEXT] = next;
+        return res;
     }
     return $;
 }
@@ -4962,6 +4942,9 @@ class State {
         this._error = error;
         if (!error)
             return;
+        if (this.src.global && typeof this.src.global.backtrackCount === "number") {
+            this.src.global.backtrackCount++;
+        }
         if (this.pos == this.src.maxErrors.pos) {
             this.src.maxErrors.errors.push(error);
         }
@@ -5213,7 +5196,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 //import * as Parser from "./parser";
 const TError_1 = __importDefault(require("../runtime/TError"));
 const R_1 = __importDefault(require("../lib/R"));
-const ExpressionParser_1 = require("./ExpressionParser");
+const ExpressionParser2_1 = require("./ExpressionParser2");
 const Grammar_1 = __importDefault(require("./Grammar"));
 const parser_1 = require("./parser");
 module.exports = function PF({ TT }) {
@@ -5276,7 +5259,7 @@ module.exports = function PF({ TT }) {
     function comLastOpt(p) {
         return p.sep0(tk(",")).and(tk(",").opt()).retN(0).setName(`(comLastOpt ${p.name})`, { type: "rept", elem: p });
     }
-    var e = (0, ExpressionParser_1.ExpressionParser)(parser_1.TokensParser.context);
+    var e = (0, ExpressionParser2_1.ExpressionParser)(parser_1.TokensParser.context);
     var explz = e.lazy(); //.firstTokens(ALL);
     var arrayElem = g("arrayElem").ands(tk("["), explz, tk("]")).ret(null, "subscript");
     var argList = g("argList").ands(tk("("), comLastOpt(explz), tk(")")).ret(null, "args");
@@ -5417,10 +5400,10 @@ module.exports = function PF({ TT }) {
     /*e.mkPostfix(function (p) {
         return {type:"postfix", expr:p};
     });*/
-    const expr = e.build() /*.ret((s:any)=>{
+    const expr = e.build(); /*.ret((s:any)=>{
         console.log(s+"");
         return s;
-    })*/; //.profile();
+    });*/ //.profile();
     g("elem").alias(e.getElement());
     g("expr").alias(expr);
     //var retF=function (i) { return function (){ return arguments[i];}; };
@@ -5504,10 +5487,12 @@ module.exports = function PF({ TT }) {
         }
         var tokens = tokenRes.result[0];
         //console.log("Tokens: "+tokens.join(","));
-        var res = parser_1.TokensParser.parse(program, tokens);
+        const global = { backtrackCount: 0 };
+        var res = parser_1.TokensParser.parse(program, tokens, global);
         //console.log("POS="+res.src.maxPos);
         if (res.isSuccess()) {
             var node = res.result[0];
+            //console.log("backtrackCount: ", global.backtrackCount+"/"+tokens.length);
             //console.log(disp(node));
             return node;
             //var xmlsrc=$.genXML(str, node);
@@ -5527,12 +5512,12 @@ module.exports = function PF({ TT }) {
         return x.buf;
     };*/
     $.extension = "tonyu";
-    g.buildTypes();
+    //g.buildTypes();
     //g.checkFirstTbl();
     return $;
 };
 
-},{"../lib/R":27,"../runtime/TError":35,"./ExpressionParser":4,"./Grammar":5,"./parser":19}],21:[function(require,module,exports){
+},{"../lib/R":27,"../runtime/TError":35,"./ExpressionParser2":4,"./Grammar":5,"./parser":19}],21:[function(require,module,exports){
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();

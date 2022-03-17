@@ -330,7 +330,7 @@ module.exports = function PF({ TT }) {
         return x.buf;
     };*/
     $.extension = "tonyu";
-    g.buildTypes();
+    //g.buildTypes();
     //g.checkFirstTbl();
     return $;
 };
