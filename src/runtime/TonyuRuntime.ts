@@ -3,7 +3,7 @@ import IT from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
-import { Meta } from "../lang/RuntimeTypes";
+import { isTonyuClass, Meta, TonyuClass } from "../lang/RuntimeTypes";
 
 
 // old browser support
@@ -272,11 +272,8 @@ function extend (dst, src) {
 
 //alert("init");
 const globals:{[key:string]:any}={};
-type Constructor = new (...args: any[]) => any;
-function isConstructor(v:any):v is Constructor {
-	return typeof v==="function";
-}
-type ClassMap={[key:string]:ClassMap}|Constructor;
+
+type ClassMap={[key:string]:ClassMap}|TonyuClass;
 var classes:ClassMap={};// classes.namespace.classname= function
 var classMetas:{[key:string]:Meta}={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 function setGlobal(n,v) {
@@ -354,7 +351,7 @@ function hasKey(k, obj) {
 }
 function run(bootClassName) {
 	var bootClass=getClass(bootClassName);
-	if (!isConstructor(bootClass)) throw new Error( R("bootClassIsNotFound",bootClassName));
+	if (!isTonyuClass(bootClass)) throw new Error( R("bootClassIsNotFound",bootClassName));
 	Tonyu.runMode=true;
 	var boot=new bootClass();
 	//var th=thread();
@@ -377,13 +374,14 @@ function checkLoop() {
 	}
 	prevCheckLoopCalled=now;
 }
-function resetLoopCheck(disableTime) {
+function resetLoopCheck(disableTime: number) {
 	lastLoopCheck=root.performance.now()+(disableTime||0);
 }
-function is(obj,klass) {
+function is(obj:any, klass:any) {
 	if (!obj) return false;
+	if (!klass) return false;
 	if (obj instanceof klass) return true;
-	if (typeof obj.getClassInfo==="function" && klass.meta) {
+	if (typeof obj.getClassInfo==="function" && isTonyuClass(klass)) {
 		return obj.getClassInfo().includesRec[klass.meta.fullName];
 	}
 	return false;

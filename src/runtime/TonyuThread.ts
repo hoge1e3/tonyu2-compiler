@@ -1,5 +1,6 @@
 //	var Klass=require("../lib/Klass");
 
+import { TonyuMethod } from "../lang/RuntimeTypes";
 import R from "../lib/R";
 
 //const R=require("../lib/R");
@@ -10,7 +11,6 @@ interface ThreadGroup {
 type Frame={
     prev?:Frame, func:Function,
 };
-type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
 //export= function TonyuThreadF(Tonyu) {
 	let idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
@@ -30,7 +30,7 @@ type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
 		termStatus: undefined|"killed"|"exception";
 		preempted=false;
         retVal: any;
-        lastEvent: IArguments;
+        lastEvent: any[];
         lastEx: any;
         catchPC: any;
         handleEx: any;
@@ -188,20 +188,18 @@ type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
 			var fb=this;
 			fb.tryStack.pop();
 		}
-		waitEvent(obj,eventSpec) { // eventSpec=[EventType, arg1, arg2....]
-			var fb=this;
+		waitEvent(obj:any, eventSpec:any[]) { // eventSpec=[EventType, arg1, arg2....]
+			const fb=this;
 			fb.suspend();
-			if (!obj.on) return;
-			var h;
-			eventSpec=eventSpec.concat(function () {
-				fb.lastEvent=arguments;
-				fb.retVal=arguments[0];
+			if (typeof obj.on!=="function") return;
+			let h=obj.on(...eventSpec,(...args)=>{
+				fb.lastEvent=args;
+				fb.retVal=args[0];
 				h.remove();
 				fb.steps();
 			});
-			h=obj.on.apply(obj, eventSpec);
 		}
-		runAsync(f) {
+		runAsync(f:Function) {
 			var fb=this;
 			var succ=function () {
 				fb.retVal=arguments;

@@ -26,7 +26,7 @@ var getMethod2=cu.getMethod;
 var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
 var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1,Date:1};
-function visitSub(node: Node) {//S
+function visitSub(node: TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
 	var es;
@@ -42,12 +42,12 @@ function visitSub(node: Node) {//S
 		t.visit(e);
 	});
 }
-function getSourceFile(klass) {
+function getSourceFile(klass: Meta) {
 	return assert(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
 }
-export function parse(klass, options={}) {
+export function parse(klass: Meta, options={}):Program {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
-	let node;
+	let node:Program;
 	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
 		node=klass.node;
 	}
@@ -143,7 +143,7 @@ export function initClassDecls(klass:Meta, env ) {//S
 			"forin": function (node:Forin) {
 				var isVar=node.isVar;
 				if (isVar) {
-					node.vars.forEach(function (v) {
+					node.vars.forEach((v:Token)=>{
 						addField(v);
 					});
 				}

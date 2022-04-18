@@ -175,7 +175,7 @@ function initClassDecls(klass, env) {
             "forin": function (node) {
                 var isVar = node.isVar;
                 if (isVar) {
-                    node.vars.forEach(function (v) {
+                    node.vars.forEach((v) => {
                         addField(v);
                     });
                 }

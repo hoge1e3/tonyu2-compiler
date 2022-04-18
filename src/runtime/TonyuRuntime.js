@@ -7,6 +7,7 @@ const TonyuIterator_1 = __importDefault(require("./TonyuIterator"));
 const TonyuThread_1 = require("./TonyuThread");
 const root_1 = __importDefault(require("../lib/root"));
 const assert_1 = __importDefault(require("../lib/assert"));
+const RuntimeTypes_1 = require("../lang/RuntimeTypes");
 // old browser support
 if (!root_1.default.performance) {
     root_1.default.performance = {};
@@ -291,9 +292,6 @@ function extend(dst, src) {
 }
 //alert("init");
 const globals = {};
-function isConstructor(v) {
-    return typeof v === "function";
-}
 var classes = {}; // classes.namespace.classname= function
 var classMetas = {}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 function setGlobal(n, v) {
@@ -381,7 +379,7 @@ function hasKey(k, obj) {
 }
 function run(bootClassName) {
     var bootClass = getClass(bootClassName);
-    if (!isConstructor(bootClass))
+    if (!(0, RuntimeTypes_1.isTonyuClass)(bootClass))
         throw new Error((0, R_1.default)("bootClassIsNotFound", bootClassName));
     Tonyu.runMode = true;
     var boot = new bootClass();
@@ -411,9 +409,11 @@ function resetLoopCheck(disableTime) {
 function is(obj, klass) {
     if (!obj)
         return false;
+    if (!klass)
+        return false;
     if (obj instanceof klass)
         return true;
-    if (typeof obj.getClassInfo === "function" && klass.meta) {
+    if (typeof obj.getClassInfo === "function" && (0, RuntimeTypes_1.isTonyuClass)(klass)) {
         return obj.getClassInfo().includesRec[klass.meta.fullName];
     }
     return false;

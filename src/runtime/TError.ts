@@ -1,4 +1,4 @@
-function TError(message, src, pos, len=0) {
+function TError(message:string, src, pos:number, len=0) {
 	let rc;
 	const extend=(dst,src)=>{for (var k in src) dst[k]=src[k];return dst;};
 	if (typeof src=="string") {
@@ -47,6 +47,7 @@ pp = 4  7   11
 row=2  pp=11  pos=9
 lines[row].length=4
 	*/
+	col=0;
 	for (row=0;row<lines.length ; row++) {
 		const ppp=pp;
 		pp+=lines[row].length+1;

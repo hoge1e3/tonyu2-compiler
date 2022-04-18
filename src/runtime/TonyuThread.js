@@ -176,18 +176,16 @@ class TonyuThread {
         fb.tryStack.pop();
     }
     waitEvent(obj, eventSpec) {
-        var fb = this;
+        const fb = this;
         fb.suspend();
-        if (!obj.on)
+        if (typeof obj.on !== "function")
             return;
-        var h;
-        eventSpec = eventSpec.concat(function () {
-            fb.lastEvent = arguments;
-            fb.retVal = arguments[0];
+        let h = obj.on(...eventSpec, (...args) => {
+            fb.lastEvent = args;
+            fb.retVal = args[0];
             h.remove();
             fb.steps();
         });
-        h = obj.on.apply(obj, eventSpec);
     }
     runAsync(f) {
         var fb = this;

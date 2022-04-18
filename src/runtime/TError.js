@@ -50,6 +50,7 @@ pp = 4  7   11
 row=2  pp=11  pos=9
 lines[row].length=4
     */
+    col = 0;
     for (row = 0; row < lines.length; row++) {
         const ppp = pp;
         pp += lines[row].length + 1;
