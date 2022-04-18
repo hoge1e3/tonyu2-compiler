@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRange = exports.setRange = exports.addRange = exports.lazy = exports.TokensParser = exports.tokensParserContext = exports.StringParser = exports.State = exports.Parser = exports.ParserContext = exports.SUBELEMENTS = exports.ALL = void 0;
+const R_1 = __importDefault(require("../lib/R"));
 exports.ALL = Symbol("ALL");
 exports.SUBELEMENTS = Symbol("SUBELEMENTS");
 const options = { traceTap: false, optimizeFirst: true, profile: false,
@@ -60,7 +64,7 @@ class ParserContext {
                 }
                 if (tbl[exports.ALL])
                     return tbl[exports.ALL].parse(s);
-                return s.withError(`Read: '${f}', Expected: ${Object.keys(tbl).join("")}.`);
+                return s.withError((0, R_1.default)("expected", Object.keys(tbl).join("")));
             });
             res._first = tbl; //{space:space,tbl:tbl};
             //res.checkTbl();
@@ -80,7 +84,7 @@ class ParserContext {
             }
             if (tbl[exports.ALL])
                 return tbl[exports.ALL].parse(s);
-            return s.withError(`Read: '${t ? f : "EOF"}', Expected: ${Object.keys(tbl).join(", ")}.`);
+            return s.withError((0, R_1.default)("expected", Object.keys(tbl).join(", ")));
         });
         res._first = tbl; //{space:"TOKEN",tbl:tbl};
         //res.checkTbl();
@@ -793,7 +797,7 @@ exports.TokensParser = {
                 s.result = [t];
             }
             else {
-                s = s.withError(`Reading ${t ? t.type : "EOF"}, expected ${type}.`);
+                s = s.withError((0, R_1.default)("expected", type));
             }
             return s;
         }).setName("'" + type + "'", { type: "primitive", name: type }).firstTokens(type);

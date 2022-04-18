@@ -1,3 +1,5 @@
+import R from "../lib/R";
+
 //const Parser=(function () {
 export type And={type:"and", elems:Parser[]};
 export type Or ={type:"or" , elems:Parser[]};
@@ -83,7 +85,7 @@ export class ParserContext {
 					return tbl[f].parse(s);
 				}
 				if (tbl[ALL]) return tbl[ALL].parse(s);
-				return s.withError(`Read: '${f}', Expected: ${Object.keys(tbl).join("")}.`);
+				return s.withError(R("expected",Object.keys(tbl).join("")));
 			});
 			res._first=tbl;//{space:space,tbl:tbl};
 			//res.checkTbl();
@@ -103,7 +105,7 @@ export class ParserContext {
 				return tbl[f].parse(s);
 			}
 			if (tbl[ALL]) return tbl[ALL].parse(s);
-			return s.withError(`Read: '${t?f:"EOF"}', Expected: ${Object.keys(tbl).join(", ")}.`);
+			return s.withError(R("expected", Object.keys(tbl).join(", ")));
 		});
 		res._first=tbl;//{space:"TOKEN",tbl:tbl};
 		//res.checkTbl();
@@ -771,7 +773,7 @@ export const TokensParser={
 				s.error=null;
 				s.result=[t];
 			} else {
-				s=s.withError(`Reading ${t?t.type:"EOF"}, expected ${type}.`);
+				s=s.withError(R("expected",type));
 			}
 			return s;
 		}).setName("'"+type+"'",{type:"primitive", name:type}).firstTokens(type);

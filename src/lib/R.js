@@ -1,5 +1,6 @@
 "use strict";
 const ja = {
+    expected: "ここには{1}などが入ることが予想されます",
     superClassIsUndefined: "親クラス {1}は定義されていません",
     classIsUndefined: "クラス {1}は定義されていません",
     invalidLeftValue: "'{1}'は左辺には書けません．",
@@ -30,6 +31,7 @@ const ja = {
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
 };
 const en = {
+    "expected": "Expected: {1}",
     "superClassIsUndefined": "Super Class '{1}' is not defined",
     "classIsUndefined": "Class {1} is Undefined",
     "invalidLeftValue": "{1} is not a valid Left Value",
