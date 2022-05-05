@@ -2,9 +2,10 @@ import { Program, TNode } from "./NodeTypes";
 
 export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
 type Constructor = new (...args: any[]) => any;
-export type TonyuClass= Constructor & {meta:Meta};
+export type TonyuClass= Constructor & {meta:Meta, extendFrom:Function};
+export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Function};
 export function isTonyuClass(v:any):v is TonyuClass {
-	return typeof v==="function" && v.meta;
+	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
 export type MethodInfo={
     name:string,stmts:TNode[],pos:number, isMain:boolean, nowait:boolean,
@@ -15,8 +16,10 @@ export type FieldInfo={
     name:string,
     pos:number,
 };
+export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type Meta={
-    fullName:string, shortName:string, namespace:string,
+	func: TonyuShimClass,
+	fullName:string, shortName:string, namespace:string,
     decls:{
         methods: {[key:string]: MethodInfo},
         fields:  {[key:string]: FieldInfo},

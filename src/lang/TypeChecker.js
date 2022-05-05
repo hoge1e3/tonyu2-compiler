@@ -21,8 +21,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkExpr = exports.checkTypeDecl = void 0;
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
+//import Grammar from "./Grammar";
 const parser_1 = require("./parser");
 const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -37,7 +40,7 @@ var getMethod2 = cu.getMethod;
 var getDependingClasses = cu.getDependingClasses;
 var getParams = cu.getParams;
 var JSNATIVES = { Array: 1, String: 1, Boolean: 1, Number: 1, Void: 1, Object: 1, RegExp: 1, Error: 1 };
-var TypeChecker = {};
+//var TypeChecker:any={};
 function visitSub(node) {
     var t = this;
     if (!node || typeof node != "object")
@@ -58,7 +61,7 @@ function visitSub(node) {
         t.visit(e);
     });
 }
-TypeChecker.checkTypeDecl = function (klass, env) {
+function checkTypeDecl(klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
@@ -113,8 +116,9 @@ TypeChecker.checkTypeDecl = function (klass, env) {
     });
     typeDeclVisitor.def = visitSub; //S
     typeDeclVisitor.visit(klass.node);
-};
-TypeChecker.checkExpr = function (klass, env) {
+}
+exports.checkTypeDecl = checkTypeDecl;
+function checkExpr(klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
@@ -182,5 +186,6 @@ TypeChecker.checkExpr = function (klass, env) {
         var va = annotation(node);
         return va.vtype;
     }
-};
-module.exports = TypeChecker;
+}
+exports.checkExpr = checkExpr;
+;

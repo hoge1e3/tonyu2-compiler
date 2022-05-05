@@ -6,13 +6,15 @@ import JSGenerator = require("./JSGenerator");
 import IndentBuffer from "./IndentBuffer";
 import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
-import TypeChecker from "./TypeChecker";
+import { checkExpr, checkTypeDecl } from "./TypeChecker";
+import { Meta } from "./RuntimeTypes";
 
+type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
-function orderByInheritance(classes) {/*ENVC*/
+function orderByInheritance(classes:ClassMap) {/*ENVC*/
     var added={};
     var res=[];
-    var crumbs={};
+    //var crumbs={};
     var ccnt=0;
     for (var n in classes) {/*ENVC*/
         added[n]=false;
@@ -40,7 +42,7 @@ function orderByInheritance(classes) {/*ENVC*/
             throw TError( R("circularDependencyDetected",""), "Unknown" ,0);
         }
     }
-    function dep1(c) {
+    function dep1(c:Meta) {
         let deps=Tonyu.klass.getDependingClasses(c);
         /*var spc=c.superclass;
         var deps=spc ? [spc]:[] ;
@@ -180,11 +182,11 @@ export = class Builder {
 			return this.partialCompile(this.reverseDependingClasses(classMeta));
 		}
 	}
-	reverseDependingClasses (klass) {
+	reverseDependingClasses (klass:Meta) {
 		// TODO: cache
 		const dep={};
 		dep[klass.fullName]=klass;
-        let mod;
+        let mod=false;
 		do {
 			mod=false;
         	for(let k of this.getMyClasses()) {
@@ -297,10 +299,10 @@ export = class Builder {
 			if (ctxOpt.typeCheck) {
                 console.log("Type check");
 				for (let n in compilingClasses) {
-					TypeChecker.checkTypeDecl(compilingClasses[n],env);
+					checkTypeDecl(compilingClasses[n],env);
 				}
 				for (let n in compilingClasses) {
-					TypeChecker.checkExpr(compilingClasses[n],env);
+					checkExpr(compilingClasses[n],env);
 				}
 			}
 			return this.showProgress("genJS");

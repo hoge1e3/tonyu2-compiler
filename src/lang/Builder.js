@@ -29,12 +29,12 @@ const JSGenerator = require("./JSGenerator");
 const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
 const Semantics = __importStar(require("./Semantics"));
 const SourceFiles_1 = __importDefault(require("./SourceFiles"));
-const TypeChecker_1 = __importDefault(require("./TypeChecker"));
+const TypeChecker_1 = require("./TypeChecker");
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {
     var added = {};
     var res = [];
-    var crumbs = {};
+    //var crumbs={};
     var ccnt = 0;
     for (var n in classes) { /*ENVC*/
         added[n] = false;
@@ -201,7 +201,7 @@ module.exports = class Builder {
         // TODO: cache
         const dep = {};
         dep[klass.fullName] = klass;
-        let mod;
+        let mod = false;
         do {
             mod = false;
             for (let k of this.getMyClasses()) {
@@ -315,10 +315,10 @@ module.exports = class Builder {
             if (ctxOpt.typeCheck) {
                 console.log("Type check");
                 for (let n in compilingClasses) {
-                    TypeChecker_1.default.checkTypeDecl(compilingClasses[n], env);
+                    (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n], env);
                 }
                 for (let n in compilingClasses) {
-                    TypeChecker_1.default.checkExpr(compilingClasses[n], env);
+                    (0, TypeChecker_1.checkExpr)(compilingClasses[n], env);
                 }
             }
             return this.showProgress("genJS");

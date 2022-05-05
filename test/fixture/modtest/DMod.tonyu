@@ -1,0 +1,5 @@
+includes FMod;
+\test() {
+    print("DMod::test");
+    super.test();
+}

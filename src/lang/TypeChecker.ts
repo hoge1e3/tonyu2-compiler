@@ -1,6 +1,6 @@
 import * as cu from "./compiler";
 import {context} from "./context";
-import Grammar from "./Grammar";
+//import Grammar from "./Grammar";
 import { SUBELEMENTS } from "./parser";
 import Visitor from "./Visitor";
 
@@ -16,7 +16,7 @@ import Visitor from "./Visitor";
 	var getDependingClasses=cu.getDependingClasses;
 	var getParams=cu.getParams;
 	var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1};
-var TypeChecker:any={};
+//var TypeChecker:any={};
 function visitSub(node) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
@@ -35,7 +35,7 @@ function visitSub(node) {//S
 	});
 }
 
-TypeChecker.checkTypeDecl=function (klass,env) {
+export function checkTypeDecl(klass,env) {
 	function annotation(node, aobj?) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
@@ -88,8 +88,8 @@ TypeChecker.checkTypeDecl=function (klass,env) {
 	});
 	typeDeclVisitor.def=visitSub;//S
 	typeDeclVisitor.visit(klass.node);
-};
-TypeChecker.checkExpr=function (klass,env) {
+}
+export function checkExpr(klass,env) {
 		function annotation(node, aobj?) {//B
 			return annotation3(klass.annotation,node,aobj);
 		}
@@ -155,4 +155,3 @@ TypeChecker.checkExpr=function (klass,env) {
 		return va.vtype;
 	}
 };
-export= TypeChecker;

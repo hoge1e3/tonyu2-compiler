@@ -1,0 +1,6 @@
+includes FMod;
+
+\test() {
+    print("B::test");
+    super.test();
+}

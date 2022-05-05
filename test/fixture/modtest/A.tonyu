@@ -1,0 +1,10 @@
+extends B;
+includes CMod, DMod;
+native console;
+\test() {
+    print("A::test");
+    super.test();
+}
+\print(s) {
+    console.log(s);
+}

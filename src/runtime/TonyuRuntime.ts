@@ -3,7 +3,7 @@ import IT from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
-import { isTonyuClass, Meta, TonyuClass } from "../lang/RuntimeTypes";
+import { isTonyuClass, Meta, ShimMeta, TonyuClass, TonyuShimClass } from "../lang/RuntimeTypes";
 
 
 // old browser support
@@ -48,6 +48,10 @@ function addMeta(fn:string,m:Partial<Meta>):Meta {
 	// k.meta={...} erases these info
 	assert.is(arguments,[String,Object]);
 	return extend(klass.getMeta(fn), m);
+}
+function getMeta(klass: Meta|TonyuClass):Meta {
+	if (isTonyuClass(klass)) return klass.meta;
+	return klass;
 }
 var klass={
 	addMeta,
@@ -95,15 +99,27 @@ var klass={
 		var methodsF=params.methods;
 		var decls=params.decls;
 		var nso=klass.ensureNamespace(Tonyu.classes, namespace);
-		var outerRes;
-		function chkmeta(m,ctx) {
-			ctx=ctx||{};
-			if (ctx.isShim) return m;
-			ctx.path=ctx.path||[];
+		//var outerRes;
+		type ClassDefinitionContext={
+			//isShim: boolean,
+			//path: ShimMeta[],
+			init: boolean,
+			includesRec: {[key:string]:boolean},
+			//initFullName: string,
+			nonShimParent?: TonyuClass,
+		};
+		type ClassCheckContext={
+			path:Meta[],
+		};
+		//type ShimMeta=Meta & {isShim?:boolean, extenderFullName?:string};
+		function chkmeta(m:Meta, ctx?:ClassCheckContext) {
+			ctx=ctx||{path:[]};
+			//if (ctx.isShim) return m;
+			//ctx.path=ctx.path||[];
 			ctx.path.push(m);
-			if (m.isShim) {
+			if ( (m as any).isShim) {
 				console.log("chkmeta::ctx",ctx);
-				throw new Error("Shim found "+m.extenderFullName);
+				throw new Error("Shim found "+(m as any).extenderFullName);
 			}
 			if (m.superclass) chkmeta(m.superclass,ctx);
 			if (!m.includes) {
@@ -116,7 +132,7 @@ var klass={
 			ctx.path.pop();
 			return m;
 		}
-		function chkclass(c,ctx) {
+		function chkclass(c: TonyuClass, ctx?:ClassCheckContext) {
 			if (!c.prototype.hasOwnProperty("getClassInfo")) throw new Error("NO");
 			if (!c.meta) {
 				console.log("metanotfound",c);
@@ -125,13 +141,13 @@ var klass={
 			chkmeta(c.meta,ctx);
 			return c;
 		}
-		function extender(parent,ctx) {
+		function extender(parent:TonyuClass, ctx:ClassDefinitionContext) {
 			var isShim=!ctx.init;
 			var includesRec=ctx.includesRec;
 			if (includesRec[fullName]) return parent;
 			includesRec[fullName]=true;
 			//console.log(ctx.initFullName, fullName);//,  includesRec[fullName],JSON.stringify(ctx));
-			includes.forEach(function (m) {
+			includes.forEach(function (m:TonyuClass) {
 				parent=m.extendFrom(parent,extend(ctx,{init:false}));
 			});
 			var methods=typeof methodsF==="function"? methodsF(parent):methodsF;
@@ -140,33 +156,35 @@ var klass={
 			}*/
 			var init=methods.initialize;
 			delete methods.initialize;
-			var res;
-			res=(init?
-				function () {
-					if (!(this instanceof res)) useNew(fullName);
-					init.apply(this,arguments);
-				}:
-				(parent? function () {
-					if (!(this instanceof res)) useNew(fullName);
-					parent.apply(this,arguments);
-				}:function (){
-					if (!(this instanceof res)) useNew(fullName);
-				})
-			);
+			const res=(init ?
+                function() {
+                    if (!(this instanceof res))
+                        useNew(fullName);
+                    init.apply(this, arguments);
+                } :
+                (parent ? function() {
+                    if (!(this instanceof res))
+                        useNew(fullName);
+                    parent.apply(this, arguments);
+                } : function() {
+                    if (!(this instanceof res))
+                        useNew(fullName);
+                })
+            ) as unknown as TonyuShimClass;
 			res.prototype=bless(parent,{constructor:res});
 			if (isShim) {
-				res.meta={isShim:true,extenderFullName:fullName};
+				res.meta={isShim:true,extenderFullName:fullName, func:res};
 			} else {
 				res.meta=addMeta(fullName,{
-					fullName:fullName,shortName:shortName,namespace:namespace,decls:decls,
+					fullName, shortName, namespace, decls,
 					superclass:ctx.nonShimParent ? ctx.nonShimParent.meta : null,
-					includesRec:includesRec,
-					includes:includes.map(function(c){return c.meta;})
+					includesRec,
+					includes:includes.map(function(c){return c.meta;}),
+					func: res
 				});
 			}
-			res.meta.func=res;
 			// methods: res's own methods(no superclass/modules)
-			res.methods=methods;
+			//res.methods=methods;
 			var prot=res.prototype;
 			var props={};
 			//var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
@@ -216,31 +234,33 @@ var klass={
 			prot.getClassInfo=function () {
 				return res.meta;
 			};
-			return chkclass(res,{isShim:isShim});
+			if (isTonyuClass(res)) chkclass(res);
+			return res;//chkclass(res,{isShim, init:false, includesRec:{}});
 		}
-		var res=extender(parent,{
+		const res=extender(parent,{
+			//isShim: false,
 			init:true,
-			initFullName:fullName,
+			//initFullName:fullName,
 			includesRec:(parent?extend({},parent.meta.includesRec):{}),
 			nonShimParent:parent
-		});
+		}) as TonyuClass;
 		res.extendFrom=extender;
 		//addMeta(fullName, res.meta);
 		nso[shortName]=res;
-		outerRes=res;
+		//outerRes=res;
 		//console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
-		return chkclass(res,{isShim:false});
+		return chkclass(res);//,{isShim:false, init:false, includesRec:{}});
 	},
-	isSourceChanged(k) {
-		k=k.meta||k;
+	isSourceChanged(_k:Meta|TonyuClass) {
+		const k:Meta=getMeta(_k);
 		if (k.src && k.src.tonyu) {
 			if (!k.nodeTimestamp) return true;
 			return k.src.tonyu.lastUpdate()> k.nodeTimestamp;
 		}
 		return false;
 	},
-	shouldCompile(k) {
-		k=k.meta||k;
+	shouldCompile(_k:Meta|TonyuClass) {
+		const k:Meta=getMeta(_k);
 		if (k.hasSemanticError) return true;
 		if (klass.isSourceChanged(k)) return true;
 		var dks=klass.getDependingClasses(k);
@@ -248,20 +268,20 @@ var klass={
 			if (klass.shouldCompile(dks[i])) return true;
 		}
 	},
-	getDependingClasses(k) {
-		k=k.meta||k;
+	getDependingClasses(_k:Meta|TonyuClass) {
+		const k:Meta=getMeta(_k);
 		var res=[];
 		if (k.superclass) res=[k.superclass];
 		if (k.includes) res=res.concat(k.includes);
 		return res;
 	}
 };
-function bless( klass, val) {
+function bless( klass:TonyuClass|null, val:object) {
 	if (!klass) return extend({},val);
 	return extend( Object.create(klass.prototype) , val);
 	//return extend( new klass() , val);
 }
-function extend (dst, src) {
+function extend (dst:any, src:any) {
 	if (src && typeof src=="object") {
 		for (var i in src) {
 			dst[i]=src[i];
@@ -276,13 +296,13 @@ const globals:{[key:string]:any}={};
 type ClassMap={[key:string]:ClassMap}|TonyuClass;
 var classes:ClassMap={};// classes.namespace.classname= function
 var classMetas:{[key:string]:Meta}={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
-function setGlobal(n,v) {
+function setGlobal(n:string,v:any) {
 	globals[n]=v;
 }
-function getGlobal(n) {
+function getGlobal(n:string) {
 	return globals[n];
 }
-function getClass(n) {
+function getClass(n:string) {
 	//CFN: n.split(".")
 	var ns=n.split(".");
 	var res=classes;
@@ -291,7 +311,7 @@ function getClass(n) {
 		res=res[na];
 	});
 	if (!res && ns.length==1) {
-		var found;
+		var found:string;
 		for (var nn in classes) {
 			var nr=classes[nn][n];
 			if (nr) {

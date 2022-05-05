@@ -1,0 +1,12 @@
+/*
+https://github.com/hoge1e3/Tonyu2/wiki/classDef
+
+A extends B(A の親クラスはB)
+A includes CMod,DMod(A はCMod,DModをモジュールとして組み込む)
+CMod includes EMod
+DMod includes FMod
+B includes FMod
+プロトタイプチェーンは，A→DMod→CMod→EMod→B→FModになります
+*/
+a=new A();
+a.test();

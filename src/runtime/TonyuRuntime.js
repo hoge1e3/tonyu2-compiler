@@ -51,6 +51,11 @@ function addMeta(fn, m) {
     assert_1.default.is(arguments, [String, Object]);
     return extend(klass.getMeta(fn), m);
 }
+function getMeta(klass) {
+    if ((0, RuntimeTypes_1.isTonyuClass)(klass))
+        return klass.meta;
+    return klass;
+}
 var klass = {
     addMeta,
     removeMeta(n) {
@@ -101,12 +106,11 @@ var klass = {
         var methodsF = params.methods;
         var decls = params.decls;
         var nso = klass.ensureNamespace(Tonyu.classes, namespace);
-        var outerRes;
+        //type ShimMeta=Meta & {isShim?:boolean, extenderFullName?:string};
         function chkmeta(m, ctx) {
-            ctx = ctx || {};
-            if (ctx.isShim)
-                return m;
-            ctx.path = ctx.path || [];
+            ctx = ctx || { path: [] };
+            //if (ctx.isShim) return m;
+            //ctx.path=ctx.path||[];
             ctx.path.push(m);
             if (m.isShim) {
                 console.log("chkmeta::ctx", ctx);
@@ -150,8 +154,7 @@ var klass = {
             }*/
             var init = methods.initialize;
             delete methods.initialize;
-            var res;
-            res = (init ?
+            const res = (init ?
                 function () {
                     if (!(this instanceof res))
                         useNew(fullName);
@@ -167,19 +170,19 @@ var klass = {
                 }));
             res.prototype = bless(parent, { constructor: res });
             if (isShim) {
-                res.meta = { isShim: true, extenderFullName: fullName };
+                res.meta = { isShim: true, extenderFullName: fullName, func: res };
             }
             else {
                 res.meta = addMeta(fullName, {
-                    fullName: fullName, shortName: shortName, namespace: namespace, decls: decls,
+                    fullName, shortName, namespace, decls,
                     superclass: ctx.nonShimParent ? ctx.nonShimParent.meta : null,
-                    includesRec: includesRec,
-                    includes: includes.map(function (c) { return c.meta; })
+                    includesRec,
+                    includes: includes.map(function (c) { return c.meta; }),
+                    func: res
                 });
             }
-            res.meta.func = res;
             // methods: res's own methods(no superclass/modules)
-            res.methods = methods;
+            //res.methods=methods;
             var prot = res.prototype;
             var props = {};
             //var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
@@ -230,23 +233,26 @@ var klass = {
             prot.getClassInfo = function () {
                 return res.meta;
             };
-            return chkclass(res, { isShim: isShim });
+            if ((0, RuntimeTypes_1.isTonyuClass)(res))
+                chkclass(res);
+            return res; //chkclass(res,{isShim, init:false, includesRec:{}});
         }
-        var res = extender(parent, {
+        const res = extender(parent, {
+            //isShim: false,
             init: true,
-            initFullName: fullName,
+            //initFullName:fullName,
             includesRec: (parent ? extend({}, parent.meta.includesRec) : {}),
             nonShimParent: parent
         });
         res.extendFrom = extender;
         //addMeta(fullName, res.meta);
         nso[shortName] = res;
-        outerRes = res;
+        //outerRes=res;
         //console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
-        return chkclass(res, { isShim: false });
+        return chkclass(res); //,{isShim:false, init:false, includesRec:{}});
     },
-    isSourceChanged(k) {
-        k = k.meta || k;
+    isSourceChanged(_k) {
+        const k = getMeta(_k);
         if (k.src && k.src.tonyu) {
             if (!k.nodeTimestamp)
                 return true;
@@ -254,8 +260,8 @@ var klass = {
         }
         return false;
     },
-    shouldCompile(k) {
-        k = k.meta || k;
+    shouldCompile(_k) {
+        const k = getMeta(_k);
         if (k.hasSemanticError)
             return true;
         if (klass.isSourceChanged(k))
@@ -266,8 +272,8 @@ var klass = {
                 return true;
         }
     },
-    getDependingClasses(k) {
-        k = k.meta || k;
+    getDependingClasses(_k) {
+        const k = getMeta(_k);
         var res = [];
         if (k.superclass)
             res = [k.superclass];
