@@ -136,12 +136,12 @@ const JSGenerator = require("./JSGenerator");
 const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
 const Semantics = __importStar(require("./Semantics"));
 const SourceFiles_1 = __importDefault(require("./SourceFiles"));
-const TypeChecker_1 = __importDefault(require("./TypeChecker"));
+const TypeChecker_1 = require("./TypeChecker");
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {
     var added = {};
     var res = [];
-    var crumbs = {};
+    //var crumbs={};
     var ccnt = 0;
     for (var n in classes) { /*ENVC*/
         added[n] = false;
@@ -308,7 +308,7 @@ module.exports = class Builder {
         // TODO: cache
         const dep = {};
         dep[klass.fullName] = klass;
-        let mod;
+        let mod = false;
         do {
             mod = false;
             for (let k of this.getMyClasses()) {
@@ -422,10 +422,10 @@ module.exports = class Builder {
             if (ctxOpt.typeCheck) {
                 console.log("Type check");
                 for (let n in compilingClasses) {
-                    TypeChecker_1.default.checkTypeDecl(compilingClasses[n], env);
+                    (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n], env);
                 }
                 for (let n in compilingClasses) {
-                    TypeChecker_1.default.checkExpr(compilingClasses[n], env);
+                    (0, TypeChecker_1.checkExpr)(compilingClasses[n], env);
                 }
             }
             return this.showProgress("genJS");
@@ -2822,7 +2822,7 @@ function m(obj, tmpl, res) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isTonyuClass = void 0;
 function isTonyuClass(v) {
-    return typeof v === "function" && v.meta;
+    return typeof v === "function" && v.meta && !v.meta.isShim;
 }
 exports.isTonyuClass = isTonyuClass;
 
@@ -3768,8 +3768,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkExpr = exports.checkTypeDecl = void 0;
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
+//import Grammar from "./Grammar";
 const parser_1 = require("./parser");
 const Visitor_1 = __importDefault(require("./Visitor"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -3784,7 +3787,7 @@ var getMethod2 = cu.getMethod;
 var getDependingClasses = cu.getDependingClasses;
 var getParams = cu.getParams;
 var JSNATIVES = { Array: 1, String: 1, Boolean: 1, Number: 1, Void: 1, Object: 1, RegExp: 1, Error: 1 };
-var TypeChecker = {};
+//var TypeChecker:any={};
 function visitSub(node) {
     var t = this;
     if (!node || typeof node != "object")
@@ -3805,7 +3808,7 @@ function visitSub(node) {
         t.visit(e);
     });
 }
-TypeChecker.checkTypeDecl = function (klass, env) {
+function checkTypeDecl(klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
@@ -3860,8 +3863,9 @@ TypeChecker.checkTypeDecl = function (klass, env) {
     });
     typeDeclVisitor.def = visitSub; //S
     typeDeclVisitor.visit(klass.node);
-};
-TypeChecker.checkExpr = function (klass, env) {
+}
+exports.checkTypeDecl = checkTypeDecl;
+function checkExpr(klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
@@ -3929,8 +3933,9 @@ TypeChecker.checkExpr = function (klass, env) {
         var va = annotation(node);
         return va.vtype;
     }
-};
-module.exports = TypeChecker;
+}
+exports.checkExpr = checkExpr;
+;
 
 },{"./Visitor":14,"./compiler":15,"./context":16,"./parser":20}],14:[function(require,module,exports){
 "use strict";
@@ -13663,6 +13668,11 @@ function addMeta(fn, m) {
     assert_1.default.is(arguments, [String, Object]);
     return extend(klass.getMeta(fn), m);
 }
+function getMeta(klass) {
+    if ((0, RuntimeTypes_1.isTonyuClass)(klass))
+        return klass.meta;
+    return klass;
+}
 var klass = {
     addMeta,
     removeMeta(n) {
@@ -13713,12 +13723,11 @@ var klass = {
         var methodsF = params.methods;
         var decls = params.decls;
         var nso = klass.ensureNamespace(Tonyu.classes, namespace);
-        var outerRes;
+        //type ShimMeta=Meta & {isShim?:boolean, extenderFullName?:string};
         function chkmeta(m, ctx) {
-            ctx = ctx || {};
-            if (ctx.isShim)
-                return m;
-            ctx.path = ctx.path || [];
+            ctx = ctx || { path: [] };
+            //if (ctx.isShim) return m;
+            //ctx.path=ctx.path||[];
             ctx.path.push(m);
             if (m.isShim) {
                 console.log("chkmeta::ctx", ctx);
@@ -13762,8 +13771,7 @@ var klass = {
             }*/
             var init = methods.initialize;
             delete methods.initialize;
-            var res;
-            res = (init ?
+            const res = (init ?
                 function () {
                     if (!(this instanceof res))
                         useNew(fullName);
@@ -13779,19 +13787,19 @@ var klass = {
                 }));
             res.prototype = bless(parent, { constructor: res });
             if (isShim) {
-                res.meta = { isShim: true, extenderFullName: fullName };
+                res.meta = { isShim: true, extenderFullName: fullName, func: res };
             }
             else {
                 res.meta = addMeta(fullName, {
-                    fullName: fullName, shortName: shortName, namespace: namespace, decls: decls,
+                    fullName, shortName, namespace, decls,
                     superclass: ctx.nonShimParent ? ctx.nonShimParent.meta : null,
-                    includesRec: includesRec,
-                    includes: includes.map(function (c) { return c.meta; })
+                    includesRec,
+                    includes: includes.map(function (c) { return c.meta; }),
+                    func: res
                 });
             }
-            res.meta.func = res;
             // methods: res's own methods(no superclass/modules)
-            res.methods = methods;
+            //res.methods=methods;
             var prot = res.prototype;
             var props = {};
             //var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
@@ -13842,23 +13850,26 @@ var klass = {
             prot.getClassInfo = function () {
                 return res.meta;
             };
-            return chkclass(res, { isShim: isShim });
+            if ((0, RuntimeTypes_1.isTonyuClass)(res))
+                chkclass(res);
+            return res; //chkclass(res,{isShim, init:false, includesRec:{}});
         }
-        var res = extender(parent, {
+        const res = extender(parent, {
+            //isShim: false,
             init: true,
-            initFullName: fullName,
+            //initFullName:fullName,
             includesRec: (parent ? extend({}, parent.meta.includesRec) : {}),
             nonShimParent: parent
         });
         res.extendFrom = extender;
         //addMeta(fullName, res.meta);
         nso[shortName] = res;
-        outerRes = res;
+        //outerRes=res;
         //console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
-        return chkclass(res, { isShim: false });
+        return chkclass(res); //,{isShim:false, init:false, includesRec:{}});
     },
-    isSourceChanged(k) {
-        k = k.meta || k;
+    isSourceChanged(_k) {
+        const k = getMeta(_k);
         if (k.src && k.src.tonyu) {
             if (!k.nodeTimestamp)
                 return true;
@@ -13866,8 +13877,8 @@ var klass = {
         }
         return false;
     },
-    shouldCompile(k) {
-        k = k.meta || k;
+    shouldCompile(_k) {
+        const k = getMeta(_k);
         if (k.hasSemanticError)
             return true;
         if (klass.isSourceChanged(k))
@@ -13878,8 +13889,8 @@ var klass = {
                 return true;
         }
     },
-    getDependingClasses(k) {
-        k = k.meta || k;
+    getDependingClasses(_k) {
+        const k = getMeta(_k);
         var res = [];
         if (k.superclass)
             res = [k.superclass];
