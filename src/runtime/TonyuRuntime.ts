@@ -3,7 +3,7 @@ import IT from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
-import { isTonyuClass, Meta, ShimMeta, TonyuClass, TonyuShimClass } from "../lang/RuntimeTypes";
+import { ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
 
 
 // old browser support
@@ -293,8 +293,7 @@ function extend (dst:any, src:any) {
 //alert("init");
 const globals:{[key:string]:any}={};
 
-type ClassMap={[key:string]:ClassMap}|TonyuClass;
-var classes:ClassMap={};// classes.namespace.classname= function
+var classes:ClassTree={};// classes.namespace.classname= function
 var classMetas:{[key:string]:Meta}={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 function setGlobal(n:string,v:any) {
 	globals[n]=v;

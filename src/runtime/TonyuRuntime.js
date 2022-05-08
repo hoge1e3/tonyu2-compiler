@@ -7,7 +7,7 @@ const TonyuIterator_1 = __importDefault(require("./TonyuIterator"));
 const TonyuThread_1 = require("./TonyuThread");
 const root_1 = __importDefault(require("../lib/root"));
 const assert_1 = __importDefault(require("../lib/assert"));
-const RuntimeTypes_1 = require("../lang/RuntimeTypes");
+const RuntimeTypes_1 = require("./RuntimeTypes");
 // old browser support
 if (!root_1.default.performance) {
     root_1.default.performance = {};

@@ -13,7 +13,7 @@ import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl} from "./NodeTypes";
-import { FieldInfo, Meta } from "./RuntimeTypes";
+import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;

@@ -7,11 +7,11 @@ import IndentBuffer from "./IndentBuffer";
 import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
-import { Meta } from "./RuntimeTypes";
+import { Meta, MetaMap } from "../runtime/RuntimeTypes";
 
-type ClassMap={[key: string]:Meta};
+//type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
-function orderByInheritance(classes:ClassMap) {/*ENVC*/
+function orderByInheritance(classes:MetaMap) {/*ENVC*/
     var added={};
     var res=[];
     //var crumbs={};
@@ -274,7 +274,7 @@ export = class Builder {
 			//return TPR.showProgress("initClassDecl");
 		});
 	}
-	partialCompile(compilingClasses:ClassMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
+	partialCompile(compilingClasses:MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
 		let env=this.getEnv(),ord,buf;
 		//ctxOpt=ctxOpt||{};
 		const destinations=ctxOpt.destinations || {

@@ -1,6 +1,6 @@
 //	var Klass=require("../lib/Klass");
 
-import { TonyuMethod } from "../lang/RuntimeTypes";
+import { TonyuMethod } from "./RuntimeTypes";
 import R from "../lib/R";
 
 //const R=require("../lib/R");

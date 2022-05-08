@@ -1,5 +1,7 @@
-import { Program, TNode } from "./NodeTypes";
+import { Program, TNode } from "../lang/NodeTypes";
 
+export type MetaMap={[key: string]:Meta};
+export type ClassTree={[key:string]:ClassTree}|TonyuClass; // Tonyu.classes.user.Hoge  Tonyu.classes.kernel.Actor etc
 export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
 type Constructor = new (...args: any[]) => any;
 export type TonyuClass= Constructor & {meta:Meta, extendFrom:Function};

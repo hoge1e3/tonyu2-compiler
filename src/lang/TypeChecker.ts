@@ -3,7 +3,7 @@ import {context} from "./context";
 import { FuncDecl, ParamDecl, Postfix, TNode, VarDecl } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
-import { Meta } from "./RuntimeTypes";
+import { Meta } from "../runtime/RuntimeTypes";
 import Visitor from "./Visitor";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
