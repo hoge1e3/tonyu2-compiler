@@ -12,14 +12,14 @@ export type Expression=Elem|Prefix|Postfix|Infix|Trifix;
 export type Prefix=NodeBase&{
     type:"prefix",
     op:Token,
-    left: Expression,
+    right: Expression,
 };
 export function isPrefix(n:TNode): n is Prefix {
 	return n.type=="prefix";
 }
 export type Postfix=NodeBase&{
     type:"postfix",
-    right: Expression,
+    left: Expression,
     op:Token,
 };
 export function isPostfix(n:TNode): n is Postfix {

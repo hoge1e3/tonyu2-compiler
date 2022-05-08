@@ -386,11 +386,16 @@ function annotateSource2(klass, env) {
                 }
                 else {
                     //opt.klass=klass.name;
-                    klass.decls.fields[n] = klass.decls.fields[n] || {};
-                    Object.assign(klass.decls.fields[n], {
+                    const fi = {
                         klass: klass.fullName,
                         name: n
-                    }); //si;
+                    };
+                    if (!klass.decls.fields[n]) {
+                        klass.decls.fields[n] = fi;
+                    }
+                    else {
+                        Object.assign(klass.decls.fields[n], fi); //si;
+                    }
                     topLevelScope[n] = new SI.FIELD(klass, n, klass.decls.fields[n]);
                 }
             }

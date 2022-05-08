@@ -1,21 +1,23 @@
 import * as cu from "./compiler";
 import {context} from "./context";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarDecl } from "./NodeTypes";
 //import Grammar from "./Grammar";
-import { SUBELEMENTS } from "./parser";
+import { SUBELEMENTS, Token } from "./parser";
+import { Meta } from "./RuntimeTypes";
 import Visitor from "./Visitor";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
-	var ScopeTypes=cu.ScopeTypes;
+	const ScopeTypes=cu.ScopeTypes;
 	//var genSt=cu.newScopeType;
-	var stype=cu.getScopeType;
-	var newScope=cu.newScope;
+	const stype=cu.getScopeType;
+	const newScope=cu.newScope;
 	//var nc=cu.nullCheck;
-	var genSym=cu.genSym;
-	var annotation3=cu.annotation;
-	var getMethod2=cu.getMethod;
-	var getDependingClasses=cu.getDependingClasses;
-	var getParams=cu.getParams;
-	var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1};
+	const genSym=cu.genSym;
+	const annotation3=cu.annotation;
+	const getMethod2=cu.getMethod;
+	const getDependingClasses=cu.getDependingClasses;
+	const getParams=cu.getParams;
+	//const JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1};
 //var TypeChecker:any={};
 function visitSub(node) {//S
 	var t=this;
@@ -35,12 +37,12 @@ function visitSub(node) {//S
 	});
 }
 
-export function checkTypeDecl(klass,env) {
-	function annotation(node, aobj?) {//B
+export function checkTypeDecl(klass: Meta,env) {
+	function annotation(node: TNode, aobj?:any) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=Visitor({
-		varDecl: function (node) {
+		varDecl: function (node: VarDecl) {
 			//console.log("TCV","varDecl",node);
 			if (node.value) this.visit(node.value);
 			if (node.name && node.typeDecl) {
@@ -62,7 +64,7 @@ export function checkTypeDecl(klass,env) {
 				}*/
 			}
 		},
-		paramDecl: function (node) {
+		paramDecl: function (node: ParamDecl) {
 			if (node.name && node.typeDecl) {
 				console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
 				var va=annotation(node.typeDecl.vtype);
@@ -74,7 +76,7 @@ export function checkTypeDecl(klass,env) {
 				}
 			}
 		},
-		funcDecl: function (node) {
+		funcDecl: function (node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
 			var finfo=annotation(node).info;
@@ -89,18 +91,18 @@ export function checkTypeDecl(klass,env) {
 	typeDeclVisitor.def=visitSub;//S
 	typeDeclVisitor.visit(klass.node);
 }
-export function checkExpr(klass,env) {
-		function annotation(node, aobj?) {//B
+export function checkExpr(klass:Meta ,env) {
+		function annotation(node:TNode, aobj?:any) {//B
 			return annotation3(klass.annotation,node,aobj);
 		}
 		var typeAnnotationVisitor=Visitor({
-			number: function (node) {
+			number: function (node:Token) {
 				annotation(node,{vtype:Number});
 			},
-			literal: function (node) {
+			literal: function (node:Token) {
 				annotation(node,{vtype:String});
 			},
-			postfix:function (node) {
+			postfix:function (node:Postfix) {
 				var a=annotation(node);
 				if (a.memberAccess) {
 					var m=a.memberAccess;

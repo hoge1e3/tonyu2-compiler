@@ -11,10 +11,10 @@ export type MethodInfo={
     name:string,stmts:TNode[],pos:number, isMain:boolean, nowait:boolean,
 };
 export type FieldInfo={
-    node:TNode,
+    node?:TNode,
+	pos?:number,
     klass:string,
     name:string,
-    pos:number,
 };
 export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type Meta={
@@ -37,4 +37,5 @@ export type Meta={
     jsNotUpToDate: boolean,
     directives: {field_strict?:boolean},
     node: Program, nodeTimestamp:number,
+	annotation?: object,
 };

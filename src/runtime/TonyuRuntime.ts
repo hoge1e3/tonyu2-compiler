@@ -141,7 +141,7 @@ var klass={
 			chkmeta(c.meta,ctx);
 			return c;
 		}
-		function extender(parent:TonyuClass, ctx:ClassDefinitionContext) {
+		function extender(parent:TonyuClass, ctx:ClassDefinitionContext):TonyuShimClass {
 			var isShim=!ctx.init;
 			var includesRec=ctx.includesRec;
 			if (includesRec[fullName]) return parent;

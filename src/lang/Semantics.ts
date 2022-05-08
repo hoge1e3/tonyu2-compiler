@@ -13,7 +13,7 @@ import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl} from "./NodeTypes";
-import { Meta } from "./RuntimeTypes";
+import { FieldInfo, Meta } from "./RuntimeTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -184,7 +184,7 @@ export function initClassDecls(klass:Meta, env ) {//S
 	//delete klass.hasSemanticError;
 	// Why delete deleted? because decls.methods.params is still undef
 }// of initClassDecls
-function annotateSource2(klass, env) {//B
+function annotateSource2(klass:Meta, env) {//B
 	// annotateSource2 is call after orderByInheritance
 	klass.hasSemanticError=true;
 	var srcFile=klass.src.tonyu; //file object  //S
@@ -359,11 +359,15 @@ function annotateSource2(klass, env) {//B
 					topLevelScope[n]=new SI.GLOBAL(n);
 				} else {
 					//opt.klass=klass.name;
-					klass.decls.fields[n]=klass.decls.fields[n]||{};
-					Object.assign(klass.decls.fields[n],{
+					const fi:FieldInfo={
 						klass:klass.fullName,
 						name:n
-					});//si;
+					};
+					if (!klass.decls.fields[n]) {
+						klass.decls.fields[n]=fi;
+					} else {
+						Object.assign(klass.decls.fields[n],fi);//si;
+					}
 					topLevelScope[n]=new SI.FIELD(klass, n, klass.decls.fields[n]);
 				}
 			}

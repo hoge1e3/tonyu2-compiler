@@ -274,7 +274,7 @@ export = class Builder {
 			//return TPR.showProgress("initClassDecl");
 		});
 	}
-	partialCompile(compilingClasses,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
+	partialCompile(compilingClasses:ClassMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
 		let env=this.getEnv(),ord,buf;
 		//ctxOpt=ctxOpt||{};
 		const destinations=ctxOpt.destinations || {
