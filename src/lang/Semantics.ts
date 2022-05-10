@@ -12,9 +12,9 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl} from "./NodeTypes";
 import { FieldInfo, Meta, MethodInfo } from "../runtime/RuntimeTypes";
-import { BuilderEnv, C_Meta, C_MethodInfo, FuncInfo, Locals, Methods } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_Meta, C_MethodInfo, FuncInfo, Locals, Methods } from "./CompilerTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -205,7 +205,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	//  キー： 変数名   値： ScopeTypesのいずれか
 	type SemCtx={
 		scope: ScopeMap,
-		method: {fiberCallRequired:boolean},
+		method: FuncInfo,//{fiberCallRequired:boolean},
 		finfo: FuncInfo,
 		locals: {varDecls:{},subFuncDecls:{}},
 		noWait: boolean,
@@ -261,7 +261,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		};
 	klass.annotation={};
-	function annotation(node: TNode, aobj=undefined) {//B
+	function annotation(node: TNode, aobj:Annotation=undefined):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	function initTopLevelScope2(klass: C_Meta) {//S
@@ -273,9 +273,9 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 		for (let i in decls.fields) {
 			const info=decls.fields[i];
-			s[i]=new SI.FIELD(klass, i, info);//genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
+			s[i]=new SI.FIELD(klass, i, info);
 			if (info.node) {
-				annotation(info.node,{info:info});
+				annotation(info.node,{info});
 			}
 		}
 		for (let i in decls.methods) {
@@ -283,12 +283,12 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			var r=Tonyu.klass.propReg.exec(i);
 			if (r) {
 				const name=r[2];
-				s[name]=new SI.PROP(klass.fullName, name, info);// genSt(ST.PROP,{klass:klass.fullName,name:r[2],info:info});
+				s[name]=new SI.PROP(klass.fullName, name, info);
 			} else {
-				s[i]=new SI.METHOD(klass.fullName, i, info);//genSt(ST.METHOD,{klass:klass.fullName,name:i,info:info});
+				s[i]=new SI.METHOD(klass.fullName, i, info);
 			}
 			if (info.node) {
-				annotation(info.node,{info:info});
+				annotation(info.node,{info});
 			}
 		}
 	}
@@ -303,11 +303,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
 			var fullName=env.aliases[i];
-			s[i]=new SI.CLASS(i,fullName,env.classes[fullName]);//,{name:i,fullName:fullName,info:env.classes[fullName]});
+			s[i]=new SI.CLASS(i,fullName,env.classes[fullName]);
 		}
 		for (let i in decls.natives) {
 			s[i]=new SI.NATIVE("native::"+i, root[i]);
-			//s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
 		}
 	}
 	function inheritSuperMethod() {//S
@@ -432,7 +431,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	});
 	localsCollector.def=visitSub;//S
 
-	function collectLocals(node:TNode[]) {//S
+	function collectLocals(node:Compound|TNode[]) {//S
 		var locals:Locals={varDecls:{}, subFuncDecls:{}};
 		ctx.enter({locals},function () {
 			localsCollector.visit(node);
@@ -626,7 +625,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.visit(node.expr);
 		},
 		varDecl: function (node:VarDecl) {
-			var t;
+			let t;
 			if (!ctx.noWait &&
 					(t=OM.match(node.value,fiberCallTmpl)) &&
 					isFiberMethod(t.N)) {
@@ -642,22 +641,28 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 	});
 	function resolveType(node:TypeExpr) {//node:typeExpr
-		var name:string=node.name+"";
-		var si=getScopeInfo(node.name);
+		//var name:string=node.name+"";
+		const si=getScopeInfo(node.name);
 		//console.log("TExpr",name,si,t);
-		if (si instanceof SI.NATIVE) {
+		const resolvedType:AnnotatedType=
+			(si instanceof SI.NATIVE)?si.value:
+			(si instanceof SI.CLASS) ?si.info : undefined;
+		if (resolvedType) {
+			annotation(node, {resolvedType});
+		}
+		/*if (si instanceof SI.NATIVE) {
 			annotation(node, {resolvedType: si.value});
 		} else if (si instanceof SI.CLASS){
 			annotation(node, {resolvedType: si.info});
-		}
+		}*/
 	}
 	varAccessesAnnotator.def=visitSub;//S
-	function annotateVarAccesses(node,scope) {//S
-		ctx.enter({scope:scope}, function () {
+	function annotateVarAccesses(node:Compound|Stmt[],scope:ScopeMap) {//S
+		ctx.enter({scope}, function () {
 			varAccessesAnnotator.visit(node);
 		});
 	}
-	function copyLocals(finfo, scope) {//S
+	function copyLocals(finfo: FuncInfo, scope: ScopeMap) {//S
 		var locals=finfo.locals;
 		for (var i in locals.varDecls) {
 			//console.log("LocalVar ",i,"declared by ",finfo);
@@ -687,8 +692,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		});
 		resolveTypesOfParams(f.params);
 	}
-	function annotateSubFuncExpr(node) {// annotateSubFunc or FuncExpr
-		var m,ps;
+	function annotateSubFuncExpr(node: FuncExpr|FuncDecl) {// annotateSubFunc or FuncExpr
+		var m:any,ps:ParamDecl[];
 		var body=node.body;
 		var name=(node.head.name ? node.head.name.text : "anonymous_"+node.pos );
 		m=OM.match( node, {head:{params:{params:OM.P}}});
@@ -697,10 +702,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		} else {
 			ps=[];
 		}
-		var finfo:any={};
+		var finfo:FuncInfo={name, stmts:body.stmts};
 		var ns=newScope(ctx.scope);
 		//var locals;
-		ctx.enter({finfo: finfo}, function () {
+		ctx.enter({finfo}, function () {
 			ps.forEach(function (p) {
 				var si=new SI.PARAM(finfo);//genSt(ST.PARAM,{declaringFunc:finfo});
 				annotation(p,{scopeInfo:si});
@@ -711,7 +716,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotateVarAccesses(body,ns);
 		});
 		finfo.scope=ns;
-		finfo.name=name;
+		//finfo.name=name;
 		finfo.params=ps;
 		//var res={scope:ns, locals:finfo.locals, name:name, params:ps};
 		resolveTypesOfParams(finfo.params);
@@ -720,17 +725,16 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		annotateSubFuncExprs(finfo.locals, ns);
 		return finfo;
 	}
-	function annotateSubFuncExprs(locals, scope) {//S
-		ctx.enter({scope:scope}, function () {
+	function annotateSubFuncExprs(locals:Locals, scope:ScopeMap) {//S
+		ctx.enter({scope}, function () {
 			for (var n in locals.subFuncDecls) {
 				annotateSubFuncExpr(locals.subFuncDecls[n]);
 			}
 		});
 	}
-	function annotateMethodFiber(f) {//S
-		//f:info  (of method)
+	function annotateMethodFiber(f: FuncInfo) {//S
 		var ns=newScope(ctx.scope);
-		f.params.forEach(function (p,cnt) {
+		f.params.forEach(function (p) {
 			var si=new SI.PARAM(f);
 			//	klass:klass.name, name:f.name, no:cnt, declaringFunc:f
 			//});

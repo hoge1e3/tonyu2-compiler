@@ -295,9 +295,9 @@ function annotateSource2(klass, env) {
         }
         for (let i in decls.fields) {
             const info = decls.fields[i];
-            s[i] = new SI.FIELD(klass, i, info); //genSt(ST.FIELD,{klass:klass.fullName,name:i,info:info});
+            s[i] = new SI.FIELD(klass, i, info);
             if (info.node) {
-                annotation(info.node, { info: info });
+                annotation(info.node, { info });
             }
         }
         for (let i in decls.methods) {
@@ -305,13 +305,13 @@ function annotateSource2(klass, env) {
             var r = TonyuRuntime_1.default.klass.propReg.exec(i);
             if (r) {
                 const name = r[2];
-                s[name] = new SI.PROP(klass.fullName, name, info); // genSt(ST.PROP,{klass:klass.fullName,name:r[2],info:info});
+                s[name] = new SI.PROP(klass.fullName, name, info);
             }
             else {
-                s[i] = new SI.METHOD(klass.fullName, i, info); //genSt(ST.METHOD,{klass:klass.fullName,name:i,info:info});
+                s[i] = new SI.METHOD(klass.fullName, i, info);
             }
             if (info.node) {
-                annotation(info.node, { info: info });
+                annotation(info.node, { info });
             }
         }
     }
@@ -326,11 +326,10 @@ function annotateSource2(klass, env) {
         }
         for (let i in env.aliases) { /*ENVC*/ //CFN  env.classes->env.aliases
             var fullName = env.aliases[i];
-            s[i] = new SI.CLASS(i, fullName, env.classes[fullName]); //,{name:i,fullName:fullName,info:env.classes[fullName]});
+            s[i] = new SI.CLASS(i, fullName, env.classes[fullName]);
         }
         for (let i in decls.natives) {
             s[i] = new SI.NATIVE("native::" + i, root_1.default[i]);
-            //s[i]=genSt(ST.NATIVE,{name:"native::"+i,value:root[i]});
         }
     }
     function inheritSuperMethod() {
@@ -667,7 +666,7 @@ function annotateSource2(klass, env) {
             this.visit(node.expr);
         },
         varDecl: function (node) {
-            var t;
+            let t;
             if (!ctx.noWait &&
                 (t = OM.match(node.value, fiberCallTmpl)) &&
                 isFiberMethod(t.N)) {
@@ -683,19 +682,23 @@ function annotateSource2(klass, env) {
         }
     });
     function resolveType(node) {
-        var name = node.name + "";
-        var si = getScopeInfo(node.name);
+        //var name:string=node.name+"";
+        const si = getScopeInfo(node.name);
         //console.log("TExpr",name,si,t);
-        if (si instanceof SI.NATIVE) {
-            annotation(node, { resolvedType: si.value });
+        const resolvedType = (si instanceof SI.NATIVE) ? si.value :
+            (si instanceof SI.CLASS) ? si.info : undefined;
+        if (resolvedType) {
+            annotation(node, { resolvedType });
         }
-        else if (si instanceof SI.CLASS) {
-            annotation(node, { resolvedType: si.info });
-        }
+        /*if (si instanceof SI.NATIVE) {
+            annotation(node, {resolvedType: si.value});
+        } else if (si instanceof SI.CLASS){
+            annotation(node, {resolvedType: si.info});
+        }*/
     }
     varAccessesAnnotator.def = visitSub; //S
     function annotateVarAccesses(node, scope) {
-        ctx.enter({ scope: scope }, function () {
+        ctx.enter({ scope }, function () {
             varAccessesAnnotator.visit(node);
         });
     }
@@ -740,10 +743,10 @@ function annotateSource2(klass, env) {
         else {
             ps = [];
         }
-        var finfo = {};
+        var finfo = { name, stmts: body.stmts };
         var ns = newScope(ctx.scope);
         //var locals;
-        ctx.enter({ finfo: finfo }, function () {
+        ctx.enter({ finfo }, function () {
             ps.forEach(function (p) {
                 var si = new SI.PARAM(finfo); //genSt(ST.PARAM,{declaringFunc:finfo});
                 annotation(p, { scopeInfo: si });
@@ -754,7 +757,7 @@ function annotateSource2(klass, env) {
             annotateVarAccesses(body, ns);
         });
         finfo.scope = ns;
-        finfo.name = name;
+        //finfo.name=name;
         finfo.params = ps;
         //var res={scope:ns, locals:finfo.locals, name:name, params:ps};
         resolveTypesOfParams(finfo.params);
@@ -764,16 +767,15 @@ function annotateSource2(klass, env) {
         return finfo;
     }
     function annotateSubFuncExprs(locals, scope) {
-        ctx.enter({ scope: scope }, function () {
+        ctx.enter({ scope }, function () {
             for (var n in locals.subFuncDecls) {
                 annotateSubFuncExpr(locals.subFuncDecls[n]);
             }
         });
     }
     function annotateMethodFiber(f) {
-        //f:info  (of method)
         var ns = newScope(ctx.scope);
-        f.params.forEach(function (p, cnt) {
+        f.params.forEach(function (p) {
             var si = new SI.PARAM(f);
             //	klass:klass.name, name:f.name, no:cnt, declaringFunc:f
             //});

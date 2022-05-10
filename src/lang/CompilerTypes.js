@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isMemoryDest = exports.isFileDest = exports.isBuilderContext = void 0;
+exports.isMeta = exports.isMemoryDest = exports.isFileDest = exports.isBuilderContext = void 0;
 function isBuilderContext(c) {
     return c && c.visited;
 }
@@ -13,3 +13,7 @@ function isMemoryDest(d) {
     return d.memory;
 }
 exports.isMemoryDest = isMemoryDest;
+function isMeta(klass) {
+    return klass.decls;
+}
+exports.isMeta = isMeta;

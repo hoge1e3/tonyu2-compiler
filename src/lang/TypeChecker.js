@@ -62,7 +62,7 @@ function visitSub(node) {
     });
 }
 function checkTypeDecl(klass, env) {
-    function annotation(node, aobj) {
+    function annotation(node, aobj = undefined) {
         return annotation3(klass.annotation, node, aobj);
     }
     var typeDeclVisitor = (0, Visitor_1.default)({
@@ -73,16 +73,19 @@ function checkTypeDecl(klass, env) {
             if (node.name && node.typeDecl) {
                 var va = annotation(node.typeDecl.vtype);
                 console.log("var typeis", node.name + "", node.typeDecl.vtype, va.resolvedType);
-                var a = annotation(node);
-                var si = a.scopeInfo; // for local
-                var info = a.info; // for field
-                if (si) {
-                    console.log("set var type", node.name + "", va.resolvedType);
-                    si.vtype = va.resolvedType;
-                }
-                else if (info) {
-                    console.log("set fld type", node.name + "", va.resolvedType);
-                    info.vtype = va.resolvedType;
+                const rt = va.resolvedType;
+                if (rt) {
+                    const a = annotation(node);
+                    const si = a.scopeInfo; // for local
+                    const info = a.info; // for field
+                    if (si) {
+                        console.log("set var type", node.name + "", va.resolvedType);
+                        si.vtype = va.resolvedType;
+                    }
+                    else if (info) {
+                        console.log("set fld type", node.name + "", va.resolvedType);
+                        info.vtype = va.resolvedType;
+                    }
                 }
                 /*} else if (a.declaringClass) {
                     //console.log("set fld type",a.declaringClass,a.declaringClass.decls.fields[node.name+""],node.name+"", node.typeDecl.vtype+"");
@@ -108,7 +111,8 @@ function checkTypeDecl(klass, env) {
             var finfo = annotation(node).info;
             if (head.rtype) {
                 console.log("ret typeis", head.name + "", head.rtype.vtype + "");
-                finfo.rtype = head.rtype.vtype;
+                const tanon = annotation(head.rtype);
+                finfo.returnType = tanon.resolvedType; // head.rtype.vtype;
             }
             this.visit(head);
             this.visit(node.body);

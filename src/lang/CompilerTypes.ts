@@ -1,5 +1,7 @@
-import { FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
-import { FuncDecl, FuncDeclHead, Program, TNode } from "./NodeTypes";
+import { Constructor, FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
+import { ScopeInfo } from "./compiler";
+import { FuncDecl, FuncDeclHead, Program, Stmt, TNode, VarDecl } from "./NodeTypes";
+import { Token } from "./parser";
 
 export type C_MetaMap={[key: string]:C_Meta};
 
@@ -15,7 +17,7 @@ export function isBuilderContext(c):c is BuilderContext {
 export type Aliases={[key:string]:string};
 export type BuilderEnv={
 	options: ProjectOptions,
-	classes: MetaMap,
+	classes: C_MetaMap,
 	aliases: Aliases,
 	amdPaths: string[],
 };
@@ -45,13 +47,13 @@ export function isMemoryDest(d:Destinations):d is MemoryDest  {
 }
 export type Methods={[key: string]: C_MethodInfo};
 export type Locals={
-	varDecls: object,
-	subFuncDecls: object,
+	varDecls: {[key: string]:VarDecl},
+	subFuncDecls: {[key: string]:FuncDecl},
 };
 export type C_FieldInfo=FieldInfo & {
 	node?:TNode,
 	pos?:number,
-	vtype?: any,
+	vtype?: AnnotatedType,
 };
 export type C_Decls={
 	methods: {[key:string]: C_MethodInfo},
@@ -70,18 +72,42 @@ export type C_Meta=Meta & {
 	annotation?: object,
 };
 export type C_MethodInfo=MethodInfo&{
-	stmts:TNode[],pos:number,
+	stmts:Stmt[],pos:number,
 	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
 	klass:string,
 	head?:FuncDeclHead,
 	node?:FuncDecl,
 };
+export type ScopeMap={[key:string]: ScopeInfo};
 export type FuncInfo={
 	name: string,
 	isMain?: boolean,
-	stmts: TNode[],
+	stmts: Stmt[],
 	locals?: Locals,
 	params?: any[],
 	useArgs?:boolean,
 	useTry?:boolean,
+	fiberCallRequired?:boolean,
+	scope?: ScopeMap,
+	returnType?: AnnotatedType,
+	//vtype?: AnnotatedType,
+};
+export type NativeClass={class: Constructor};
+export type AnnotatedType=NativeClass|C_Meta;
+export function isMeta(klass: AnnotatedType): klass is C_Meta {
+	return (klass as any).decls;
+}
+export type Annotation={
+	scopeInfo?: ScopeInfo,
+	info?: C_FieldInfo|FuncInfo,
+	declaringFunc?: FuncInfo,
+	resolvedType?: AnnotatedType,
+	fiberCall?: {},
+	myMethodCall?: {name:Token, args:TNode[], scopeInfo: ScopeInfo},
+	othersMethodCall?: {target:TNode, name:Token, args:TNode[]},
+	memberAccess?: {target:TNode, name:Token},
+	iterName?: string,
+	varInMain?: boolean,
+	declaringClass?: C_Meta,
+	noBind?: boolean,
 };

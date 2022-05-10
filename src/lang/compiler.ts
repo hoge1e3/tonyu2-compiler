@@ -1,6 +1,7 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TypeDecl } from "./NodeTypes";
+import { AnnotatedType, C_FieldInfo, C_Meta, C_MethodInfo, FuncInfo, NativeClass } from "./CompilerTypes";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
@@ -16,44 +17,44 @@ import { FuncDecl, ParamDecl, TypeDecl } from "./NodeTypes";
 	export namespace ScopeInfos{
 		export class LOCAL {
 			type=ScopeTypes.LOCAL;
-			constructor(public declaringFunc){}
+			constructor(public declaringFunc:FuncInfo){}
 		}
 		export class PARAM {
 			type=ScopeTypes.PARAM;
-			constructor(public declaringFunc){}
+			constructor(public declaringFunc:FuncInfo){}
 		}
 		export class FIELD {
 			type=ScopeTypes.FIELD;
-			constructor(public klass, public name, public info){}
+			constructor(public klass:C_Meta, public name:string , public info:C_FieldInfo){}
 		}
 		export class PROP {
 			type=ScopeTypes.PROP;
-			constructor(public klass, public name, public info){}
+			constructor(public klass:string, public name:string , public info:C_MethodInfo){}
 		}
 		export class METHOD{
 			type=ScopeTypes.METHOD;
-			constructor(public klass, public name, public info){}
+			constructor(public klass:string, public name:string , public info:C_MethodInfo){}
 		}
 		export class THVAR {
 			type=ScopeTypes.THVAR;
 		}
 		export class NATIVE{
 			type=ScopeTypes.NATIVE;
-			constructor(public name, public value){}
+			constructor(public name:string , public value:NativeClass){}
 		}
 		export class CLASS{
 			type=ScopeTypes.CLASS;
-			constructor(public name, public fullName, public info){}
+			constructor(public name:string , public fullName:string, public info:C_Meta){}
 		}
 		export class GLOBAL {
 			type=ScopeTypes.GLOBAL;
-			constructor(public name){}
+			constructor(public name:string){}
 		}
 		export class MODULE {
 			type=ScopeTypes.MODULE;
-			constructor(public name){}
+			constructor(public name:string){}
 		}
-		export type ALL=(FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE) & {vtype?:TypeDecl};
+		export type ALL=(FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE) & {vtype?:AnnotatedType};
 	};
 	export type ScopeInfo=ScopeInfos.ALL;
 	export type ScopeType=valueOf<typeof ScopeTypes>;

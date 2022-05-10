@@ -3,9 +3,8 @@ import {context} from "./context";
 import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
-import { Meta } from "../runtime/RuntimeTypes";
 import Visitor from "./Visitor";
-import { BuilderEnv, C_Meta } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -40,7 +39,7 @@ function visitSub(node:TNode) {//S
 }
 
 export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
-	function annotation(node: TNode, aobj?:any) {//B
+	function annotation(node: TNode, aobj: Annotation=undefined):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=Visitor({
@@ -50,15 +49,19 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 			if (node.name && node.typeDecl) {
 				var va=annotation(node.typeDecl.vtype);
 				console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
-				var a=annotation(node);
-				var si:ScopeInfo=a.scopeInfo;// for local
-				var info=a.info;// for field
-				if (si) {
-					console.log("set var type",node.name+"", va.resolvedType );
-					si.vtype=va.resolvedType;
-				} else if (info) {
-					console.log("set fld type",node.name+"", va.resolvedType );
-					info.vtype=va.resolvedType;
+				const rt:AnnotatedType=va.resolvedType;
+				if (rt) {
+					const a=annotation(node);
+					const si:ScopeInfo=a.scopeInfo;// for local
+					const info=a.info;// for field
+					if (si) {
+						console.log("set var type",node.name+"", va.resolvedType );
+						si.vtype=va.resolvedType;
+					} else if (info) {
+						console.log("set fld type",node.name+"", va.resolvedType );
+						(info as C_FieldInfo).vtype=va.resolvedType;
+					}
+
 				}
 				/*} else if (a.declaringClass) {
 					//console.log("set fld type",a.declaringClass,a.declaringClass.decls.fields[node.name+""],node.name+"", node.typeDecl.vtype+"");
@@ -81,10 +84,11 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		funcDecl: function (node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
-			var finfo=annotation(node).info;
+			var finfo=annotation(node).info as FuncInfo;
 			if (head.rtype) {
 				console.log("ret typeis",head.name+"", head.rtype.vtype+"");
-				finfo.rtype=head.rtype.vtype;
+				const tanon=annotation(head.rtype)
+				finfo.returnType=tanon.resolvedType;// head.rtype.vtype;
 			}
 			this.visit(head);
 			this.visit(node.body);
@@ -93,7 +97,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	typeDeclVisitor.def=visitSub;//S
 	typeDeclVisitor.visit(klass.node);
 }
-export function checkExpr(klass:C_Meta ,env) {
+export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 		function annotation(node:TNode, aobj?:any) {//B
 			return annotation3(klass.annotation,node,aobj);
 		}
