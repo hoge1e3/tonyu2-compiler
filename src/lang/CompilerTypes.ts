@@ -17,6 +17,16 @@ export type BuilderEnv={
 	options: ProjectOptions,
 	classes: MetaMap,
 	aliases: Aliases,
+	amdPaths: string[],
+};
+export type ProjectOptions={
+	compiler: CompileOptions,
+};
+export type CompileOptions={
+	typeCheck?: boolean,
+	defaultSuperClass?: string,
+	destinations?: Destinations,
+	field_strict?: boolean,
 };
 export type Destinations=FileDest|MemoryDest;
 type FileDest={
@@ -33,14 +43,6 @@ type MemoryDest={
 export function isMemoryDest(d:Destinations):d is MemoryDest  {
 	return (d as any).memory;
 }
-export type ProjectOptions={
-	compiler: CompileOptions,
-};
-export type CompileOptions={
-	typeCheck?: boolean,
-	defaultSuperClass?: string,
-	destinations?: Destinations,
-};
 export type Methods={[key: string]: C_MethodInfo};
 export type Locals={
 	varDecls: object,

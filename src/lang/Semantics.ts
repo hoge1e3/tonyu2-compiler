@@ -12,7 +12,7 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem} from "./NodeTypes";
 import { FieldInfo, Meta, MethodInfo } from "../runtime/RuntimeTypes";
 import { BuilderEnv, C_Meta, C_MethodInfo, FuncInfo, Locals, Methods } from "./CompilerTypes";
 var ScopeTypes=cu.ScopeTypes;
@@ -185,7 +185,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 	//delete klass.hasSemanticError;
 	// Why delete deleted? because decls.methods.params is still undef
 }// of initClassDecls
-function annotateSource2(klass:C_Meta, env) {//B
+function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	// annotateSource2 is call after orderByInheritance
 	klass.hasSemanticError=true;
 	var srcFile=klass.src.tonyu; //file object  //S
@@ -264,7 +264,7 @@ function annotateSource2(klass:C_Meta, env) {//B
 	function annotation(node: TNode, aobj=undefined) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
-	function initTopLevelScope2(klass) {//S
+	function initTopLevelScope2(klass: C_Meta) {//S
 		if (klass.builtin) return;
 		var s=topLevelScope;
 		var decls=klass.decls;
@@ -322,10 +322,10 @@ function annotateSource2(klass:C_Meta, env) {//B
 			}
 		}
 	}
-	function getMethod(name) {//B
+	function getMethod(name:string) {//B
 		return getMethod2(klass,name);
 	}
-	function isFiberMethod(name) {
+	function isFiberMethod(name:string) {
 		return stype(ctx.scope[name])==ST.METHOD &&
 		!getMethod(name).nowait ;
 	}
@@ -340,9 +340,8 @@ function annotateSource2(klass:C_Meta, env) {//B
 		console.log("LVal",node);
 		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
 	}
-	function getScopeInfo(n):cu.ScopeInfo {//S
-		const node=n;
-		n=n+"";
+	function getScopeInfo(node:Token):cu.ScopeInfo {//S
+		const n=node+"";
 		const si=ctx.scope[n];
 		const t=stype(si);
 		if (!t) {
@@ -390,7 +389,7 @@ function annotateSource2(klass:C_Meta, env) {//B
 		return si;
 	}
 	var localsCollector=Visitor({
-		varDecl: function (node) {
+		varDecl: function (node: VarDecl) {
 			if (ctx.isMain) {
 				annotation(node,{varInMain:true});
 				annotation(node,{declaringClass:klass});
@@ -401,19 +400,19 @@ function annotateSource2(klass:C_Meta, env) {//B
 				annotation(node,{declaringFunc:ctx.finfo});
 			}
 		},
-		funcDecl: function (node) {/*FDITSELFIGNORE*/
+		funcDecl: function (node: FuncDecl) {/*FDITSELFIGNORE*/
 			ctx.locals.subFuncDecls[node.head.name.text]=node;
 			//initParamsLocals(node);??
 		},
-		funcExpr: function (node) {/*FEIGNORE*/
+		funcExpr: function (node: FuncExpr) {/*FEIGNORE*/
 			//initParamsLocals(node);??
 		},
-		"catch": function (node) {
+		"catch": function (node: Catch) {
 			ctx.locals.varDecls[node.name.text]=node;
 		},
-		exprstmt: function (node) {
+		exprstmt: function (node: Exprstmt) {
 		},
-		"forin": function (node) {
+		"forin": function (node: Forin) {
 			var isVar=node.isVar;
 			node.vars.forEach(function (v) {
 				if (isVar) {
@@ -433,24 +432,24 @@ function annotateSource2(klass:C_Meta, env) {//B
 	});
 	localsCollector.def=visitSub;//S
 
-	function collectLocals(node) {//S
+	function collectLocals(node:TNode[]) {//S
 		var locals:Locals={varDecls:{}, subFuncDecls:{}};
-		ctx.enter({locals:locals},function () {
+		ctx.enter({locals},function () {
 			localsCollector.visit(node);
 		});
 		return locals;
 	}
-	function annotateParents(path, data) {//S
-		path.forEach(function (n) {
+	function annotateParents(path:TNode[], data:any) {//S
+		path.forEach(function (n:TNode) {
 			annotation(n,data);
 		});
 	}
-	function fiberCallRequired(path) {//S
+	function fiberCallRequired(path: TNode[]) {//S
 		if (ctx.method) ctx.method.fiberCallRequired=true;
 		annotateParents(path, {fiberCallRequired:true} );
 	}
 	var varAccessesAnnotator=Visitor({//S
-		varAccess: function (node) {
+		varAccess: function (node:VarAccess) {
 			var si=getScopeInfo(node.name);
 			var t=stype(si);
 			annotation(node,{scopeInfo:si});
@@ -460,17 +459,14 @@ function annotateSource2(klass:C_Meta, env) {//B
 		funcExpr: function (node) {/*FEIGNORE*/
 			annotateSubFuncExpr(node);
 		},
-		objlit:function (node) {
+		objlit:function (node: Objlit) {
 			var t=this;
 			var dup={};
-			node.elems.forEach(function (e) {
-				var kn;
-				if (e.key.type=="literal") {
-					kn=e.key.text.substring(1,e.key.text.length-1);
-				} else {
-					kn=e.key.text;
-				}
-				if (dup[kn]) {
+			node.elems.forEach(function (e: JsonElem) {
+				const kn=(e.key.type=="literal")?
+					e.key.text.substring(1,e.key.text.length-1):
+					e.key.text;
+				if (dup.hasOwnProperty(kn)) {
 					throw TError( R("duplicateKeyInObjectLiteral",kn) , srcFile, e.pos);
 				}
 				dup[kn]=1;
@@ -478,7 +474,7 @@ function annotateSource2(klass:C_Meta, env) {//B
 				t.visit(e);
 			});
 		},
-		jsonElem: function (node) {
+		jsonElem: function (node:JsonElem) {
 			if (node.value) {
 				this.visit(node.value);
 			} else {
