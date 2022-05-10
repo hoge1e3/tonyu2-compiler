@@ -12,8 +12,8 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl} from "./NodeTypes";
-import { FieldInfo, Meta, MethodInfo } from "../runtime/RuntimeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix} from "./NodeTypes";
+import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { AnnotatedType, Annotation, BuilderEnv, C_Meta, C_MethodInfo, FuncInfo, Locals, Methods } from "./CompilerTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -30,7 +30,7 @@ var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1
 function visitSub(node: TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
-	var es;
+	var es:TNode[];
 	if (node instanceof Array) es=node;
 	else es=node[SUBELEMENTS];
 	if (!es) {
@@ -39,9 +39,7 @@ function visitSub(node: TNode) {//S
 			es.push(node[i]);
 		}
 	}
-	es.forEach(function (e) {
-		t.visit(e);
-	});
+	es.forEach((e:TNode)=>t.visit(e));
 }
 function getSourceFile(klass: C_Meta) {
 	return assert(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
@@ -207,7 +205,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		scope: ScopeMap,
 		method: FuncInfo,//{fiberCallRequired:boolean},
 		finfo: FuncInfo,
-		locals: {varDecls:{},subFuncDecls:{}},
+		locals: {
+			varDecls: {[key: string]:VarDecl|Forin|Catch|Token},
+			subFuncDecls: {[key: string]:FuncDecl}
+		},
 		noWait: boolean,
 		isMain: boolean,
 		contable: boolean,
@@ -450,12 +451,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	var varAccessesAnnotator=Visitor({//S
 		varAccess: function (node:VarAccess) {
 			var si=getScopeInfo(node.name);
-			var t=stype(si);
 			annotation(node,{scopeInfo:si});
 		},
-		funcDecl: function (node) {/*FDITSELFIGNORE*/
+		funcDecl: function (node:FuncDecl) {/*FDITSELFIGNORE*/
 		},
-		funcExpr: function (node) {/*FEIGNORE*/
+		funcExpr: function (node:FuncExpr) {/*FEIGNORE*/
 			annotateSubFuncExpr(node);
 		},
 		objlit:function (node: Objlit) {
@@ -484,39 +484,39 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				annotation(node,{scopeInfo:si});
 			}
 		},
-		"do": function (node) {
+		"do": function (node:Do) {
 			var t=this;
 			ctx.enter({brkable:true,contable:true}, function () {
 				t.def(node);
 			});
 		},
-		"switch": function (node) {
+		"switch": function (node:Switch) {
 			var t=this;
 			ctx.enter({brkable:true}, function () {
 				t.def(node);
 			});
 		},
-		"while": function (node) {
+		"while": function (node:While) {
 			var t=this;
 			ctx.enter({brkable:true,contable:true}, function () {
 				t.def(node);
 			});
 			fiberCallRequired(this.path);//option
 		},
-		"for": function (node) {
+		"for": function (node:For) {
 			var t=this;
 			ctx.enter({brkable:true,contable:true}, function () {
 				t.def(node);
 			});
 		},
-		"forin": function (node) {
+		"forin": function (node:Forin) {
 			node.vars.forEach(function (v) {
 				var si=getScopeInfo(v);
 				annotation(v,{scopeInfo:si});
 			});
 			this.visit(node.set);
 		},
-		ifWait: function (node) {
+		ifWait: function (node:IfWait) {
 			var TH="_thread";
 			var t=this;
 			var ns=newScope(ctx.scope);
@@ -529,11 +529,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 			fiberCallRequired(this.path);
 		},
-		"try": function (node) {
+		"try": function (node:Try) {
 			ctx.finfo.useTry=true;
 			this.def(node);
 		},
-		"return": function (node) {
+		"return": function (node:Return) {
 			var t;
 			if (!ctx.noWait) {
 				if ( (t=OM.match(node.value, fiberCallTmpl)) &&
@@ -545,22 +545,22 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 			this.visit(node.value);
 		},
-		"break": function (node) {
+		"break": function (node:Break) {
 			if (!ctx.brkable) throw TError( R("breakShouldBeUsedInIterationOrSwitchStatement") , srcFile, node.pos);
 			if (!ctx.noWait) annotateParents(this.path,{hasJump:true});
 		},
-		"continue": function (node) {
+		"continue": function (node:Continue) {
 			if (!ctx.contable) throw TError( R("continueShouldBeUsedInIterationStatement") , srcFile, node.pos);
 			if (!ctx.noWait) annotateParents(this.path,{hasJump:true});
 		},
-		"reservedConst": function (node) {
+		"reservedConst": function (node:Token) {
 			if (node.text=="arguments") {
 				ctx.finfo.useArgs=true;
 			}
 		},
-		postfix: function (node) {
-			var t;
-			function match(node, tmpl) {
+		postfix: function (node:Postfix) {
+			var t:any;
+			function match(node:TNode, tmpl:any) {
 				t=OM.match(node,tmpl);
 				return t;
 			}
@@ -575,15 +575,15 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				annotation(node, {memberAccess:{target:t.T,name:t.N} });
 			}
 		},
-		infix: function (node) {
+		infix: function (node:Infix) {
 			var opn=node.op.text;
 			if (opn=="=" || opn=="+=" || opn=="-=" || opn=="*=" ||  opn=="/=" || opn=="%=" ) {
 				checkLVal(node.left);
 			}
 			this.def(node);
 		},
-		exprstmt: function (node) {
-			var t,m;
+		exprstmt: function (node:Exprstmt) {
+			var t:any,m: C_MethodInfo;
 			if (node.expr.type==="objlit") {
 				throw TError( R("cannotUseObjectLiteralAsTheExpressionOfStatement") , srcFile, node.pos);
 			}
@@ -625,7 +625,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.visit(node.expr);
 		},
 		varDecl: function (node:VarDecl) {
-			let t;
+			let t:any;
 			if (!ctx.noWait &&
 					(t=OM.match(node.value,fiberCallTmpl)) &&
 					isFiberMethod(t.N)) {
@@ -676,7 +676,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotation(locals.subFuncDecls[i],{scopeInfo:si});
 		}
 	}
-	function resolveTypesOfParams(params) {
+	function resolveTypesOfParams(params:ParamDecl[]) {
 		params.forEach(function (param) {
 			if (param.typeDecl) {
 				//console.log("restype",param);
@@ -684,7 +684,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		});
 	}
-	function initParamsLocals(f: FuncInfo) {//S
+	function initParamsLocals(f: C_MethodInfo) {//S
 		//console.log("IS_MAIN", f, f.name, f.isMain);
 		ctx.enter({isMain:f.isMain,finfo:f}, function () {
 			f.locals=collectLocals(f.stmts);

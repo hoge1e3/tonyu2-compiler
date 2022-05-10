@@ -65,9 +65,7 @@ function visitSub(node) {
             es.push(node[i]);
         }
     }
-    es.forEach(function (e) {
-        t.visit(e);
-    });
+    es.forEach((e) => t.visit(e));
 }
 function getSourceFile(klass) {
     return (0, assert_1.default)(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
@@ -479,7 +477,6 @@ function annotateSource2(klass, env) {
     var varAccessesAnnotator = (0, Visitor_1.default)({
         varAccess: function (node) {
             var si = getScopeInfo(node.name);
-            var t = stype(si);
             annotation(node, { scopeInfo: si });
         },
         funcDecl: function (node) {

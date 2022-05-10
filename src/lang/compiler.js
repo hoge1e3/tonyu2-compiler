@@ -191,13 +191,13 @@ function getDependingClasses(klass) {
     const visited = {};
     const res = [];
     function loop(k) {
-        if (visited[k.fullName])
-            return;
-        visited[k.fullName] = true;
         if (k.isShim) {
             console.log(klass, "contains shim ", k);
             throw new Error("Contains shim");
         }
+        if (visited[k.fullName])
+            return;
+        visited[k.fullName] = true;
         res.push(k);
         if (k.superclass)
             loop(k.superclass);
@@ -209,7 +209,7 @@ function getDependingClasses(klass) {
 }
 exports.getDependingClasses = getDependingClasses;
 //cu.getDependingClasses=getDependingClasses;
-function getParams(method /*: FuncDecl*/) {
+function getParams(method) {
     let res = [];
     if (!method.head)
         return res;

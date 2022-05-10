@@ -2,6 +2,7 @@ import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TypeDecl } from "./NodeTypes";
 import { AnnotatedType, C_FieldInfo, C_Meta, C_MethodInfo, FuncInfo, NativeClass } from "./CompilerTypes";
+import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
@@ -128,25 +129,25 @@ import { AnnotatedType, C_FieldInfo, C_Meta, C_MethodInfo, FuncInfo, NativeClass
 		}
 		return res;
 	};
-	export function getMethod(klass,name) {//B
+	export function getMethod(klass: C_Meta,name:string) {//B
 		let res=null;
-		getDependingClasses(klass).forEach(function (k) {
+		getDependingClasses(klass).forEach(function (k:C_Meta) {
 			if (res) return;
 			res=k.decls.methods[name];
 		});
 		return res;
 	}
 	//cu.getMethod=getMethod2;
-	export function getDependingClasses(klass) {//B
+	export function getDependingClasses(klass:Meta) {//B
 		const visited={};
 		const res=[];
-		function loop(k) {
-			if (visited[k.fullName]) return;
-			visited[k.fullName]=true;
-			if (k.isShim) {
+		function loop(k:Meta) {
+			if ((k as any).isShim) {
 				console.log(klass,"contains shim ",k);
 				throw new Error("Contains shim");
 			}
+			if (visited[k.fullName]) return;
+			visited[k.fullName]=true;
 			res.push(k);
 			if (k.superclass) loop(k.superclass);
 			if (k.includes) k.includes.forEach(loop);
@@ -155,7 +156,7 @@ import { AnnotatedType, C_FieldInfo, C_Meta, C_MethodInfo, FuncInfo, NativeClass
 		return res;
 	}
 	//cu.getDependingClasses=getDependingClasses;
-	export function getParams(method/*: FuncDecl*/) {//B
+	export function getParams(method: C_MethodInfo) {//B
 		let res=[] as ParamDecl[];
 		if (!method.head) return res;
 		if (method.head.setter) res.push(method.head.setter.value);

@@ -1,6 +1,6 @@
 import { Constructor, FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
-import { FuncDecl, FuncDeclHead, Program, Stmt, TNode, VarDecl } from "./NodeTypes";
+import { Catch, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, TNode, VarDecl } from "./NodeTypes";
 import { Token } from "./parser";
 
 export type C_MetaMap={[key: string]:C_Meta};
@@ -77,6 +77,8 @@ export type C_MethodInfo=MethodInfo&{
 	klass:string,
 	head?:FuncDeclHead,
 	node?:FuncDecl,
+	locals?: Locals,
+	params?: ParamDecl[],
 };
 export type ScopeMap={[key:string]: ScopeInfo};
 export type FuncInfo={
@@ -84,7 +86,7 @@ export type FuncInfo={
 	isMain?: boolean,
 	stmts: Stmt[],
 	locals?: Locals,
-	params?: any[],
+	params?: ParamDecl[],
 	useArgs?:boolean,
 	useTry?:boolean,
 	fiberCallRequired?:boolean,
