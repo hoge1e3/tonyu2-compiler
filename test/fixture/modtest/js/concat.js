@@ -108,6 +108,11 @@ Tonyu.klass.define({
         
         _this.a=new Tonyu.classes.user.A();
         _this.a.test();
+        _this.k={a: 3,b: 5,toString: (function anonymous_278() {
+          
+          return _this.k.a+_this.k.b;
+        })};
+        _this.a.print("k="+_this.k);
       },
       fiber$main :function _trc_Main_f_main(_thread) {
         "use strict";
@@ -117,13 +122,18 @@ Tonyu.klass.define({
         
         _this.a=new Tonyu.classes.user.A();
         _this.a.test();
+        _this.k={a: 3,b: 5,toString: (function anonymous_278() {
+          
+          return _this.k.a+_this.k.b;
+        })};
+        _this.a.print("k="+_this.k);
         
         _thread.retVal=_this;return;
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"a":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"a":{},"k":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.B',

@@ -253,8 +253,8 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
     posts.symbol = DIV;
     parsers[REG] = or(parsers[REG], symresv).setName("Token_REG");
     parsers[DIV] = or(parsers[DIV], symresv).setName("Token_DIV");
-    parsers[REG].dispTbl();
-    parsers[DIV].dispTbl();
+    //parsers[REG].dispTbl();
+    //parsers[DIV].dispTbl();
     //console.log(parsers[DIV]);
     function parse(str) {
         var res = sp.parse(all, str);

@@ -11,4 +11,6 @@ B includes FMod
 a=new A();
 a.test();
 
+k={a:3, b:5, toString=\{return k.a+k.b;}};
+a.print("k="+k);
 //aa=A();

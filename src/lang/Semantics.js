@@ -363,9 +363,8 @@ function annotateSource2(klass, env) {
         console.log("LVal", node);
         throw (0, TError_1.default)((0, R_1.default)("invalidLeftValue", getSource(node)), srcFile, node.pos);
     }
-    function getScopeInfo(n) {
-        const node = n;
-        n = n + "";
+    function getScopeInfo(node) {
+        const n = node + "";
         const si = ctx.scope[n];
         const t = stype(si);
         if (!t) {
@@ -463,7 +462,7 @@ function annotateSource2(klass, env) {
     localsCollector.def = visitSub; //S
     function collectLocals(node) {
         var locals = { varDecls: {}, subFuncDecls: {} };
-        ctx.enter({ locals: locals }, function () {
+        ctx.enter({ locals }, function () {
             localsCollector.visit(node);
         });
         return locals;
@@ -493,14 +492,10 @@ function annotateSource2(klass, env) {
             var t = this;
             var dup = {};
             node.elems.forEach(function (e) {
-                var kn;
-                if (e.key.type == "literal") {
-                    kn = e.key.text.substring(1, e.key.text.length - 1);
-                }
-                else {
-                    kn = e.key.text;
-                }
-                if (dup[kn]) {
+                const kn = (e.key.type == "literal") ?
+                    e.key.text.substring(1, e.key.text.length - 1) :
+                    e.key.text;
+                if (dup.hasOwnProperty(kn)) {
                     throw (0, TError_1.default)((0, R_1.default)("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
                 }
                 dup[kn] = 1;
@@ -727,7 +722,7 @@ function annotateSource2(klass, env) {
         });
     }
     function initParamsLocals(f) {
-        console.log("IS_MAIN", f, f.name, f.isMain);
+        //console.log("IS_MAIN", f, f.name, f.isMain);
         ctx.enter({ isMain: f.isMain, finfo: f }, function () {
             f.locals = collectLocals(f.stmts);
             f.params = getParams(f);

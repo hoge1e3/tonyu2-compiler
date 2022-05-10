@@ -680,7 +680,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		});
 	}
 	function initParamsLocals(f: FuncInfo) {//S
-		console.log("IS_MAIN", f, f.name, f.isMain);
+		//console.log("IS_MAIN", f, f.name, f.isMain);
 		ctx.enter({isMain:f.isMain,finfo:f}, function () {
 			f.locals=collectLocals(f.stmts);
 			f.params=getParams(f);
