@@ -146,6 +146,12 @@ Tonyu.klass.define({
         
         _thread.retVal=_this;return;
       },
+      initialize :function _trc_B_initialize() {
+        "use strict";
+        var _this=this;
+        
+        _this.print("new::B");
+      },
       test :function _trc_B_test() {
         "use strict";
         var _this=this;
@@ -178,7 +184,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false},"new":{"nowait":false},"test":{"nowait":false}},"fields":{}}
 });
 Tonyu.klass.define({
   fullName: 'user.CMod',
@@ -312,6 +318,15 @@ Tonyu.klass.define({
         
         _thread.retVal=_this;return;
       },
+      initialize :function _trc_A_initialize() {
+        "use strict";
+        var _this=this;
+        
+        _this.print("new::A");
+        __superClass.apply( _this, []);
+        _this.x=5;
+        _this.print(_this);
+      },
       test :function _trc_A_test() {
         "use strict";
         var _this=this;
@@ -360,7 +375,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"print":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false},"new":{"nowait":false},"test":{"nowait":false},"print":{"nowait":false}},"fields":{"x":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

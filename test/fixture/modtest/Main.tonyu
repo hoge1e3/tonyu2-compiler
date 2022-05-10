@@ -10,3 +10,5 @@ B includes FMod
 */
 a=new A();
 a.test();
+
+//aa=A();

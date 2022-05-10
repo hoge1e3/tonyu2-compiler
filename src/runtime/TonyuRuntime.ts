@@ -156,21 +156,21 @@ var klass={
 			}*/
 			var init=methods.initialize;
 			delete methods.initialize;
-			const res=(init ?
-                function() {
-                    if (!(this instanceof res))
-                        useNew(fullName);
-                    init.apply(this, arguments);
-                } :
-                (parent ? function() {
-                    if (!(this instanceof res))
-                        useNew(fullName);
-                    parent.apply(this, arguments);
-                } : function() {
-                    if (!(this instanceof res))
-                        useNew(fullName);
-                })
-            ) as unknown as TonyuShimClass;
+			function exprWithName(name:string, expr:string, bindings:{[key:string]:any}) {
+				const bnames=Object.keys(bindings);
+    			const f=new Function(...bnames, `const ${name}=${expr}; return ${name};`);
+    			return f(...bnames.map((k:any)=>bindings[k]));
+			}
+			const chkT=(obj:object)=>{
+				if (!(obj instanceof res))
+					useNew(fullName);
+			};
+			const superInit=(
+				init   ? `init.apply(this,arguments);` :
+				parent ? `parent.apply(this,arguments);` : "");
+			const res=exprWithName(shortName,
+				`function() {chkT(this);${superInit}}`,
+				{chkT,init,parent}) as unknown as TonyuShimClass;
 			res.prototype=bless(parent,{constructor:res});
 			if (isShim) {
 				res.meta={isShim:true,extenderFullName:fullName, func:res};
