@@ -8,7 +8,7 @@ import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
 import { Meta, MetaMap } from "../runtime/RuntimeTypes";
-import { BuilderContext, CompileOptions, Destinations, isBuilderContext, isFileDest, isMemoryDest } from "./CompilerTypes";
+import { BuilderContext, CompileOptions, C_Meta, C_MetaMap, Destinations, isBuilderContext, isFileDest, isMemoryDest } from "./CompilerTypes";
 
 //type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
@@ -217,7 +217,7 @@ export = class Builder {
 			fullName:  fullCn,
 			shortName: shortCn,
 			namespace: myNsp
-		});
+		}) as C_Meta;
 		m.src=m.src||{};
 		m.src.tonyu=f;
 		// Q.1 is resolved here
@@ -233,7 +233,7 @@ export = class Builder {
 		console.log("Compile: "+dir.path());
 		var myNsp=this.getNamespace();
 		let baseClasses,env,myClasses,sf;
-		let compilingClasses;
+		let compilingClasses: C_MetaMap;
 		ctxOpt.destinations=ctxOpt.destinations || {
 			memory: true,
 			file: true
@@ -271,7 +271,7 @@ export = class Builder {
 			//return TPR.showProgress("initClassDecl");
 		});
 	}
-	partialCompile(compilingClasses:MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
+	partialCompile(compilingClasses:C_MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
 		let env=this.getEnv(),ord,buf;
 		//ctxOpt=ctxOpt||{};
 		const destinations:Destinations=ctxOpt.destinations || {

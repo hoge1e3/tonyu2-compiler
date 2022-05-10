@@ -1,5 +1,7 @@
-import { MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
-import { TNode } from "./NodeTypes";
+import { FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
+import { FuncDecl, FuncDeclHead, Program, TNode } from "./NodeTypes";
+
+export type C_MetaMap={[key: string]:C_Meta};
 
 // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
 export type BuilderContext={
@@ -39,10 +41,38 @@ export type CompileOptions={
 	defaultSuperClass?: string,
 	destinations?: Destinations,
 };
-export type Methods={[key: string]: MethodInfo};
+export type Methods={[key: string]: C_MethodInfo};
 export type Locals={
 	varDecls: object,
 	subFuncDecls: object,
+};
+export type C_FieldInfo=FieldInfo & {
+	node?:TNode,
+	pos?:number,
+	vtype?: any,
+};
+export type C_Decls={
+	methods: {[key:string]: C_MethodInfo},
+	fields:  {[key:string]: C_FieldInfo},
+	natives?: object,
+	amds?: object,
+	softRefClasses?: object
+}
+export type C_Meta=Meta & {
+	decls: C_Decls,
+	src?: {tonyu?:any, js?:any},
+    hasSemanticError: boolean,
+    jsNotUpToDate: boolean,
+    directives: {field_strict?:boolean},
+    node: Program, nodeTimestamp:number,
+	annotation?: object,
+};
+export type C_MethodInfo=MethodInfo&{
+	stmts:TNode[],pos:number,
+	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
+	klass:string,
+	head?:FuncDeclHead,
+	node?:FuncDecl,
 };
 export type FuncInfo={
 	name: string,

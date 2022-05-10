@@ -138,7 +138,8 @@ var klass = {
             chkmeta(c.meta, ctx);
             return c;
         }
-        function extender(parent, ctx) {
+        function extender(_parent, ctx) {
+            let parent = _parent;
             var isShim = !ctx.init;
             var includesRec = ctx.includesRec;
             if (includesRec[fullName])
@@ -249,27 +250,23 @@ var klass = {
         //console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
         return chkclass(res); //,{isShim:false, init:false, includesRec:{}});
     },
-    isSourceChanged(_k) {
-        const k = getMeta(_k);
+    /*isSourceChanged(_k:Meta|TonyuClass) {
+        const k:Meta=getMeta(_k);
         if (k.src && k.src.tonyu) {
-            if (!k.nodeTimestamp)
-                return true;
-            return k.src.tonyu.lastUpdate() > k.nodeTimestamp;
+            if (!k.nodeTimestamp) return true;
+            return k.src.tonyu.lastUpdate()> k.nodeTimestamp;
         }
         return false;
     },
-    shouldCompile(_k) {
-        const k = getMeta(_k);
-        if (k.hasSemanticError)
-            return true;
-        if (klass.isSourceChanged(k))
-            return true;
-        var dks = klass.getDependingClasses(k);
-        for (var i = 0; i < dks.length; i++) {
-            if (klass.shouldCompile(dks[i]))
-                return true;
+    shouldCompile(_k:Meta|TonyuClass) {
+        const k:Meta=getMeta(_k);
+        if (k.hasSemanticError) return true;
+        if (klass.isSourceChanged(k)) return true;
+        var dks=klass.getDependingClasses(k);
+        for (var i=0 ; i<dks.length ;i++) {
+            if (klass.shouldCompile(dks[i])) return true;
         }
-    },
+    },*/
     getDependingClasses(_k) {
         const k = getMeta(_k);
         var res = [];

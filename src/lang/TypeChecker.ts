@@ -5,7 +5,7 @@ import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl } from "./NodeT
 import { SUBELEMENTS, Token } from "./parser";
 import { Meta } from "../runtime/RuntimeTypes";
 import Visitor from "./Visitor";
-import { BuilderEnv } from "./CompilerTypes";
+import { BuilderEnv, C_Meta } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -39,7 +39,7 @@ function visitSub(node:TNode) {//S
 	});
 }
 
-export function checkTypeDecl(klass: Meta,env: BuilderEnv) {
+export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	function annotation(node: TNode, aobj?:any) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
@@ -93,7 +93,7 @@ export function checkTypeDecl(klass: Meta,env: BuilderEnv) {
 	typeDeclVisitor.def=visitSub;//S
 	typeDeclVisitor.visit(klass.node);
 }
-export function checkExpr(klass:Meta ,env) {
+export function checkExpr(klass:C_Meta ,env) {
 		function annotation(node:TNode, aobj?:any) {//B
 			return annotation3(klass.annotation,node,aobj);
 		}

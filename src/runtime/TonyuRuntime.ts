@@ -133,7 +133,8 @@ var klass={
 			chkmeta(c.meta,ctx);
 			return c;
 		}
-		function extender(parent:TonyuClass, ctx:ClassDefinitionContext):TonyuShimClass {
+		function extender(_parent:TonyuClass, ctx:ClassDefinitionContext):TonyuShimClass {
+			let parent:TonyuShimClass=_parent;
 			var isShim=!ctx.init;
 			var includesRec=ctx.includesRec;
 			if (includesRec[fullName]) return parent;
@@ -243,7 +244,7 @@ var klass={
 		//console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
 		return chkclass(res);//,{isShim:false, init:false, includesRec:{}});
 	},
-	isSourceChanged(_k:Meta|TonyuClass) {
+	/*isSourceChanged(_k:Meta|TonyuClass) {
 		const k:Meta=getMeta(_k);
 		if (k.src && k.src.tonyu) {
 			if (!k.nodeTimestamp) return true;
@@ -259,7 +260,7 @@ var klass={
 		for (var i=0 ; i<dks.length ;i++) {
 			if (klass.shouldCompile(dks[i])) return true;
 		}
-	},
+	},*/
 	getDependingClasses(_k:Meta|TonyuClass) {
 		const k:Meta=getMeta(_k);
 		var res=[];
@@ -268,7 +269,7 @@ var klass={
 		return res;
 	}
 };
-function bless( klass:TonyuClass|null, val:object) {
+function bless( klass:TonyuShimClass|null, val:object) {
 	if (!klass) return extend({},val);
 	return extend( Object.create(klass.prototype) , val);
 	//return extend( new klass() , val);

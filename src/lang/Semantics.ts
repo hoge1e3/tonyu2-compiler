@@ -14,7 +14,7 @@ import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr} from "./NodeTypes";
 import { FieldInfo, Meta, MethodInfo } from "../runtime/RuntimeTypes";
-import { BuilderEnv, FuncInfo, Locals, Methods } from "./CompilerTypes";
+import { BuilderEnv, C_Meta, C_MethodInfo, FuncInfo, Locals, Methods } from "./CompilerTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -43,10 +43,10 @@ function visitSub(node: TNode) {//S
 		t.visit(e);
 	});
 }
-function getSourceFile(klass: Meta) {
+function getSourceFile(klass: C_Meta) {
 	return assert(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
 }
-export function parse(klass: Meta, options={}):Program {
+export function parse(klass: C_Meta, options={}):Program {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
 	let node:Program;
 	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
@@ -64,7 +64,7 @@ export function parse(klass: Meta, options={}):Program {
 	return node;
 }
 //-----------
-export function initClassDecls(klass:Meta, env:BuilderEnv ) {//S
+export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
 	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
@@ -73,7 +73,7 @@ export function initClassDecls(klass:Meta, env:BuilderEnv ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	var MAIN:MethodInfo={name:"main",stmts:[],pos:0, isMain:true, nowait: false, klass:klass.fullName};
+	var MAIN:C_MethodInfo={name:"main",stmts:[],pos:0, isMain:true, nowait: false, klass:klass.fullName};
 	// method := fiber | function
 	const fields={}, methods:Methods={main: MAIN}, natives={}, amds={},softRefClasses={};
 	klass.decls={fields, methods, natives, amds, softRefClasses};
@@ -185,7 +185,7 @@ export function initClassDecls(klass:Meta, env:BuilderEnv ) {//S
 	//delete klass.hasSemanticError;
 	// Why delete deleted? because decls.methods.params is still undef
 }// of initClassDecls
-function annotateSource2(klass:Meta, env) {//B
+function annotateSource2(klass:C_Meta, env) {//B
 	// annotateSource2 is call after orderByInheritance
 	klass.hasSemanticError=true;
 	var srcFile=klass.src.tonyu; //file object  //S
