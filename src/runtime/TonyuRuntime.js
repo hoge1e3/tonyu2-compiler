@@ -145,7 +145,7 @@ var klass = {
                 return parent;
             includesRec[fullName] = true;
             //console.log(ctx.initFullName, fullName);//,  includesRec[fullName],JSON.stringify(ctx));
-            includes.forEach(function (m) {
+            includes.forEach((m) => {
                 parent = m.extendFrom(parent, extend(ctx, { init: false }));
             });
             var methods = typeof methodsF === "function" ? methodsF(parent) : methodsF;
@@ -175,7 +175,7 @@ var klass = {
                     fullName, shortName, namespace, decls,
                     superclass: ctx.nonShimParent ? ctx.nonShimParent.meta : null,
                     includesRec,
-                    includes: includes.map(function (c) { return c.meta; }),
+                    includes: includes.map((c) => c.meta),
                     func: res
                 });
             }

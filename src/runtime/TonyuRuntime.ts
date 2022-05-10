@@ -3,7 +3,7 @@ import IT from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
-import { ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
+import { ClassDefinition, ClassDefinitionContext, ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
 
 
 // old browser support
@@ -89,7 +89,7 @@ var klass={
 };*/
 	propReg,
 	property,
-	define(params:any) {
+	define(params:ClassDefinition) {
 		// fullName, shortName,namspace, superclass, includes, methods:{name/fiber$name: func}, decls
 		var parent=params.superclass;
 		var includes=params.includes;
@@ -100,14 +100,6 @@ var klass={
 		var decls=params.decls;
 		var nso=klass.ensureNamespace(Tonyu.classes, namespace);
 		//var outerRes;
-		type ClassDefinitionContext={
-			//isShim: boolean,
-			//path: ShimMeta[],
-			init: boolean,
-			includesRec: {[key:string]:boolean},
-			//initFullName: string,
-			nonShimParent?: TonyuClass,
-		};
 		type ClassCheckContext={
 			path:Meta[],
 		};
@@ -147,7 +139,7 @@ var klass={
 			if (includesRec[fullName]) return parent;
 			includesRec[fullName]=true;
 			//console.log(ctx.initFullName, fullName);//,  includesRec[fullName],JSON.stringify(ctx));
-			includes.forEach(function (m:TonyuClass) {
+			includes.forEach((m:TonyuClass)=>{
 				parent=m.extendFrom(parent,extend(ctx,{init:false}));
 			});
 			var methods=typeof methodsF==="function"? methodsF(parent):methodsF;
@@ -179,7 +171,7 @@ var klass={
 					fullName, shortName, namespace, decls,
 					superclass:ctx.nonShimParent ? ctx.nonShimParent.meta : null,
 					includesRec,
-					includes:includes.map(function(c){return c.meta;}),
+					includes:includes.map((c:TonyuClass)=>c.meta),
 					func: res
 				});
 			}

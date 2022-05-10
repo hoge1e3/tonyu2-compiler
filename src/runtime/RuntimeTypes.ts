@@ -4,8 +4,9 @@ export type MetaMap={[key: string]:Meta};
 export type ClassTree={[key:string]:ClassTree}|TonyuClass; // Tonyu.classes.user.Hoge  Tonyu.classes.kernel.Actor etc
 export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
 type Constructor = new (...args: any[]) => any;
-export type TonyuClass= Constructor & {meta:Meta, extendFrom:Function};
-export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Function};
+export type Extender=(parent:TonyuClass, ctx:ClassDefinitionContext)=>TonyuShimClass;
+export type TonyuClass= Constructor & {meta:Meta, extendFrom:Extender};
+export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Extender};
 export function isTonyuClass(v:any):v is TonyuClass {
 	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
@@ -18,24 +19,48 @@ export type MethodInfo={
 	head?:FuncDeclHead,
 	node?:FuncDecl,
 };
+export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
+export type FuncMap={[key:string]: Function};
+export type FuncMapFactory=(superclass:TonyuClass)=>FuncMap;
+export type ClassDefinition={
+	superclass:TonyuClass|null,
+	includes:TonyuClass[],
+	fullName:string, shortName:string, namespace:string,
+	methods: FuncMapFactory|FuncMap,
+	decls:{
+		methods: {[key:string]: MethodInfo},
+		fields:  {[key:string]: FieldInfo},
+	}
+};
+export type ClassDefinitionContext={
+	//isShim: boolean,
+	//path: ShimMeta[],
+	init: boolean,
+	includesRec: {[key:string]:boolean},
+	//initFullName: string,
+	nonShimParent?: TonyuClass,
+
+};
+
+export type Decls={
+	methods: {[key:string]: MethodInfo},
+	fields:  {[key:string]: FieldInfo},
+	natives?: object,
+	amds?: object,
+	softRefClasses?: object
+};
 export type FieldInfo={
+	klass:string,
+    name:string,
+	// --- compile time?
     node?:TNode,
 	pos?:number,
-    klass:string,
-    name:string,
 	vtype?: any,
 };
-export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type Meta={
 	func: TonyuShimClass,
 	fullName:string, shortName:string, namespace:string,
-    decls:{
-        methods: {[key:string]: MethodInfo},
-        fields:  {[key:string]: FieldInfo},
-        natives: object,
-        amds: object,
-        softRefClasses: object
-    },
+    decls: Decls,
     superclass:Meta|null,
     includesRec:{[key:string]:boolean},
     includes:Meta[],

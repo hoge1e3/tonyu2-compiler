@@ -26,6 +26,8 @@ export function isFileDest(d:Destinations):d is FileDest  {
 type MemoryDest={
 	memory:true,
 };
+
+
 export function isMemoryDest(d:Destinations):d is MemoryDest  {
 	return (d as any).memory;
 }
