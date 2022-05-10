@@ -1,10 +1,12 @@
 import * as cu from "./compiler";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarDecl } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import { Meta } from "../runtime/RuntimeTypes";
 import Visitor from "./Visitor";
+import { BuilderEnv } from "./CompilerTypes";
+import { ScopeInfo } from "./compiler";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 	const ScopeTypes=cu.ScopeTypes;
@@ -19,7 +21,7 @@ import Visitor from "./Visitor";
 	const getParams=cu.getParams;
 	//const JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1};
 //var TypeChecker:any={};
-function visitSub(node) {//S
+function visitSub(node:TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
 	//console.log("TCV",node.type,node);
@@ -37,7 +39,7 @@ function visitSub(node) {//S
 	});
 }
 
-export function checkTypeDecl(klass: Meta,env) {
+export function checkTypeDecl(klass: Meta,env: BuilderEnv) {
 	function annotation(node: TNode, aobj?:any) {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
@@ -49,7 +51,7 @@ export function checkTypeDecl(klass: Meta,env) {
 				var va=annotation(node.typeDecl.vtype);
 				console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
 				var a=annotation(node);
-				var si=a.scopeInfo;// for local
+				var si:ScopeInfo=a.scopeInfo;// for local
 				var info=a.info;// for field
 				if (si) {
 					console.log("set var type",node.name+"", va.resolvedType );
@@ -119,7 +121,7 @@ export function checkExpr(klass:Meta ,env) {
 					this.visit(node.op);
 				}
 			},
-			varAccess: function (node) {
+			varAccess: function (node: VarAccess) {
 				var a=annotation(node);
 				var si=a.scopeInfo;
 				if (si) {
@@ -127,8 +129,7 @@ export function checkExpr(klass:Meta ,env) {
 						console.log("VA typeof",node.name+":",si.vtype);
 						annotation(node,{vtype:si.vtype});
 					} else if (si.type===ScopeTypes.FIELD) {
-						var fld;
-						fld=klass.decls.fields[node.name+""];
+						const fld=klass.decls.fields[node.name+""];
 						if (!fld) {
 							// because parent field does not contain...
 							console.log("TC Warning: fld not found",klass,node.name+"");
@@ -138,7 +139,7 @@ export function checkExpr(klass:Meta ,env) {
 						if (!vtype) {
 							console.log("VA vtype not found",node.name+":",fld);
 						} else {
-							annotation(node,{vtype:vtype});
+							annotation(node,{vtype});
 							console.log("VA typeof",node.name+":",vtype);
 						}
 					} else if (si.type===ScopeTypes.PROP) {

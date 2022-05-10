@@ -156,8 +156,7 @@ function checkExpr(klass, env) {
                     annotation(node, { vtype: si.vtype });
                 }
                 else if (si.type === ScopeTypes.FIELD) {
-                    var fld;
-                    fld = klass.decls.fields[node.name + ""];
+                    const fld = klass.decls.fields[node.name + ""];
                     if (!fld) {
                         // because parent field does not contain...
                         console.log("TC Warning: fld not found", klass, node.name + "");
@@ -168,7 +167,7 @@ function checkExpr(klass, env) {
                         console.log("VA vtype not found", node.name + ":", fld);
                     }
                     else {
-                        annotation(node, { vtype: vtype });
+                        annotation(node, { vtype });
                         console.log("VA typeof", node.name + ":", vtype);
                     }
                 }

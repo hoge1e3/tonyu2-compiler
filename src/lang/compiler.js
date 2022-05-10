@@ -209,7 +209,7 @@ function getDependingClasses(klass) {
 }
 exports.getDependingClasses = getDependingClasses;
 //cu.getDependingClasses=getDependingClasses;
-function getParams(method) {
+function getParams(method /*: FuncDecl*/) {
     let res = [];
     if (!method.head)
         return res;

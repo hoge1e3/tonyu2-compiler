@@ -12,8 +12,9 @@ import * as cu from "./compiler";
 import Visitor from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl} from "./NodeTypes";
-import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr} from "./NodeTypes";
+import { FieldInfo, Meta, MethodInfo } from "../runtime/RuntimeTypes";
+import { BuilderEnv, FuncInfo, Locals, Methods } from "./CompilerTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -63,7 +64,7 @@ export function parse(klass: Meta, options={}):Program {
 	return node;
 }
 //-----------
-export function initClassDecls(klass:Meta, env ) {//S
+export function initClassDecls(klass:Meta, env:BuilderEnv ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
 	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
@@ -72,16 +73,16 @@ export function initClassDecls(klass:Meta, env ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	var MAIN={name:"main",stmts:[],pos:0, isMain:true, nowait: false};
+	var MAIN:MethodInfo={name:"main",stmts:[],pos:0, isMain:true, nowait: false, klass:klass.fullName};
 	// method := fiber | function
-	const fields={}, methods={main: MAIN}, natives={}, amds={},softRefClasses={};
+	const fields={}, methods:Methods={main: MAIN}, natives={}, amds={},softRefClasses={};
 	klass.decls={fields, methods, natives, amds, softRefClasses};
 	// ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，AMDモジュール変数
 	//   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
 	klass.node=node;
 
 	function initMethods(program: Program) {
-		var spcn=env.options.compiler.defaultSuperClass;
+		let spcn=env.options.compiler.defaultSuperClass;
 		var pos=0;
 		var t=OM.match( program , {ext:{superclassName:{text:OM.N, pos:OM.P}}});
 		if (t) {
@@ -165,10 +166,10 @@ export function initClassDecls(klass:Meta, env ) {//S
 				name=propHead+name;
 				methods[name]={
 						nowait: (!!head.nowait || propHead!==""),
-						ftype:  ftype,
-						name:  name,
+						ftype,
+						name,
 						klass: klass.fullName,
-						head:  head,
+						head,
 						pos: head.pos,
 						stmts: stmt.body.stmts,
 						node: stmt
@@ -205,7 +206,7 @@ function annotateSource2(klass:Meta, env) {//B
 	type SemCtx={
 		scope: ScopeMap,
 		method: {fiberCallRequired:boolean},
-		finfo: {useArgs:boolean, useTry:boolean},
+		finfo: FuncInfo,
 		locals: {varDecls:{},subFuncDecls:{}},
 		noWait: boolean,
 		isMain: boolean,
@@ -433,7 +434,7 @@ function annotateSource2(klass:Meta, env) {//B
 	localsCollector.def=visitSub;//S
 
 	function collectLocals(node) {//S
-		var locals={varDecls:{}, subFuncDecls:{}};
+		var locals:Locals={varDecls:{}, subFuncDecls:{}};
 		ctx.enter({locals:locals},function () {
 			localsCollector.visit(node);
 		});
@@ -628,7 +629,7 @@ function annotateSource2(klass:Meta, env) {//B
 			}
 			this.visit(node.expr);
 		},
-		varDecl: function (node) {
+		varDecl: function (node:VarDecl) {
 			var t;
 			if (!ctx.noWait &&
 					(t=OM.match(node.value,fiberCallTmpl)) &&
@@ -640,11 +641,11 @@ function annotateSource2(klass:Meta, env) {//B
 			this.visit(node.value);
 			this.visit(node.typeDecl);
 		},
-		typeExpr: function (node) {
+		typeExpr: function (node:TypeExpr) {
 			resolveType(node);
 		}
 	});
-	function resolveType(node) {//node:typeExpr
+	function resolveType(node:TypeExpr) {//node:typeExpr
 		var name:string=node.name+"";
 		var si=getScopeInfo(node.name);
 		//console.log("TExpr",name,si,t);
@@ -677,13 +678,13 @@ function annotateSource2(klass:Meta, env) {//B
 	function resolveTypesOfParams(params) {
 		params.forEach(function (param) {
 			if (param.typeDecl) {
-			//console.log("restype",param);
-			resolveType(param.typeDecl.vtype);
+				//console.log("restype",param);
+				resolveType(param.typeDecl.vtype);
 			}
 		});
 	}
-	function initParamsLocals(f) {//S
-		//console.log("IS_MAIN", f.name, f.isMain);
+	function initParamsLocals(f: FuncInfo) {//S
+		console.log("IS_MAIN", f, f.name, f.isMain);
 		ctx.enter({isMain:f.isMain,finfo:f}, function () {
 			f.locals=collectLocals(f.stmts);
 			f.params=getParams(f);

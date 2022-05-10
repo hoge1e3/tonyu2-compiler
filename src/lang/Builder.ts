@@ -8,6 +8,7 @@ import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
 import { Meta, MetaMap } from "../runtime/RuntimeTypes";
+import { BuilderContext, CompileOptions, Destinations, isBuilderContext, isFileDest, isMemoryDest } from "./CompilerTypes";
 
 //type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
@@ -81,8 +82,6 @@ function orderByInheritance(classes:MetaMap) {/*ENVC*/
 /*interface BuilderContext{
     visited:{[key:string]: boolean}, classes:{[key:string]: },options:ctx
 }*/
-type BuilderContext=any;
-type CompileOptions=any;
 // includes langMod, dirBase
 export = class Builder {
     prj: any;
@@ -148,15 +147,13 @@ export = class Builder {
 		return res;
 	}
 	// Difference of ctx and env:  env is of THIS project. ctx is of cross-project
-	initCtx(ctx:BuilderContext|CompileOptions={}) {
+	initCtx(ctx:BuilderContext|CompileOptions={}):BuilderContext {
 		//どうしてclassMetasとclassesをわけるのか？
 		// metaはFunctionより先に作られるから
 		var env=this.getEnv();
 		//if (!ctx) ctx={};
-		if (!ctx.visited) {
-			ctx={visited:{}, classes:(env.classes=env.classes||Tonyu.classMetas),options:ctx};
-		}
-		return ctx;
+		if (isBuilderContext(ctx)) return ctx;
+		return {visited:{}, classes:(env.classes=env.classes||Tonyu.classMetas),options:ctx};
 	}
 	fileToClass(file) {
 		const shortName=this.fileToShortClassName(file);
@@ -277,7 +274,7 @@ export = class Builder {
 	partialCompile(compilingClasses:MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
 		let env=this.getEnv(),ord,buf;
 		//ctxOpt=ctxOpt||{};
-		const destinations=ctxOpt.destinations || {
+		const destinations:Destinations=ctxOpt.destinations || {
 			memory: true
 		};
 		return Promise.resolve().then(()=>{
@@ -317,11 +314,11 @@ export = class Builder {
 		}).then(()=>{
 			const s=SourceFiles.add(buf.close(), buf.srcmap/*, buf.traceIndex */);
 			let task:any=Promise.resolve();
-			if (destinations.file) {
+			if (isFileDest(destinations)) {
 				const outf=this.getOutputFile();
 				task=s.saveAs(outf);
 			}
-			if (destinations.memory) {
+			if (isMemoryDest(destinations)) {
 				task=task.then(e=>s);
 			}
 			return task;

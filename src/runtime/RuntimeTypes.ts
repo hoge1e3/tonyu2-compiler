@@ -1,4 +1,4 @@
-import { Program, TNode } from "../lang/NodeTypes";
+import { FuncDecl, FuncDeclHead, Program, TNode } from "../lang/NodeTypes";
 
 export type MetaMap={[key: string]:Meta};
 export type ClassTree={[key:string]:ClassTree}|TonyuClass; // Tonyu.classes.user.Hoge  Tonyu.classes.kernel.Actor etc
@@ -10,13 +10,20 @@ export function isTonyuClass(v:any):v is TonyuClass {
 	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
 export type MethodInfo={
-    name:string,stmts:TNode[],pos:number, isMain:boolean, nowait:boolean,
+	stmts:TNode[],pos:number,
+    name:string, isMain?:boolean, nowait:boolean,
+	// compile time?
+	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
+	klass:string,
+	head?:FuncDeclHead,
+	node?:FuncDecl,
 };
 export type FieldInfo={
     node?:TNode,
 	pos?:number,
     klass:string,
     name:string,
+	vtype?: any,
 };
 export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type Meta={

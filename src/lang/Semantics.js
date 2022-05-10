@@ -101,7 +101,7 @@ function initClassDecls(klass, env) {
         klass.jsNotUpToDate = true;
     }
     const node = parse(klass, env.options);
-    var MAIN = { name: "main", stmts: [], pos: 0, isMain: true, nowait: false };
+    var MAIN = { name: "main", stmts: [], pos: 0, isMain: true, nowait: false, klass: klass.fullName };
     // method := fiber | function
     const fields = {}, methods = { main: MAIN }, natives = {}, amds = {}, softRefClasses = {};
     klass.decls = { fields, methods, natives, amds, softRefClasses };
@@ -109,7 +109,7 @@ function initClassDecls(klass, env) {
     //   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
     klass.node = node;
     function initMethods(program) {
-        var spcn = env.options.compiler.defaultSuperClass;
+        let spcn = env.options.compiler.defaultSuperClass;
         var pos = 0;
         var t = OM.match(program, { ext: { superclassName: { text: OM.N, pos: OM.P } } });
         if (t) {
@@ -197,10 +197,10 @@ function initClassDecls(klass, env) {
                 name = propHead + name;
                 methods[name] = {
                     nowait: (!!head.nowait || propHead !== ""),
-                    ftype: ftype,
-                    name: name,
+                    ftype,
+                    name,
                     klass: klass.fullName,
-                    head: head,
+                    head,
                     pos: head.pos,
                     stmts: stmt.body.stmts,
                     node: stmt
@@ -727,7 +727,7 @@ function annotateSource2(klass, env) {
         });
     }
     function initParamsLocals(f) {
-        //console.log("IS_MAIN", f.name, f.isMain);
+        console.log("IS_MAIN", f, f.name, f.isMain);
         ctx.enter({ isMain: f.isMain, finfo: f }, function () {
             f.locals = collectLocals(f.stmts);
             f.params = getParams(f);

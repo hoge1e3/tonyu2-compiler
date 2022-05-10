@@ -30,6 +30,8 @@ const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
 const Semantics = __importStar(require("./Semantics"));
 const SourceFiles_1 = __importDefault(require("./SourceFiles"));
 const TypeChecker_1 = require("./TypeChecker");
+const CompilerTypes_1 = require("./CompilerTypes");
+//type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
 function orderByInheritance(classes) {
     var added = {};
@@ -165,10 +167,9 @@ module.exports = class Builder {
         // metaはFunctionより先に作られるから
         var env = this.getEnv();
         //if (!ctx) ctx={};
-        if (!ctx.visited) {
-            ctx = { visited: {}, classes: (env.classes = env.classes || TonyuRuntime_1.default.classMetas), options: ctx };
-        }
-        return ctx;
+        if ((0, CompilerTypes_1.isBuilderContext)(ctx))
+            return ctx;
+        return { visited: {}, classes: (env.classes = env.classes || TonyuRuntime_1.default.classMetas), options: ctx };
     }
     fileToClass(file) {
         const shortName = this.fileToShortClassName(file);
@@ -333,11 +334,11 @@ module.exports = class Builder {
         }).then(() => {
             const s = SourceFiles_1.default.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
             let task = Promise.resolve();
-            if (destinations.file) {
+            if ((0, CompilerTypes_1.isFileDest)(destinations)) {
                 const outf = this.getOutputFile();
                 task = s.saveAs(outf);
             }
-            if (destinations.memory) {
+            if ((0, CompilerTypes_1.isMemoryDest)(destinations)) {
                 task = task.then(e => s);
             }
             return task;

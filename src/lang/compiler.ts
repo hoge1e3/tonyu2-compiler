@@ -1,5 +1,6 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
+import { FuncDecl, ParamDecl, TypeDecl } from "./NodeTypes";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
@@ -52,7 +53,7 @@ import root from "../lib/root";
 			type=ScopeTypes.MODULE;
 			constructor(public name){}
 		}
-		export type ALL=FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE;
+		export type ALL=(FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE) & {vtype?:TypeDecl};
 	};
 	export type ScopeInfo=ScopeInfos.ALL;
 	export type ScopeType=valueOf<typeof ScopeTypes>;
@@ -153,8 +154,8 @@ import root from "../lib/root";
 		return res;
 	}
 	//cu.getDependingClasses=getDependingClasses;
-	export function getParams(method) {//B
-		let res=[];
+	export function getParams(method/*: FuncDecl*/) {//B
+		let res=[] as ParamDecl[];
 		if (!method.head) return res;
 		if (method.head.setter) res.push(method.head.setter.value);
 		const ps=method.head.params ? method.head.params.params : null;
