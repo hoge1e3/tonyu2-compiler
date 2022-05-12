@@ -3,10 +3,6 @@
 * TonyuLang.parse(src);
 *   - srcを解析して構文木を返す．構文エラーがあれば例外を投げる．
 */
-/*define(["Grammar", "XMLBuffer", "IndentBuffer", "TT",
-		"disp", "Parser", "ExpressionParser", "TError"],
-function (Grammar, XMLBuffer, IndentBuffer, TT,
-		disp, Parser, ExpressionParser, TError) {*/
 
 //import * as Parser from "./parser";
 import TError from "../runtime/TError";

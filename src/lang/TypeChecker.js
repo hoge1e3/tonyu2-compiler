@@ -18,16 +18,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkExpr = exports.checkTypeDecl = void 0;
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
 //import Grammar from "./Grammar";
 const parser_1 = require("./parser");
-const Visitor_1 = __importDefault(require("./Visitor"));
+const Visitor_1 = require("./Visitor");
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 const ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -65,7 +62,7 @@ function checkTypeDecl(klass, env) {
     function annotation(node, aobj = undefined) {
         return annotation3(klass.annotation, node, aobj);
     }
-    var typeDeclVisitor = (0, Visitor_1.default)({
+    var typeDeclVisitor = new Visitor_1.Visitor({
         varDecl: function (node) {
             //console.log("TCV","varDecl",node);
             if (node.value)
@@ -126,7 +123,7 @@ function checkExpr(klass, env) {
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
-    var typeAnnotationVisitor = (0, Visitor_1.default)({
+    var typeAnnotationVisitor = new Visitor_1.Visitor({
         number: function (node) {
             annotation(node, { vtype: Number });
         },

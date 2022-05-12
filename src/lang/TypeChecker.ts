@@ -3,7 +3,7 @@ import {context} from "./context";
 import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
-import Visitor from "./Visitor";
+import {Visitor} from "./Visitor";
 import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 
@@ -42,7 +42,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	function annotation(node: TNode, aobj: Annotation=undefined):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
-	var typeDeclVisitor=Visitor({
+	var typeDeclVisitor=new Visitor({
 		varDecl: function (node: VarDecl) {
 			//console.log("TCV","varDecl",node);
 			if (node.value) this.visit(node.value);
@@ -101,7 +101,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 		function annotation(node:TNode, aobj?:any) {//B
 			return annotation3(klass.annotation,node,aobj);
 		}
-		var typeAnnotationVisitor=Visitor({
+		var typeAnnotationVisitor=new Visitor({
 			number: function (node:Token) {
 				annotation(node,{vtype:Number});
 			},

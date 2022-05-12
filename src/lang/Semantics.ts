@@ -9,7 +9,7 @@ import TonyuLang1 from "./parse_tonyu1";
 import TonyuLang2 from "./parse_tonyu2";
 import assert from "../lib/assert";
 import * as cu from "./compiler";
-import Visitor from "./Visitor";
+import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix} from "./NodeTypes";
@@ -100,7 +100,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 			});
 		}
 		if (spcn=="Array") {
-			klass.superclass={shortName:"Array",fullName:"Array",builtin:true} as Meta;
+			klass.superclass={shortName:"Array",fullName:"Array",builtin:true} as C_Meta;
 		} else if (spcn) {
 			var spc=env.classes[env.aliases[spcn] || spcn];/*ENVC*/  //CFN env.classes[env.aliases[spcn]]
 			if (!spc) {
@@ -121,7 +121,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 				pos:node.pos
 			};
 		}
-		var fieldsCollector=Visitor({
+		var fieldsCollector=new Visitor({
 			varDecl: function (node:VarDecl) {
 				addField(node.name, node);
 			},
@@ -388,7 +388,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 		return si;
 	}
-	var localsCollector=Visitor({
+	var localsCollector=new Visitor({
 		varDecl: function (node: VarDecl) {
 			if (ctx.isMain) {
 				annotation(node,{varInMain:true});
@@ -439,7 +439,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		});
 		return locals;
 	}
-	function annotateParents(path:TNode[], data:any) {//S
+	function annotateParents(path:TNode[], data:Annotation) {//S
 		path.forEach(function (n:TNode) {
 			annotation(n,data);
 		});
@@ -448,7 +448,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		if (ctx.method) ctx.method.fiberCallRequired=true;
 		annotateParents(path, {fiberCallRequired:true} );
 	}
-	var varAccessesAnnotator=Visitor({//S
+	var varAccessesAnnotator=new Visitor({//S
 		varAccess: function (node:VarAccess) {
 			var si=getScopeInfo(node.name);
 			annotation(node,{scopeInfo:si});

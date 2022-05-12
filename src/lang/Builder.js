@@ -26,7 +26,7 @@ const TError_1 = __importDefault(require("../runtime/TError"));
 const R_1 = __importDefault(require("../lib/R"));
 const tonyu1_1 = require("./tonyu1");
 const JSGenerator = require("./JSGenerator");
-const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
+const IndentBuffer_1 = require("./IndentBuffer");
 const Semantics = __importStar(require("./Semantics"));
 const SourceFiles_1 = __importDefault(require("./SourceFiles"));
 const TypeChecker_1 = require("./TypeChecker");
@@ -325,7 +325,7 @@ module.exports = class Builder {
             return this.showProgress("genJS");
         }).then(() => {
             //throw "test break";
-            buf = (0, IndentBuffer_1.default)({ fixLazyLength: 6 });
+            buf = new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6 });
             buf.traceIndex = {};
             return this.genJS(ord, {
                 codeBuffer: buf,

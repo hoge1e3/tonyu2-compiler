@@ -3,7 +3,7 @@ import TError from "../runtime/TError";
 import R from "../lib/R";
 import { isTonyu1 } from "./tonyu1";
 import JSGenerator = require("./JSGenerator");
-import IndentBuffer from "./IndentBuffer";
+import {IndentBuffer} from "./IndentBuffer";
 import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
@@ -305,7 +305,7 @@ export = class Builder {
 			return this.showProgress("genJS");
 		}).then(()=>{
 			//throw "test break";
-			buf=IndentBuffer({fixLazyLength:6});
+			buf=new IndentBuffer({fixLazyLength:6});
 			buf.traceIndex={};
 			return this.genJS(ord,{
 				codeBuffer: buf,

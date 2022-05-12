@@ -1,7 +1,3 @@
-/*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
-function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
-*/
-
 import {tokenizerFactory} from "./tokenizerFactory";
 
 export= tokenizerFactory({

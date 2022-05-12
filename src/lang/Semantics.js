@@ -34,7 +34,7 @@ const parse_tonyu1_1 = __importDefault(require("./parse_tonyu1"));
 const parse_tonyu2_1 = __importDefault(require("./parse_tonyu2"));
 const assert_1 = __importDefault(require("../lib/assert"));
 const cu = __importStar(require("./compiler"));
-const Visitor_1 = __importDefault(require("./Visitor"));
+const Visitor_1 = require("./Visitor");
 const context_1 = require("./context");
 const parser_1 = require("./parser");
 const NodeTypes_1 = require("./NodeTypes");
@@ -152,7 +152,7 @@ function initClassDecls(klass, env) {
                 pos: node.pos
             };
         }
-        var fieldsCollector = (0, Visitor_1.default)({
+        var fieldsCollector = new Visitor_1.Visitor({
             varDecl: function (node) {
                 addField(node.name, node);
             },
@@ -412,7 +412,7 @@ function annotateSource2(klass, env) {
         }
         return si;
     }
-    var localsCollector = (0, Visitor_1.default)({
+    var localsCollector = new Visitor_1.Visitor({
         varDecl: function (node) {
             if (ctx.isMain) {
                 annotation(node, { varInMain: true });
@@ -474,7 +474,7 @@ function annotateSource2(klass, env) {
             ctx.method.fiberCallRequired = true;
         annotateParents(path, { fiberCallRequired: true });
     }
-    var varAccessesAnnotator = (0, Visitor_1.default)({
+    var varAccessesAnnotator = new Visitor_1.Visitor({
         varAccess: function (node) {
             var si = getScopeInfo(node.name);
             annotation(node, { scopeInfo: si });

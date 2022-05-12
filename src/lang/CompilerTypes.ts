@@ -29,6 +29,9 @@ export type CompileOptions={
 	defaultSuperClass?: string,
 	destinations?: Destinations,
 	field_strict?: boolean,
+	diagnose?: boolean,
+	genAMD?: boolean,
+	noLoopCheck?: boolean,
 };
 export type Destinations=FileDest|MemoryDest;
 type FileDest={
@@ -64,7 +67,9 @@ export type C_Decls={
 }
 export type C_Meta=Meta & {
 	decls: C_Decls,
-	src?: {tonyu?:any, js?:any},
+	superclass: C_Meta,
+	includes: C_Meta[],
+	src?: {tonyu?:any, js?:any, map?: string},
     hasSemanticError: boolean,
     jsNotUpToDate: boolean,
     directives: {field_strict?:boolean},
@@ -79,6 +84,7 @@ export type C_MethodInfo=MethodInfo&{
 	node?:FuncDecl,
 	locals?: Locals,
 	params?: ParamDecl[],
+	useArgs?:boolean,
 };
 export type ScopeMap={[key:string]: ScopeInfo};
 export type FuncInfo={
@@ -104,7 +110,7 @@ export type Annotation={
 	info?: C_FieldInfo|FuncInfo,
 	declaringFunc?: FuncInfo,
 	resolvedType?: AnnotatedType,
-	fiberCall?: {},
+	fiberCall?: {N:TNode, A:TNode},
 	myMethodCall?: {name:Token, args:TNode[], scopeInfo: ScopeInfo},
 	othersMethodCall?: {target:TNode, name:Token, args:TNode[]},
 	memberAccess?: {target:TNode, name:Token},
@@ -112,4 +118,7 @@ export type Annotation={
 	varInMain?: boolean,
 	declaringClass?: C_Meta,
 	noBind?: boolean,
+	fiberCallRequired?: boolean,
+	hasJump?: boolean,
+	hasReturn?: boolean,
 };

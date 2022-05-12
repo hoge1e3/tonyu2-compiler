@@ -4,10 +4,6 @@
 * TonyuLang.parse(src);
 *   - srcを解析して構文木を返す．構文エラーがあれば例外を投げる．
 */
-/*define(["Grammar", "XMLBuffer", "IndentBuffer", "TT",
-        "disp", "Parser", "ExpressionParser", "TError"],
-function (Grammar, XMLBuffer, IndentBuffer, TT,
-        disp, Parser, ExpressionParser, TError) {*/
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };

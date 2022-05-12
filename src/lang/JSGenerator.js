@@ -23,8 +23,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.genJS = void 0;
-const Visitor_1 = __importDefault(require("./Visitor"));
-const IndentBuffer_1 = __importDefault(require("./IndentBuffer"));
+const Visitor_1 = require("./Visitor");
+const IndentBuffer_1 = require("./IndentBuffer");
 const TError_1 = __importDefault(require("../runtime/TError"));
 const R_1 = __importDefault(require("../lib/R"));
 const assert_1 = __importDefault(require("../lib/assert"));
@@ -65,7 +65,7 @@ function genJS(klass, env, genOptions) {
     }
     genOptions = genOptions || {};
     // env.codeBuffer is not recommended(if generate in parallel...?)
-    var buf = genOptions.codeBuffer || env.codeBuffer || (0, IndentBuffer_1.default)({ fixLazyLength: 6 });
+    var buf = genOptions.codeBuffer || env.codeBuffer || new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6 });
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
@@ -73,19 +73,16 @@ function genJS(klass, env, genOptions) {
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
-    var decls = klass.decls;
-    var fields = decls.fields, methods = decls.methods, natives = decls.natives;
+    const decls = klass.decls;
+    const methods = decls.methods;
     // ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数の集まり．親クラスの宣言は含まない
     var ST = ScopeTypes;
     var fnSeq = 0;
     var diagnose = env.options.compiler.diagnose;
     var genMod = env.options.compiler.genAMD;
     var doLoopCheck = !env.options.compiler.noLoopCheck;
-    function annotation(node, aobj) {
+    function annotation(node, aobj = undefined) {
         return annotation3(klass.annotation, node, aobj);
-    }
-    function getMethod(name) {
-        return getMethod2(klass, name);
     }
     function getClassName(klass) {
         if (typeof klass == "string")
@@ -166,7 +163,7 @@ function genJS(klass, env, genOptions) {
         };
     }
     var THNode = { type: "THNode" }; //G
-    const v = buf.visitor = (0, Visitor_1.default)({
+    const v = buf.visitor = new Visitor_1.Visitor({
         THNode: function (node) {
             buf.printf(TH);
         },
@@ -366,8 +363,9 @@ function genJS(klass, env, genOptions) {
         prefix: function (node) {
             if (node.op.text === "__typeof") {
                 var a = annotation(node.right);
-                if (a.vtype) {
-                    buf.printf("%l", a.vtype.name || a.vtype.fullName || "No type name?");
+                if (a.resolvedType) {
+                    const t = a.resolvedType;
+                    buf.printf("%l", t.name || t.fullName || "No type name?");
                 }
                 else {
                     buf.printf("%l", "Any");
@@ -795,7 +793,7 @@ function genJS(klass, env, genOptions) {
         console.log(node);
         throw new Error(node.type + " is not defined in visitor:compiler2");
     };
-    v.cnt = 0;
+    //v.cnt=0;
     function genSource() {
         ctx.enter({}, function () {
             if (genMod) {
@@ -828,10 +826,10 @@ function genJS(klass, env, genOptions) {
             printf("includes: [%s],%n", getClassNames(klass.includes).join(","));
             printf("methods: function (%s) {%{", SUPER);
             printf("return {%{");
-            const procMethod = name => {
+            const procMethod = (name) => {
                 if (debug)
                     console.log("method1", name);
-                var method = methods[name];
+                const method = methods[name];
                 if (!method.params) {
                     console.log("MYSTERY2", method.params, methods, klass, env);
                 }

@@ -1,7 +1,3 @@
-/*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
-function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
-*/
-
 import { ALL, Parser, State, StringParser, StrLikeResult, StrStateSrc } from "./parser";
 
 //import Parser from "./parser";

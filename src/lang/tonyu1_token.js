@@ -1,7 +1,4 @@
 "use strict";
-/*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
-function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
-*/
 const tokenizerFactory_1 = require("./tokenizerFactory");
 module.exports = (0, tokenizerFactory_1.tokenizerFactory)({
     caseInsensitive: true,

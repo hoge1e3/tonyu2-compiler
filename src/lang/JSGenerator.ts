@@ -1,6 +1,6 @@
-import Visitor from "./Visitor";
+import {Visitor} from "./Visitor";
 
-import IndentBuffer from "./IndentBuffer";
+import {IndentBuffer} from "./IndentBuffer";
 import TError from "../runtime/TError";
 import R from "../lib/R";
 import assert from "../lib/assert";
@@ -8,6 +8,8 @@ import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, C_MethodInfo } from "./CompilerTypes";
+import { FuncExpr, TNode } from "./NodeTypes";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -35,7 +37,7 @@ var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
 
 //-----------
-export function genJS(klass, env, genOptions) {//B
+export function genJS(klass:C_Meta, env:BuilderEnv, genOptions) {//B
 	var srcFile=klass.src.tonyu; //file object  //S
 	var srcCont=srcFile.text();
 	function getSource(node) {
@@ -43,7 +45,7 @@ export function genJS(klass, env, genOptions) {//B
 	}
 	genOptions=genOptions||{};
 	// env.codeBuffer is not recommended(if generate in parallel...?)
-	var buf=genOptions.codeBuffer || env.codeBuffer || IndentBuffer({fixLazyLength:6});
+	var buf=genOptions.codeBuffer || (env as any).codeBuffer || new IndentBuffer({fixLazyLength:6});
 	var traceIndex=genOptions.traceIndex||{};
 	buf.setSrcFile(srcFile);
 	var printf=buf.printf;
@@ -62,10 +64,8 @@ export function genJS(klass, env, genOptions) {//B
 	var debug=false;
 	//var traceTbl=env.traceTbl;
 	// method := fiber | function
-	var decls=klass.decls;
-	var fields=decls.fields,
-		methods=decls.methods,
-		natives=decls.natives;
+	const decls=klass.decls;
+	const methods=decls.methods;
 	// ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数の集まり．親クラスの宣言は含まない
 	var ST=ScopeTypes;
 	var fnSeq=0;
@@ -73,13 +73,10 @@ export function genJS(klass, env, genOptions) {//B
 	var genMod=env.options.compiler.genAMD;
 	var doLoopCheck=!env.options.compiler.noLoopCheck;
 
-	function annotation(node, aobj?) {//B
-		return annotation3(klass.annotation,node,aobj);
+	function annotation(node:TNode, aobj:Annotation=undefined) {//B
+		return annotation3(klass.annotation,node,aobj) as Annotation;
 	}
-	function getMethod(name) {//B
-		return getMethod2(klass,name);
-	}
-	function getClassName(klass){// should be object or short name //G
+	function getClassName(klass:string|C_Meta){// should be object or short name //G
 		if (typeof klass=="string") return CLASS_HEAD+(env.aliases[klass] || klass);//CFN  CLASS_HEAD+env.aliases[klass](null check)
 		if (klass.builtin) return klass.fullName;// CFN klass.fullName
 		return CLASS_HEAD+klass.fullName;// CFN  klass.fullName
@@ -147,7 +144,7 @@ export function genJS(klass, env, genOptions) {//B
 		};
 	}
 	var THNode={type:"THNode"};//G
-	const v=buf.visitor=Visitor({//G
+	const v=buf.visitor=new Visitor({//G
 		THNode: function (node) {
 			buf.printf(TH);
 		},
@@ -363,8 +360,9 @@ export function genJS(klass, env, genOptions) {//B
 		prefix: function (node) {
 			if (node.op.text==="__typeof") {
 				var a=annotation(node.right);
-				if (a.vtype) {
-					buf.printf("%l",a.vtype.name||a.vtype.fullName||"No type name?");
+				if (a.resolvedType) {
+					const t=a.resolvedType as any;
+ 					buf.printf("%l",t.name||t.fullName||"No type name?");
 				} else {
 					buf.printf("%l","Any");
 				}
@@ -847,7 +845,7 @@ export function genJS(klass, env, genOptions) {//B
 		console.log(node);
 		throw new Error(node.type+" is not defined in visitor:compiler2");
 	};
-	v.cnt=0;
+	//v.cnt=0;
 	function genSource() {//G
 		ctx.enter({}, function () {
 			if (genMod) {
@@ -879,9 +877,9 @@ export function genJS(klass, env, genOptions) {//B
 			printf("includes: [%s],%n", getClassNames(klass.includes).join(","));
 			printf("methods: function (%s) {%{",SUPER);
 			printf("return {%{");
-			const procMethod=name=>{
+			const procMethod=(name:string)=>{
 				if (debug) console.log("method1", name);
-				var method=methods[name];
+				const method=methods[name];
 				if (!method.params) {
 					console.log("MYSTERY2", method.params, methods, klass, env);
 				}
@@ -946,7 +944,7 @@ export function genJS(klass, env, genOptions) {//B
 		}
 		return res;
 	}
-	function genFiber(fiber) {//G
+	function genFiber(fiber: C_MethodInfo) {//G
 		if (isConstructor(fiber)) return;
 		var stmts=fiber.stmts;
 		var noWaitStmts=[], waitStmts=[], curStmts=noWaitStmts;
@@ -1041,9 +1039,8 @@ export function genJS(klass, env, genOptions) {//B
 			});
 		}
 	}
-	function genFuncExpr(node) {//G
-		var finfo=annotation(node).info;// annotateSubFuncExpr(node);
-
+	function genFuncExpr(node:FuncExpr) {//G
+		var finfo=annotation(node).info as FuncInfo;// annotateSubFuncExpr(node);
 		buf.printf("(function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
@@ -1069,7 +1066,7 @@ export function genJS(klass, env, genOptions) {//B
 //        return ("_trc_func_"+traceTbl.add(klass,pos )+"_"+(fnSeq++));//  Math.random()).replace(/\./g,"");
 	}
 	function genSubFunc(node) {//G
-		var finfo=annotation(node).info;// annotateSubFuncExpr(node);
+		var finfo=annotation(node).info as FuncInfo;// annotateSubFuncExpr(node);
 		buf.printf("function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+

@@ -1,7 +1,4 @@
 "use strict";
-/*define(["Grammar", "XMLBuffer", "IndentBuffer","disp", "Parser","TError"],
-function (Grammar, XMLBuffer, IndentBuffer, disp, Parser,TError) {
-*/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tokenizerFactory = void 0;
 const parser_1 = require("./parser");
