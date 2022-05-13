@@ -113,7 +113,9 @@ export function isMeta(klass: AnnotatedType): klass is C_Meta {
 }
 export type Annotation={
 	scopeInfo?: ScopeInfo,
-	info?: C_FieldInfo|FuncInfo,
+	fieldInfo?: C_FieldInfo,
+	funcInfo?: FuncInfo,
+	//info?: C_FieldInfo|FuncInfo,
 	declaringFunc?: FuncInfo,
 	resolvedType?: AnnotatedType,
 	fiberCall?: {N:TNode, A:TNode},

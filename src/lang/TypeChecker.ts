@@ -53,7 +53,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 				if (rt) {
 					const a=annotation(node);
 					const si:ScopeInfo=a.scopeInfo;// for local
-					const info=a.info;// for field
+					const info=a.fieldInfo;// for field
 					if (si) {
 						console.log("set var type",node.name+"", va.resolvedType );
 						si.vtype=va.resolvedType;
@@ -84,7 +84,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		funcDecl: function (node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
-			var finfo=annotation(node).info as FuncInfo;
+			var finfo=annotation(node).funcInfo;
 			if (head.rtype) {
 				console.log("ret typeis",head.name+"", head.rtype.vtype+"");
 				const tanon=annotation(head.rtype)

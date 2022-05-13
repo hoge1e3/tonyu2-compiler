@@ -276,7 +276,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			const info=decls.fields[i];
 			s[i]=new SI.FIELD(klass, i, info);
 			if (info.node) {
-				annotation(info.node,{info});
+				annotation(info.node,{fieldInfo: info});
 			}
 		}
 		for (let i in decls.methods) {
@@ -289,7 +289,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				s[i]=new SI.METHOD(klass.fullName, i, info);
 			}
 			if (info.node) {
-				annotation(info.node,{info});
+				annotation(info.node,{funcInfo:info});
 			}
 		}
 	}
@@ -721,7 +721,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		//var res={scope:ns, locals:finfo.locals, name:name, params:ps};
 		resolveTypesOfParams(finfo.params);
 		//annotation(node,res);
-		annotation(node,{info:finfo});
+		annotation(node,{funcInfo:finfo});
 		annotateSubFuncExprs(finfo.locals, ns);
 		return finfo;
 	}

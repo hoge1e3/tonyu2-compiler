@@ -74,7 +74,7 @@ function checkTypeDecl(klass, env) {
                 if (rt) {
                     const a = annotation(node);
                     const si = a.scopeInfo; // for local
-                    const info = a.info; // for field
+                    const info = a.fieldInfo; // for field
                     if (si) {
                         console.log("set var type", node.name + "", va.resolvedType);
                         si.vtype = va.resolvedType;
@@ -105,7 +105,7 @@ function checkTypeDecl(klass, env) {
         funcDecl: function (node) {
             //console.log("Visit funcDecl",node);
             var head = node.head;
-            var finfo = annotation(node).info;
+            var finfo = annotation(node).funcInfo;
             if (head.rtype) {
                 console.log("ret typeis", head.name + "", head.rtype.vtype + "");
                 const tanon = annotation(head.rtype);

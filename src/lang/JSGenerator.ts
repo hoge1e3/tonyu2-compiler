@@ -1045,7 +1045,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		}
 	}
 	function genFuncExpr(node:FuncExpr) {//G
-		var finfo=annotation(node).info as FuncInfo;// annotateSubFuncExpr(node);
+		var finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
 		buf.printf("(function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
@@ -1071,7 +1071,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 //        return ("_trc_func_"+traceTbl.add(klass,pos )+"_"+(fnSeq++));//  Math.random()).replace(/\./g,"");
 	}
 	function genSubFunc(node: FuncDecl) {//G
-		var finfo=annotation(node).info as FuncInfo;// annotateSubFuncExpr(node);
+		var finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
 		buf.printf("function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
