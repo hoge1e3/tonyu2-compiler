@@ -1,6 +1,6 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
-import { FuncDecl, ParamDecl, TypeDecl } from "./NodeTypes";
+import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
 import { AnnotatedType, C_FieldInfo, C_Meta, C_MethodInfo, FuncInfo, NativeClass } from "./CompilerTypes";
 import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 
@@ -112,12 +112,12 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		return res;
 	};*/
 	//cu.annotation=annotation3;
-	export function getSource(srcCont,node) {//B
+	export function getSource(srcCont:string,node: TNode) {//B
 		return srcCont.substring(node.pos,node.pos+node.len);
 	}
 	//cu.getSource=getSource;
 	//cu.getField=getField;
-	export function getField(klass,name){
+	export function getField(klass: C_Meta, name: string){
 		if (klass instanceof Function) return null;
 		let res=null;
 		getDependingClasses(klass).forEach(function (k) {

@@ -92,9 +92,10 @@ function genJS(klass, env, genOptions) {
         return CLASS_HEAD + klass.fullName; // CFN  klass.fullName
     }
     function getClassNames(cs) {
-        var res = [];
+        return cs.map(getClassName);
+        /*var res=[];
         cs.forEach(function (c) { res.push(getClassName(c)); });
-        return res;
+        return res;*/
     }
     function enterV(obj, node) {
         return function (buf) {
@@ -280,7 +281,7 @@ function genJS(klass, env, genOptions) {
             }
             else {
                 buf.printf("%v: %f", node.key, function () {
-                    var si = varAccess(node.key.text, annotation(node).scopeInfo, annotation(node));
+                    /*const si=*/ varAccess(node.key.text, annotation(node).scopeInfo, annotation(node));
                 });
             }
         },
@@ -298,7 +299,7 @@ function genJS(klass, env, genOptions) {
         },
         varAccess: function (node) {
             var n = node.name.text;
-            var si = varAccess(n, annotation(node).scopeInfo, annotation(node));
+            /*const si=*/ varAccess(n, annotation(node).scopeInfo, annotation(node));
         },
         exprstmt: function (node) {
             var t = {};
@@ -483,9 +484,7 @@ function genJS(klass, env, genOptions) {
         },
         "switch": function (node) {
             if (!ctx.noWait) {
-                var labels = node.cases.map(function (c) {
-                    return buf.lazy();
-                });
+                const labels = node.cases.map(() => buf.lazy());
                 if (node.defs)
                     labels.push(buf.lazy());
                 var brkpos = buf.lazy();
@@ -584,6 +583,7 @@ function genJS(klass, env, genOptions) {
             lastPosF(node)();
             var an = annotation(node);
             if (node.inFor.type == "forin") {
+                const inFor = node.inFor;
                 var itn = annotation(node.inFor).iterName;
                 if (!ctx.noWait &&
                     (an.fiberCallRequired || an.hasReturn)) {
@@ -595,7 +595,7 @@ function genJS(klass, env, genOptions) {
                         "%f%n" +
                         "%f%n" +
                         "%s=%s;break;%n" +
-                        "%}case %f:%{", itn, ITER, node.inFor.set, node.inFor.vars.length, pc, itn, FRMPC, brkpos, getElemF(itn, node.inFor.isVar, node.inFor.vars), enterV({ closestBrk: brkpos, closestCnt: pc, exitTryOnJump: false }, node.loop), //node.loop,
+                        "%}case %f:%{", itn, ITER, inFor.set, inFor.vars.length, pc, itn, FRMPC, brkpos, getElemF(itn, inFor.isVar, inFor.vars), enterV({ closestBrk: brkpos, closestCnt: pc, exitTryOnJump: false }, node.loop), //node.loop,
                     FRMPC, pc, function (buf) { buf.print(brkpos.put(ctx.pc++)); });
                 }
                 else {
@@ -604,11 +604,12 @@ function genJS(klass, env, genOptions) {
                             "while(%s.next()) {%{" +
                             "%f%n" +
                             "%f%n" +
-                            "%}}", itn, ITER, node.inFor.set, node.inFor.vars.length, itn, getElemF(itn, node.inFor.isVar, node.inFor.vars), noSurroundCompoundF(node.loop));
+                            "%}}", itn, ITER, inFor.set, inFor.vars.length, itn, getElemF(itn, inFor.isVar, inFor.vars), noSurroundCompoundF(node.loop));
                     });
                 }
             }
             else {
+                const inFor = node.inFor;
                 if (!ctx.noWait &&
                     (an.fiberCallRequired || an.hasReturn)) {
                     const brkpos = buf.lazy();
@@ -626,13 +627,13 @@ function genJS(klass, env, genOptions) {
                 }
                 else {
                     ctx.enter({ noWait: true }, function () {
-                        if (node.inFor.init.type == "varsDecl" || node.inFor.init.type == "exprstmt") {
+                        if (inFor.init.type == "varsDecl" || inFor.init.type == "exprstmt") {
                             buf.printf("%v" +
                                 "for (; %v ; %v) {%{" +
                                 (doLoopCheck ? "Tonyu.checkLoop();%n" : "") +
                                 "%v%n" +
                                 "%}}", 
-                            /*enterV({noLastPos:true},*/ node.inFor.init, node.inFor.cond, node.inFor.next, node.loop);
+                            /*enterV({noLastPos:true},*/ inFor.init, inFor.cond, inFor.next, node.loop);
                         }
                         else {
                             buf.printf("%v%n" +
@@ -640,7 +641,7 @@ function genJS(klass, env, genOptions) {
                                 (doLoopCheck ? "Tonyu.checkLoop();%n" : "") +
                                 "%v%n" +
                                 "%v;%n" +
-                                "%}}", node.inFor.init, node.inFor.cond, node.loop, node.inFor.next);
+                                "%}}", inFor.init, inFor.cond, node.loop, inFor.next);
                         }
                     });
                 }
@@ -725,7 +726,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("[%j]", [",", node.args]);
         },
         superExpr: function (node) {
-            var name;
+            let name;
             //if (!klass.superclass) throw new Error(klass.fullName+"には親クラスがありません");
             if (node.name) {
                 name = node.name.text;
@@ -864,6 +865,9 @@ function genJS(klass, env, genOptions) {
         //    printf("//%}});");
         //}
     }
+    function getNameOfType(t) {
+        return t.fullName || t.class.name;
+    }
     function digestDecls(klass) {
         var res = { methods: {}, fields: {} };
         for (let i in klass.decls.methods) {
@@ -879,7 +883,7 @@ function genJS(klass, env, genOptions) {
                     dst.vtype = src.vtype;
                 }
                 else {
-                    dst.vtype = src.vtype.fullName || src.vtype.name;
+                    dst.vtype = getNameOfType(src.vtype); //.fullName || src.vtype.name;
                 }
             }
             res.fields[i] = dst;

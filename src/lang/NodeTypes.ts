@@ -37,7 +37,7 @@ export function isInfix(n:TNode): n is Infix {
 export type Trifix=NodeBase&{
     type:"trifix",
     left: Expression,
-    op:Token,
+    op1:Token,
     mid : Expression,
     op2:Token,
     right: Expression,

@@ -1,5 +1,6 @@
 import { Constructor, FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
+import { IndentBuffer } from "./IndentBuffer";
 import { Catch, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, TNode, VarDecl } from "./NodeTypes";
 import { Token } from "./parser";
 
@@ -76,6 +77,7 @@ export type C_Meta=Meta & {
     node: Program, nodeTimestamp:number,
 	annotation?: object,
 };
+export type ScopeMap={[key:string]: ScopeInfo};
 export type C_MethodInfo=MethodInfo&{
 	stmts:Stmt[],pos:number,
 	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
@@ -86,17 +88,16 @@ export type C_MethodInfo=MethodInfo&{
 	params?: ParamDecl[],
 	useArgs?:boolean,
 };
-export type ScopeMap={[key:string]: ScopeInfo};
 export type FuncInfo={
 	name: string,
 	isMain?: boolean,
 	stmts: Stmt[],
 	locals?: Locals,
 	params?: ParamDecl[],
+	scope?: ScopeMap,
+	fiberCallRequired?:boolean,
 	useArgs?:boolean,
 	useTry?:boolean,
-	fiberCallRequired?:boolean,
-	scope?: ScopeMap,
 	returnType?: AnnotatedType,
 	//vtype?: AnnotatedType,
 };
@@ -121,4 +122,11 @@ export type Annotation={
 	fiberCallRequired?: boolean,
 	hasJump?: boolean,
 	hasReturn?: boolean,
+};
+export type TraceIndex={
+
+};
+export type GenOptions={
+	codeBuffer?: IndentBuffer,
+	traceIndex?: TraceIndex
 };
