@@ -49,7 +49,7 @@ type MemoryDest={
 export function isMemoryDest(d:Destinations):d is MemoryDest  {
 	return (d as any).memory;
 }
-export type Methods={[key: string]: C_MethodInfo};
+export type Methods={[key: string]: FuncInfo};
 export type Locals={
 	varDecls: {[key: string]:VarDecl},
 	subFuncDecls: {[key: string]:FuncDecl},
@@ -60,7 +60,7 @@ export type C_FieldInfo=FieldInfo & {
 	vtype?: AnnotatedType,
 };
 export type C_Decls={
-	methods: {[key:string]: C_MethodInfo},
+	methods: {[key:string]: FuncInfo},
 	fields:  {[key:string]: C_FieldInfo},
 	natives?: object,
 	amds?: object,
@@ -78,7 +78,7 @@ export type C_Meta=Meta & {
 	annotation?: object,
 };
 export type ScopeMap={[key:string]: ScopeInfo};
-export type C_MethodInfo=MethodInfo&{
+/*export type C_MethodInfo=MethodInfo&{
 	stmts:Stmt[],pos:number,
 	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
 	klass:string,
@@ -87,9 +87,13 @@ export type C_MethodInfo=MethodInfo&{
 	locals?: Locals,
 	params?: ParamDecl[],
 	useArgs?:boolean,
-};
-export type FuncInfo={
-	name: string,
+};*/
+export type FuncInfo={// also includes Method
+	node?: FuncDecl,
+	head?: FuncDeclHead,
+	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
+	//klass?: string,
+	name: string, //pos?:number,
 	isMain?: boolean,
 	stmts: Stmt[],
 	locals?: Locals,
@@ -99,6 +103,7 @@ export type FuncInfo={
 	useArgs?:boolean,
 	useTry?:boolean,
 	returnType?: AnnotatedType,
+	nowait: boolean,
 	//vtype?: AnnotatedType,
 };
 export type NativeClass={class: Constructor};

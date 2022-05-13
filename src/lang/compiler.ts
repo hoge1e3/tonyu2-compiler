@@ -1,7 +1,7 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
-import { AnnotatedType, C_FieldInfo, C_Meta, C_MethodInfo, FuncInfo, NativeClass } from "./CompilerTypes";
+import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, NativeClass } from "./CompilerTypes";
 import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
@@ -30,11 +30,11 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		}
 		export class PROP {
 			type=ScopeTypes.PROP;
-			constructor(public klass:string, public name:string , public info:C_MethodInfo){}
+			constructor(public klass:string, public name:string , public info:FuncInfo){}
 		}
 		export class METHOD{
 			type=ScopeTypes.METHOD;
-			constructor(public klass:string, public name:string , public info:C_MethodInfo){}
+			constructor(public klass:string, public name:string , public info:FuncInfo){}
 		}
 		export class THVAR {
 			type=ScopeTypes.THVAR;
@@ -156,7 +156,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		return res;
 	}
 	//cu.getDependingClasses=getDependingClasses;
-	export function getParams(method: C_MethodInfo) {//B
+	export function getParams(method: FuncInfo) {//B
 		let res=[] as ParamDecl[];
 		if (!method.head) return res;
 		if (method.head.setter) res.push(method.head.setter.value);

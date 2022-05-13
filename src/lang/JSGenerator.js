@@ -926,7 +926,7 @@ function genJS(klass, env, genOptions) {
             "%svar %s=%s;%n" +
             "var %s=0;%n" +
             "%f%n" +
-            "%f%n", FIBPRE, fiber.name, genFn(fiber.pos, "f_" + fiber.name), [",", [THNode].concat(fiber.params)], THIZ, GET_THIS, (fiber.useArgs ? "" : "//"), ARGS, "Tonyu.A(arguments)", FRMPC, genLocalsF(fiber), nfbody);
+            "%f%n", FIBPRE, fiber.name, genFn("f_" + fiber.name), [",", [THNode].concat(fiber.params)], THIZ, GET_THIS, (fiber.useArgs ? "" : "//"), ARGS, "Tonyu.A(arguments)", FRMPC, genLocalsF(fiber), nfbody);
         if (waitStmts.length > 0) {
             printf("%s.enter(function %s(%s) {%{" +
                 "if (%s.lastEx) %s=%s.catchPC;%n" +
@@ -937,7 +937,7 @@ function genJS(klass, env, genOptions) {
                 "%s.exit(%s);return;%n" +
                 "%}}%n" +
                 "%}}%n" +
-                "%}});%n", TH, genFn(fiber.pos, "ent_" + fiber.name), TH, TH, FRMPC, TH, CNTV, CNTC, CNTV, FRMPC, 
+                "%}});%n", TH, genFn("ent_" + fiber.name), TH, TH, FRMPC, TH, CNTV, CNTC, CNTV, FRMPC, 
             // case 0:
             fbody, TH, THIZ);
         }
@@ -971,7 +971,7 @@ function genJS(klass, env, genOptions) {
             "var %s=%s;%n" +
             "%f%n" +
             "%f" +
-            "%}},%n", fname, genFn(func.pos, fname), [",", func.params], THIZ, GET_THIS, genLocalsF(func), fbody);
+            "%}},%n", fname, genFn(fname), [",", func.params], THIZ, GET_THIS, genLocalsF(func), fbody);
         function fbody() {
             ctx.enter({ method: func, finfo: func,
                 /*scope: func.scope*/ 
@@ -997,7 +997,7 @@ function genJS(klass, env, genOptions) {
             });
         }
     }
-    function genFn(pos, name) {
+    function genFn(/*pos:number ,*/ name) {
         if (!name)
             name = (fnSeq++) + "";
         let n = ("_trc_" + klass.shortName + "_" + name);

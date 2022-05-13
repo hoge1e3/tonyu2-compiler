@@ -99,7 +99,7 @@ function initClassDecls(klass, env) {
         klass.jsNotUpToDate = true;
     }
     const node = parse(klass, env.options);
-    var MAIN = { name: "main", stmts: [], pos: 0, isMain: true, nowait: false, klass: klass.fullName };
+    var MAIN = { name: "main", stmts: [], isMain: true, nowait: false }; //, klass:klass.fullName};
     // method := fiber | function
     const fields = {}, methods = { main: MAIN }, natives = {}, amds = {}, softRefClasses = {};
     klass.decls = { fields, methods, natives, amds, softRefClasses };
@@ -197,9 +197,9 @@ function initClassDecls(klass, env) {
                     nowait: (!!head.nowait || propHead !== ""),
                     ftype,
                     name,
-                    klass: klass.fullName,
+                    //klass: klass.fullName,
                     head,
-                    pos: head.pos,
+                    //pos: head.pos,
                     stmts: stmt.body.stmts,
                     node: stmt
                 };
@@ -740,7 +740,7 @@ function annotateSource2(klass, env) {
         else {
             ps = [];
         }
-        var finfo = { name, stmts: body.stmts };
+        var finfo = { name, stmts: body.stmts, nowait: true };
         var ns = newScope(ctx.scope);
         //var locals;
         ctx.enter({ finfo }, function () {

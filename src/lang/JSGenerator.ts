@@ -8,7 +8,7 @@ import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
-import { Annotation, C_Meta, BuilderEnv, FuncInfo, C_MethodInfo, GenOptions, AnnotatedType, NativeClass } from "./CompilerTypes";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass } from "./CompilerTypes";
 import { ArgList, Arylit, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 
@@ -949,7 +949,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		}
 		return res;
 	}
-	function genFiber(fiber: C_MethodInfo) {//G
+	function genFiber(fiber: FuncInfo) {//G
 		if (isConstructor(fiber)) return;
 		var stmts=fiber.stmts;
 		var noWaitStmts=[], waitStmts=[], curStmts=noWaitStmts;
@@ -972,7 +972,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				"var %s=0;%n"+
 				"%f%n"+
 				"%f%n",
-				FIBPRE, fiber.name, genFn(fiber.pos,"f_"+fiber.name), [",",[THNode].concat(fiber.params)],
+				FIBPRE, fiber.name, genFn("f_"+fiber.name), [",",[THNode].concat(fiber.params)],
 				THIZ, GET_THIS,
 				(fiber.useArgs?"":"//"), ARGS, "Tonyu.A(arguments)",
 				FRMPC,
@@ -991,7 +991,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 						"%}}%n"+
 					"%}}%n"+
 				"%}});%n",
-				TH,genFn(fiber.pos,"ent_"+fiber.name),TH,
+				TH,genFn("ent_"+fiber.name),TH,
 					TH,FRMPC,TH,
 					CNTV, CNTC, CNTV,
 						FRMPC,
@@ -1019,7 +1019,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			});
 		}
 	}
-	function genFunc(func:C_MethodInfo) {//G
+	function genFunc(func:FuncInfo) {//G
 		var fname= isConstructor(func) ? "initialize" : func.name;
 		if (!func.params) {//TODO
 			console.log("MYSTERY",func.params);
@@ -1030,7 +1030,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 					"%f%n" +
 					"%f" +
 				"%}},%n",
-				fname, genFn(func.pos,fname), [",",func.params],
+				fname, genFn(fname), [",",func.params],
 				THIZ, GET_THIS,
 						genLocalsF(func),
 						fbody
@@ -1063,7 +1063,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			});
 		}
 	}
-	function genFn(pos:number ,name:string) {//G
+	function genFn(/*pos:number ,*/name:string) {//G
 		if (!name) name=(fnSeq++)+"";
 		let n=("_trc_"+klass.shortName+"_"+name);
 		traceIndex[n]=1;

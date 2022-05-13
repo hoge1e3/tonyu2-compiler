@@ -14,7 +14,7 @@ import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { AnnotatedType, Annotation, BuilderEnv, C_Meta, C_MethodInfo, FuncInfo, Locals, Methods } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_Meta, FuncInfo, Locals, Methods } from "./CompilerTypes";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -71,7 +71,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	var MAIN:C_MethodInfo={name:"main",stmts:[],pos:0, isMain:true, nowait: false, klass:klass.fullName};
+	var MAIN:FuncInfo={name:"main",stmts:[], isMain:true, nowait: false};//, klass:klass.fullName};
 	// method := fiber | function
 	const fields={}, methods:Methods={main: MAIN}, natives={}, amds={},softRefClasses={};
 	klass.decls={fields, methods, natives, amds, softRefClasses};
@@ -166,9 +166,9 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 						nowait: (!!head.nowait || propHead!==""),
 						ftype,
 						name,
-						klass: klass.fullName,
+						//klass: klass.fullName,
 						head,
-						pos: head.pos,
+						//pos: head.pos,
 						stmts: stmt.body.stmts,
 						node: stmt
 				};
@@ -583,7 +583,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.def(node);
 		},
 		exprstmt: function (node:Exprstmt) {
-			var t:any,m: C_MethodInfo;
+			var t:any,m: FuncInfo;
 			if (node.expr.type==="objlit") {
 				throw TError( R("cannotUseObjectLiteralAsTheExpressionOfStatement") , srcFile, node.pos);
 			}
@@ -684,7 +684,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		});
 	}
-	function initParamsLocals(f: C_MethodInfo) {//S
+	function initParamsLocals(f: FuncInfo) {//S
 		//console.log("IS_MAIN", f, f.name, f.isMain);
 		ctx.enter({isMain:f.isMain,finfo:f}, function () {
 			f.locals=collectLocals(f.stmts);
@@ -702,7 +702,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		} else {
 			ps=[];
 		}
-		var finfo:FuncInfo={name, stmts:body.stmts};
+		var finfo:FuncInfo={name, stmts:body.stmts, nowait: true};
 		var ns=newScope(ctx.scope);
 		//var locals;
 		ctx.enter({finfo}, function () {
