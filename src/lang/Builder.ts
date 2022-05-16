@@ -8,7 +8,8 @@ import * as Semantics from "./Semantics";
 import SourceFiles from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
 import { Meta, MetaMap } from "../runtime/RuntimeTypes";
-import { BuilderContext, CompileOptions, C_Meta, C_MetaMap, Destinations, isBuilderContext, isFileDest, isMemoryDest } from "./CompilerTypes";
+import { BuilderContext, BuilderEnv, CompileOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isBuilderContext, isFileDest, isMemoryDest } from "./CompilerTypes";
+import { SFile } from "../lib/SFileType";
 
 //type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
@@ -85,7 +86,7 @@ function orderByInheritance(classes:MetaMap) {/*ENVC*/
 // includes langMod, dirBase
 export = class Builder {
     prj: any;
-    env: any;
+    env: BuilderEnv;
 	// Difference from TonyuProject
 	//    projectCompiler defines projects of Tonyu 'Language'.
 	//    Responsible for transpilation.
@@ -115,16 +116,27 @@ export = class Builder {
         return isTonyu1(options);
     }
     getOptions() {return this.prj.getOptions();}
-    getOutputFile(...f) {return this.prj.getOutputFile(...f);}
+    getOutputFile(...f:SFile[]) {return this.prj.getOutputFile(...f);}
     getNamespace():string {return this.prj.getNamespace();}
     getDir(){return this.prj.getDir();}
     getEXT(){return this.prj.getEXT();}
     sourceFiles(ns?:string){return this.prj.sourceFiles();}
     loadDependingClasses(ctx:BuilderContext){return this.prj.loadDependingClasses(ctx);}
     getEnv() {
-        this.env=this.env||{};
-        this.env.options=this.env.options||this.getOptions();
-        this.env.aliases=this.env.aliases||{};
+        //this.env=this.env||{};
+        if (this.env) {
+            this.env.options=this.env.options||this.getOptions();
+            this.env.aliases=this.env.aliases||{};
+        } else {
+            this.env={
+                options: this.getOptions(),
+                aliases:{},
+                classes: Tonyu.classMetas as C_MetaMap,
+                amdPaths:[],
+            };
+        }
+        //this.env.options=this.env.options||this.getOptions();
+        //this.env.aliases=this.env.aliases||{};
         return this.env;
     }
 	requestRebuild () {
@@ -150,12 +162,12 @@ export = class Builder {
 	initCtx(ctx:BuilderContext|CompileOptions={}):BuilderContext {
 		//どうしてclassMetasとclassesをわけるのか？
 		// metaはFunctionより先に作られるから
-		var env=this.getEnv();
 		//if (!ctx) ctx={};
 		if (isBuilderContext(ctx)) return ctx;
-		return {visited:{}, classes:(env.classes=env.classes||Tonyu.classMetas),options:ctx};
+        const env=this.getEnv();
+		return {visited:{}, classes:(env.classes=env.classes||(Tonyu.classMetas as C_MetaMap)),options:ctx};
 	}
-	fileToClass(file) {
+	fileToClass(file: SFile) {
 		const shortName=this.fileToShortClassName(file);
 		const env=this.getEnv();
         const fullName=env.aliases[shortName];
@@ -163,7 +175,7 @@ export = class Builder {
 		let res=env.classes[fullName];
 		return res;
 	}
-	postChange (file) {// postChange is for file(s), modify files before call
+	postChange (file: SFile) {// postChange is for file(s), modify files before call
         // It may fails before call fullCompile
 		const classMeta=this.fileToClass(file);
 		if (!classMeta) {
@@ -200,15 +212,15 @@ export = class Builder {
 		//console.log("revdep",Object.keys(dep));
 		return dep;
 	}
-    parse(f) {
+    parse(f:SFile) {
         const klass=this.addMetaFromFile(f);
         return Semantics.parse(klass);
     }
-    fileToShortClassName(f):string {
+    fileToShortClassName(f:SFile):string {
         const s=f.truncExt(this.getEXT());
         return this.isTonyu1()?s.toLowerCase():s;
     }
-	addMetaFromFile(f) {
+	addMetaFromFile(f:SFile) {
 		const env=this.getEnv();
 		const shortCn=this.fileToShortClassName(f);
         const myNsp=this.getNamespace();
@@ -224,15 +236,15 @@ export = class Builder {
 		env.aliases[shortCn]=fullCn;
 		return m;
 	}
-	fullCompile (ctx?/*or options(For external call)*/) {
+	fullCompile (_ctx?: BuilderContext| CompileOptions/*or options(For external call)*/) {
         const dir=this.getDir();
-        ctx=this.initCtx(ctx);
+        const ctx=this.initCtx(_ctx);
 		const ctxOpt=ctx.options ||{};
 		//if (!ctx.options.hot) Tonyu.runMode=false;
 		this.showProgress("Compile: "+dir.name());
 		console.log("Compile: "+dir.path());
 		var myNsp=this.getNamespace();
-		let baseClasses,env,myClasses,sf;
+		let baseClasses: C_MetaMap, env: BuilderEnv, myClasses: C_MetaMap,sf: { [shortName: string]: SFile; };
 		let compilingClasses: C_MetaMap;
 		ctxOpt.destinations=ctxOpt.destinations || {
 			memory: true,
@@ -325,27 +337,27 @@ export = class Builder {
 			//console.log(buf.close(),buf.srcmap.toString(),traceIndex);
 		});
 	}
-	genJS(ord, genOptions) {
+	genJS(ord: C_Meta[], genOptions:GenOptions) {
 		// 途中でコンパイルエラーを起こすと。。。
-        var env=this.getEnv();
+        const env=this.getEnv();
 		for (let c of ord) {
             console.log("genJS", c.fullName);
 			JSGenerator.genJS(c, env, genOptions);
 		}
 		return Promise.resolve();
 	}
-    showProgress (m) {
+    showProgress (m:string) {
 		console.log("Progress:" ,m);
 	}
-	setAMDPaths(paths) {
+	setAMDPaths(paths: string[]) {
 		this.getEnv().amdPaths=paths;
 	}
-    renameClassName (o,n) {// o: key of aliases
+    renameClassName (o:string ,n:string) {// o: key of aliases
         return this.fullCompile().then(()=>{
             const EXT=".tonyu";
             const env=this.getEnv();
             const changed=[];
-            let renamingFile;
+            let renamingFile: SFile;
             var cls=env.classes;/*ENVC*/
             for (var cln in cls) {/*ENVC*/
                 var klass=cls[cln];/*ENVC*/

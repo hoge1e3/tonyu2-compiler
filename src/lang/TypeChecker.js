@@ -178,7 +178,7 @@ function checkExpr(klass, env) {
             }
         }
     });
-    var ctx = (0, context_1.context)();
+    const ctx = (0, context_1.context)();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {

@@ -137,9 +137,21 @@ module.exports = class Builder {
     sourceFiles(ns) { return this.prj.sourceFiles(); }
     loadDependingClasses(ctx) { return this.prj.loadDependingClasses(ctx); }
     getEnv() {
-        this.env = this.env || {};
-        this.env.options = this.env.options || this.getOptions();
-        this.env.aliases = this.env.aliases || {};
+        //this.env=this.env||{};
+        if (this.env) {
+            this.env.options = this.env.options || this.getOptions();
+            this.env.aliases = this.env.aliases || {};
+        }
+        else {
+            this.env = {
+                options: this.getOptions(),
+                aliases: {},
+                classes: TonyuRuntime_1.default.classMetas,
+                amdPaths: [],
+            };
+        }
+        //this.env.options=this.env.options||this.getOptions();
+        //this.env.aliases=this.env.aliases||{};
         return this.env;
     }
     requestRebuild() {
@@ -165,10 +177,10 @@ module.exports = class Builder {
     initCtx(ctx = {}) {
         //どうしてclassMetasとclassesをわけるのか？
         // metaはFunctionより先に作られるから
-        var env = this.getEnv();
         //if (!ctx) ctx={};
         if ((0, CompilerTypes_1.isBuilderContext)(ctx))
             return ctx;
+        const env = this.getEnv();
         return { visited: {}, classes: (env.classes = env.classes || TonyuRuntime_1.default.classMetas), options: ctx };
     }
     fileToClass(file) {
@@ -244,9 +256,9 @@ module.exports = class Builder {
         env.aliases[shortCn] = fullCn;
         return m;
     }
-    fullCompile(ctx /*or options(For external call)*/) {
+    fullCompile(_ctx /*or options(For external call)*/) {
         const dir = this.getDir();
-        ctx = this.initCtx(ctx);
+        const ctx = this.initCtx(_ctx);
         const ctxOpt = ctx.options || {};
         //if (!ctx.options.hot) Tonyu.runMode=false;
         this.showProgress("Compile: " + dir.name());
@@ -347,7 +359,7 @@ module.exports = class Builder {
     }
     genJS(ord, genOptions) {
         // 途中でコンパイルエラーを起こすと。。。
-        var env = this.getEnv();
+        const env = this.getEnv();
         for (let c of ord) {
             console.log("genJS", c.fullName);
             JSGenerator.genJS(c, env, genOptions);

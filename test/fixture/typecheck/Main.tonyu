@@ -1,0 +1,10 @@
+native console;
+var a:A= new A();
+
+print (__typeof a);
+print (__typeof a.x);
+print (__typeof a.y);
+
+\print(x) {
+	console.log(x);
+}

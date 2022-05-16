@@ -9,7 +9,7 @@ export type C_MetaMap={[key: string]:C_Meta};
 // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
 export type BuilderContext={
 	visited: {},
-	classes: MetaMap,
+	classes: C_MetaMap,
 	options: CompileOptions,
 };
 export function isBuilderContext(c):c is BuilderContext {

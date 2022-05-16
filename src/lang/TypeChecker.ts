@@ -37,6 +37,9 @@ function visitSub(node:TNode) {//S
 		t.visit(e);
 	});
 }
+type TypeChkCtx={
+
+};
 
 export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	function annotation(node: TNode, aobj: Annotation=undefined):Annotation {//B
@@ -59,7 +62,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 						si.vtype=va.resolvedType;
 					} else if (info) {
 						console.log("set fld type",node.name+"", va.resolvedType );
-						(info as C_FieldInfo).vtype=va.resolvedType;
+						info.vtype=va.resolvedType;
 					}
 
 				}
@@ -98,62 +101,62 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	typeDeclVisitor.visit(klass.node);
 }
 export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
-		function annotation(node:TNode, aobj?:any) {//B
-			return annotation3(klass.annotation,node,aobj);
-		}
-		var typeAnnotationVisitor=new Visitor({
-			number: function (node:Token) {
-				annotation(node,{vtype:Number});
-			},
-			literal: function (node:Token) {
-				annotation(node,{vtype:String});
-			},
-			postfix:function (node:Postfix) {
-				var a=annotation(node);
-				if (a.memberAccess) {
-					var m=a.memberAccess;
-					var vtype=visitExpr(m.target);
-					if (vtype) {
-						var f=cu.getField(vtype,m.name);
-						console.log("GETF",vtype,m.name,f);
-						if (f && f.vtype) {
-							annotation(node,{vtype:f.vtype});
-						}
+	function annotation(node:TNode, aobj?:any) {//B
+		return annotation3(klass.annotation,node,aobj);
+	}
+	var typeAnnotationVisitor=new Visitor({
+		number: function (node:Token) {
+			annotation(node,{vtype:Number});
+		},
+		literal: function (node:Token) {
+			annotation(node,{vtype:String});
+		},
+		postfix:function (node:Postfix) {
+			var a=annotation(node);
+			if (a.memberAccess) {
+				var m=a.memberAccess;
+				var vtype=visitExpr(m.target);
+				if (vtype) {
+					var f=cu.getField(vtype,m.name);
+					console.log("GETF",vtype,m.name,f);
+					if (f && f.vtype) {
+						annotation(node,{vtype:f.vtype});
 					}
-				} else {
-					this.visit(node.left);
-					this.visit(node.op);
 				}
-			},
-			varAccess: function (node: VarAccess) {
-				var a=annotation(node);
-				var si=a.scopeInfo;
-				if (si) {
-					if (si.vtype) {
-						console.log("VA typeof",node.name+":",si.vtype);
-						annotation(node,{vtype:si.vtype});
-					} else if (si.type===ScopeTypes.FIELD) {
-						const fld=klass.decls.fields[node.name+""];
-						if (!fld) {
-							// because parent field does not contain...
-							console.log("TC Warning: fld not found",klass,node.name+"");
-							return;
-						}
-						var vtype=fld.vtype;
-						if (!vtype) {
-							console.log("VA vtype not found",node.name+":",fld);
-						} else {
-							annotation(node,{vtype});
-							console.log("VA typeof",node.name+":",vtype);
-						}
-					} else if (si.type===ScopeTypes.PROP) {
-						//TODO
+			} else {
+				this.visit(node.left);
+				this.visit(node.op);
+			}
+		},
+		varAccess: function (node: VarAccess) {
+			var a=annotation(node);
+			var si=a.scopeInfo;
+			if (si) {
+				if (si.vtype) {
+					console.log("VA typeof",node.name+":",si.vtype);
+					annotation(node,{vtype:si.vtype});
+				} else if (si.type===ScopeTypes.FIELD) {
+					const fld=klass.decls.fields[node.name+""];
+					if (!fld) {
+						// because parent field does not contain...
+						console.log("TC Warning: fld not found",klass,node.name+"");
+						return;
 					}
+					var vtype=fld.vtype;
+					if (!vtype) {
+						console.log("VA vtype not found",node.name+":",fld);
+					} else {
+						annotation(node,{vtype});
+						console.log("VA typeof",node.name+":",vtype);
+					}
+				} else if (si.type===ScopeTypes.PROP) {
+					//TODO
 				}
 			}
-		});
+		}
+	});
 
-	var ctx=context();
+	const ctx=context<TypeChkCtx>();
 	typeAnnotationVisitor.def=visitSub;
 	typeAnnotationVisitor.visit(klass.node);
 	function visitExpr(node) {
