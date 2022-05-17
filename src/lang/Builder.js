@@ -256,7 +256,7 @@ module.exports = class Builder {
         env.aliases[shortCn] = fullCn;
         return m;
     }
-    fullCompile(_ctx /*or options(For external call)*/) {
+    async fullCompile(_ctx /*or options(For external call)*/) {
         const dir = this.getDir();
         const ctx = this.initCtx(_ctx);
         const ctxOpt = ctx.options || {};
@@ -270,38 +270,34 @@ module.exports = class Builder {
             memory: true,
             file: true
         };
-        return this.loadDependingClasses(ctx).then(() => {
-            baseClasses = ctx.classes;
-            env = this.getEnv();
-            env.aliases = {};
-            TonyuRuntime_1.default.klass.removeMetaAll(myNsp); // for removed files
-            //env.parsedNode=env.parsedNode||{};
-            env.classes = baseClasses;
-            //console.log("env.classes===Tonyu.classMetas",env.classes===Tonyu.classMetas);
-            for (var n in baseClasses) {
-                var cl = baseClasses[n];
-                // Q.1: Override same name in different namespace??
-                // A.1: See below
-                env.aliases[cl.shortName] = cl.fullName;
-            }
-            return this.showProgress("scan sources");
-        }).then(() => {
-            myClasses = {};
-            //fileAddedOrRemoved=!!ctxOpt.noIncremental;
-            sf = this.sourceFiles(myNsp);
-            console.log("Sourcefiles", sf);
-            for (var shortCn in sf) {
-                var f = sf[shortCn];
-                const m = this.addMetaFromFile(f);
-                myClasses[m.fullName] = baseClasses[m.fullName] = m;
-            }
-            return this.showProgress("update check");
-        }).then(() => {
-            compilingClasses = myClasses;
-            console.log("compilingClasses", compilingClasses);
-            return this.partialCompile(compilingClasses, ctxOpt);
-            //return TPR.showProgress("initClassDecl");
-        });
+        await this.loadDependingClasses(ctx);
+        baseClasses = ctx.classes;
+        env = this.getEnv();
+        env.aliases = {};
+        TonyuRuntime_1.default.klass.removeMetaAll(myNsp); // for removed files
+        //env.parsedNode=env.parsedNode||{};
+        env.classes = baseClasses;
+        //console.log("env.classes===Tonyu.classMetas",env.classes===Tonyu.classMetas);
+        for (var n in baseClasses) {
+            var cl = baseClasses[n];
+            // Q.1: Override same name in different namespace??
+            // A.1: See definition of addMetaFromFile
+            env.aliases[cl.shortName] = cl.fullName;
+        }
+        this.showProgress("scan sources");
+        myClasses = {};
+        //fileAddedOrRemoved=!!ctxOpt.noIncremental;
+        sf = this.sourceFiles(myNsp);
+        console.log("Sourcefiles", sf);
+        for (var shortCn in sf) {
+            var f = sf[shortCn];
+            const m_1 = this.addMetaFromFile(f);
+            myClasses[m_1.fullName] = baseClasses[m_1.fullName] = m_1;
+        }
+        this.showProgress("update check");
+        compilingClasses = myClasses;
+        console.log("compilingClasses", compilingClasses);
+        return await this.partialCompile(compilingClasses, ctxOpt);
     }
     async partialCompile(compilingClasses, ctxOpt = {}) {
         let env = this.getEnv();
@@ -342,15 +338,10 @@ module.exports = class Builder {
             traceIndex: buf.traceIndex,
         });
         const s = SourceFiles_1.default.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
-        let task = Promise.resolve();
         if ((0, CompilerTypes_1.isFileDest)(destinations)) {
             const outf = this.getOutputFile();
-            task = s.saveAs(outf);
+            await s.saveAs(outf);
         }
-        if ((0, CompilerTypes_1.isMemoryDest)(destinations)) {
-            task = task.then(e => s);
-        }
-        return task;
     }
     genJS(ord, genOptions) {
         // 途中でコンパイルエラーを起こすと。。。

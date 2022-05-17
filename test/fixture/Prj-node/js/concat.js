@@ -242,7 +242,7 @@ Tonyu.klass.define({
             _this.update();
           }
         }
-        _this.x=1+2*3+4>0?5-6-7:8%9+10;
+        _this.x=1+2*3+4>0?50-6-7:8%9+10;
         console.log(_this.x);
       },
       fiber$main :function _trc_Preya_f_main(_thread) {
@@ -289,7 +289,7 @@ Tonyu.klass.define({
               __pc=6;break;
             case 9     :
               
-              _this.x=1+2*3+4>0?5-6-7:8%9+10;
+              _this.x=1+2*3+4>0?50-6-7:8%9+10;
               console.log(_this.x);
               _thread.exit(_this);return;
             }
