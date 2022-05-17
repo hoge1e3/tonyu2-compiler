@@ -13,7 +13,7 @@ import { SFile } from "../lib/SFileType";
 
 //type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
-function orderByInheritance(classes:MetaMap) {/*ENVC*/
+function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
     var added={};
     var res=[];
     //var crumbs={};
@@ -283,59 +283,54 @@ export = class Builder {
 			//return TPR.showProgress("initClassDecl");
 		});
 	}
-	partialCompile(compilingClasses:C_MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
-		let env=this.getEnv(),ord,buf;
+	async partialCompile(compilingClasses:C_MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
+		let env=this.getEnv();
 		//ctxOpt=ctxOpt||{};
 		const destinations:Destinations=ctxOpt.destinations || {
 			memory: true
 		};
-		return Promise.resolve().then(()=>{
-			for (var n in compilingClasses) {
-				console.log("initClassDecl: "+n);
-                // does parsing in Semantics
-				Semantics.initClassDecls(compilingClasses[n], env);/*ENVC*/
+		await Promise.resolve();
+		for (var n in compilingClasses) {
+			console.log("initClassDecl: " + n);
+			// does parsing in Semantics
+			Semantics.initClassDecls(compilingClasses[n], env); /*ENVC*/
+		}
+		await this.showProgress("order");
+		const ord = orderByInheritance(compilingClasses); /*ENVC*/
+		console.log("ORD", ord.map(c => c.fullName));
+		ord.forEach(c_1 => {
+			if (compilingClasses[c_1.fullName]) {
+				console.log("annotate :" + c_1.fullName);
+				Semantics.annotate(c_1, env);
 			}
-			return this.showProgress("order");
-		}).then(()=>{
-			ord=orderByInheritance(compilingClasses);/*ENVC*/
-			console.log("ORD",ord.map(c=>c.fullName));
-			ord.forEach(c=>{
-				if (compilingClasses[c.fullName]) {
-					console.log("annotate :"+c.fullName);
-					Semantics.annotate(c, env);
-				}
-			});
-			if (ctxOpt.typeCheck) {
-                console.log("Type check");
-				for (let n in compilingClasses) {
-					checkTypeDecl(compilingClasses[n],env);
-				}
-				for (let n in compilingClasses) {
-					checkExpr(compilingClasses[n],env);
-				}
-			}
-			return this.showProgress("genJS");
-		}).then(()=>{
-			//throw "test break";
-			buf=new IndentBuffer({fixLazyLength:6});
-			buf.traceIndex={};
-			return this.genJS(ord,{
-				codeBuffer: buf,
-				traceIndex:buf.traceIndex,
-			});
-		}).then(()=>{
-			const s=SourceFiles.add(buf.close(), buf.srcmap/*, buf.traceIndex */);
-			let task:any=Promise.resolve();
-			if (isFileDest(destinations)) {
-				const outf=this.getOutputFile();
-				task=s.saveAs(outf);
-			}
-			if (isMemoryDest(destinations)) {
-				task=task.then(e=>s);
-			}
-			return task;
-			//console.log(buf.close(),buf.srcmap.toString(),traceIndex);
 		});
+		if (ctxOpt.typeCheck) {
+			console.log("Type check");
+			for (let n_1 in compilingClasses) {
+				checkTypeDecl(compilingClasses[n_1], env);
+			}
+			for (let n_2 in compilingClasses) {
+				checkExpr(compilingClasses[n_2], env);
+			}
+		}
+		await this.showProgress("genJS");
+		//throw "test break";
+		const buf = new IndentBuffer({ fixLazyLength: 6 });
+		buf.traceIndex = {};
+		await this.genJS(ord, {
+			codeBuffer: buf,
+			traceIndex: buf.traceIndex,
+		});
+		const s = SourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
+		let task: any = Promise.resolve();
+		if (isFileDest(destinations)) {
+			const outf = this.getOutputFile();
+			task = s.saveAs(outf);
+		}
+		if (isMemoryDest(destinations)) {
+			task = task.then(e => s);
+		}
+		return task;
 	}
 	genJS(ord: C_Meta[], genOptions:GenOptions) {
 		// 途中でコンパイルエラーを起こすと。。。

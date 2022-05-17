@@ -303,59 +303,54 @@ module.exports = class Builder {
             //return TPR.showProgress("initClassDecl");
         });
     }
-    partialCompile(compilingClasses, ctxOpt = {}) {
-        let env = this.getEnv(), ord, buf;
+    async partialCompile(compilingClasses, ctxOpt = {}) {
+        let env = this.getEnv();
         //ctxOpt=ctxOpt||{};
         const destinations = ctxOpt.destinations || {
             memory: true
         };
-        return Promise.resolve().then(() => {
-            for (var n in compilingClasses) {
-                console.log("initClassDecl: " + n);
-                // does parsing in Semantics
-                Semantics.initClassDecls(compilingClasses[n], env); /*ENVC*/
+        await Promise.resolve();
+        for (var n in compilingClasses) {
+            console.log("initClassDecl: " + n);
+            // does parsing in Semantics
+            Semantics.initClassDecls(compilingClasses[n], env); /*ENVC*/
+        }
+        await this.showProgress("order");
+        const ord = orderByInheritance(compilingClasses); /*ENVC*/
+        console.log("ORD", ord.map(c => c.fullName));
+        ord.forEach(c_1 => {
+            if (compilingClasses[c_1.fullName]) {
+                console.log("annotate :" + c_1.fullName);
+                Semantics.annotate(c_1, env);
             }
-            return this.showProgress("order");
-        }).then(() => {
-            ord = orderByInheritance(compilingClasses); /*ENVC*/
-            console.log("ORD", ord.map(c => c.fullName));
-            ord.forEach(c => {
-                if (compilingClasses[c.fullName]) {
-                    console.log("annotate :" + c.fullName);
-                    Semantics.annotate(c, env);
-                }
-            });
-            if (ctxOpt.typeCheck) {
-                console.log("Type check");
-                for (let n in compilingClasses) {
-                    (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n], env);
-                }
-                for (let n in compilingClasses) {
-                    (0, TypeChecker_1.checkExpr)(compilingClasses[n], env);
-                }
-            }
-            return this.showProgress("genJS");
-        }).then(() => {
-            //throw "test break";
-            buf = new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6 });
-            buf.traceIndex = {};
-            return this.genJS(ord, {
-                codeBuffer: buf,
-                traceIndex: buf.traceIndex,
-            });
-        }).then(() => {
-            const s = SourceFiles_1.default.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
-            let task = Promise.resolve();
-            if ((0, CompilerTypes_1.isFileDest)(destinations)) {
-                const outf = this.getOutputFile();
-                task = s.saveAs(outf);
-            }
-            if ((0, CompilerTypes_1.isMemoryDest)(destinations)) {
-                task = task.then(e => s);
-            }
-            return task;
-            //console.log(buf.close(),buf.srcmap.toString(),traceIndex);
         });
+        if (ctxOpt.typeCheck) {
+            console.log("Type check");
+            for (let n_1 in compilingClasses) {
+                (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n_1], env);
+            }
+            for (let n_2 in compilingClasses) {
+                (0, TypeChecker_1.checkExpr)(compilingClasses[n_2], env);
+            }
+        }
+        await this.showProgress("genJS");
+        //throw "test break";
+        const buf = new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6 });
+        buf.traceIndex = {};
+        await this.genJS(ord, {
+            codeBuffer: buf,
+            traceIndex: buf.traceIndex,
+        });
+        const s = SourceFiles_1.default.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
+        let task = Promise.resolve();
+        if ((0, CompilerTypes_1.isFileDest)(destinations)) {
+            const outf = this.getOutputFile();
+            task = s.saveAs(outf);
+        }
+        if ((0, CompilerTypes_1.isMemoryDest)(destinations)) {
+            task = task.then(e => s);
+        }
+        return task;
     }
     genJS(ord, genOptions) {
         // 途中でコンパイルエラーを起こすと。。。
