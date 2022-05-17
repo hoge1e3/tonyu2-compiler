@@ -13,7 +13,7 @@ declare const require:any;
 if (typeof global!=="undefined" && global.require && global.require.name!=="requirejs") {
     vm=global.require("vm");
 }
-class SourceFile {
+export class SourceFile {
     url: any;
     text: any;
     sourceMap: any;
@@ -91,7 +91,7 @@ class SourceFile {
         return {text:this.text, sourceMap:this.sourceMap, functions:this.functions};
     }
 }
-class SourceFiles {
+export class SourceFiles {
     url2SourceFile: {};
     constructor() {
         this.url2SourceFile={};
@@ -106,5 +106,5 @@ class SourceFiles {
     }
 
 }
-export= new SourceFiles();
+export const sourceFiles= new SourceFiles();
 //});/*--end of define--*/

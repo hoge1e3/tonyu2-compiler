@@ -7,7 +7,7 @@ native console;
 }
 man();
 x=0;
-while(x<120) {
+while(x<150) {
     move();
     console.log(x);
     update();

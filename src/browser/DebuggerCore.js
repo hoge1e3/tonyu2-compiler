@@ -1,6 +1,6 @@
 //define(function (require,exports,module) {
 // module.exports:: DI_container -> Debugger
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 //const ProjectFactory=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
 const langMod=require("../lang/langMod");
@@ -54,7 +54,7 @@ root.Debugger={
         console.log("Loading classes COMPLETE",Tonyu.ID,Tonyu.classes);
     },
     exec: async function (srcraw) {
-        await SourceFiles.add(srcraw).exec();
+        await sourceFiles.add(srcraw).exec();
         Events.fire("classChanged");
     },
     create: function (className) {

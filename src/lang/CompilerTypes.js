@@ -1,10 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isMeta = exports.isMemoryDest = exports.isFileDest = exports.isBuilderContext = void 0;
-function isBuilderContext(c) {
-    return c && c.visited;
-}
-exports.isBuilderContext = isBuilderContext;
+exports.isMeta = exports.isMemoryDest = exports.isFileDest = void 0;
 function isFileDest(d) {
     return d.file;
 }

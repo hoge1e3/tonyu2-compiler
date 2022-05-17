@@ -5,10 +5,10 @@ import { isTonyu1 } from "./tonyu1";
 import JSGenerator = require("./JSGenerator");
 import {IndentBuffer} from "./IndentBuffer";
 import * as Semantics from "./Semantics";
-import SourceFiles from "./SourceFiles";
+import { SourceFiles, SourceFile, sourceFiles } from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
 import { Meta, MetaMap } from "../runtime/RuntimeTypes";
-import { BuilderContext, BuilderEnv, CompileOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isBuilderContext, isFileDest, isMemoryDest } from "./CompilerTypes";
+import { BuilderContext, BuilderEnv, CompileOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isFileDest, isMemoryDest } from "./CompilerTypes";
 import { SFile } from "../lib/SFileType";
 
 //type ClassMap={[key: string]:Meta};
@@ -54,10 +54,10 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
         });
         return deps;
     }
-    function detectLoop(c) {
-        var path=[];
-        var visited={};
-        function pushPath(c) {
+    function detectLoop(c:C_Meta) {
+        var path=[] as string[];
+        var visited={} as {[key:string]:boolean};
+        function pushPath(c:C_Meta) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
                 throw TError( R("circularDependencyDetected",path.join("->")), "Unknown" ,0);
@@ -68,7 +68,7 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
             var p=path.pop();
             delete visited[p];
         }
-        function loop(c) {
+        function loop(c:C_Meta) {
             //console.log("detectLoop2",c.fullName,JSON.stringify(visited));
             pushPath(c);
             var dep=dep1(c);
@@ -80,9 +80,6 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
     return res;
 }
 
-/*interface BuilderContext{
-    visited:{[key:string]: boolean}, classes:{[key:string]: },options:ctx
-}*/
 // includes langMod, dirBase
 export = class Builder {
     prj: any;
@@ -139,6 +136,18 @@ export = class Builder {
         //this.env.aliases=this.env.aliases||{};
         return this.env;
     }
+    // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
+	initCtx(ctx:BuilderContext|CompileOptions):BuilderContext {
+		//どうしてclassMetasとclassesをわけるのか？
+		// metaはFunctionより先に作られるから
+		//if (!ctx) ctx={};
+        function isBuilderContext(ctx:any):ctx is BuilderContext {
+            return ctx && ctx.classes && ctx.options;
+        }
+		if (isBuilderContext(ctx)) return ctx;
+        const env=this.getEnv();
+		return {/*visited:{},*/ classes:(env.classes=env.classes||(Tonyu.classMetas as C_MetaMap)),options:ctx||env.options.compiler};
+	}
 	requestRebuild () {
 		var env=this.getEnv();
         env.options=this.getOptions();
@@ -158,15 +167,7 @@ export = class Builder {
 		}
 		return res;
 	}
-	// Difference of ctx and env:  env is of THIS project. ctx is of cross-project
-	initCtx(ctx:BuilderContext|CompileOptions={}):BuilderContext {
-		//どうしてclassMetasとclassesをわけるのか？
-		// metaはFunctionより先に作られるから
-		//if (!ctx) ctx={};
-		if (isBuilderContext(ctx)) return ctx;
-        const env=this.getEnv();
-		return {visited:{}, classes:(env.classes=env.classes||(Tonyu.classMetas as C_MetaMap)),options:ctx};
-	}
+
 	fileToClass(file: SFile) {
 		const shortName=this.fileToShortClassName(file);
 		const env=this.getEnv();
@@ -242,7 +243,7 @@ export = class Builder {
 		const ctxOpt=ctx.options ||{};
 		//if (!ctx.options.hot) Tonyu.runMode=false;
 		this.showProgress("Compile: "+dir.name());
-		console.log("Compile: "+dir.path());
+		console.log("Compile: "+dir.path(), "ctx:", ctx);
 		var myNsp=this.getNamespace();
 		let baseClasses: C_MetaMap, env: BuilderEnv, myClasses: C_MetaMap,sf: { [shortName: string]: SFile; };
 		let compilingClasses: C_MetaMap;
@@ -279,9 +280,9 @@ export = class Builder {
         console.log("compilingClasses", compilingClasses);
         return await this.partialCompile(compilingClasses, ctxOpt);
 	}
-	async partialCompile(compilingClasses:C_MetaMap ,ctxOpt:CompileOptions={}) {// partialCompile is for class(es)
+	async partialCompile(compilingClasses:C_MetaMap ,ctxOpt?:CompileOptions):Promise<SourceFile> {// partialCompile is for class(es)
 		let env=this.getEnv();
-		//ctxOpt=ctxOpt||{};
+		ctxOpt=ctxOpt||env.options.compiler||{};
 		const destinations:Destinations=ctxOpt.destinations || {
 			memory: true
 		};
@@ -317,11 +318,12 @@ export = class Builder {
 			codeBuffer: buf,
 			traceIndex: buf.traceIndex,
 		});
-		const s = SourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
+		const s = sourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
 		if (isFileDest(destinations)) {
 			const outf = this.getOutputFile();
 			await s.saveAs(outf);
 		}
+        return s;
 	}
 	genJS(ord: C_Meta[], genOptions:GenOptions) {
 		// 途中でコンパイルエラーを起こすと。。。

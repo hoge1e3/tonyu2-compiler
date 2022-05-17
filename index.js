@@ -3,7 +3,7 @@ const F=require("./src/project/ProjectFactory");
 const langMod=require("./src/lang/langMod");
 const FS=require("./src/lib/FS");
 const root=require("./src/lib/root");
-const SourceFiles=require("./src/lang/SourceFiles");
+const {sourceFiles}=require("./src/lang/SourceFiles");
 const compiledProject=require("./src/project/CompiledProject");
 const prjPath=process.argv[2];
 const run=process.argv.indexOf("-r")>=0;
@@ -70,7 +70,7 @@ builder.fullCompile(opt).then(async function (s) {
         th.apply(mainObj,"main");
         th.steps();
         /*th.then(r=>console.log("Done",r),e=>{
-            //SourceFiles.decodeTrace(e);
+            //sourceFiles.decodeTrace(e);
             console.error(e);
         });*/
     }

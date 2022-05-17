@@ -8,14 +8,14 @@ export type C_MetaMap={[key: string]:C_Meta};
 
 // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
 export type BuilderContext={
-	visited: {},
+	//visited: C_MetaMap,
 	classes: C_MetaMap,
 	options: CompileOptions,
 };
-export function isBuilderContext(c):c is BuilderContext {
+/*export function isBuilderContext(c):c is BuilderContext {
 	return c && c.visited;
-}
-export type Aliases={[key:string]:string};
+}*/
+export type Aliases={[key:string]:string};//shortName->fullName
 export type BuilderEnv={
 	options: ProjectOptions,
 	classes: C_MetaMap,

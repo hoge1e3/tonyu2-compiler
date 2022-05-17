@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const source_map_1 = __importDefault(require("./source-map"));
-const SourceFiles_1 = __importDefault(require("./SourceFiles"));
+const SourceFiles_1 = require("./SourceFiles");
 const stacktrace_1 = __importDefault(require("./stacktrace"));
 module.exports = {
     async decode(e) {
@@ -11,7 +11,7 @@ module.exports = {
             const tr = await stacktrace_1.default.fromError(e, { offline: true });
             tr.forEach(t => {
                 try {
-                    const sf = SourceFiles_1.default.url2SourceFile[t.fileName];
+                    const sf = SourceFiles_1.sourceFiles.url2SourceFile[t.fileName];
                     //console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
                     if (sf) {
                         const opt = {

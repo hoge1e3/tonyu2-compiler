@@ -1,5 +1,5 @@
 import SourceMap from "./source-map";
-import SourceFiles from "./SourceFiles";
+import {sourceFiles} from "./SourceFiles";
 import StackTrace from "./stacktrace";
 
 /*const S=require("./source-map");
@@ -11,7 +11,7 @@ export= {
             const tr=await StackTrace.fromError(e,{offline:true});
             tr.forEach(t=>{
                 try {
-                    const sf=SourceFiles.url2SourceFile[t.fileName];
+                    const sf=sourceFiles.url2SourceFile[t.fileName];
                     //console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
                     if (sf) {
                         const opt={

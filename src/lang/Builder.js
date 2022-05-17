@@ -28,7 +28,7 @@ const tonyu1_1 = require("./tonyu1");
 const JSGenerator = require("./JSGenerator");
 const IndentBuffer_1 = require("./IndentBuffer");
 const Semantics = __importStar(require("./Semantics"));
-const SourceFiles_1 = __importDefault(require("./SourceFiles"));
+const SourceFiles_1 = require("./SourceFiles");
 const TypeChecker_1 = require("./TypeChecker");
 const CompilerTypes_1 = require("./CompilerTypes");
 //type ClassMap={[key: string]:Meta};
@@ -154,6 +154,19 @@ module.exports = class Builder {
         //this.env.aliases=this.env.aliases||{};
         return this.env;
     }
+    // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
+    initCtx(ctx) {
+        //どうしてclassMetasとclassesをわけるのか？
+        // metaはFunctionより先に作られるから
+        //if (!ctx) ctx={};
+        function isBuilderContext(ctx) {
+            return ctx && ctx.classes && ctx.options;
+        }
+        if (isBuilderContext(ctx))
+            return ctx;
+        const env = this.getEnv();
+        return { /*visited:{},*/ classes: (env.classes = env.classes || TonyuRuntime_1.default.classMetas), options: ctx || env.options.compiler };
+    }
     requestRebuild() {
         var env = this.getEnv();
         env.options = this.getOptions();
@@ -172,16 +185,6 @@ module.exports = class Builder {
             }
         }
         return res;
-    }
-    // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
-    initCtx(ctx = {}) {
-        //どうしてclassMetasとclassesをわけるのか？
-        // metaはFunctionより先に作られるから
-        //if (!ctx) ctx={};
-        if ((0, CompilerTypes_1.isBuilderContext)(ctx))
-            return ctx;
-        const env = this.getEnv();
-        return { visited: {}, classes: (env.classes = env.classes || TonyuRuntime_1.default.classMetas), options: ctx };
     }
     fileToClass(file) {
         const shortName = this.fileToShortClassName(file);
@@ -262,7 +265,7 @@ module.exports = class Builder {
         const ctxOpt = ctx.options || {};
         //if (!ctx.options.hot) Tonyu.runMode=false;
         this.showProgress("Compile: " + dir.name());
-        console.log("Compile: " + dir.path());
+        console.log("Compile: " + dir.path(), "ctx:", ctx);
         var myNsp = this.getNamespace();
         let baseClasses, env, myClasses, sf;
         let compilingClasses;
@@ -299,9 +302,9 @@ module.exports = class Builder {
         console.log("compilingClasses", compilingClasses);
         return await this.partialCompile(compilingClasses, ctxOpt);
     }
-    async partialCompile(compilingClasses, ctxOpt = {}) {
+    async partialCompile(compilingClasses, ctxOpt) {
         let env = this.getEnv();
-        //ctxOpt=ctxOpt||{};
+        ctxOpt = ctxOpt || env.options.compiler || {};
         const destinations = ctxOpt.destinations || {
             memory: true
         };
@@ -337,11 +340,12 @@ module.exports = class Builder {
             codeBuffer: buf,
             traceIndex: buf.traceIndex,
         });
-        const s = SourceFiles_1.default.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
+        const s = SourceFiles_1.sourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
         if ((0, CompilerTypes_1.isFileDest)(destinations)) {
             const outf = this.getOutputFile();
             await s.saveAs(outf);
         }
+        return s;
     }
     genJS(ord, genOptions) {
         // 途中でコンパイルエラーを起こすと。。。

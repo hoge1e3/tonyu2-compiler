@@ -1,6 +1,6 @@
 const root=require("../lib/root");
 const BuilderClient=require("./BuilderClient");
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 const F=require("../project/ProjectFactory");
 const CP=require("../project/CompiledProject");
 /*F.addType("compiled",params=>{
@@ -8,7 +8,7 @@ const CP=require("../project/CompiledProject");
     res.include(F.langMod);
     res.loadClasses=async function () {
         await this.loadDependingClasses();
-        await SourceFiles.add({text:this.getOutputFile().text()}).exec();
+        await sourceFiles.add({text:this.getOutputFile().text()}).exec();
     };
     return res;
 });
