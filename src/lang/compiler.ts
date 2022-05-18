@@ -119,28 +119,29 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 	//cu.getField=getField;
 	export function getField(klass: C_Meta, name: string){
 		if (klass instanceof Function) return null;
-		let res=null;
-		getDependingClasses(klass).forEach(function (k) {
-			if (res) return;
+		let res:C_FieldInfo=null;
+		for (let k of getDependingClasses(klass)) {
+			console.log("getField", k, name);
+			if (res) break;
 			res=k.decls.fields[name];
-		});
-		if (typeof (res.vtype)==="string") {
-			res.vtype=Tonyu.classMetas[res.vtype] || root[res.vtype];
 		}
+		/*if (typeof (res.vtype)==="string") {
+			res.vtype=Tonyu.classMetas[res.vtype] || root[res.vtype];
+		}*/
 		return res;
 	};
 	export function getMethod(klass: C_Meta,name:string) {//B
-		let res=null;
-		getDependingClasses(klass).forEach(function (k:C_Meta) {
+		let res:FuncInfo=null;
+		for (let k of getDependingClasses(klass)) {
 			if (res) return;
 			res=k.decls.methods[name];
-		});
+		}
 		return res;
 	}
 	//cu.getMethod=getMethod2;
-	export function getDependingClasses(klass:Meta) {//B
+	export function getDependingClasses(klass:C_Meta) {//B
 		const visited={};
-		const res=[];
+		const res=[] as C_Meta[];
 		function loop(k:Meta) {
 			if ((k as any).isShim) {
 				console.log(klass,"contains shim ",k);
@@ -148,7 +149,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			}
 			if (visited[k.fullName]) return;
 			visited[k.fullName]=true;
-			res.push(k);
+			res.push(k as C_Meta);
 			if (k.superclass) loop(k.superclass);
 			if (k.includes) k.includes.forEach(loop);
 		}

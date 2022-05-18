@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isMeta = exports.isMemoryDest = exports.isFileDest = void 0;
+exports.isMethodType = exports.isMeta = exports.isMemoryDest = exports.isFileDest = void 0;
 function isFileDest(d) {
     return d.file;
 }
@@ -13,3 +13,7 @@ function isMeta(klass) {
     return klass.decls;
 }
 exports.isMeta = isMeta;
+function isMethodType(klass) {
+    return klass.method;
+}
+exports.isMethodType = isMethodType;

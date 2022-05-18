@@ -103,6 +103,15 @@ var klass={
 		type ClassCheckContext={
 			path:Meta[],
 		};
+		function addKlassAndNameToDecls(klass) {
+			for (let name of Object.keys(decls.fields)) {
+				Object.assign(klass.decls.fields[name],{name, klass});
+			}
+			for (let name of Object.keys(decls.methods)) {
+				Object.assign(klass.decls.methods[name],{name, klass});
+			}
+		}
+
 		//type ShimMeta=Meta & {isShim?:boolean, extenderFullName?:string};
 		function chkmeta(m:Meta, ctx?:ClassCheckContext) {
 			ctx=ctx||{path:[]};
@@ -237,6 +246,7 @@ var klass={
 			includesRec:(parent?extend({},parent.meta.includesRec):{}),
 			nonShimParent:parent
 		}) as TonyuClass;
+		addKlassAndNameToDecls(res.meta);
 		res.extendFrom=extender;
 		//addMeta(fullName, res.meta);
 		nso[shortName]=res;

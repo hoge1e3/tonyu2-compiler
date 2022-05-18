@@ -8,7 +8,7 @@ import * as Semantics from "./Semantics";
 import { SourceFiles, SourceFile, sourceFiles } from "./SourceFiles";
 import { checkExpr, checkTypeDecl } from "./TypeChecker";
 import { Meta, MetaMap } from "../runtime/RuntimeTypes";
-import { BuilderContext, BuilderEnv, CompileOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isFileDest, isMemoryDest } from "./CompilerTypes";
+import { BuilderContext, BuilderContextDef, BuilderEnv, CompilerOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isFileDest, isMemoryDest } from "./CompilerTypes";
 import { SFile } from "../lib/SFileType";
 
 //type ClassMap={[key: string]:Meta};
@@ -137,7 +137,7 @@ export = class Builder {
         return this.env;
     }
     // Difference of ctx and env:  env is of THIS project. ctx is of cross-project
-	initCtx(ctx:BuilderContext|CompileOptions):BuilderContext {
+	initCtx(ctx:BuilderContext|BuilderContextDef):BuilderContext {
 		//どうしてclassMetasとclassesをわけるのか？
 		// metaはFunctionより先に作られるから
 		//if (!ctx) ctx={};
@@ -146,7 +146,7 @@ export = class Builder {
         }
 		if (isBuilderContext(ctx)) return ctx;
         const env=this.getEnv();
-		return {/*visited:{},*/ classes:(env.classes=env.classes||(Tonyu.classMetas as C_MetaMap)),options:ctx||env.options.compiler};
+		return {/*visited:{},*/ classes:(env.classes=env.classes||(Tonyu.classMetas as C_MetaMap)),options:ctx||{}};
 	}
 	requestRebuild () {
 		var env=this.getEnv();
@@ -237,7 +237,7 @@ export = class Builder {
 		env.aliases[shortCn]=fullCn;
 		return m;
 	}
-	async fullCompile (_ctx?: BuilderContext| CompileOptions/*or options(For external call)*/) {
+	async fullCompile (_ctx?: BuilderContext| BuilderContextDef/*or options(For external call)*/) {
         const dir=this.getDir();
         const ctx=this.initCtx(_ctx);
 		const ctxOpt=ctx.options ||{};
@@ -280,9 +280,9 @@ export = class Builder {
         console.log("compilingClasses", compilingClasses);
         return await this.partialCompile(compilingClasses, ctxOpt);
 	}
-	async partialCompile(compilingClasses:C_MetaMap ,ctxOpt?:CompileOptions):Promise<SourceFile> {// partialCompile is for class(es)
+	async partialCompile(compilingClasses:C_MetaMap ,ctxOpt?:BuilderContextDef):Promise<SourceFile> {// partialCompile is for class(es)
 		let env=this.getEnv();
-		ctxOpt=ctxOpt||env.options.compiler||{};
+		ctxOpt=ctxOpt||{};
 		const destinations:Destinations=ctxOpt.destinations || {
 			memory: true
 		};
@@ -301,7 +301,7 @@ export = class Builder {
 				Semantics.annotate(c_1, env);
 			}
 		});
-		if (ctxOpt.typeCheck) {
+		if (env.options.compiler.typeCheck) {
 			console.log("Type check");
 			for (let n_1 in compilingClasses) {
 				checkTypeDecl(compilingClasses[n_1], env);

@@ -8,7 +8,7 @@ import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
-import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass } from "./CompilerTypes";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta } from "./CompilerTypes";
 import { ArgList, Arylit, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 
@@ -361,10 +361,17 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		},
 		prefix: function (node:Prefix) {
 			if (node.op.text==="__typeof") {
-				var a=annotation(node.right);
+				const a=annotation(node.right);
+				console.log("__typeof",a);
 				if (a.resolvedType) {
-					const t=a.resolvedType as any;
- 					buf.printf("%l",t.name||t.fullName||"No type name?");
+					const t=a.resolvedType;
+					if (isMethodType(t)) {
+						buf.printf("Tonyu.classMetas[%l].decls.methods.%s",t.method.klass.fullName, t.method.name);
+					} else if (isMeta(t)) {
+						buf.printf("Tonyu.classMetas[%l]",t.fullName);
+					} else {
+						buf.printf(t.class.name);
+					}
 				} else {
 					buf.printf("%l","Any");
 				}
@@ -913,6 +920,10 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		//}
 	}
 	function getNameOfType(t: AnnotatedType) {
+		if (!(t as C_Meta).fullName && !(t as NativeClass).class) {
+			console.log(t);
+			throw new Error("Invalid annotatedType"+ t);
+		}
 		return (t as C_Meta).fullName || (t as NativeClass).class.name;
 	}
 	function digestDecls(klass: C_Meta) {

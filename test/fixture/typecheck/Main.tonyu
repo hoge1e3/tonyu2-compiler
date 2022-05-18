@@ -3,7 +3,9 @@ var a:A= new A();
 
 print (__typeof a);
 print (__typeof a.x);
-print (__typeof a.y);
+print (__typeof a.s);
+print (__typeof a.test);
+print (__typeof a.toste);
 
 \print(x) {
 	console.log(x);

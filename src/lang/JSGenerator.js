@@ -32,6 +32,7 @@ const tonyu1_1 = require("./tonyu1");
 const OM = __importStar(require("./ObjectMatcher"));
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
+const CompilerTypes_1 = require("./CompilerTypes");
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 var TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$", FRMPC = "__pc", LASTPOS = "$LASTPOS", CNTV = "__cnt", CNTC = 100; //G
@@ -69,7 +70,7 @@ function genJS(klass, env, genOptions) {
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = (0, context_1.context)();
+    var ctx = context_1.context();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -127,7 +128,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
+            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -187,7 +188,7 @@ function genJS(klass, env, genOptions) {
         },
         "return": function (node) {
             if (ctx.inTry)
-                throw (0, TError_1.default)((0, R_1.default)("cannotWriteReturnInTryStatement"), srcFile, node.pos);
+                throw TError_1.default(R_1.default("cannotWriteReturnInTryStatement"), srcFile, node.pos);
             if (!ctx.noWait) {
                 if (node.value) {
                     var t = annotation(node.value).fiberCall;
@@ -363,10 +364,19 @@ function genJS(klass, env, genOptions) {
         },
         prefix: function (node) {
             if (node.op.text === "__typeof") {
-                var a = annotation(node.right);
+                const a = annotation(node.right);
+                console.log("__typeof", a);
                 if (a.resolvedType) {
                     const t = a.resolvedType;
-                    buf.printf("%l", t.name || t.fullName || "No type name?");
+                    if (CompilerTypes_1.isMethodType(t)) {
+                        buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
+                    }
+                    else if (CompilerTypes_1.isMeta(t)) {
+                        buf.printf("Tonyu.classMetas[%l]", t.fullName);
+                    }
+                    else {
+                        buf.printf(t.class.name);
+                    }
                 }
                 else {
                     buf.printf("%l", "Any");
@@ -415,12 +425,12 @@ function genJS(klass, env, genOptions) {
         "break": function (node) {
             if (!ctx.noWait) {
                 if (ctx.inTry && ctx.exitTryOnJump)
-                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteBreakInTryStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotWriteBreakInTryStatement"), srcFile, node.pos);
                 if (ctx.closestBrk) {
                     buf.printf("%s=%z; break;%n", FRMPC, ctx.closestBrk);
                 }
                 else {
-                    throw (0, TError_1.default)((0, R_1.default)("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
                 }
             }
             else {
@@ -430,7 +440,7 @@ function genJS(klass, env, genOptions) {
         "continue": function (node) {
             if (!ctx.noWait) {
                 if (ctx.inTry && ctx.exitTryOnJump)
-                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteContinueInTryStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotWriteContinueInTryStatement"), srcFile, node.pos);
                 if (typeof (ctx.closestCnt) == "number") {
                     buf.printf("%s=%s; break;%n", FRMPC, ctx.closestCnt);
                 }
@@ -438,7 +448,7 @@ function genJS(klass, env, genOptions) {
                     buf.printf("%s=%z; break;%n", FRMPC, ctx.closestCnt);
                 }
                 else {
-                    throw (0, TError_1.default)((0, R_1.default)("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
                 }
             }
             else {
@@ -451,7 +461,7 @@ function genJS(klass, env, genOptions) {
                 (an.fiberCallRequired || an.hasJump || an.hasReturn)) {
                 //buf.printf("/*try catch in wait mode is not yet supported*/%n");
                 if (node.catches.length != 1 || node.catches[0].type != "catch") {
-                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteTwoOrMoreCatch"), srcFile, node.pos);
+                    throw TError_1.default(R_1.default("cannotWriteTwoOrMoreCatch"), srcFile, node.pos);
                 }
                 var ct = node.catches[0];
                 var catchPos = {}, finPos = {};
@@ -866,6 +876,10 @@ function genJS(klass, env, genOptions) {
         //}
     }
     function getNameOfType(t) {
+        if (!t.fullName && !t.class) {
+            console.log(t);
+            throw new Error("Invalid annotatedType" + t);
+        }
         return t.fullName || t.class.name;
     }
     function digestDecls(klass) {

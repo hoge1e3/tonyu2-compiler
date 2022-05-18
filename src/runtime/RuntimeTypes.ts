@@ -49,8 +49,9 @@ export type Decls={
 	softRefClasses?: object*/
 };
 export type FieldInfo={
-	klass:string,
-    name:string,
+	klass:Meta,// is not written in *.js, add at klass definition
+    name:string,// is not written in *.js, add at klass definition
+	vtype?: string, // "String" , "Number", "user.A"
 	// --- compile time?
     /*node?:TNode,
 	pos?:number,

@@ -10,7 +10,7 @@ export type C_MetaMap={[key: string]:C_Meta};
 export type BuilderContext={
 	//visited: C_MetaMap,
 	classes: C_MetaMap,
-	options: CompileOptions,
+	options: BuilderContextDef,
 };
 /*export function isBuilderContext(c):c is BuilderContext {
 	return c && c.visited;
@@ -23,12 +23,14 @@ export type BuilderEnv={
 	amdPaths: string[],
 };
 export type ProjectOptions={
-	compiler: CompileOptions,
+	compiler: CompilerOptions,
 };
-export type CompileOptions={
+export type BuilderContextDef={
+	destinations?: Destinations,
+};
+export type CompilerOptions={
 	typeCheck?: boolean,
 	defaultSuperClass?: string,
-	destinations?: Destinations,
 	field_strict?: boolean,
 	diagnose?: boolean,
 	genAMD?: boolean,
@@ -57,7 +59,7 @@ export type Locals={
 export type C_FieldInfo=FieldInfo & {
 	node?:TNode,
 	pos?:number,
-	vtype?: AnnotatedType,
+	resolvedType?: AnnotatedType,
 };
 export type C_Decls={
 	methods: {[key:string]: FuncInfo},
@@ -89,6 +91,7 @@ export type ScopeMap={[key:string]: ScopeInfo};
 	useArgs?:boolean,
 };*/
 export type FuncInfo={// also includes Method
+	klass: C_Meta,
 	node?: FuncDecl,
 	head?: FuncDeclHead,
 	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
@@ -104,12 +107,16 @@ export type FuncInfo={// also includes Method
 	useTry?:boolean,
 	returnType?: AnnotatedType,
 	nowait: boolean,
-	//vtype?: AnnotatedType,
+
 };
 export type NativeClass={class: Constructor};
-export type AnnotatedType=NativeClass|C_Meta;
+export type MethodType={method: FuncInfo};
+export type AnnotatedType=NativeClass|C_Meta|MethodType;
 export function isMeta(klass: AnnotatedType): klass is C_Meta {
 	return (klass as any).decls;
+}
+export function isMethodType(klass: AnnotatedType): klass is MethodType {
+	return (klass as any).method;
 }
 export type Annotation={
 	scopeInfo?: ScopeInfo,
@@ -119,9 +126,9 @@ export type Annotation={
 	declaringFunc?: FuncInfo,
 	resolvedType?: AnnotatedType,
 	fiberCall?: {N:TNode, A:TNode},
-	myMethodCall?: {name:Token, args:TNode[], scopeInfo: ScopeInfo},
-	othersMethodCall?: {target:TNode, name:Token, args:TNode[]},
-	memberAccess?: {target:TNode, name:Token},
+	myMethodCall?: {name:string, args:TNode[], scopeInfo: ScopeInfo},
+	othersMethodCall?: {target:TNode, name:string, args:TNode[]},
+	memberAccess?: {target:TNode, name:string},
 	iterName?: string,
 	varInMain?: boolean,
 	declaringClass?: C_Meta,

@@ -1,11 +1,6 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.getSource = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
-const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
-const root_1 = __importDefault(require("../lib/root"));
 exports.ScopeTypes = {
     FIELD: "field", METHOD: "method", NATIVE: "native",
     LOCAL: "local", THVAR: "threadvar", PROP: "property",
@@ -164,25 +159,26 @@ function getField(klass, name) {
     if (klass instanceof Function)
         return null;
     let res = null;
-    getDependingClasses(klass).forEach(function (k) {
+    for (let k of getDependingClasses(klass)) {
+        console.log("getField", k, name);
         if (res)
-            return;
+            break;
         res = k.decls.fields[name];
-    });
-    if (typeof (res.vtype) === "string") {
-        res.vtype = TonyuRuntime_1.default.classMetas[res.vtype] || root_1.default[res.vtype];
     }
+    /*if (typeof (res.vtype)==="string") {
+        res.vtype=Tonyu.classMetas[res.vtype] || root[res.vtype];
+    }*/
     return res;
 }
 exports.getField = getField;
 ;
 function getMethod(klass, name) {
     let res = null;
-    getDependingClasses(klass).forEach(function (k) {
+    for (let k of getDependingClasses(klass)) {
         if (res)
             return;
         res = k.decls.methods[name];
-    });
+    }
     return res;
 }
 exports.getMethod = getMethod;

@@ -71,7 +71,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	var MAIN:FuncInfo={name:"main",stmts:[], isMain:true, nowait: false};//, klass:klass.fullName};
+	var MAIN:FuncInfo={klass, name:"main",stmts:[], isMain:true, nowait: false};//, klass:klass.fullName};
 	// method := fiber | function
 	const fields={}, methods:Methods={main: MAIN}, natives={}, amds={},softRefClasses={};
 	klass.decls={fields, methods, natives, amds, softRefClasses};
@@ -163,6 +163,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 				var propHead=(head.params ? "" : head.setter ? "__setter__" : "__getter__");
 				name=propHead+name;
 				methods[name]={
+						klass,
 						nowait: (!!head.nowait || propHead!==""),
 						ftype,
 						name,
@@ -299,7 +300,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		var decls=klass.decls;// Do not inherit parents' natives
 		if (!isTonyu1(env.options)) {
 			for (let i in JSNATIVES) {
-				s[i]=new SI.NATIVE("native::"+i, root[i]);
+				s[i]=new SI.NATIVE("native::"+i, {class:root[i]});
 			}
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
@@ -307,7 +308,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			s[i]=new SI.CLASS(i,fullName,env.classes[fullName]);
 		}
 		for (let i in decls.natives) {
-			s[i]=new SI.NATIVE("native::"+i, root[i]);
+			s[i]=new SI.NATIVE("native::"+i, {class:root[i]});
 		}
 	}
 	function inheritSuperMethod() {//S
@@ -360,7 +361,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				} else {
 					//opt.klass=klass.name;
 					const fi:FieldInfo={
-						klass:klass.fullName,
+						klass,
 						name:n
 					};
 					if (!klass.decls.fields[n]) {
@@ -568,11 +569,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.visit(node.op);
 			if (match(node, myMethodCallTmpl)) {
 				var si=annotation(node.left).scopeInfo;
-				annotation(node, {myMethodCall:{name:t.N,args:t.A,scopeInfo:si}});
+				annotation(node, {myMethodCall:{name:t.N as string,args:t.A,scopeInfo:si}});
 			} else if (match(node, othersMethodCallTmpl)) {
-				annotation(node, {othersMethodCall:{target:t.T,name:t.N,args:t.A} });
+				annotation(node, {othersMethodCall:{target:t.T,name:t.N as string,args:t.A} });
 			} else if (match(node, memberAccessTmpl)) {
-				annotation(node, {memberAccess:{target:t.T,name:t.N} });
+				annotation(node, {memberAccess:{target:t.T,name:t.N as string} });
 			}
 		},
 		infix: function (node:Infix) {
@@ -702,7 +703,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		} else {
 			ps=[];
 		}
-		var finfo:FuncInfo={name, stmts:body.stmts, nowait: true};
+		var finfo:FuncInfo={klass, name, stmts:body.stmts, nowait: true};
 		var ns=newScope(ctx.scope);
 		//var locals;
 		ctx.enter({finfo}, function () {

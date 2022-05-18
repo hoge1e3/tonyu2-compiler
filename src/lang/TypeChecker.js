@@ -25,6 +25,7 @@ const context_1 = require("./context");
 //import Grammar from "./Grammar";
 const parser_1 = require("./parser");
 const Visitor_1 = require("./Visitor");
+const CompilerTypes_1 = require("./CompilerTypes");
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 const ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -81,7 +82,7 @@ function checkTypeDecl(klass, env) {
                     }
                     else if (info) {
                         console.log("set fld type", node.name + "", va.resolvedType);
-                        info.vtype = va.resolvedType;
+                        info.resolvedType = va.resolvedType;
                     }
                 }
                 /*} else if (a.declaringClass) {
@@ -125,21 +126,26 @@ function checkExpr(klass, env) {
     }
     var typeAnnotationVisitor = new Visitor_1.Visitor({
         number: function (node) {
-            annotation(node, { vtype: Number });
+            annotation(node, { resolvedType: { class: Number } });
         },
         literal: function (node) {
-            annotation(node, { vtype: String });
+            annotation(node, { resolvedType: { class: String } });
         },
         postfix: function (node) {
             var a = annotation(node);
             if (a.memberAccess) {
                 var m = a.memberAccess;
                 var vtype = visitExpr(m.target);
-                if (vtype) {
-                    var f = cu.getField(vtype, m.name);
+                if (vtype && CompilerTypes_1.isMeta(vtype)) {
+                    const f = cu.getField(vtype, m.name);
                     console.log("GETF", vtype, m.name, f);
-                    if (f && f.vtype) {
-                        annotation(node, { vtype: f.vtype });
+                    if (f && f.resolvedType) {
+                        annotation(node, { resolvedType: f.resolvedType });
+                    }
+                    else {
+                        const method = cu.getMethod(vtype, m.name);
+                        console.log("GETM", vtype, m.name, f);
+                        annotation(node, { resolvedType: { method } });
                     }
                 }
             }
@@ -154,7 +160,7 @@ function checkExpr(klass, env) {
             if (si) {
                 if (si.vtype) {
                     console.log("VA typeof", node.name + ":", si.vtype);
-                    annotation(node, { vtype: si.vtype });
+                    annotation(node, { resolvedType: si.vtype });
                 }
                 else if (si.type === ScopeTypes.FIELD) {
                     const fld = klass.decls.fields[node.name + ""];
@@ -163,13 +169,13 @@ function checkExpr(klass, env) {
                         console.log("TC Warning: fld not found", klass, node.name + "");
                         return;
                     }
-                    var vtype = fld.vtype;
-                    if (!vtype) {
+                    var rtype = fld.resolvedType;
+                    if (!rtype) {
                         console.log("VA vtype not found", node.name + ":", fld);
                     }
                     else {
-                        annotation(node, { vtype });
-                        console.log("VA typeof", node.name + ":", vtype);
+                        annotation(node, { resolvedType: rtype });
+                        console.log("VA typeof", node.name + ":", rtype);
                     }
                 }
                 else if (si.type === ScopeTypes.PROP) {
@@ -178,13 +184,13 @@ function checkExpr(klass, env) {
             }
         }
     });
-    const ctx = (0, context_1.context)();
+    const ctx = context_1.context();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {
         typeAnnotationVisitor.visit(node);
         var va = annotation(node);
-        return va.vtype;
+        return va.resolvedType;
     }
 }
 exports.checkExpr = checkExpr;
