@@ -1,5 +1,5 @@
 //type NT={type:string, pos:number};
-type VisitF/*<N extends NT>*/=(node:N)=>void;
+type VisitF/*<N extends NT>*/=(this:Visitor, node:N)=>void;
 type Funcs/*<N extends NT>*/={[key:string]:VisitF/*<N>*/};
 type N=any;
 export class Visitor/*<N extends NT>*/ {

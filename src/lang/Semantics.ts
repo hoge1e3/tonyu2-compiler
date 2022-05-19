@@ -204,7 +204,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	//  キー： 変数名   値： ScopeTypesのいずれか
 	type SemCtx={
 		scope: ScopeMap,
-		method: FuncInfo,//{fiberCallRequired:boolean},
+		method: FuncInfo,
 		finfo: FuncInfo,
 		locals: {
 			varDecls: {[key: string]:VarDecl|Forin|Catch|Token},
@@ -251,6 +251,28 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			right: fiberCallTmpl
 		}
 	};
+	const otherFiberCallTmpl={
+		type:"postfix",
+		left: OM.T({
+			type:"postfix",
+			left: OM.O,
+			op:{type:"member", name: {text:OM.N}}
+		}),
+		op:{type:"call", args:OM.A }
+	};
+	const noRetOtherFiberCallTmpl={
+		expr: otherFiberCallTmpl
+	};
+	const retOtherFiberCallTmpl={
+		expr: {
+			type: "infix",
+			op: OM.P,
+			left: OM.L,
+			right: otherFiberCallTmpl
+		}
+	};
+
+
 	const noRetSuperFiberCallTmpl={
 		expr: OM.S({type:"superExpr", params:{args:OM.A}})
 	};
@@ -588,6 +610,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			if (node.expr.type==="objlit") {
 				throw TError( R("cannotUseObjectLiteralAsTheExpressionOfStatement") , srcFile, node.pos);
 			}
+			const path=this.path.slice();
+			/*if (klass.fullName==="user.Main") {
+				console.dir(node,{depth:null});
+			}*/
 			if (!ctx.noWait &&
 					(t=OM.match(node,noRetFiberCallTmpl)) &&
 					isFiberMethod(t.N)) {
@@ -600,6 +626,17 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				t.type="ret";
 				annotation(node, {fiberCall:t});
 				fiberCallRequired(this.path);
+			} else if (!ctx.noWait &&
+					(t=OM.match(node,noRetOtherFiberCallTmpl))) {
+				console.log("noRetOtherFiberCallTmpl", t);
+				t.type="noRetOther";
+				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
+				annotation(node, {otherFiberCall:t});
+			} else if (!ctx.noWait &&
+					(t=OM.match(node,retOtherFiberCallTmpl))) {
+				t.type="retOther";
+				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
+				annotation(node, {otherFiberCall:t});
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
 					t.S.name) {

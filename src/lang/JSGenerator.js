@@ -70,7 +70,7 @@ function genJS(klass, env, genOptions) {
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = context_1.context();
+    var ctx = (0, context_1.context)();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -128,7 +128,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
+            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -188,7 +188,7 @@ function genJS(klass, env, genOptions) {
         },
         "return": function (node) {
             if (ctx.inTry)
-                throw TError_1.default(R_1.default("cannotWriteReturnInTryStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("cannotWriteReturnInTryStatement"), srcFile, node.pos);
             if (!ctx.noWait) {
                 if (node.value) {
                     var t = annotation(node.value).fiberCall;
@@ -303,30 +303,42 @@ function genJS(klass, env, genOptions) {
             /*const si=*/ varAccess(n, annotation(node).scopeInfo, annotation(node));
         },
         exprstmt: function (node) {
-            var t = {};
+            //var t:any={};
             lastPosF(node)();
-            if (!ctx.noWait) {
-                t = annotation(node).fiberCall || {};
-            }
-            if (t.type == "noRet") {
+            const an = annotation(node);
+            const t = (!ctx.noWait ? an.fiberCall : undefined);
+            const to = (!ctx.noWait ? an.otherFiberCall : undefined);
+            if (t && t.type == "noRet") {
                 buf.printf("%s.%s%s(%j);%n" + //FIBERCALL
                     "%s=%s;return;%n" + /*B*/
                     "%}case %d:%{", THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++);
             }
-            else if (t.type == "ret") {
+            else if (to && to.type == "noRetOther") {
+                buf.printf("%v.%s%s(%j);%n" + //FIBERCALL
+                    "%s=%s;return;%n" + /*B*/
+                    "%}case %d:%{", to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)], FRMPC, ctx.pc, ctx.pc++);
+            }
+            else if (t && t.type == "ret") {
                 buf.printf(//VDC
                 "%s.%s%s(%j);%n" + //FIBERCALL
                     "%s=%s;return;%n" + /*B*/
                     "%}case %d:%{" +
                     "%v%v%s.retVal;%n", THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++, t.L, t.O, TH);
             }
-            else if (t.type == "noRetSuper") {
+            else if (to && to.type == "retOther") {
+                buf.printf(//VDC
+                "%v.%s%s(%j);%n" + //FIBERCALL
+                    "%s=%s;return;%n" + /*B*/
+                    "%}case %d:%{" +
+                    "%v%v%s.retVal;%n", to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)], FRMPC, ctx.pc, ctx.pc++, to.L, to.P, TH);
+            }
+            else if (t && t.type == "noRetSuper") {
                 const p = SUPER; //getClassName(klass.superclass);
                 buf.printf("%s.prototype.%s%s.apply( %s, [%j]);%n" + //FIBERCALL
                     "%s=%s;return;%n" + /*B*/
                     "%}case %d:%{", p, FIBPRE, t.S.name.text, THIZ, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++);
             }
-            else if (t.type == "retSuper") {
+            else if (t && t.type == "retSuper") {
                 const p = SUPER; //getClassName(klass.superclass);
                 buf.printf("%s.prototype.%s%s.apply( %s, [%j]);%n" + //FIBERCALL
                     "%s=%s;return;%n" + /*B*/
@@ -368,10 +380,10 @@ function genJS(klass, env, genOptions) {
                 console.log("__typeof", a);
                 if (a.resolvedType) {
                     const t = a.resolvedType;
-                    if (CompilerTypes_1.isMethodType(t)) {
+                    if ((0, CompilerTypes_1.isMethodType)(t)) {
                         buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
                     }
-                    else if (CompilerTypes_1.isMeta(t)) {
+                    else if ((0, CompilerTypes_1.isMeta)(t)) {
                         buf.printf("Tonyu.classMetas[%l]", t.fullName);
                     }
                     else {
@@ -425,12 +437,12 @@ function genJS(klass, env, genOptions) {
         "break": function (node) {
             if (!ctx.noWait) {
                 if (ctx.inTry && ctx.exitTryOnJump)
-                    throw TError_1.default(R_1.default("cannotWriteBreakInTryStatement"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteBreakInTryStatement"), srcFile, node.pos);
                 if (ctx.closestBrk) {
                     buf.printf("%s=%z; break;%n", FRMPC, ctx.closestBrk);
                 }
                 else {
-                    throw TError_1.default(R_1.default("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
                 }
             }
             else {
@@ -440,7 +452,7 @@ function genJS(klass, env, genOptions) {
         "continue": function (node) {
             if (!ctx.noWait) {
                 if (ctx.inTry && ctx.exitTryOnJump)
-                    throw TError_1.default(R_1.default("cannotWriteContinueInTryStatement"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteContinueInTryStatement"), srcFile, node.pos);
                 if (typeof (ctx.closestCnt) == "number") {
                     buf.printf("%s=%s; break;%n", FRMPC, ctx.closestCnt);
                 }
@@ -448,7 +460,7 @@ function genJS(klass, env, genOptions) {
                     buf.printf("%s=%z; break;%n", FRMPC, ctx.closestCnt);
                 }
                 else {
-                    throw TError_1.default(R_1.default("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
                 }
             }
             else {
@@ -461,7 +473,7 @@ function genJS(klass, env, genOptions) {
                 (an.fiberCallRequired || an.hasJump || an.hasReturn)) {
                 //buf.printf("/*try catch in wait mode is not yet supported*/%n");
                 if (node.catches.length != 1 || node.catches[0].type != "catch") {
-                    throw TError_1.default(R_1.default("cannotWriteTwoOrMoreCatch"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("cannotWriteTwoOrMoreCatch"), srcFile, node.pos);
                 }
                 var ct = node.catches[0];
                 var catchPos = {}, finPos = {};
@@ -883,10 +895,10 @@ function genJS(klass, env, genOptions) {
         return t.fullName || t.class.name;
     }
     function klass2name(t) {
-        if (CompilerTypes_1.isMethodType(t)) {
+        if ((0, CompilerTypes_1.isMethodType)(t)) {
             return `${t.method.klass.fullName}.${t.method.name}()`;
         }
-        else if (CompilerTypes_1.isMeta(t)) {
+        else if ((0, CompilerTypes_1.isMeta)(t)) {
             return t.fullName;
         }
         else {
@@ -900,10 +912,10 @@ function genJS(klass, env, genOptions) {
                 { nowait: !!klass.decls.methods[i].nowait };
         }
         for (let i in klass.decls.fields) {
-            var src = klass.decls.fields[i];
-            var dst = {};
-            //console.log("digestDecls",src);
-            dst.vtype = src.resolvedType ? klass2name(src.resolvedType) : src.vtype;
+            const src = klass.decls.fields[i];
+            const dst = {
+                vtype: src.resolvedType ? klass2name(src.resolvedType) : src.vtype
+            };
             res.fields[i] = dst;
         }
         return res;

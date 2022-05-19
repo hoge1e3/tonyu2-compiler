@@ -1,8 +1,17 @@
+extends Updatable;
+native console;
 var x:Number;
 var s:String;
 
 \test() {
-
+	var i=0,s=0;
+	while(i<n) {
+		console.log(i);
+		update();
+		i++;
+		s+=i;
+	}
+	return s;
 }
 nowait \toste() {
 

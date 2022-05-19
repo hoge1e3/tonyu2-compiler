@@ -1,7 +1,7 @@
 import { Constructor, FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
 import { IndentBuffer } from "./IndentBuffer";
-import { Catch, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, TNode, VarDecl } from "./NodeTypes";
+import { Catch, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes";
 import { Token } from "./parser";
 
 export type C_MetaMap={[key: string]:C_Meta};
@@ -125,7 +125,17 @@ export type Annotation={
 	//info?: C_FieldInfo|FuncInfo,
 	declaringFunc?: FuncInfo,
 	resolvedType?: AnnotatedType,
-	fiberCall?: {N:TNode, A:TNode},
+	fiberCall?: {N:Token, A:Expression[]}&(
+		{type:"noRet"}|
+		{type:"ret", L:TNode, O:Token}|
+		{type:"noRetSuper",S:SuperExpr}|
+		{type:"retSuper", L:Expression, O:Token,S:SuperExpr}
+	),
+	// Target Object Name Arguments Leftvalue oPerator
+	//  O.N(A)  T=O.N
+	otherFiberCall?: {T:Expression, O:Expression, N:Token, A:Expression[], fiberCallRequired_lazy:()=>void}&(
+		{type:"noRetOther"}|{type:"retOther",L:Expression, P:Token}//LPO.N(A)  P:(=)(+=)(-=)...
+	),// fiberCallRequired_lazy is called when typechecker detects that T is a Tonyu-method
 	myMethodCall?: {name:string, args:TNode[], scopeInfo: ScopeInfo},
 	othersMethodCall?: {target:TNode, name:string, args:TNode[]},
 	memberAccess?: {target:TNode, name:string},

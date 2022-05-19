@@ -165,7 +165,7 @@ function getField(klass, name) {
         return null;
     let res = null;
     for (let k of getDependingClasses(klass)) {
-        console.log("getField", k, name);
+        //console.log("getField", k, name);
         if (res)
             break;
         res = k.decls.fields[name];
@@ -190,7 +190,7 @@ function getMethod(klass, name) {
     let res = null;
     for (let k of getDependingClasses(klass)) {
         if (res)
-            return;
+            break;
         res = k.decls.methods[name];
     }
     return res;

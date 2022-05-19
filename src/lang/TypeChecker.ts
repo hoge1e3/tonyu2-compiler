@@ -1,10 +1,10 @@
 import * as cu from "./compiler";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
-import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
@@ -51,17 +51,17 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 			if (node.value) this.visit(node.value);
 			if (node.name && node.typeDecl) {
 				var va=annotation(node.typeDecl.vtype);
-				console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
+				//console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
 				const rt:AnnotatedType=va.resolvedType;
 				if (rt) {
 					const a=annotation(node);
 					const si:ScopeInfo=a.scopeInfo;// for local
 					const info=a.fieldInfo;// for field
 					if (si) {
-						console.log("set var type",node.name+"", va.resolvedType );
+						//console.log("set var type",node.name+"", va.resolvedType );
 						si.resolvedType=va.resolvedType;
 					} else if (info) {
-						console.log("set fld type",node.name+"", va.resolvedType );
+						//console.log("set fld type",node.name+"", va.resolvedType );
 						info.resolvedType=va.resolvedType;
 					}
 
@@ -95,7 +95,8 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 			}
 			this.visit(head);
 			this.visit(node.body);
-		}
+		},
+
 	});
 	typeDeclVisitor.def=visitSub;//S
 	typeDeclVisitor.visit(klass.node);
@@ -118,13 +119,17 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				var vtype=visitExpr(m.target);
 				if (vtype && isMeta(vtype)) {
 					const f=cu.getField(vtype,m.name);
-					console.log("GETF",vtype,m.name,f);
+					//console.log("GETF",vtype,m.name,f);
+					// fail if f is not set when strict check
 					if (f && f.resolvedType) {
 						annotation(node,{resolvedType:f.resolvedType});
 					} else {
 						const method=cu.getMethod(vtype, m.name);
-						console.log("GETM",vtype,m.name,f);
-						annotation(node,{resolvedType:{method}});
+						// fail if m is not set when strict check
+						//console.log("GETM",vtype,m.name,f);
+						if (method) {
+							annotation(node,{resolvedType:{method}});
+						}
 					}
 				}
 			} else {
@@ -137,7 +142,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 			var si=a.scopeInfo;
 			if (si) {
 				if (si.resolvedType) {
-					console.log("VA typeof",node.name+":",si.resolvedType);
+					//console.log("VA typeof",node.name+":",si.resolvedType);
 					annotation(node,{resolvedType:si.resolvedType});
 				} else if (si.type===ScopeTypes.FIELD) {
 					const fld=klass.decls.fields[node.name+""];
@@ -148,13 +153,28 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 					}
 					var rtype=fld.resolvedType;
 					if (!rtype) {
-						console.log("VA resolvedType not found",node.name+":",fld);
+						//console.log("VA resolvedType not found",node.name+":",fld);
 					} else {
 						annotation(node,{resolvedType:rtype});
-						console.log("VA typeof",node.name+":",rtype);
+						//console.log("VA typeof",node.name+":",rtype);
 					}
 				} else if (si.type===ScopeTypes.PROP) {
 					//TODO
+				}
+			}
+		},
+		exprstmt(node: Exprstmt) {
+			this.visit(node.expr);
+			const a=annotation(node);
+			if (a.otherFiberCall) {
+				const o=a.otherFiberCall;
+				const ta=annotation(o.T);
+				//console.dir(ta,{depth:3});
+				if (ta.resolvedType && isMethodType(ta.resolvedType) && !ta.resolvedType.method.nowait) {
+					console.log("resolvedType=", ta.resolvedType);
+					o.fiberCallRequired_lazy();
+				} else {
+					annotation(node,{otherFiberCall:null});
 				}
 			}
 		}

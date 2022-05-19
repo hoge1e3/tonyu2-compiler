@@ -1,12 +1,17 @@
 native console;
 var a:A= new A();
-
+/*
 print (__typeof a);
 print (__typeof a.x);
 print (__typeof a.s);
 print (__typeof a.test);
 print (__typeof a.toste);
-
+*/
 \print(x) {
 	console.log(x);
 }
+var n=3;
+a.n=10;
+
+r=a.test();
+print(r);

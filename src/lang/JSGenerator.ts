@@ -283,12 +283,12 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			/*const si=*/varAccess(n,annotation(node).scopeInfo, annotation(node));
 		},
 		exprstmt: function (node:Exprstmt) {//exprStmt
-			var t:any={};
+			//var t:any={};
 			lastPosF(node)();
-			if (!ctx.noWait) {
-				t=annotation(node).fiberCall || {};
-			}
-			if (t.type=="noRet") {
+			const an=annotation(node);
+		 	const t=(!ctx.noWait?an.fiberCall:undefined);
+			const to=(!ctx.noWait?an.otherFiberCall:undefined);
+			if (t && t.type=="noRet") {
 				buf.printf(
 						"%s.%s%s(%j);%n" +//FIBERCALL
 						"%s=%s;return;%n" +/*B*/
@@ -297,7 +297,16 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 							FRMPC, ctx.pc,
 							ctx.pc++
 				);
-			} else if (t.type=="ret") {
+			} else if (to && to.type=="noRetOther") {
+				buf.printf(
+						"%v.%s%s(%j);%n" +//FIBERCALL
+						"%s=%s;return;%n" +/*B*/
+						"%}case %d:%{",
+							to.O, FIBPRE, to.N,  [", ",[THNode].concat(to.A)],
+							FRMPC, ctx.pc,
+							ctx.pc++
+				);
+			} else if (t && t.type=="ret") {
 				buf.printf(//VDC
 						"%s.%s%s(%j);%n" +//FIBERCALL
 						"%s=%s;return;%n" +/*B*/
@@ -308,7 +317,18 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 							ctx.pc++,
 							t.L, t.O, TH
 				);
-			} else if (t.type=="noRetSuper") {
+			} else if (to && to.type=="retOther") {
+				buf.printf(//VDC
+						"%v.%s%s(%j);%n" +//FIBERCALL
+						"%s=%s;return;%n" +/*B*/
+						"%}case %d:%{"+
+						"%v%v%s.retVal;%n",
+							to.O, FIBPRE, to.N, [", ",[THNode].concat(to.A)],
+							FRMPC, ctx.pc,
+							ctx.pc++,
+							to.L, to.P, TH
+				);
+			} else if (t && t.type=="noRetSuper") {
 				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
 							"%s.prototype.%s%s.apply( %s, [%j]);%n" +//FIBERCALL
@@ -318,7 +338,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 								FRMPC, ctx.pc,
 								ctx.pc++
 					);
-			} else if (t.type=="retSuper") {
+			} else if (t && t.type=="retSuper") {
 				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
 							"%s.prototype.%s%s.apply( %s, [%j]);%n" +//FIBERCALL

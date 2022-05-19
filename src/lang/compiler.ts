@@ -121,7 +121,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		if (klass instanceof Function) return null;
 		let res:C_FieldInfo=null;
 		for (let k of getDependingClasses(klass)) {
-			console.log("getField", k, name);
+			//console.log("getField", k, name);
 			if (res) break;
 			res=k.decls.fields[name];
 		}
@@ -140,7 +140,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 	export function getMethod(klass: C_Meta,name:string) {//B
 		let res:FuncInfo=null;
 		for (let k of getDependingClasses(klass)) {
-			if (res) return;
+			if (res) break;
 			res=k.decls.methods[name];
 		}
 		return res;

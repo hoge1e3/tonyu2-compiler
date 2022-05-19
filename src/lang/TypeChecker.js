@@ -70,18 +70,18 @@ function checkTypeDecl(klass, env) {
                 this.visit(node.value);
             if (node.name && node.typeDecl) {
                 var va = annotation(node.typeDecl.vtype);
-                console.log("var typeis", node.name + "", node.typeDecl.vtype, va.resolvedType);
+                //console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
                 const rt = va.resolvedType;
                 if (rt) {
                     const a = annotation(node);
                     const si = a.scopeInfo; // for local
                     const info = a.fieldInfo; // for field
                     if (si) {
-                        console.log("set var type", node.name + "", va.resolvedType);
+                        //console.log("set var type",node.name+"", va.resolvedType );
                         si.resolvedType = va.resolvedType;
                     }
                     else if (info) {
-                        console.log("set fld type", node.name + "", va.resolvedType);
+                        //console.log("set fld type",node.name+"", va.resolvedType );
                         info.resolvedType = va.resolvedType;
                     }
                 }
@@ -114,7 +114,7 @@ function checkTypeDecl(klass, env) {
             }
             this.visit(head);
             this.visit(node.body);
-        }
+        },
     });
     typeDeclVisitor.def = visitSub; //S
     typeDeclVisitor.visit(klass.node);
@@ -136,16 +136,20 @@ function checkExpr(klass, env) {
             if (a.memberAccess) {
                 var m = a.memberAccess;
                 var vtype = visitExpr(m.target);
-                if (vtype && CompilerTypes_1.isMeta(vtype)) {
+                if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
                     const f = cu.getField(vtype, m.name);
-                    console.log("GETF", vtype, m.name, f);
+                    //console.log("GETF",vtype,m.name,f);
+                    // fail if f is not set when strict check
                     if (f && f.resolvedType) {
                         annotation(node, { resolvedType: f.resolvedType });
                     }
                     else {
                         const method = cu.getMethod(vtype, m.name);
-                        console.log("GETM", vtype, m.name, f);
-                        annotation(node, { resolvedType: { method } });
+                        // fail if m is not set when strict check
+                        //console.log("GETM",vtype,m.name,f);
+                        if (method) {
+                            annotation(node, { resolvedType: { method } });
+                        }
                     }
                 }
             }
@@ -159,7 +163,7 @@ function checkExpr(klass, env) {
             var si = a.scopeInfo;
             if (si) {
                 if (si.resolvedType) {
-                    console.log("VA typeof", node.name + ":", si.resolvedType);
+                    //console.log("VA typeof",node.name+":",si.resolvedType);
                     annotation(node, { resolvedType: si.resolvedType });
                 }
                 else if (si.type === ScopeTypes.FIELD) {
@@ -171,20 +175,36 @@ function checkExpr(klass, env) {
                     }
                     var rtype = fld.resolvedType;
                     if (!rtype) {
-                        console.log("VA resolvedType not found", node.name + ":", fld);
+                        //console.log("VA resolvedType not found",node.name+":",fld);
                     }
                     else {
                         annotation(node, { resolvedType: rtype });
-                        console.log("VA typeof", node.name + ":", rtype);
+                        //console.log("VA typeof",node.name+":",rtype);
                     }
                 }
                 else if (si.type === ScopeTypes.PROP) {
                     //TODO
                 }
             }
+        },
+        exprstmt(node) {
+            this.visit(node.expr);
+            const a = annotation(node);
+            if (a.otherFiberCall) {
+                const o = a.otherFiberCall;
+                const ta = annotation(o.T);
+                //console.dir(ta,{depth:3});
+                if (ta.resolvedType && (0, CompilerTypes_1.isMethodType)(ta.resolvedType) && !ta.resolvedType.method.nowait) {
+                    console.log("resolvedType=", ta.resolvedType);
+                    o.fiberCallRequired_lazy();
+                }
+                else {
+                    annotation(node, { otherFiberCall: null });
+                }
+            }
         }
     });
-    const ctx = context_1.context();
+    const ctx = (0, context_1.context)();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {
