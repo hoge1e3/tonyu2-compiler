@@ -104,8 +104,7 @@ Tonyu.klass.define({
         _this.n = 3;
         
         _this.a.n=10;
-        _this.r=_this.a.test();
-        _this.print(_this.r);
+        _this.run();
       },
       fiber$main :function _trc_Main_f_main(_thread) {
         "use strict";
@@ -124,14 +123,9 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              _this.a.fiber$test(_thread);
+              _this.fiber$run(_thread);
               __pc=1;return;
             case 1:
-              _this.r=_thread.retVal;
-              
-              _this.fiber$print(_thread, _this.r);
-              __pc=2;return;
-            case 2:
               
               _thread.exit(_this);return;
             }
@@ -154,10 +148,46 @@ Tonyu.klass.define({
         
         _thread.retVal=_this;return;
       },
+      run :function _trc_Main_run() {
+        "use strict";
+        var _this=this;
+        var r;
+        
+        r = _this.a.test();
+        
+        _this.print(r);
+      },
+      fiber$run :function _trc_Main_f_run(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        var r;
+        
+        
+        _thread.enter(function _trc_Main_ent_run(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+              _this.a.fiber$test(_thread);
+              __pc=1;return;
+            case 1:
+              r=_thread.retVal;
+              
+              _this.fiber$print(_thread, r);
+              __pc=2;return;
+            case 2:
+              
+              _thread.exit(_this);return;
+            }
+          }
+        });
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false}},"fields":{"a":{"vtype":"user.A"},"n":{},"r":{}}}
+  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false},"run":{"nowait":false}},"fields":{"a":{"vtype":"user.A"},"n":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

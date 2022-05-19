@@ -246,11 +246,12 @@ function genJS(klass, env, genOptions) {
                 buf.printf("%s", node.text);
             }
         },
-        varDecl: function (node) {
+        varDecl(node) {
             var a = annotation(node);
             var thisForVIM = a.varInMain ? THIZ + "." : "";
             if (node.value) {
-                var t = (!ctx.noWait) && annotation(node).fiberCall;
+                const t = (!ctx.noWait) && annotation(node).fiberCall;
+                const to = (!ctx.noWait) && annotation(node).otherFiberCall;
                 if (t) {
                     assert_1.default.is(ctx.pc, Number);
                     buf.printf(//VDC
@@ -258,6 +259,13 @@ function genJS(klass, env, genOptions) {
                         "%s=%s;return;%n" + /*B*/
                         "%}case %d:%{" +
                         "%s%v=%s.retVal;%n", THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++, thisForVIM, node.name, TH);
+                }
+                else if (to) {
+                    buf.printf(//VDC
+                    "%v.%s%s(%j);%n" + //FIBERCALL
+                        "%s=%s;return;%n" + /*B*/
+                        "%}case %d:%{" +
+                        "%s%v=%s.retVal;%n", to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)], FRMPC, ctx.pc, ctx.pc++, thisForVIM, node.name, TH);
                 }
                 else {
                     buf.printf("%s%v = %v;%n", thisForVIM, node.name, node.value);

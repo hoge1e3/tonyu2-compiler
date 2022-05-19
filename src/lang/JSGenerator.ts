@@ -224,11 +224,12 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				buf.printf("%s", node.text);
 			}
 		},
-		varDecl: function (node:VarDecl) {
+		varDecl(node:VarDecl) {
 			var a=annotation(node);
 			var thisForVIM=a.varInMain? THIZ+"." :"";
 			if (node.value) {
-				var t=(!ctx.noWait) && annotation(node).fiberCall;
+				const t=(!ctx.noWait) && annotation(node).fiberCall;
+				const to=(!ctx.noWait) && annotation(node).otherFiberCall;
 				if (t) {
 					assert.is(ctx.pc,Number);
 					buf.printf(//VDC
@@ -237,6 +238,17 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 						"%}case %d:%{"+
 						"%s%v=%s.retVal;%n",
 							THIZ, FIBPRE, t.N, [", ",[THNode].concat(t.A)],
+							FRMPC, ctx.pc,
+							ctx.pc++,
+							thisForVIM, node.name, TH
+					);
+				} else if (to) {
+					buf.printf(//VDC
+						"%v.%s%s(%j);%n" +//FIBERCALL
+						"%s=%s;return;%n" +/*B*/
+						"%}case %d:%{"+
+						"%s%v=%s.retVal;%n",
+							to.O, FIBPRE, to.N, [", ",[THNode].concat(to.A)],
 							FRMPC, ctx.pc,
 							ctx.pc++,
 							thisForVIM, node.name, TH

@@ -165,21 +165,27 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 		},
 		exprstmt(node: Exprstmt) {
 			this.visit(node.expr);
-			const a=annotation(node);
-			if (a.otherFiberCall) {
-				const o=a.otherFiberCall;
-				const ta=annotation(o.T);
-				//console.dir(ta,{depth:3});
-				if (ta.resolvedType && isMethodType(ta.resolvedType) && !ta.resolvedType.method.nowait) {
-					console.log("resolvedType=", ta.resolvedType);
-					o.fiberCallRequired_lazy();
-				} else {
-					annotation(node,{otherFiberCall:null});
-				}
+			handleOtherFiberCall(node);
+		},
+		varDecl(node:VarDecl) {
+			this.visit(node.name);
+			this.visit(node.typeDecl);
+			this.visit(node.value);
+			handleOtherFiberCall(node);
+		},
+	});
+	function handleOtherFiberCall(node:TNode) {
+		const a=annotation(node);
+		if (a.otherFiberCall) {
+			const o=a.otherFiberCall;
+			const ta=annotation(o.T);
+			if (ta.resolvedType && isMethodType(ta.resolvedType) && !ta.resolvedType.method.nowait) {
+				o.fiberCallRequired_lazy();
+			} else {
+				annotation(node,{otherFiberCall:null});
 			}
 		}
-	});
-
+	}
 	const ctx=context<TypeChkCtx>();
 	typeAnnotationVisitor.def=visitSub;
 	typeAnnotationVisitor.visit(klass.node);

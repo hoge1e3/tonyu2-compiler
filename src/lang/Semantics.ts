@@ -664,12 +664,19 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		},
 		varDecl: function (node:VarDecl) {
 			let t:any;
+			const path=this.path.slice();
 			if (!ctx.noWait &&
 					(t=OM.match(node.value,fiberCallTmpl)) &&
 					isFiberMethod(t.N)) {
 				t.type="varDecl";
 				annotation(node, {fiberCall:t});
 				fiberCallRequired(this.path);
+			}
+			if (!ctx.noWait &&
+					(t=OM.match(node.value,otherFiberCallTmpl))) {
+				t.type="varDecl";
+				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
+				annotation(node, {otherFiberCall:t});
 			}
 			this.visit(node.value);
 			this.visit(node.typeDecl);
