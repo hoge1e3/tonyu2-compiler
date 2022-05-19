@@ -45,7 +45,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"toste":{"nowait":true}},"fields":{"x":{},"s":{}}}
+  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"toste":{"nowait":true}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Main',
@@ -124,7 +124,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false}},"fields":{"a":{}}}
+  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false}},"fields":{"a":{"vtype":"user.A"}}}
 });
 
 //# sourceMappingURL=concat.js.map

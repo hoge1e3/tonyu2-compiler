@@ -40,7 +40,10 @@ export type ClassDefinitionContext={
 	nonShimParent?: TonyuClass,
 
 };
-
+export type DeclsInDefinition={
+	methods: {[key:string]:{nowait:boolean}},
+	fields: {[key:string]:{vtype: string}},
+};
 export type Decls={
 	methods: {[key:string]: MethodInfo},
 	fields:  {[key:string]: FieldInfo},
@@ -49,8 +52,8 @@ export type Decls={
 	softRefClasses?: object*/
 };
 export type FieldInfo={
-	klass:Meta,// is not written in *.js, add at klass definition
-    name:string,// is not written in *.js, add at klass definition
+	klass:Meta,// not in DeclsInDefinition, add at klass definition
+    name:string,// not  in DeclsInDefinition, add at klass definition
 	vtype?: string, // "String" , "Number", "user.A"
 	// --- compile time?
     /*node?:TNode,

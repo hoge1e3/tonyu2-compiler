@@ -55,7 +55,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			type=ScopeTypes.MODULE;
 			constructor(public name:string){}
 		}
-		export type ALL=(FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE) & {vtype?:AnnotatedType};
+		export type ALL=(FIELD|METHOD|NATIVE|LOCAL|THVAR|PROP|PARAM|GLOBAL|CLASS|MODULE) & {resolvedType?:AnnotatedType};
 	};
 	export type ScopeInfo=ScopeInfos.ALL;
 	export type ScopeType=valueOf<typeof ScopeTypes>;
@@ -125,11 +125,18 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			if (res) break;
 			res=k.decls.fields[name];
 		}
-		/*if (typeof (res.vtype)==="string") {
-			res.vtype=Tonyu.classMetas[res.vtype] || root[res.vtype];
-		}*/
+		if (res && res.vtype && !res.resolvedType) {
+			res.resolvedType=className2ResolvedType(res.vtype);
+		}
 		return res;
 	};
+	export function className2ResolvedType(name:string):AnnotatedType|undefined {
+		if (Tonyu.classMetas[name]) {
+			return Tonyu.classMetas[name] as C_Meta;
+		} else if (root[name]) {
+			return {class: root[name]};
+		}
+	}
 	export function getMethod(klass: C_Meta,name:string) {//B
 		let res:FuncInfo=null;
 		for (let k of getDependingClasses(klass)) {

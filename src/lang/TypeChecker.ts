@@ -59,7 +59,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 					const info=a.fieldInfo;// for field
 					if (si) {
 						console.log("set var type",node.name+"", va.resolvedType );
-						si.vtype=va.resolvedType;
+						si.resolvedType=va.resolvedType;
 					} else if (info) {
 						console.log("set fld type",node.name+"", va.resolvedType );
 						info.resolvedType=va.resolvedType;
@@ -80,7 +80,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 				var si=a.scopeInfo;
 				if (si && va.resolvedType) {
 					console.log("set param type",node.name+"", node.typeDecl.vtype+"");
-					si.vtype=va.resolvedType;
+					si.resolvedType=va.resolvedType;
 				}
 			}
 		},
@@ -136,9 +136,9 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 			var a=annotation(node);
 			var si=a.scopeInfo;
 			if (si) {
-				if (si.vtype) {
-					console.log("VA typeof",node.name+":",si.vtype);
-					annotation(node,{resolvedType:si.vtype});
+				if (si.resolvedType) {
+					console.log("VA typeof",node.name+":",si.resolvedType);
+					annotation(node,{resolvedType:si.resolvedType});
 				} else if (si.type===ScopeTypes.FIELD) {
 					const fld=klass.decls.fields[node.name+""];
 					if (!fld) {
@@ -148,7 +148,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 					}
 					var rtype=fld.resolvedType;
 					if (!rtype) {
-						console.log("VA vtype not found",node.name+":",fld);
+						console.log("VA resolvedType not found",node.name+":",fld);
 					} else {
 						annotation(node,{resolvedType:rtype});
 						console.log("VA typeof",node.name+":",rtype);

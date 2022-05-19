@@ -882,6 +882,17 @@ function genJS(klass, env, genOptions) {
         }
         return t.fullName || t.class.name;
     }
+    function klass2name(t) {
+        if (CompilerTypes_1.isMethodType(t)) {
+            return `${t.method.klass.fullName}.${t.method.name}()`;
+        }
+        else if (CompilerTypes_1.isMeta(t)) {
+            return t.fullName;
+        }
+        else {
+            return t.class.name;
+        }
+    }
     function digestDecls(klass) {
         var res = { methods: {}, fields: {} };
         for (let i in klass.decls.methods) {
@@ -892,14 +903,7 @@ function genJS(klass, env, genOptions) {
             var src = klass.decls.fields[i];
             var dst = {};
             //console.log("digestDecls",src);
-            if (src.vtype) {
-                if (typeof (src.vtype) === "string") {
-                    dst.vtype = src.vtype;
-                }
-                else {
-                    dst.vtype = getNameOfType(src.vtype); //.fullName || src.vtype.name;
-                }
-            }
+            dst.vtype = src.resolvedType ? klass2name(src.resolvedType) : src.vtype;
             res.fields[i] = dst;
         }
         return res;

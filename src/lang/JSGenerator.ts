@@ -11,6 +11,7 @@ import {context} from "./context";
 import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta } from "./CompilerTypes";
 import { ArgList, Arylit, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
+import { DeclsInDefinition } from "../runtime/RuntimeTypes";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -926,23 +927,26 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		}
 		return (t as C_Meta).fullName || (t as NativeClass).class.name;
 	}
-	function digestDecls(klass: C_Meta) {
-		var res={methods:{},fields:{}};
+	function klass2name(t: AnnotatedType) {
+		if (isMethodType(t)) {
+			return `${t.method.klass.fullName}.${t.method.name}()`;
+		} else if (isMeta(t)) {
+			return t.fullName;
+		} else {
+			return t.class.name;
+		}
+	}
+	function digestDecls(klass: C_Meta):DeclsInDefinition {
+		var res={methods:{},fields:{}} as DeclsInDefinition;
 		for (let i in klass.decls.methods) {
 			res.methods[i]=
 			{nowait:!!klass.decls.methods[i].nowait};
 		}
 		for (let i in klass.decls.fields) {
-			var src=klass.decls.fields[i];
-			var dst:any={};
-			//console.log("digestDecls",src);
-			if (src.vtype) {
-				if (typeof (src.vtype)==="string") {
-					dst.vtype=src.vtype;
-				} else {
-					dst.vtype=getNameOfType(src.vtype);//.fullName || src.vtype.name;
-				}
-			}
+			const src=klass.decls.fields[i];
+			const dst={
+				vtype:src.resolvedType ? klass2name(src.resolvedType) : src.vtype
+			};
 			res.fields[i]=dst;
 		}
 		return res;
