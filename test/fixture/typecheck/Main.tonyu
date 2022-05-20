@@ -13,8 +13,6 @@ print (__typeof a.toste);
 var n=3;
 a.n=10;
 
-\run() {
-	var r=a.test();
-	print(r);
-}
-run();
+var r=a.test();
+print(r);
+//run();
