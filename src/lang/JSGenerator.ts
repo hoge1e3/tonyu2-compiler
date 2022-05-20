@@ -242,7 +242,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 							ctx.pc++,
 							thisForVIM, node.name, TH
 					);
-				} else if (to) {
+				} else if (to && to.fiberType) {
 					buf.printf(//VDC
 						"%v.%s%s(%j);%n" +//FIBERCALL
 						"%s=%s;return;%n" +/*B*/
@@ -309,7 +309,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 							FRMPC, ctx.pc,
 							ctx.pc++
 				);
-			} else if (to && to.type=="noRetOther") {
+			} else if (to && to.fiberType && to.type=="noRetOther") {
 				buf.printf(
 						"%v.%s%s(%j);%n" +//FIBERCALL
 						"%s=%s;return;%n" +/*B*/
@@ -329,7 +329,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 							ctx.pc++,
 							t.L, t.O, TH
 				);
-			} else if (to && to.type=="retOther") {
+			} else if (to && to.fiberType && to.type=="retOther") {
 				buf.printf(//VDC
 						"%v.%s%s(%j);%n" +//FIBERCALL
 						"%s=%s;return;%n" +/*B*/

@@ -133,7 +133,7 @@ export type Annotation={
 	),
 	// Target Object Name Arguments Leftvalue oPerator
 	//  O.N(A)  T=O.N
-	otherFiberCall?: {T:Expression, O:Expression, N:Token, A:Expression[], fiberCallRequired_lazy:()=>void}&(
+	otherFiberCall?: {fiberType?:MethodType, T:Expression, O:Expression, N:Token, A:Expression[], fiberCallRequired_lazy:()=>void}&(
 		{type:"noRetOther"}|{type:"varDecl"}|
 		{type:"retOther",L:Expression, P:Token}//LPO.N(A)  P:(=)(+=)(-=)...
 	),// fiberCallRequired_lazy is called when typechecker detects that T is a Tonyu-method
