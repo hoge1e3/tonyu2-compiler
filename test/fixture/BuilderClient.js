@@ -2,7 +2,7 @@
 const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
 //const FS=(root.parent && root.parent.FS) || root.FS;
@@ -103,7 +103,7 @@ class BuilderClient {
             await this.init();
             const compres=await this.w.run("compiler/fullCompile");
             console.log(compres);
-            const sf=SourceFiles.add(compres);
+            const sf=sourceFiles.add(compres);
             await sf.saveAs(this.getOutputFile());
             await this.exec(compres);
             this.partialCompilable=true;
@@ -175,7 +175,8 @@ class BuilderClient {
         });
     }
 }
-BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.sourceFiles=sourceFiles;
+BuilderClient.SourceFiles=sourceFiles;// deprecated
 BuilderClient.NS2DepSpec=NS2DepSpec;
 //root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;
@@ -187,6 +188,8 @@ module.exports=BuilderClient;
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sourceFiles = exports.SourceFiles = exports.SourceFile = void 0;
 const root_1 = __importDefault(require("../lib/root"));
 function timeout(t) {
     return new Promise(s => setTimeout(s, t));
@@ -273,6 +276,7 @@ class SourceFile {
         return { text: this.text, sourceMap: this.sourceMap, functions: this.functions };
     }
 }
+exports.SourceFile = SourceFile;
 class SourceFiles {
     constructor() {
         this.url2SourceFile = {};
@@ -286,7 +290,8 @@ class SourceFiles {
         return sourceFile;
     }
 }
-module.exports = new SourceFiles();
+exports.SourceFiles = SourceFiles;
+exports.sourceFiles = new SourceFiles();
 //});/*--end of define--*/
 
 },{"../lib/root":5}],3:[function(require,module,exports){
