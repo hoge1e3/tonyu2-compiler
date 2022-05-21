@@ -2,7 +2,7 @@
 const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
 //const FS=(root.parent && root.parent.FS) || root.FS;
@@ -103,7 +103,7 @@ class BuilderClient {
             await this.init();
             const compres=await this.w.run("compiler/fullCompile");
             console.log(compres);
-            const sf=SourceFiles.add(compres);
+            const sf=sourceFiles.add(compres);
             await sf.saveAs(this.getOutputFile());
             await this.exec(compres);
             this.partialCompilable=true;
@@ -175,7 +175,8 @@ class BuilderClient {
         });
     }
 }
-BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.sourceFiles=sourceFiles;
+BuilderClient.SourceFiles=sourceFiles;// deprecated
 BuilderClient.NS2DepSpec=NS2DepSpec;
 //root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;
@@ -185,14 +186,15 @@ module.exports=BuilderClient;
 //const root=require("../lib/root");
 const BuilderClient=require("./BuilderClient");
 
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 const ProjectFactory=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
 const langMod=require("../lang/langMod");
 const StackDecoder=require("../lang/StackDecoder");
 const SourceMap=require("../lang/source-map");
 const DebuggerCore=require("../browser/DebuggerCore");
-BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.sourceFiles=sourceFiles;
+BuilderClient.SourceFiles=sourceFiles;// deprecated
 BuilderClient.ProjectFactory=ProjectFactory;
 BuilderClient.CompiledProject=CompiledProject;
 BuilderClient.langMod=langMod;
@@ -205,7 +207,7 @@ module.exports=BuilderClient;
 },{"../browser/DebuggerCore":3,"../lang/SourceFiles":4,"../lang/StackDecoder":5,"../lang/langMod":6,"../lang/source-map":7,"../project/CompiledProject":12,"../project/ProjectFactory":14,"./BuilderClient":1}],3:[function(require,module,exports){
 //define(function (require,exports,module) {
 // module.exports:: DI_container -> Debugger
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 //const ProjectFactory=require("../project/ProjectFactory");
 const CompiledProject=require("../project/CompiledProject");
 const langMod=require("../lang/langMod");
@@ -259,7 +261,7 @@ root.Debugger={
         console.log("Loading classes COMPLETE",Tonyu.ID,Tonyu.classes);
     },
     exec: async function (srcraw) {
-        await SourceFiles.add(srcraw).exec();
+        await sourceFiles.add(srcraw).exec();
         Events.fire("classChanged");
     },
     create: function (className) {
@@ -292,6 +294,8 @@ return root.Debugger;
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sourceFiles = exports.SourceFiles = exports.SourceFile = void 0;
 const root_1 = __importDefault(require("../lib/root"));
 function timeout(t) {
     return new Promise(s => setTimeout(s, t));
@@ -378,6 +382,7 @@ class SourceFile {
         return { text: this.text, sourceMap: this.sourceMap, functions: this.functions };
     }
 }
+exports.SourceFile = SourceFile;
 class SourceFiles {
     constructor() {
         this.url2SourceFile = {};
@@ -391,7 +396,8 @@ class SourceFiles {
         return sourceFile;
     }
 }
-module.exports = new SourceFiles();
+exports.SourceFiles = SourceFiles;
+exports.sourceFiles = new SourceFiles();
 //});/*--end of define--*/
 
 },{"../lib/root":11}],5:[function(require,module,exports){
@@ -400,7 +406,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const source_map_1 = __importDefault(require("./source-map"));
-const SourceFiles_1 = __importDefault(require("./SourceFiles"));
+const SourceFiles_1 = require("./SourceFiles");
 const stacktrace_1 = __importDefault(require("./stacktrace"));
 module.exports = {
     async decode(e) {
@@ -408,7 +414,7 @@ module.exports = {
             const tr = await stacktrace_1.default.fromError(e, { offline: true });
             tr.forEach(t => {
                 try {
-                    const sf = SourceFiles_1.default.url2SourceFile[t.fileName];
+                    const sf = SourceFiles_1.sourceFiles.url2SourceFile[t.fileName];
                     //console.log("sf", t.fileName, sf, SourceFiles.url2SourceFile);
                     if (sf) {
                         const opt = {
@@ -3696,15 +3702,10 @@ const root = (function () {
 module.exports = root;
 
 },{}],12:[function(require,module,exports){
-/*define(function (require,exports,module) {
-    const F=require("ProjectFactory");
-    const root=require("root");
-    const SourceFiles=require("SourceFiles");
-    const langMod=require("langMod");
-    */
+
     const F=require("./ProjectFactory");
     const root=require("../lib/root");
-    const SourceFiles=require("../lang/SourceFiles");
+    const {sourceFiles}=require("../lang/SourceFiles");
     //const A=require("../lib/assert");
     const langMod=require("../lang/langMod");
 
@@ -3727,7 +3728,7 @@ module.exports = root;
             loadClasses: async function (ctx) {
                 console.log("Loading compiled classes ns=",ns,"url=",url);
                 await this.loadDependingClasses();
-                const s=SourceFiles.add({url});
+                const s=sourceFiles.add({url});
                 await s.exec();
                 console.log("Loaded compiled classes ns=",ns,"url=",url);
             },
@@ -3741,7 +3742,7 @@ module.exports = root;
                 await this.loadDependingClasses();
                 const outJS=this.getOutputFile();
                 const map=outJS.sibling(outJS.name()+".map");
-                const sf=SourceFiles.add({
+                const sf=sourceFiles.add({
                     text:outJS.text(),
                     sourceMap:map.exists() && map.text(),
                 });
@@ -3764,7 +3765,7 @@ module.exports = root;
                 await this.loadDependingClasses();
                 const outJS=outputFile;
                 const map=outJS.sibling(outJS.name()+".map");
-                const sf=SourceFiles.add({
+                const sf=sourceFiles.add({
                     text:outJS.text(),
                     sourceMap:map.exists() && map.text(),
                 });
@@ -3820,7 +3821,7 @@ module.exports=NS2DepSpec;
     // This factory will be widely used, even BitArrow.
 
 
-    let Compiler, SourceFiles,sysMod,run2Mod;
+    let Compiler, /*SourceFiles,*/sysMod,run2Mod;
     const  resolvers=[],types={};
     exports.addDependencyResolver=(f)=>{
         //f: (prj, spec) => prj

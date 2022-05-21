@@ -548,6 +548,14 @@ var klass = {
         var methodsF = params.methods;
         var decls = params.decls;
         var nso = klass.ensureNamespace(Tonyu.classes, namespace);
+        function addKlassAndNameToDecls(klass) {
+            for (let name of Object.keys(decls.fields)) {
+                Object.assign(klass.decls.fields[name], { name, klass });
+            }
+            for (let name of Object.keys(decls.methods)) {
+                Object.assign(klass.decls.methods[name], { name, klass });
+            }
+        }
         //type ShimMeta=Meta & {isShim?:boolean, extenderFullName?:string};
         function chkmeta(m, ctx) {
             ctx = ctx || { path: [] };
@@ -580,14 +588,15 @@ var klass = {
             chkmeta(c.meta, ctx);
             return c;
         }
-        function extender(parent, ctx) {
+        function extender(_parent, ctx) {
+            let parent = _parent;
             var isShim = !ctx.init;
             var includesRec = ctx.includesRec;
             if (includesRec[fullName])
                 return parent;
             includesRec[fullName] = true;
             //console.log(ctx.initFullName, fullName);//,  includesRec[fullName],JSON.stringify(ctx));
-            includes.forEach(function (m) {
+            includes.forEach((m) => {
                 parent = m.extendFrom(parent, extend(ctx, { init: false }));
             });
             var methods = typeof methodsF === "function" ? methodsF(parent) : methodsF;
@@ -617,7 +626,7 @@ var klass = {
                     fullName, shortName, namespace, decls,
                     superclass: ctx.nonShimParent ? ctx.nonShimParent.meta : null,
                     includesRec,
-                    includes: includes.map(function (c) { return c.meta; }),
+                    includes: includes.map((c) => c.meta),
                     func: res
                 });
             }
@@ -684,6 +693,7 @@ var klass = {
             includesRec: (parent ? extend({}, parent.meta.includesRec) : {}),
             nonShimParent: parent
         });
+        addKlassAndNameToDecls(res.meta);
         res.extendFrom = extender;
         //addMeta(fullName, res.meta);
         nso[shortName] = res;
@@ -691,27 +701,23 @@ var klass = {
         //console.log("defined", fullName, Tonyu.classes,Tonyu.ID);
         return chkclass(res); //,{isShim:false, init:false, includesRec:{}});
     },
-    isSourceChanged(_k) {
-        const k = getMeta(_k);
+    /*isSourceChanged(_k:Meta|TonyuClass) {
+        const k:Meta=getMeta(_k);
         if (k.src && k.src.tonyu) {
-            if (!k.nodeTimestamp)
-                return true;
-            return k.src.tonyu.lastUpdate() > k.nodeTimestamp;
+            if (!k.nodeTimestamp) return true;
+            return k.src.tonyu.lastUpdate()> k.nodeTimestamp;
         }
         return false;
     },
-    shouldCompile(_k) {
-        const k = getMeta(_k);
-        if (k.hasSemanticError)
-            return true;
-        if (klass.isSourceChanged(k))
-            return true;
-        var dks = klass.getDependingClasses(k);
-        for (var i = 0; i < dks.length; i++) {
-            if (klass.shouldCompile(dks[i]))
-                return true;
+    shouldCompile(_k:Meta|TonyuClass) {
+        const k:Meta=getMeta(_k);
+        if (k.hasSemanticError) return true;
+        if (klass.isSourceChanged(k)) return true;
+        var dks=klass.getDependingClasses(k);
+        for (var i=0 ; i<dks.length ;i++) {
+            if (klass.shouldCompile(dks[i])) return true;
         }
-    },
+    },*/
     getDependingClasses(_k) {
         const k = getMeta(_k);
         var res = [];

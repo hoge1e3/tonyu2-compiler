@@ -1974,7 +1974,7 @@ function genJS(klass, env, genOptions) {
                         "%}case %d:%{" +
                         "%s%v=%s.retVal;%n", THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++, thisForVIM, node.name, TH);
                 }
-                else if (to) {
+                else if (to && to.fiberType) {
                     buf.printf(//VDC
                     "%v.%s%s(%j);%n" + //FIBERCALL
                         "%s=%s;return;%n" + /*B*/
@@ -2035,7 +2035,7 @@ function genJS(klass, env, genOptions) {
                     "%s=%s;return;%n" + /*B*/
                     "%}case %d:%{", THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++);
             }
-            else if (to && to.type == "noRetOther") {
+            else if (to && to.fiberType && to.type == "noRetOther") {
                 buf.printf("%v.%s%s(%j);%n" + //FIBERCALL
                     "%s=%s;return;%n" + /*B*/
                     "%}case %d:%{", to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)], FRMPC, ctx.pc, ctx.pc++);
@@ -2047,7 +2047,7 @@ function genJS(klass, env, genOptions) {
                     "%}case %d:%{" +
                     "%v%v%s.retVal;%n", THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)], FRMPC, ctx.pc, ctx.pc++, t.L, t.O, TH);
             }
-            else if (to && to.type == "retOther") {
+            else if (to && to.fiberType && to.type == "retOther") {
                 buf.printf(//VDC
                 "%v.%s%s(%j);%n" + //FIBERCALL
                     "%s=%s;return;%n" + /*B*/
@@ -4302,9 +4302,7 @@ function checkExpr(klass, env) {
             const ta = annotation(o.T);
             if (ta.resolvedType && (0, CompilerTypes_1.isMethodType)(ta.resolvedType) && !ta.resolvedType.method.nowait) {
                 o.fiberCallRequired_lazy();
-            }
-            else {
-                annotation(node, { otherFiberCall: null });
+                o.fiberType = ta.resolvedType;
             }
         }
     }
