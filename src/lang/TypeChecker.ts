@@ -1,4 +1,5 @@
 import * as cu from "./compiler";
+import R from "../lib/R";
 import {context} from "./context";
 import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt } from "./NodeTypes";
 //import Grammar from "./Grammar";
@@ -6,6 +7,7 @@ import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
 import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
+import TError from "../runtime/TError";
 
 	//var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 	const ScopeTypes=cu.ScopeTypes;
@@ -102,6 +104,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	typeDeclVisitor.visit(klass.node);
 }
 export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
+	var srcFile=klass.src.tonyu; //file object  //S
 	function annotation(node:TNode, aobj?:Annotation):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
@@ -118,18 +121,17 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				var m=a.memberAccess;
 				var vtype=visitExpr(m.target);
 				if (vtype && isMeta(vtype)) {
-					const f=cu.getField(vtype,m.name);
+					const field=cu.getField(vtype,m.name);
+					const method=cu.getMethod(vtype,m.name);
+					if (!field && !method) {
+						throw TError( R("memberNotFoundInClass",vtype.shortName, m.name) , srcFile, node.pos);
+					}
 					//console.log("GETF",vtype,m.name,f);
 					// fail if f is not set when strict check
-					if (f && f.resolvedType) {
-						annotation(node,{resolvedType:f.resolvedType});
-					} else {
-						const method=cu.getMethod(vtype, m.name);
-						// fail if m is not set when strict check
-						//console.log("GETM",vtype,m.name,f);
-						if (method) {
-							annotation(node,{resolvedType:{method}});
-						}
+					if (field && field.resolvedType) {
+						annotation(node,{resolvedType:field.resolvedType});
+					} else if (method) {
+						annotation(node,{resolvedType:{method}});
 					}
 				}
 			} else {

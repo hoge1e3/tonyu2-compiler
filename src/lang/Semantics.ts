@@ -134,9 +134,13 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 			"catch": function (node:Catch) {
 			},
 			exprstmt: function (node:Exprstmt) {
-				if (node.expr.type==="literal" &&
-					node.expr.text.match(/^.field strict.$/)) {
-					klass.directives.field_strict=true;
+				if (node.expr.type==="literal") {
+					if (node.expr.text.match(/^.field strict.$/)) {
+						klass.directives.field_strict=true;
+					}
+					if (node.expr.text.match(/^.external waitable.$/)) {
+						klass.directives.external_waitable=true;
+					}
 				}
 			},
 			"forin": function (node:Forin) {
@@ -271,7 +275,9 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			right: otherFiberCallTmpl
 		}
 	};
-
+	function external_waitable_enabled(){
+		return env.options.compiler.external_waitable || klass.directives.external_waitable;
+	}
 
 	const noRetSuperFiberCallTmpl={
 		expr: OM.S({type:"superExpr", params:{args:OM.A}})
@@ -391,6 +397,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					} else {
 						Object.assign(klass.decls.fields[n],fi);//si;
 					}
+					console.log("Implicit field declaration:", n, klass.decls.fields[n]);
 					topLevelScope[n]=new SI.FIELD(klass, n, klass.decls.fields[n]);
 				}
 			}
@@ -626,13 +633,13 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				t.type="ret";
 				annotation(node, {fiberCall:t});
 				fiberCallRequired(this.path);
-			} else if (!ctx.noWait &&
+			} else if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node,noRetOtherFiberCallTmpl))) {
 				console.log("noRetOtherFiberCallTmpl", t);
 				t.type="noRetOther";
 				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
 				annotation(node, {otherFiberCall:t});
-			} else if (!ctx.noWait &&
+			} else if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node,retOtherFiberCallTmpl))) {
 				t.type="retOther";
 				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
@@ -672,7 +679,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				annotation(node, {fiberCall:t});
 				fiberCallRequired(this.path);
 			}
-			if (!ctx.noWait &&
+			if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node.value,otherFiberCallTmpl))) {
 				t.type="varDecl";
 				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);

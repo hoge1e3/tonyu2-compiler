@@ -32,6 +32,7 @@ export type CompilerOptions={
 	typeCheck?: boolean,
 	defaultSuperClass?: string,
 	field_strict?: boolean,
+	external_waitable?: boolean,
 	diagnose?: boolean,
 	genAMD?: boolean,
 	noLoopCheck?: boolean,
@@ -75,7 +76,10 @@ export type C_Meta=Meta & {
 	src?: {tonyu?:any, js?:any, map?: string},
     hasSemanticError: boolean,
     jsNotUpToDate: boolean,
-    directives: {field_strict?:boolean},
+    directives: {
+		field_strict?:boolean,
+		external_waitable?: boolean,
+	},
     node: Program, nodeTimestamp:number,
 	annotation?: object,
 };

@@ -18,14 +18,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkExpr = exports.checkTypeDecl = void 0;
 const cu = __importStar(require("./compiler"));
+const R_1 = __importDefault(require("../lib/R"));
 const context_1 = require("./context");
 //import Grammar from "./Grammar";
 const parser_1 = require("./parser");
 const Visitor_1 = require("./Visitor");
 const CompilerTypes_1 = require("./CompilerTypes");
+const TError_1 = __importDefault(require("../runtime/TError"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 const ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -121,6 +126,7 @@ function checkTypeDecl(klass, env) {
 }
 exports.checkTypeDecl = checkTypeDecl;
 function checkExpr(klass, env) {
+    var srcFile = klass.src.tonyu; //file object  //S
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
@@ -137,19 +143,18 @@ function checkExpr(klass, env) {
                 var m = a.memberAccess;
                 var vtype = visitExpr(m.target);
                 if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
-                    const f = cu.getField(vtype, m.name);
+                    const field = cu.getField(vtype, m.name);
+                    const method = cu.getMethod(vtype, m.name);
+                    if (!field && !method) {
+                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, m.name), srcFile, node.pos);
+                    }
                     //console.log("GETF",vtype,m.name,f);
                     // fail if f is not set when strict check
-                    if (f && f.resolvedType) {
-                        annotation(node, { resolvedType: f.resolvedType });
+                    if (field && field.resolvedType) {
+                        annotation(node, { resolvedType: field.resolvedType });
                     }
-                    else {
-                        const method = cu.getMethod(vtype, m.name);
-                        // fail if m is not set when strict check
-                        //console.log("GETM",vtype,m.name,f);
-                        if (method) {
-                            annotation(node, { resolvedType: { method } });
-                        }
+                    else if (method) {
+                        annotation(node, { resolvedType: { method } });
                     }
                 }
             }

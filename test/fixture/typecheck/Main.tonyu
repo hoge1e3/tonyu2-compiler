@@ -1,4 +1,5 @@
 native console;
+"external waitable";
 var a:A= new A();
 /*
 print (__typeof a);
@@ -15,4 +16,6 @@ a.n=10;
 
 var r=a.test();
 print(r);
+//a.hoge();
+
 //run();

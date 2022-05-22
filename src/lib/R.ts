@@ -1,4 +1,5 @@
 const ja={
+    memberNotFoundInClass: "クラス{1}にフィールドまたはメソッド{2}が定義されていません",
     expected: "ここには{1}などが入ることが予想されます",
     superClassIsUndefined:"親クラス {1}は定義されていません",
     classIsUndefined:"クラス {1}は定義されていません",
@@ -30,6 +31,7 @@ const ja={
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
 };
 const en={
+    memberNotFoundInClass: "No such field or method: {1}.{2}",
     "expected": "Expected: {1}",
     "superClassIsUndefined" : "Super Class '{1}' is not defined", //親クラス {1}は定義されていません
     "classIsUndefined" : "Class {1} is Undefined", //クラス {1}は定義されていません
