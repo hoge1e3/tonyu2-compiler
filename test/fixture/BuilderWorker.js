@@ -3296,9 +3296,13 @@ function initClassDecls(klass, env) {
             "catch": function (node) {
             },
             exprstmt: function (node) {
-                if (node.expr.type === "literal" &&
-                    node.expr.text.match(/^.field strict.$/)) {
-                    klass.directives.field_strict = true;
+                if (node.expr.type === "literal") {
+                    if (node.expr.text.match(/^.field strict.$/)) {
+                        klass.directives.field_strict = true;
+                    }
+                    if (node.expr.text.match(/^.external waitable.$/)) {
+                        klass.directives.external_waitable = true;
+                    }
                 }
             },
             "forin": function (node) {
@@ -3352,7 +3356,7 @@ exports.initClassDecls = initClassDecls;
 function annotateSource2(klass, env) {
     // annotateSource2 is call after orderByInheritance
     klass.hasSemanticError = true;
-    var srcFile = klass.src.tonyu; //file object  //S
+    const srcFile = klass.src.tonyu; //file object  //S
     var srcCont = srcFile.text();
     function getSource(node) {
         return cu.getSource(srcCont, node);
@@ -3420,6 +3424,9 @@ function annotateSource2(klass, env) {
             right: otherFiberCallTmpl
         }
     };
+    function external_waitable_enabled() {
+        return env.options.compiler.external_waitable || klass.directives.external_waitable;
+    }
     const noRetSuperFiberCallTmpl = {
         expr: OM.S({ type: "superExpr", params: { args: OM.A } })
     };
@@ -3544,6 +3551,7 @@ function annotateSource2(klass, env) {
                     else {
                         Object.assign(klass.decls.fields[n], fi); //si;
                     }
+                    //console.log("Implicit field declaration:", n, klass.decls.fields[n]);
                     topLevelScope[n] = new SI.FIELD(klass, n, klass.decls.fields[n]);
                 }
             }
@@ -3714,7 +3722,7 @@ function annotateSource2(klass, env) {
         },
         "return": function (node) {
             var t;
-            if (!ctx.noWait) {
+            if (!ctx.noWait && node.value) {
                 if ((t = OM.match(node.value, fiberCallTmpl)) &&
                     isFiberMethod(t.N)) {
                     annotation(node.value, { fiberCall: t });
@@ -3750,7 +3758,7 @@ function annotateSource2(klass, env) {
             this.visit(node.left);
             this.visit(node.op);
             if (match(node, myMethodCallTmpl)) {
-                var si = annotation(node.left).scopeInfo;
+                const si = annotation(node.left).scopeInfo;
                 annotation(node, { myMethodCall: { name: t.N, args: t.A, scopeInfo: si } });
             }
             else if (match(node, othersMethodCallTmpl)) {
@@ -3790,14 +3798,14 @@ function annotateSource2(klass, env) {
                 annotation(node, { fiberCall: t });
                 fiberCallRequired(this.path);
             }
-            else if (!ctx.noWait &&
+            else if (!ctx.noWait && external_waitable_enabled() &&
                 (t = OM.match(node, noRetOtherFiberCallTmpl))) {
                 console.log("noRetOtherFiberCallTmpl", t);
                 t.type = "noRetOther";
                 t.fiberCallRequired_lazy = () => fiberCallRequired(path);
                 annotation(node, { otherFiberCall: t });
             }
-            else if (!ctx.noWait &&
+            else if (!ctx.noWait && external_waitable_enabled() &&
                 (t = OM.match(node, retOtherFiberCallTmpl))) {
                 t.type = "retOther";
                 t.fiberCallRequired_lazy = () => fiberCallRequired(path);
@@ -3841,7 +3849,7 @@ function annotateSource2(klass, env) {
                 annotation(node, { fiberCall: t });
                 fiberCallRequired(this.path);
             }
-            if (!ctx.noWait &&
+            if (!ctx.noWait && external_waitable_enabled() &&
                 (t = OM.match(node.value, otherFiberCallTmpl))) {
                 t.type = "varDecl";
                 t.fiberCallRequired_lazy = () => fiberCallRequired(path);
@@ -3863,6 +3871,10 @@ function annotateSource2(klass, env) {
         if (resolvedType) {
             annotation(node, { resolvedType });
         }
+        else if (env.options.compiler.typeCheck) {
+            throw (0, TError_1.default)((0, R_1.default)("typeNotFound", node.name), srcFile, node.pos);
+        }
+        return resolvedType;
         /*if (si instanceof SI.NATIVE) {
             annotation(node, {resolvedType: si.value});
         } else if (si instanceof SI.CLASS){
@@ -3876,7 +3888,7 @@ function annotateSource2(klass, env) {
         });
     }
     function copyLocals(finfo, scope) {
-        var locals = finfo.locals;
+        const locals = finfo.locals;
         for (var i in locals.varDecls) {
             //console.log("LocalVar ",i,"declared by ",finfo);
             var si = new SI.LOCAL(finfo); //genSt(ST.LOCAL,{declaringFunc:finfo});
@@ -3903,6 +3915,7 @@ function annotateSource2(klass, env) {
             f.locals = collectLocals(f.stmts);
             f.params = getParams(f);
         });
+        //if (!f.params) throw new Error("f.params is not inited");
         resolveTypesOfParams(f.params);
     }
     function annotateSubFuncExpr(node) {
@@ -3955,6 +3968,12 @@ function annotateSource2(klass, env) {
             ns[p.name.text] = si;
             annotation(p, { scopeInfo: si, declaringFunc: f });
         });
+        if (f.head && f.head.rtype) {
+            const rt = resolveType(f.head.rtype.vtype);
+            f.returnType = rt;
+            //console.log("Annotated return type ", f, rt);
+            //throw new Error("!");
+        }
         copyLocals(f, ns);
         ctx.enter({ method: f, finfo: f, noWait: false }, function () {
             annotateVarAccesses(f.stmts, ns);
@@ -4115,14 +4134,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkExpr = exports.checkTypeDecl = void 0;
 const cu = __importStar(require("./compiler"));
+const R_1 = __importDefault(require("../lib/R"));
 const context_1 = require("./context");
+const NodeTypes_1 = require("./NodeTypes");
 //import Grammar from "./Grammar";
 const parser_1 = require("./parser");
 const Visitor_1 = require("./Visitor");
 const CompilerTypes_1 = require("./CompilerTypes");
+const TError_1 = __importDefault(require("../runtime/TError"));
 //var ex={"[SUBELEMENTS]":1,pos:1,len:1};
 const ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -4203,12 +4228,12 @@ function checkTypeDecl(klass, env) {
         funcDecl: function (node) {
             //console.log("Visit funcDecl",node);
             var head = node.head;
-            var finfo = annotation(node).funcInfo;
-            if (head.rtype) {
-                console.log("ret typeis", head.name + "", head.rtype.vtype + "");
-                const tanon = annotation(head.rtype);
-                finfo.returnType = tanon.resolvedType; // head.rtype.vtype;
-            }
+            /*const finfo=annotation(node).funcInfo;
+            if (finfo && head.rtype) {
+                const tanon=annotation(head.rtype);
+                console.log("ret type of ",head.name+": ", head.rtype.vtype.name+"", tanon);
+                finfo.returnType=tanon.resolvedType;// head.rtype.vtype;
+            }*/
             this.visit(head);
             this.visit(node.body);
         },
@@ -4218,6 +4243,7 @@ function checkTypeDecl(klass, env) {
 }
 exports.checkTypeDecl = checkTypeDecl;
 function checkExpr(klass, env) {
+    const srcFile = klass.src.tonyu; //file object  //S
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
@@ -4229,30 +4255,41 @@ function checkExpr(klass, env) {
             annotation(node, { resolvedType: { class: String } });
         },
         postfix: function (node) {
-            var a = annotation(node);
-            if (a.memberAccess) {
-                var m = a.memberAccess;
-                var vtype = visitExpr(m.target);
+            //var a=annotation(node);
+            this.visit(node.left);
+            this.visit(node.op);
+            if ((0, NodeTypes_1.isMember)(node.op)) {
+                //var m=a.memberAccess;
+                const a = annotation(node.left);
+                var vtype = a.resolvedType; // visitExpr(m.target);
+                const name = node.op.name.text;
                 if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
-                    const f = cu.getField(vtype, m.name);
+                    const field = cu.getField(vtype, name);
+                    const method = cu.getMethod(vtype, name);
+                    if (!field && !method) {
+                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.pos);
+                    }
                     //console.log("GETF",vtype,m.name,f);
                     // fail if f is not set when strict check
-                    if (f && f.resolvedType) {
-                        annotation(node, { resolvedType: f.resolvedType });
+                    if (field && field.resolvedType) {
+                        annotation(node, { resolvedType: field.resolvedType });
                     }
-                    else {
-                        const method = cu.getMethod(vtype, m.name);
-                        // fail if m is not set when strict check
-                        //console.log("GETM",vtype,m.name,f);
-                        if (method) {
-                            annotation(node, { resolvedType: { method } });
-                        }
+                    else if (method) {
+                        annotation(node, { resolvedType: { method } });
                     }
                 }
             }
-            else {
-                this.visit(node.left);
-                this.visit(node.op);
+            else if ((0, NodeTypes_1.isCall)(node.op)) {
+                const leftA = annotation(node.left);
+                console.log("OPCALL1", leftA);
+                if (leftA && leftA.resolvedType) {
+                    const leftT = leftA.resolvedType;
+                    if (!(0, CompilerTypes_1.isMethodType)(leftT)) {
+                        throw (0, TError_1.default)((0, R_1.default)("cannotCallNonFunctionType"), srcFile, node.op.pos);
+                    }
+                    console.log("OPCALL", leftT);
+                    annotation(node, { resolvedType: leftT.method.returnType });
+                }
             }
         },
         varAccess: function (node) {
@@ -4278,6 +4315,9 @@ function checkExpr(klass, env) {
                         annotation(node, { resolvedType: rtype });
                         //console.log("VA typeof",node.name+":",rtype);
                     }
+                }
+                else if (si.type === ScopeTypes.METHOD) {
+                    annotation(node, { resolvedType: { method: si.info } });
                 }
                 else if (si.type === ScopeTypes.PROP) {
                     //TODO
@@ -4318,7 +4358,7 @@ function checkExpr(klass, env) {
 exports.checkExpr = checkExpr;
 ;
 
-},{"./CompilerTypes":4,"./Visitor":14,"./compiler":15,"./context":16,"./parser":20}],14:[function(require,module,exports){
+},{"../lib/R":28,"../runtime/TError":37,"./CompilerTypes":4,"./NodeTypes":9,"./Visitor":14,"./compiler":15,"./context":16,"./parser":20}],14:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Visitor = void 0;
@@ -13109,6 +13149,9 @@ define('FS',["FSClass","NativeFS","LSFS", "WebFS", "PathUtil","Env","assert","SF
 },{"fs":1}],28:[function(require,module,exports){
 "use strict";
 const ja = {
+    typeNotFound: "型{1}が見つかりません",
+    cannotCallNonFunctionType: "関数・メソッドでないので呼び出すことはできません",
+    memberNotFoundInClass: "クラス{1}にフィールドまたはメソッド{2}が定義されていません",
     expected: "ここには{1}などが入ることが予想されます",
     superClassIsUndefined: "親クラス {1}は定義されていません",
     classIsUndefined: "クラス {1}は定義されていません",
@@ -13140,6 +13183,9 @@ const ja = {
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
 };
 const en = {
+    typeNotFound: "Type {1} is not found",
+    cannotCallNonFunctionType: "Cannot call what is neither function or method.",
+    memberNotFoundInClass: "No such field or method: {1}.{2}",
     "expected": "Expected: {1}",
     "superClassIsUndefined": "Super Class '{1}' is not defined",
     "classIsUndefined": "Class {1} is Undefined",
