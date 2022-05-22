@@ -225,7 +225,7 @@ exports.initClassDecls = initClassDecls;
 function annotateSource2(klass, env) {
     // annotateSource2 is call after orderByInheritance
     klass.hasSemanticError = true;
-    var srcFile = klass.src.tonyu; //file object  //S
+    const srcFile = klass.src.tonyu; //file object  //S
     var srcCont = srcFile.text();
     function getSource(node) {
         return cu.getSource(srcCont, node);
@@ -591,7 +591,7 @@ function annotateSource2(klass, env) {
         },
         "return": function (node) {
             var t;
-            if (!ctx.noWait) {
+            if (!ctx.noWait && node.value) {
                 if ((t = OM.match(node.value, fiberCallTmpl)) &&
                     isFiberMethod(t.N)) {
                     annotation(node.value, { fiberCall: t });
@@ -627,7 +627,7 @@ function annotateSource2(klass, env) {
             this.visit(node.left);
             this.visit(node.op);
             if (match(node, myMethodCallTmpl)) {
-                var si = annotation(node.left).scopeInfo;
+                const si = annotation(node.left).scopeInfo;
                 annotation(node, { myMethodCall: { name: t.N, args: t.A, scopeInfo: si } });
             }
             else if (match(node, othersMethodCallTmpl)) {
@@ -753,7 +753,7 @@ function annotateSource2(klass, env) {
         });
     }
     function copyLocals(finfo, scope) {
-        var locals = finfo.locals;
+        const locals = finfo.locals;
         for (var i in locals.varDecls) {
             //console.log("LocalVar ",i,"declared by ",finfo);
             var si = new SI.LOCAL(finfo); //genSt(ST.LOCAL,{declaringFunc:finfo});
@@ -780,6 +780,7 @@ function annotateSource2(klass, env) {
             f.locals = collectLocals(f.stmts);
             f.params = getParams(f);
         });
+        //if (!f.params) throw new Error("f.params is not inited");
         resolveTypesOfParams(f.params);
     }
     function annotateSubFuncExpr(node) {

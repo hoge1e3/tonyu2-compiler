@@ -65,16 +65,16 @@ export type C_FieldInfo=FieldInfo & {
 export type C_Decls={
 	methods: {[key:string]: FuncInfo},
 	fields:  {[key:string]: C_FieldInfo},
-	natives?: object,
-	amds?: object,
-	softRefClasses?: object
+	natives: object,
+	amds: object,
+	softRefClasses: object
 }
 export type C_Meta=Meta & {
 	decls: C_Decls,
 	superclass: C_Meta,
 	includes: C_Meta[],
 	src?: {tonyu?:any, js?:any, map?: string},
-    hasSemanticError: boolean,
+    hasSemanticError?: boolean,
     jsNotUpToDate: boolean,
     directives: {
 		field_strict?:boolean,

@@ -191,7 +191,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	// annotateSource2 is call after orderByInheritance
 	klass.hasSemanticError=true;
-	var srcFile=klass.src.tonyu; //file object  //S
+	const srcFile=klass.src!.tonyu; //file object  //S
 	var srcCont=srcFile.text();
 	function getSource(node: TNode) {
 		return cu.getSource(srcCont,node);
@@ -291,7 +291,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		};
 	klass.annotation={};
-	function annotation(node: TNode, aobj:Annotation=undefined):Annotation {//B
+	function annotation(node: TNode, aobj:Annotation|undefined=undefined):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	function initTopLevelScope2(klass: C_Meta) {//S
@@ -517,26 +517,26 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		"do": function (node:Do) {
 			var t=this;
 			ctx.enter({brkable:true,contable:true}, function () {
-				t.def(node);
+				t.def!(node);
 			});
 		},
 		"switch": function (node:Switch) {
 			var t=this;
 			ctx.enter({brkable:true}, function () {
-				t.def(node);
+				t.def!(node);
 			});
 		},
 		"while": function (node:While) {
 			var t=this;
 			ctx.enter({brkable:true,contable:true}, function () {
-				t.def(node);
+				t.def!(node);
 			});
 			fiberCallRequired(this.path);//option
 		},
 		"for": function (node:For) {
 			var t=this;
 			ctx.enter({brkable:true,contable:true}, function () {
-				t.def(node);
+				t.def!(node);
 			});
 		},
 		"forin": function (node:Forin) {
@@ -561,11 +561,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		},
 		"try": function (node:Try) {
 			ctx.finfo.useTry=true;
-			this.def(node);
+			this.def!(node);
 		},
 		"return": function (node:Return) {
 			var t;
-			if (!ctx.noWait) {
+			if (!ctx.noWait && node.value) {
 				if ( (t=OM.match(node.value, fiberCallTmpl)) &&
 				isFiberMethod(t.N)) {
 					annotation(node.value, {fiberCall:t});
@@ -597,7 +597,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.visit(node.left);
 			this.visit(node.op);
 			if (match(node, myMethodCallTmpl)) {
-				var si=annotation(node.left).scopeInfo;
+				const si=annotation(node.left).scopeInfo!;
 				annotation(node, {myMethodCall:{name:t.N as string,args:t.A,scopeInfo:si}});
 			} else if (match(node, othersMethodCallTmpl)) {
 				annotation(node, {othersMethodCall:{target:t.T,name:t.N as string,args:t.A} });
@@ -610,7 +610,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			if (opn=="=" || opn=="+=" || opn=="-=" || opn=="*=" ||  opn=="/=" || opn=="%=" ) {
 				checkLVal(node.left);
 			}
-			this.def(node);
+			this.def!(node);
 		},
 		exprstmt: function (node:Exprstmt) {
 			var t:any,m: FuncInfo;
@@ -696,7 +696,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		//var name:string=node.name+"";
 		const si=getScopeInfo(node.name);
 		//console.log("TExpr",name,si,t);
-		const resolvedType:AnnotatedType=
+		const resolvedType=
 			(si instanceof SI.NATIVE)?si.value:
 			(si instanceof SI.CLASS) ?si.info : undefined;
 		if (resolvedType) {
@@ -715,7 +715,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		});
 	}
 	function copyLocals(finfo: FuncInfo, scope: ScopeMap) {//S
-		var locals=finfo.locals;
+		const locals=finfo.locals!;
 		for (var i in locals.varDecls) {
 			//console.log("LocalVar ",i,"declared by ",finfo);
 			var si=new SI.LOCAL(finfo);//genSt(ST.LOCAL,{declaringFunc:finfo});
@@ -742,7 +742,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			f.locals=collectLocals(f.stmts);
 			f.params=getParams(f);
 		});
-		resolveTypesOfParams(f.params);
+		//if (!f.params) throw new Error("f.params is not inited");
+		resolveTypesOfParams(f.params!);
 	}
 	function annotateSubFuncExpr(node: FuncExpr|FuncDecl) {// annotateSubFunc or FuncExpr
 		var m:any,ps:ParamDecl[];
@@ -774,7 +775,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		resolveTypesOfParams(finfo.params);
 		//annotation(node,res);
 		annotation(node,{funcInfo:finfo});
-		annotateSubFuncExprs(finfo.locals, ns);
+		annotateSubFuncExprs(finfo.locals!, ns);
 		return finfo;
 	}
 	function annotateSubFuncExprs(locals:Locals, scope:ScopeMap) {//S
@@ -786,7 +787,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	}
 	function annotateMethodFiber(f: FuncInfo) {//S
 		var ns=newScope(ctx.scope);
-		f.params.forEach(function (p) {
+		f.params!.forEach(function (p) {
 			var si=new SI.PARAM(f);
 			//	klass:klass.name, name:f.name, no:cnt, declaringFunc:f
 			//});
@@ -798,7 +799,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotateVarAccesses(f.stmts, ns);
 		});
 		f.scope=ns;
-		annotateSubFuncExprs(f.locals, ns);
+		annotateSubFuncExprs(f.locals!, ns);
 		return ns;
 	}
 	function annotateSource() {//S

@@ -90,7 +90,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		return prefix+((symSeq++)+"").replace(/\./g,"");
 	}
 	//cu.genSym=genSym;
-	export function annotation(aobjs, node, aobj=undefined) {//B
+	export function annotation<T>(aobjs, node, aobj:T|undefined=undefined) {//B
 		if (!node._id) {
 			//if (!aobjs._idseq) aobjs._idseq=0;
 			node._id=++nodeIdSeq;

@@ -44,7 +44,7 @@ type TypeChkCtx={
 };
 
 export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
-	function annotation(node: TNode, aobj: Annotation=undefined):Annotation {//B
+	function annotation(node: TNode, aobj: (Annotation|undefined)=undefined):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=new Visitor({
@@ -54,10 +54,10 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 			if (node.name && node.typeDecl) {
 				var va=annotation(node.typeDecl.vtype);
 				//console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
-				const rt:AnnotatedType=va.resolvedType;
+				const rt=va.resolvedType;
 				if (rt) {
 					const a=annotation(node);
-					const si:ScopeInfo=a.scopeInfo;// for local
+					const si=a.scopeInfo;// for local
 					const info=a.fieldInfo;// for field
 					if (si) {
 						//console.log("set var type",node.name+"", va.resolvedType );
@@ -89,8 +89,8 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		funcDecl: function (node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
-			var finfo=annotation(node).funcInfo;
-			if (head.rtype) {
+			const finfo=annotation(node).funcInfo;
+			if (finfo && head.rtype) {
 				console.log("ret typeis",head.name+"", head.rtype.vtype+"");
 				const tanon=annotation(head.rtype)
 				finfo.returnType=tanon.resolvedType;// head.rtype.vtype;
@@ -104,7 +104,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	typeDeclVisitor.visit(klass.node);
 }
 export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
-	var srcFile=klass.src.tonyu; //file object  //S
+	const srcFile=klass.src!.tonyu; //file object  //S
 	function annotation(node:TNode, aobj?:Annotation):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}

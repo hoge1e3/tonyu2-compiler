@@ -111,8 +111,8 @@ function checkTypeDecl(klass, env) {
         funcDecl: function (node) {
             //console.log("Visit funcDecl",node);
             var head = node.head;
-            var finfo = annotation(node).funcInfo;
-            if (head.rtype) {
+            const finfo = annotation(node).funcInfo;
+            if (finfo && head.rtype) {
                 console.log("ret typeis", head.name + "", head.rtype.vtype + "");
                 const tanon = annotation(head.rtype);
                 finfo.returnType = tanon.resolvedType; // head.rtype.vtype;
@@ -126,7 +126,7 @@ function checkTypeDecl(klass, env) {
 }
 exports.checkTypeDecl = checkTypeDecl;
 function checkExpr(klass, env) {
-    var srcFile = klass.src.tonyu; //file object  //S
+    const srcFile = klass.src.tonyu; //file object  //S
     function annotation(node, aobj) {
         return annotation3(klass.annotation, node, aobj);
     }
