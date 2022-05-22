@@ -20,7 +20,7 @@ export function isPrefix(n:TNode): n is Prefix {
 export type Postfix=NodeBase&{
     type:"postfix",
     left: Expression,
-    op:Token,
+    op:TNode,
 };
 export function isPostfix(n:TNode): n is Postfix {
 	return n.type=="postfix";

@@ -1,4 +1,6 @@
 const ja={
+    typeNotFound: "型{1}が見つかりません",
+    cannotCallNonFunctionType: "関数・メソッドでないので呼び出すことはできません",
     memberNotFoundInClass: "クラス{1}にフィールドまたはメソッド{2}が定義されていません",
     expected: "ここには{1}などが入ることが予想されます",
     superClassIsUndefined:"親クラス {1}は定義されていません",
@@ -31,6 +33,8 @@ const ja={
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
 };
 const en={
+    typeNotFound: "Type {1} is not found",
+    cannotCallNonFunctionType: "Cannot call what is neither function or method.",
     memberNotFoundInClass: "No such field or method: {1}.{2}",
     "expected": "Expected: {1}",
     "superClassIsUndefined" : "Super Class '{1}' is not defined", //親クラス {1}は定義されていません

@@ -1,7 +1,7 @@
 import * as cu from "./compiler";
 import R from "../lib/R";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
@@ -89,12 +89,12 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		funcDecl: function (node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
-			const finfo=annotation(node).funcInfo;
+			/*const finfo=annotation(node).funcInfo;
 			if (finfo && head.rtype) {
-				console.log("ret typeis",head.name+"", head.rtype.vtype+"");
-				const tanon=annotation(head.rtype)
+				const tanon=annotation(head.rtype);
+				console.log("ret type of ",head.name+": ", head.rtype.vtype.name+"", tanon);
 				finfo.returnType=tanon.resolvedType;// head.rtype.vtype;
-			}
+			}*/
 			this.visit(head);
 			this.visit(node.body);
 		},
@@ -116,15 +116,19 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 			annotation(node,{resolvedType:{class:String}});
 		},
 		postfix:function (node:Postfix) {
-			var a=annotation(node);
-			if (a.memberAccess) {
-				var m=a.memberAccess;
-				var vtype=visitExpr(m.target);
+			//var a=annotation(node);
+			this.visit(node.left);
+			this.visit(node.op);
+			if (isMember(node.op)) {
+				//var m=a.memberAccess;
+				const a=annotation(node.left);
+				var vtype=a.resolvedType;// visitExpr(m.target);
+				const name=node.op.name.text;
 				if (vtype && isMeta(vtype)) {
-					const field=cu.getField(vtype,m.name);
-					const method=cu.getMethod(vtype,m.name);
+					const field=cu.getField(vtype,name);
+					const method=cu.getMethod(vtype,name);
 					if (!field && !method) {
-						throw TError( R("memberNotFoundInClass",vtype.shortName, m.name) , srcFile, node.pos);
+						throw TError( R("memberNotFoundInClass",vtype.shortName, name) , srcFile, node.pos);
 					}
 					//console.log("GETF",vtype,m.name,f);
 					// fail if f is not set when strict check
@@ -134,9 +138,17 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 						annotation(node,{resolvedType:{method}});
 					}
 				}
-			} else {
-				this.visit(node.left);
-				this.visit(node.op);
+			} else if (isCall(node.op)) {
+				const leftA=annotation(node.left);
+				console.log("OPCALL1", leftA);
+				if (leftA && leftA.resolvedType) {
+					const leftT=leftA.resolvedType;
+					if (!isMethodType(leftT)) {
+						throw TError( R("cannotCallNonFunctionType"), srcFile, node.op.pos);
+					}
+					console.log("OPCALL", leftT);
+					annotation(node, {resolvedType: leftT.method.returnType});
+				}
 			}
 		},
 		varAccess: function (node: VarAccess) {
@@ -160,6 +172,8 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 						annotation(node,{resolvedType:rtype});
 						//console.log("VA typeof",node.name+":",rtype);
 					}
+				} else if (si.type===ScopeTypes.METHOD) {
+					annotation(node,{resolvedType:{method:si.info}});
 				} else if (si.type===ScopeTypes.PROP) {
 					//TODO
 				}

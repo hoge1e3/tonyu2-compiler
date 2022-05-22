@@ -26,6 +26,7 @@ exports.checkExpr = exports.checkTypeDecl = void 0;
 const cu = __importStar(require("./compiler"));
 const R_1 = __importDefault(require("../lib/R"));
 const context_1 = require("./context");
+const NodeTypes_1 = require("./NodeTypes");
 //import Grammar from "./Grammar";
 const parser_1 = require("./parser");
 const Visitor_1 = require("./Visitor");
@@ -111,12 +112,12 @@ function checkTypeDecl(klass, env) {
         funcDecl: function (node) {
             //console.log("Visit funcDecl",node);
             var head = node.head;
-            const finfo = annotation(node).funcInfo;
+            /*const finfo=annotation(node).funcInfo;
             if (finfo && head.rtype) {
-                console.log("ret typeis", head.name + "", head.rtype.vtype + "");
-                const tanon = annotation(head.rtype);
-                finfo.returnType = tanon.resolvedType; // head.rtype.vtype;
-            }
+                const tanon=annotation(head.rtype);
+                console.log("ret type of ",head.name+": ", head.rtype.vtype.name+"", tanon);
+                finfo.returnType=tanon.resolvedType;// head.rtype.vtype;
+            }*/
             this.visit(head);
             this.visit(node.body);
         },
@@ -138,15 +139,19 @@ function checkExpr(klass, env) {
             annotation(node, { resolvedType: { class: String } });
         },
         postfix: function (node) {
-            var a = annotation(node);
-            if (a.memberAccess) {
-                var m = a.memberAccess;
-                var vtype = visitExpr(m.target);
+            //var a=annotation(node);
+            this.visit(node.left);
+            this.visit(node.op);
+            if ((0, NodeTypes_1.isMember)(node.op)) {
+                //var m=a.memberAccess;
+                const a = annotation(node.left);
+                var vtype = a.resolvedType; // visitExpr(m.target);
+                const name = node.op.name.text;
                 if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
-                    const field = cu.getField(vtype, m.name);
-                    const method = cu.getMethod(vtype, m.name);
+                    const field = cu.getField(vtype, name);
+                    const method = cu.getMethod(vtype, name);
                     if (!field && !method) {
-                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, m.name), srcFile, node.pos);
+                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.pos);
                     }
                     //console.log("GETF",vtype,m.name,f);
                     // fail if f is not set when strict check
@@ -158,9 +163,17 @@ function checkExpr(klass, env) {
                     }
                 }
             }
-            else {
-                this.visit(node.left);
-                this.visit(node.op);
+            else if ((0, NodeTypes_1.isCall)(node.op)) {
+                const leftA = annotation(node.left);
+                console.log("OPCALL1", leftA);
+                if (leftA && leftA.resolvedType) {
+                    const leftT = leftA.resolvedType;
+                    if (!(0, CompilerTypes_1.isMethodType)(leftT)) {
+                        throw (0, TError_1.default)((0, R_1.default)("cannotCallNonFunctionType"), srcFile, node.op.pos);
+                    }
+                    console.log("OPCALL", leftT);
+                    annotation(node, { resolvedType: leftT.method.returnType });
+                }
             }
         },
         varAccess: function (node) {
@@ -186,6 +199,9 @@ function checkExpr(klass, env) {
                         annotation(node, { resolvedType: rtype });
                         //console.log("VA typeof",node.name+":",rtype);
                     }
+                }
+                else if (si.type === ScopeTypes.METHOD) {
+                    annotation(node, { resolvedType: { method: si.info } });
                 }
                 else if (si.type === ScopeTypes.PROP) {
                     //TODO

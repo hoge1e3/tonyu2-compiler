@@ -397,7 +397,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					} else {
 						Object.assign(klass.decls.fields[n],fi);//si;
 					}
-					console.log("Implicit field declaration:", n, klass.decls.fields[n]);
+					//console.log("Implicit field declaration:", n, klass.decls.fields[n]);
 					topLevelScope[n]=new SI.FIELD(klass, n, klass.decls.fields[n]);
 				}
 			}
@@ -692,7 +692,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			resolveType(node);
 		}
 	});
-	function resolveType(node:TypeExpr) {//node:typeExpr
+	function resolveType(node:TypeExpr):AnnotatedType {//node:typeExpr
 		//var name:string=node.name+"";
 		const si=getScopeInfo(node.name);
 		//console.log("TExpr",name,si,t);
@@ -701,7 +701,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			(si instanceof SI.CLASS) ?si.info : undefined;
 		if (resolvedType) {
 			annotation(node, {resolvedType});
+		} else if (env.options.compiler.typeCheck) {
+			throw TError(R("typeNotFound",node.name),srcFile,node.pos);
 		}
+		return resolvedType;
 		/*if (si instanceof SI.NATIVE) {
 			annotation(node, {resolvedType: si.value});
 		} else if (si instanceof SI.CLASS){
@@ -794,6 +797,12 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			ns[p.name.text]=si;
 			annotation(p,{scopeInfo:si,declaringFunc:f});
 		});
+		if (f.head && f.head.rtype) {
+			const rt=resolveType(f.head.rtype.vtype);
+			f.returnType=rt;
+			//console.log("Annotated return type ", f, rt);
+			//throw new Error("!");
+		}
 		copyLocals(f, ns);
 		ctx.enter({method:f,finfo:f, noWait:false}, function () {
 			annotateVarAccesses(f.stmts, ns);

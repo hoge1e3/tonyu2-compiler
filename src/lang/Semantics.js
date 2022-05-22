@@ -420,7 +420,7 @@ function annotateSource2(klass, env) {
                     else {
                         Object.assign(klass.decls.fields[n], fi); //si;
                     }
-                    console.log("Implicit field declaration:", n, klass.decls.fields[n]);
+                    //console.log("Implicit field declaration:", n, klass.decls.fields[n]);
                     topLevelScope[n] = new SI.FIELD(klass, n, klass.decls.fields[n]);
                 }
             }
@@ -740,6 +740,10 @@ function annotateSource2(klass, env) {
         if (resolvedType) {
             annotation(node, { resolvedType });
         }
+        else if (env.options.compiler.typeCheck) {
+            throw (0, TError_1.default)((0, R_1.default)("typeNotFound", node.name), srcFile, node.pos);
+        }
+        return resolvedType;
         /*if (si instanceof SI.NATIVE) {
             annotation(node, {resolvedType: si.value});
         } else if (si instanceof SI.CLASS){
@@ -833,6 +837,12 @@ function annotateSource2(klass, env) {
             ns[p.name.text] = si;
             annotation(p, { scopeInfo: si, declaringFunc: f });
         });
+        if (f.head && f.head.rtype) {
+            const rt = resolveType(f.head.rtype.vtype);
+            f.returnType = rt;
+            //console.log("Annotated return type ", f, rt);
+            //throw new Error("!");
+        }
         copyLocals(f, ns);
         ctx.enter({ method: f, finfo: f, noWait: false }, function () {
             annotateVarAccesses(f.stmts, ns);
