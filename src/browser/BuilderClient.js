@@ -101,7 +101,7 @@ class BuilderClient {
             this.partialCompilable=false;
             await this.init();
             const compres=await this.w.run("compiler/fullCompile");
-            console.log(compres);
+            //console.log(compres);
             const sf=sourceFiles.add(compres);
             await sf.saveAs(this.getOutputFile());
             await this.exec(compres);
@@ -113,7 +113,12 @@ class BuilderClient {
     }
     async partialCompile(f, {content, noexec}={}) {
         if (!this.partialCompilable) {
-            return await this.clean();
+            if (typeof content!=="string") {
+                content=f.text();
+            }
+            const files={};files[f.relPath(this.getDir())]=content;
+            await this.w.run("compiler/uploadFiles",{files});
+            return await this.fullCompile();
         }
         try {
             if (typeof content!=="string") {
@@ -125,7 +130,7 @@ class BuilderClient {
             const files={};files[f.relPath(this.getDir())]=content;
             await this.init();
             const compres=await this.w.run("compiler/postChange",{files});
-            console.log(compres);
+            //console.log(compres);
             if (!noexec) await this.exec(compres);
             return compres;
         } catch(e) {

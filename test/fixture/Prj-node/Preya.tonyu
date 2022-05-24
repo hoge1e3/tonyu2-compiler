@@ -18,5 +18,6 @@ for (x=0;x<3;x++) {
     console.log(x);
     update();
 }
+//a
 x=1+2*3+4>0?50-6-7:8%9+10;
 console.log(x);

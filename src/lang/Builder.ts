@@ -154,6 +154,8 @@ export = class Builder {
 		for (let k of this.getMyClasses()) {
 			delete env.classes[k];
 		}
+        const myNsp=this.getNamespace();
+        Tonyu.klass.removeMetaAll(myNsp);
 	}
 	getMyClasses() {
 		var env=this.getEnv();
@@ -251,11 +253,14 @@ export = class Builder {
 			memory: true,
 			file: true
 		};
-		await this.loadDependingClasses(ctx);
+        this.requestRebuild();// Alternetes removeMetaAll
+		await this.loadDependingClasses(ctx);// *254
         baseClasses = ctx.classes;
         env = this.getEnv();
         env.aliases = {};
-        Tonyu.klass.removeMetaAll(myNsp); // for removed files
+        // Q2. Also remove depending classes?? (Already loaded in *254)
+        //    NO! argument myNsp filters only this project classes.
+        //Tonyu.klass.removeMetaAll(myNsp); // for removed files
         //env.parsedNode=env.parsedNode||{};
         env.classes = baseClasses;
         //console.log("env.classes===Tonyu.classMetas",env.classes===Tonyu.classMetas);

@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<canvas id="cv"></canvas>
+<script src="../jquery-1.12.1.js" type="text/javascript"></script>
+<script src="../jquery-ui.js" type="text/javascript"></script>
+<script src="../require.js"></script>
+<script src="../TonyuRuntime.js"></script>
+<script>
+requirejs(["../FS","../BuilderClient4Sys"],
+(FS,TonyuBuilderClient)=>{
+    const F=TonyuBuilderClient.ProjectFactory;
+    const Deubgger=TonyuBuilderClient.DebuggerCore({Tonyu});
+    F.addDependencyResolver((prj,spec)=>{
+        if (spec.namespace==="kernel") {
+            return F.create("compiled",{namespace:"kernel",url:"kernel.js"});
+        }
+    });
+    Debugger.on("runtimeError",evt=>{
+        console.log(evt.stack.map(s=>s+"").join("\n"));
+    });
+    Tonyu.globals.$mainCanvas=$("#cv");
+    Tonyu.runMode=true;
+    window.UIDiag={};
+    start();
+    async function start() {
+        const root=window;
+        //const Debugger=root.Debugger;
+        const prjDir=FS.get(getQueryString("prj"));
+        const prj=F.create("compiled",{dir:prjDir});
+        prj.loadPlugins=onload=>onload();
+        await Debugger.init(prj);
+        //await prj.loadClasses();
+        const boot=getQueryString("boot");
+        if (boot) Debugger.create(boot);
+    }
+});
+function getQueryString(key, default_)
+{
+   if (default_==null) default_="";
+   key = key.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+   var regex = new RegExp("[\\?&]"+key+"=([^&#]*)");
+   var qs = regex.exec(window.location.href);
+   if(qs == null)
+    return default_;
+   else
+    return decodeURLComponentEx(qs[1]);
+}
+function decodeURLComponentEx(s){
+    return decodeURIComponent(s.replace(/\+/g, '%20'));
+}
+</script>
+<!--script src="../RuntimeClient.js"></script-->
+</body></html>

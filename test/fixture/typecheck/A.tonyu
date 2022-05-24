@@ -15,6 +15,7 @@ var s:String;
 nowait \toste() {
 	console.log(3);
 }
+//a
 /*\hoge(){
 	console.log("hoge");
 }*/

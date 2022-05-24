@@ -56,7 +56,7 @@ builder.fullCompile(opt).then(async function (s) {
             if (now-lastRefreshed<500) return;
             lastRefreshed=new Date().getTime();
             const ns=await builder.postChange(f);
-            console.log(ns);
+            //console.log(ns);
             await ns.exec();
             if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
 

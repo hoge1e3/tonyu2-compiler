@@ -45,6 +45,11 @@ WS.serv("compiler/resetFiles", params=>{
     prjDir.importFromObject(files);
     builder.requestRebuild();
 });
+WS.serv("compiler/uploadFiles", params=>{
+    const files=params.files;
+    const prjDir=prj.getDir();
+    prjDir.importFromObject(files);
+});
 WS.serv("compiler/parse", async ({files})=>{
     try {
         // params.files:: relPath=>cont
@@ -280,6 +285,8 @@ module.exports = class Builder {
         for (let k of this.getMyClasses()) {
             delete env.classes[k];
         }
+        const myNsp = this.getNamespace();
+        TonyuRuntime_1.default.klass.removeMetaAll(myNsp);
     }
     getMyClasses() {
         var env = this.getEnv();
@@ -380,11 +387,14 @@ module.exports = class Builder {
             memory: true,
             file: true
         };
-        await this.loadDependingClasses(ctx);
+        this.requestRebuild(); // Alternetes removeMetaAll
+        await this.loadDependingClasses(ctx); // *254
         baseClasses = ctx.classes;
         env = this.getEnv();
         env.aliases = {};
-        TonyuRuntime_1.default.klass.removeMetaAll(myNsp); // for removed files
+        // Q2. Also remove depending classes?? (Already loaded in *254)
+        //    NO! argument myNsp filters only this project classes.
+        //Tonyu.klass.removeMetaAll(myNsp); // for removed files
         //env.parsedNode=env.parsedNode||{};
         env.classes = baseClasses;
         //console.log("env.classes===Tonyu.classMetas",env.classes===Tonyu.classMetas);
