@@ -393,37 +393,36 @@ function annotateSource2(klass, env) {
         const si = ctx.scope[n];
         const t = stype(si);
         if (!t) {
-            if (env.amdPaths && env.amdPaths[n]) {
+            /*if (env.amdPaths && env.amdPaths[n]) {
                 //t=ST.MODULE;
-                klass.decls.amds[n] = env.amdPaths[n];
-                topLevelScope[n] = new SI.MODULE(n);
+                klass.decls.amds[n]=env.amdPaths[n];
+                topLevelScope[n]=new SI.MODULE(n);
                 //console.log(n,"is module");
+            } else {*/
+            var isg = n.match(/^\$/);
+            if (env.options.compiler.field_strict || klass.directives.field_strict) {
+                if (!isg)
+                    throw (0, TError_1.default)((0, R_1.default)("fieldDeclarationRequired", n), srcFile, node.pos);
+            }
+            if (isg) {
+                topLevelScope[n] = new SI.GLOBAL(n);
             }
             else {
-                var isg = n.match(/^\$/);
-                if (env.options.compiler.field_strict || klass.directives.field_strict) {
-                    if (!isg)
-                        throw (0, TError_1.default)((0, R_1.default)("fieldDeclarationRequired", n), srcFile, node.pos);
-                }
-                if (isg) {
-                    topLevelScope[n] = new SI.GLOBAL(n);
+                //opt.klass=klass.name;
+                const fi = {
+                    klass,
+                    name: n
+                };
+                if (!klass.decls.fields[n]) {
+                    klass.decls.fields[n] = fi;
                 }
                 else {
-                    //opt.klass=klass.name;
-                    const fi = {
-                        klass,
-                        name: n
-                    };
-                    if (!klass.decls.fields[n]) {
-                        klass.decls.fields[n] = fi;
-                    }
-                    else {
-                        Object.assign(klass.decls.fields[n], fi); //si;
-                    }
-                    //console.log("Implicit field declaration:", n, klass.decls.fields[n]);
-                    topLevelScope[n] = new SI.FIELD(klass, n, klass.decls.fields[n]);
+                    Object.assign(klass.decls.fields[n], fi); //si;
                 }
+                //console.log("Implicit field declaration:", n, klass.decls.fields[n]);
+                topLevelScope[n] = new SI.FIELD(klass, n, klass.decls.fields[n]);
             }
+            //}
             return topLevelScope[n];
             //var opt:any={name:n};
             /*if (t==ST.FIELD) {

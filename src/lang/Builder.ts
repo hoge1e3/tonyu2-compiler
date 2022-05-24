@@ -129,7 +129,7 @@ export = class Builder {
                 options: this.getOptions(),
                 aliases:{},
                 classes: Tonyu.classMetas as C_MetaMap,
-                amdPaths:[],
+                //amdPaths:[],
             };
         }
         //this.env.options=this.env.options||this.getOptions();
@@ -342,9 +342,9 @@ export = class Builder {
     showProgress (m:string) {
 		console.log("Progress:" ,m);
 	}
-	setAMDPaths(paths: string[]) {
+	/*setAMDPaths(paths: string[]) {
 		this.getEnv().amdPaths=paths;
-	}
+	}*/
     renameClassName (o:string ,n:string) {// o: key of aliases
         return this.fullCompile().then(()=>{
             const EXT=".tonyu";

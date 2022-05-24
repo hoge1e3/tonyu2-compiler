@@ -20,7 +20,7 @@ export type BuilderEnv={
 	options: ProjectOptions,
 	classes: C_MetaMap,
 	aliases: Aliases,
-	amdPaths: string[],
+	//amdPaths: string[],
 };
 export type ProjectOptions={
 	compiler: CompilerOptions,

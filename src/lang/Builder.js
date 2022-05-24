@@ -147,7 +147,7 @@ module.exports = class Builder {
                 options: this.getOptions(),
                 aliases: {},
                 classes: TonyuRuntime_1.default.classMetas,
-                amdPaths: [],
+                //amdPaths:[],
             };
         }
         //this.env.options=this.env.options||this.getOptions();
@@ -364,9 +364,9 @@ module.exports = class Builder {
     showProgress(m) {
         console.log("Progress:", m);
     }
-    setAMDPaths(paths) {
-        this.getEnv().amdPaths = paths;
-    }
+    /*setAMDPaths(paths: string[]) {
+        this.getEnv().amdPaths=paths;
+    }*/
     renameClassName(o, n) {
         return this.fullCompile().then(() => {
             const EXT = ".tonyu";

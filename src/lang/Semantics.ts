@@ -374,12 +374,12 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		const si=ctx.scope[n];
 		const t=stype(si);
 		if (!t) {
-			if (env.amdPaths && env.amdPaths[n]) {
+			/*if (env.amdPaths && env.amdPaths[n]) {
 				//t=ST.MODULE;
 				klass.decls.amds[n]=env.amdPaths[n];
 				topLevelScope[n]=new SI.MODULE(n);
 				//console.log(n,"is module");
-			} else {
+			} else {*/
 				var isg=n.match(/^\$/);
 				if (env.options.compiler.field_strict || klass.directives.field_strict) {
 					if (!isg) throw TError(R("fieldDeclarationRequired",n),srcFile,node.pos);
@@ -400,7 +400,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					//console.log("Implicit field declaration:", n, klass.decls.fields[n]);
 					topLevelScope[n]=new SI.FIELD(klass, n, klass.decls.fields[n]);
 				}
-			}
+			//}
 			return topLevelScope[n];
 			//var opt:any={name:n};
 			/*if (t==ST.FIELD) {
