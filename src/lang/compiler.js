@@ -197,6 +197,7 @@ function getMethod(klass, name) {
 }
 exports.getMethod = getMethod;
 //cu.getMethod=getMethod2;
+// includes klass itself
 function getDependingClasses(klass) {
     const visited = {};
     const res = [];

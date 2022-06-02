@@ -354,6 +354,15 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	function getMethod(name:string) {//B
 		return getMethod2(klass,name);
 	}
+	function getSuperMethod(name:string):FuncInfo|undefined {//B
+		for (let c of getDependingClasses(klass)) {
+			if (c===klass) continue;
+			const r=getMethod2(c,name);
+			if (r) return r;
+		}
+		//return getMethod2(klass,name);
+	}
+
 	function isFiberMethod(name:string) {
 		return stype(ctx.scope[name])==ST.METHOD &&
 		!getMethod(name).nowait ;
@@ -647,11 +656,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
 					t.S.name) {
-				if (!klass.superclass) {
-					throw new Error(R("Class {1} has no superclass",klass.shortName));
-				}
-				m=getMethod2(klass.superclass, t.S.name.text);
-				if (!m) throw new Error(R("undefinedSuperMethod",klass.superclass.shortName,t.S.name.text));
+				const m=getSuperMethod(t.S.name.text);
+				if (!m) throw new Error(R("undefinedSuperMethod",t.S.name.text));
 				if (!m.nowait) {
 					t.type="noRetSuper";
 					t.superclass=klass.superclass;
@@ -664,8 +670,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				if (!klass.superclass) {
 					throw new Error(R("Class {1} has no superclass",klass.shortName));
 				}
-				m=getMethod2(klass.superclass, t.S.name.text);
-				if (!m) throw new Error(R("undefinedSuperMethod",klass.superclass.shortName,t.S.name.text));
+				m=getSuperMethod(t.S.name.text);
+				if (!m) throw new Error(R("undefinedSuperMethod",t.S.name.text));
 				if (!m.nowait) {
 					t.type="retSuper";
 					t.superclass=klass.superclass;

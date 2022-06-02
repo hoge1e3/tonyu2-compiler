@@ -146,6 +146,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		return res;
 	}
 	//cu.getMethod=getMethod2;
+	// includes klass itself
 	export function getDependingClasses(klass:C_Meta) {//B
 		const visited={};
 		const res=[] as C_Meta[];

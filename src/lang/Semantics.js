@@ -373,6 +373,16 @@ function annotateSource2(klass, env) {
     function getMethod(name) {
         return getMethod2(klass, name);
     }
+    function getSuperMethod(name) {
+        for (let c of getDependingClasses(klass)) {
+            if (c === klass)
+                continue;
+            const r = getMethod2(c, name);
+            if (r)
+                return r;
+        }
+        //return getMethod2(klass,name);
+    }
     function isFiberMethod(name) {
         return stype(ctx.scope[name]) == ST.METHOD &&
             !getMethod(name).nowait;
@@ -682,12 +692,9 @@ function annotateSource2(klass, env) {
             else if (!ctx.noWait &&
                 (t = OM.match(node, noRetSuperFiberCallTmpl)) &&
                 t.S.name) {
-                if (!klass.superclass) {
-                    throw new Error((0, R_1.default)("Class {1} has no superclass", klass.shortName));
-                }
-                m = getMethod2(klass.superclass, t.S.name.text);
+                const m = getSuperMethod(t.S.name.text);
                 if (!m)
-                    throw new Error((0, R_1.default)("undefinedSuperMethod", klass.superclass.shortName, t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedSuperMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "noRetSuper";
                     t.superclass = klass.superclass;
@@ -701,9 +708,9 @@ function annotateSource2(klass, env) {
                 if (!klass.superclass) {
                     throw new Error((0, R_1.default)("Class {1} has no superclass", klass.shortName));
                 }
-                m = getMethod2(klass.superclass, t.S.name.text);
+                m = getSuperMethod(t.S.name.text);
                 if (!m)
-                    throw new Error((0, R_1.default)("undefinedSuperMethod", klass.superclass.shortName, t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedSuperMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "retSuper";
                     t.superclass = klass.superclass;
