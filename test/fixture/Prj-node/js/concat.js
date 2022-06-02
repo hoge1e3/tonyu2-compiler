@@ -169,7 +169,7 @@ Tonyu.klass.define({
           console.log("elem",_this.k);
           
         }
-        Tonyu.globals.$restart=(function anonymous_305() {
+        Tonyu.globals.$restart=(function anonymous_309() {
           
           _this.appear(new Tonyu.classes.user.Preya);
         });
@@ -199,7 +199,7 @@ Tonyu.klass.define({
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              Tonyu.globals.$restart=(function anonymous_305() {
+              Tonyu.globals.$restart=(function anonymous_309() {
                 
                 _this.appear(new Tonyu.classes.user.Preya);
               });

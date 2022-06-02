@@ -430,7 +430,7 @@ function is(obj, klass) {
 }
 //setInterval(resetLoopCheck,16);
 const Tonyu = { thread,
-    klass, bless, extend,
+    klass, bless, extend, messages: R_1.default,
     globals, classes, classMetas, setGlobal, getGlobal, getClass,
     timeout,
     bindFunc, not_a_tonyu_object, is,

@@ -13,6 +13,7 @@ const ja={
     continueShouldBeUsedInIterationStatement:"continue； は繰り返しの中で使います.",
     cannotUseObjectLiteralAsTheExpressionOfStatement:"オブジェクトリテラル単独の式文は書けません．",
     undefinedMethod:"メソッド{1}はありません．",
+    undefinedSuperMethod:"親クラス{1}にメソッド{2}がありません．",
     notAWaitableMethod: "メソッド{1}は待機可能メソッドではありません",
     circularDependencyDetected: "次のクラス間に循環参照があります: {1}",
     cannotWriteReturnInTryStatement: "現実装では、tryの中にreturnは書けません",
@@ -47,6 +48,7 @@ const en={
     "continueShouldBeUsedInIterationStatement" : "continue; Should be Used In Iteration Statement", //continue； は繰り返しの中で使います.
     "cannotUseObjectLiteralAsTheExpressionOfStatement" : "Cannot Use Object Literal As The Expression Of Statement", //オブ ジェクトリテラル単独の式文は書けません．
     "undefinedMethod" : "Undefined Method: '{1}'", //メソッド{1}はありません．
+    undefinedSuperMethod:"Undefined Method {2} in superclass {1}",
     "notAWaitableMethod" : "Not A Waitable Method: '{1}'", //メソッド{1}は待機可能メソッドではありません
     "circularDependencyDetected" : "Circular Dependency Detected: {1}", //次のクラス間に循環参照があります: {1}
     "cannotWriteReturnInTryStatement" : "Cannot Write Return In Try Statement", //現実装では、tryの中にreturnは書けません

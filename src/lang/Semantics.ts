@@ -647,8 +647,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
 					t.S.name) {
-				m=getMethod(t.S.name.text);
-				if (!m) throw new Error(R("undefinedMethod",t.S.name.text));
+				if (!klass.superclass) {
+					throw new Error(R("Class {1} has no superclass",klass.shortName));
+				}
+				m=getMethod2(klass.superclass, t.S.name.text);
+				if (!m) throw new Error(R("undefinedSuperMethod",klass.superclass.shortName,t.S.name.text));
 				if (!m.nowait) {
 					t.type="noRetSuper";
 					t.superclass=klass.superclass;
@@ -658,8 +661,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,retSuperFiberCallTmpl)) &&
 					t.S.name) {
-				m=getMethod(t.S.name.text);
-				if (!m) throw new Error(R("undefinedMethod",t.S.name.text));
+				if (!klass.superclass) {
+					throw new Error(R("Class {1} has no superclass",klass.shortName));
+				}
+				m=getMethod2(klass.superclass, t.S.name.text);
+				if (!m) throw new Error(R("undefinedSuperMethod",klass.superclass.shortName,t.S.name.text));
 				if (!m.nowait) {
 					t.type="retSuper";
 					t.superclass=klass.superclass;
