@@ -498,7 +498,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				ctx.enter({noWait:true}, function () {
 					buf.printf("try {%{%f%n%}} ",
 							noSurroundCompoundF(node.stmt));
-					node.catches.forEach(v.visit);
+					for (let c of node.catches) {
+						v.visit(c);
+					}
 				});
 			}
 		},
