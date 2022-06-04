@@ -283,6 +283,7 @@ module.exports = class Builder {
         var env = this.getEnv();
         env.options = this.getOptions();
         for (let k of this.getMyClasses()) {
+            console.log("RMMeta", k);
             delete env.classes[k];
         }
         const myNsp = this.getNamespace();
@@ -2226,7 +2227,9 @@ function genJS(klass, env, genOptions) {
             else {
                 ctx.enter({ noWait: true }, function () {
                     buf.printf("try {%{%f%n%}} ", noSurroundCompoundF(node.stmt));
-                    node.catches.forEach(v.visit);
+                    for (let c of node.catches) {
+                        v.visit(c);
+                    }
                 });
             }
         },
@@ -3514,6 +3517,16 @@ function annotateSource2(klass, env) {
     function getMethod(name) {
         return getMethod2(klass, name);
     }
+    function getSuperMethod(name) {
+        for (let c of getDependingClasses(klass)) {
+            if (c === klass)
+                continue;
+            const r = getMethod2(c, name);
+            if (r)
+                return r;
+        }
+        //return getMethod2(klass,name);
+    }
     function isFiberMethod(name) {
         return stype(ctx.scope[name]) == ST.METHOD &&
             !getMethod(name).nowait;
@@ -3823,9 +3836,9 @@ function annotateSource2(klass, env) {
             else if (!ctx.noWait &&
                 (t = OM.match(node, noRetSuperFiberCallTmpl)) &&
                 t.S.name) {
-                m = getMethod(t.S.name.text);
+                const m = getSuperMethod(t.S.name.text);
                 if (!m)
-                    throw new Error((0, R_1.default)("undefinedMethod", t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedSuperMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "noRetSuper";
                     t.superclass = klass.superclass;
@@ -3836,9 +3849,12 @@ function annotateSource2(klass, env) {
             else if (!ctx.noWait &&
                 (t = OM.match(node, retSuperFiberCallTmpl)) &&
                 t.S.name) {
-                m = getMethod(t.S.name.text);
+                if (!klass.superclass) {
+                    throw new Error((0, R_1.default)("Class {1} has no superclass", klass.shortName));
+                }
+                m = getSuperMethod(t.S.name.text);
                 if (!m)
-                    throw new Error((0, R_1.default)("undefinedMethod", t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedSuperMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "retSuper";
                     t.superclass = klass.superclass;
@@ -3881,6 +3897,7 @@ function annotateSource2(klass, env) {
             annotation(node, { resolvedType });
         }
         else if (env.options.compiler.typeCheck) {
+            console.log("typeNotFound: topLevelScope", topLevelScope, si, env.classes);
             throw (0, TError_1.default)((0, R_1.default)("typeNotFound", node.name), srcFile, node.pos);
         }
         return resolvedType;
@@ -4644,6 +4661,7 @@ function getMethod(klass, name) {
 }
 exports.getMethod = getMethod;
 //cu.getMethod=getMethod2;
+// includes klass itself
 function getDependingClasses(klass) {
     const visited = {};
     const res = [];
@@ -13172,6 +13190,7 @@ const ja = {
     continueShouldBeUsedInIterationStatement: "continue； は繰り返しの中で使います.",
     cannotUseObjectLiteralAsTheExpressionOfStatement: "オブジェクトリテラル単独の式文は書けません．",
     undefinedMethod: "メソッド{1}はありません．",
+    undefinedSuperMethod: "親クラスまたは参照モジュールにメソッド'{1}'がありません．",
     notAWaitableMethod: "メソッド{1}は待機可能メソッドではありません",
     circularDependencyDetected: "次のクラス間に循環参照があります: {1}",
     cannotWriteReturnInTryStatement: "現実装では、tryの中にreturnは書けません",
@@ -13206,6 +13225,7 @@ const en = {
     "continueShouldBeUsedInIterationStatement": "continue; Should be Used In Iteration Statement",
     "cannotUseObjectLiteralAsTheExpressionOfStatement": "Cannot Use Object Literal As The Expression Of Statement",
     "undefinedMethod": "Undefined Method: '{1}'",
+    undefinedSuperMethod: "Method '{1}' is defined in neigher superclass or including modules.",
     "notAWaitableMethod": "Not A Waitable Method: '{1}'",
     "circularDependencyDetected": "Circular Dependency Detected: {1}",
     "cannotWriteReturnInTryStatement": "Cannot Write Return In Try Statement",
@@ -14527,7 +14547,7 @@ function is(obj, klass) {
 }
 //setInterval(resetLoopCheck,16);
 const Tonyu = { thread,
-    klass, bless, extend,
+    klass, bless, extend, messages: R_1.default,
     globals, classes, classMetas, setGlobal, getGlobal, getClass,
     timeout,
     bindFunc, not_a_tonyu_object, is,

@@ -79,6 +79,7 @@ class BuilderClient {
     resetFiles() {
         if (!this.inited) return this.init();
         const files=this.exportWithDependingFiles();
+        this.partialCompilable=false;
         return this.w.run("compiler/resetFiles",{
             //namespace:this.prj.getNamespace(),
             files

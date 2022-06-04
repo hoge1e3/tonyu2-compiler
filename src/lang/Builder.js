@@ -171,6 +171,7 @@ module.exports = class Builder {
         var env = this.getEnv();
         env.options = this.getOptions();
         for (let k of this.getMyClasses()) {
+            console.log("RMMeta", k);
             delete env.classes[k];
         }
         const myNsp = this.getNamespace();

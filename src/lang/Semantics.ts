@@ -714,6 +714,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		if (resolvedType) {
 			annotation(node, {resolvedType});
 		} else if (env.options.compiler.typeCheck) {
+			console.log("typeNotFound: topLevelScope",topLevelScope,si,env.classes);
 			throw TError(R("typeNotFound",node.name),srcFile,node.pos);
 		}
 		return resolvedType;
