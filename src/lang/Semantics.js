@@ -489,7 +489,7 @@ function annotateSource2(klass, env) {
                     }
                 }
             });
-            var n = genSym("_it_");
+            var n = `_it_${Object.keys(ctx.locals.varDecls).length}`; //genSym("_it_");
             annotation(node, { iterName: n });
             ctx.locals.varDecls[n] = node; // ??
         }

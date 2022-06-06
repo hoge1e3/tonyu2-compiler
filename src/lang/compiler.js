@@ -96,14 +96,6 @@ var ScopeInfos;
 ;
 let nodeIdSeq = 1;
 let symSeq = 1; //B
-/*export function newScopeType(st, options?) {//B
-    const res:any={type:st};
-    if (options) {
-        for (let k in options) res[k]=options[k];
-    }
-    if (!res.name) res.name=genSym("_"+st+"_");
-    return res;
-}*/
 //cu.newScopeType=genSt;
 function getScopeType(st) {
     return st ? st.type : null;

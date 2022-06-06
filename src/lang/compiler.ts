@@ -62,14 +62,6 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 
 	let nodeIdSeq=1;
 	let symSeq=1;//B
-	/*export function newScopeType(st, options?) {//B
-		const res:any={type:st};
-		if (options) {
-			for (let k in options) res[k]=options[k];
-		}
-		if (!res.name) res.name=genSym("_"+st+"_");
-		return res;
-	}*/
 	//cu.newScopeType=genSt;
 	export function getScopeType(st: ScopeInfo ) {//B
 		return st ? st.type : null;
