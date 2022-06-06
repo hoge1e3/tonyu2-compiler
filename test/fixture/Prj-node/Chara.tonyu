@@ -30,6 +30,11 @@ nowait a() {
     console.log("Chara:man");
     return 10;
 }
+\men() {
+    man();
+    if (!test) return;
+    man();
+}
 //a.b.x;
 /*while (true) {
 try {

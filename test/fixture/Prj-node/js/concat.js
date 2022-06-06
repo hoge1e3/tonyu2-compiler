@@ -219,10 +219,49 @@ Tonyu.klass.define({
         
         _thread.retVal=_this;return;
       },
+      men :function _trc_Chara_men() {
+        "use strict";
+        var _this=this;
+        
+        _this.man();
+        if (! _this.test) {
+          return _this;
+        }
+        _this.man();
+      },
+      fiber$men :function _trc_Chara_f_men(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        var __pc=0;
+        
+        
+        _thread.enter(function _trc_Chara_ent_men(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+              _this.fiber$man(_thread);
+              __pc=1;return;
+            case 1:
+              
+              if (!(! _this.test)) { __pc=2     ; break; }
+              _thread.exit(_this);return;
+            case 2     :
+              
+              _this.fiber$man(_thread);
+              __pc=3;return;
+            case 3:
+              
+              _thread.exit(_this);return;
+            }
+          }
+        });
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true},"move":{"nowait":false},"man":{"nowait":false}},"fields":{"y":{},"x":{},"fillStyle":{},"radius":{}}}
+  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true},"move":{"nowait":false},"man":{"nowait":false},"men":{"nowait":false}},"fields":{"y":{},"x":{},"fillStyle":{},"radius":{},"test":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Field',
@@ -295,6 +334,8 @@ Tonyu.klass.define({
         }
         _this.x=1+2*3+4>0?50-6-7:8%9+10;
         console.log(_this.x);
+        _this.men();
+        console.log("Men end");
       },
       fiber$main :function _trc_Preya_f_main(_thread) {
         "use strict";
@@ -342,6 +383,11 @@ Tonyu.klass.define({
               
               _this.x=1+2*3+4>0?50-6-7:8%9+10;
               console.log(_this.x);
+              _this.fiber$men(_thread);
+              __pc=10;return;
+            case 10:
+              
+              console.log("Men end");
               _thread.exit(_this);return;
             }
           }

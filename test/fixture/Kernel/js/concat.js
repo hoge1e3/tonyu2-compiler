@@ -24471,31 +24471,31 @@ Tonyu.klass.define({
               __pc=2;break;
             case 8     :
               
-              if (! _this.mapOnTable) {
-                _thread.retVal=_this;return;
-                
-              }
+              if (!(! _this.mapOnTable)) { __pc=9     ; break; }
+              _thread.exit(_this);return;
+            case 9     :
+              
               i = 0;
               
-            case 9:
-              if (!(i<_this.row)) { __pc=15    ; break; }
+            case 10:
+              if (!(i<_this.row)) { __pc=16    ; break; }
               j = 0;
               
-            case 10:
-              if (!(j<_this.col)) { __pc=13    ; break; }
-              _this.fiber$setOn(_thread, j, i, _this.mapOnTable[i][j]);
-              __pc=11;return;
             case 11:
+              if (!(j<_this.col)) { __pc=14    ; break; }
+              _this.fiber$setOn(_thread, j, i, _this.mapOnTable[i][j]);
+              __pc=12;return;
+            case 12:
               
-            case 12    :
-              j++;
-              __pc=10;break;
             case 13    :
-              
+              j++;
+              __pc=11;break;
             case 14    :
-              i++;
-              __pc=9;break;
+              
             case 15    :
+              i++;
+              __pc=10;break;
+            case 16    :
               
               _thread.exit(_this);return;
             }
@@ -26004,14 +26004,13 @@ Tonyu.klass.define({
               __pc=1;return;
             case 1:
               
-              if (setCol>=_this.col&&! _this._expand.right||setRow>=_this.row&&! _this._expand.bottom||setCol<0&&! _this._expand.left||setRow<0&&! _this._expand.top) {
-                _thread.retVal=_this;return;
-                
-                
-              }
+              if (!(setCol>=_this.col&&! _this._expand.right||setRow>=_this.row&&! _this._expand.bottom||setCol<0&&! _this._expand.left||setRow<0&&! _this._expand.top)) { __pc=2     ; break; }
+              _thread.exit(_this);return;
+            case 2     :
+              
               _this.fiber$getChipLayer(_thread, name);
-              __pc=2;return;
-            case 2:
+              __pc=3;return;
+            case 3:
               l=_thread.retVal;
               
               if (! l) {
@@ -26029,8 +26028,8 @@ Tonyu.klass.define({
               }
               l.set(setCol,setRow,p);
               _this.fiber$redrawChip(_thread, setCol, setRow);
-              __pc=3;return;
-            case 3:
+              __pc=4;return;
+            case 4:
               
               _thread.exit(_this);return;
             }
@@ -29122,10 +29121,10 @@ Tonyu.klass.define({
             case 1:
               r=_thread.retVal;
               
-              if (r<0) {
-                _thread.retVal=_this;return;
-                
-              }
+              if (!(r<0)) { __pc=2     ; break; }
+              _thread.exit(_this);return;
+            case 2     :
+              
               _this.layers.splice(r,1);
               _thread.exit(_this);return;
             }

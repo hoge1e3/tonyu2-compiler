@@ -574,8 +574,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		},
 		"return": function (node:Return) {
 			var t;
-			if (!ctx.noWait && node.value) {
-				if ( (t=OM.match(node.value, fiberCallTmpl)) &&
+			if (!ctx.noWait) {
+				if (node.value && (t=OM.match(node.value, fiberCallTmpl)) &&
 				isFiberMethod(t.N)) {
 					annotation(node.value, {fiberCall:t});
 					fiberCallRequired(this.path);

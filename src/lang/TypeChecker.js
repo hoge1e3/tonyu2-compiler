@@ -99,12 +99,12 @@ function checkTypeDecl(klass, env) {
         },
         paramDecl: function (node) {
             if (node.name && node.typeDecl) {
-                console.log("param typeis", node.name + "", node.typeDecl.vtype + "");
+                //console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
                 var va = annotation(node.typeDecl.vtype);
                 var a = annotation(node);
                 var si = a.scopeInfo;
                 if (si && va.resolvedType) {
-                    console.log("set param type", node.name + "", node.typeDecl.vtype + "");
+                    //console.log("set param type",node.name+"", node.typeDecl.vtype+"");
                     si.resolvedType = va.resolvedType;
                 }
             }
@@ -151,7 +151,7 @@ function checkExpr(klass, env) {
                     const field = cu.getField(vtype, name);
                     const method = cu.getMethod(vtype, name);
                     if (!field && !method) {
-                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.pos);
+                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.op.name.pos);
                     }
                     //console.log("GETF",vtype,m.name,f);
                     // fail if f is not set when strict check
@@ -165,13 +165,13 @@ function checkExpr(klass, env) {
             }
             else if ((0, NodeTypes_1.isCall)(node.op)) {
                 const leftA = annotation(node.left);
-                console.log("OPCALL1", leftA);
+                //console.log("OPCALL1", leftA);
                 if (leftA && leftA.resolvedType) {
                     const leftT = leftA.resolvedType;
                     if (!(0, CompilerTypes_1.isMethodType)(leftT)) {
                         throw (0, TError_1.default)((0, R_1.default)("cannotCallNonFunctionType"), srcFile, node.op.pos);
                     }
-                    console.log("OPCALL", leftT);
+                    //console.log("OPCALL", leftT);
                     annotation(node, { resolvedType: leftT.method.returnType });
                 }
             }
@@ -188,7 +188,7 @@ function checkExpr(klass, env) {
                     const fld = klass.decls.fields[node.name + ""];
                     if (!fld) {
                         // because parent field does not contain...
-                        console.log("TC Warning: fld not found", klass, node.name + "");
+                        //console.log("TC Warning: fld not found",klass,node.name+"");
                         return;
                     }
                     var rtype = fld.resolvedType;

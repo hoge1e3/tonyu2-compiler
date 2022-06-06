@@ -4293,7 +4293,7 @@ function checkExpr(klass, env) {
                     const field = cu.getField(vtype, name);
                     const method = cu.getMethod(vtype, name);
                     if (!field && !method) {
-                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.pos);
+                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.op.name.pos);
                     }
                     //console.log("GETF",vtype,m.name,f);
                     // fail if f is not set when strict check
@@ -4307,13 +4307,13 @@ function checkExpr(klass, env) {
             }
             else if ((0, NodeTypes_1.isCall)(node.op)) {
                 const leftA = annotation(node.left);
-                console.log("OPCALL1", leftA);
+                //console.log("OPCALL1", leftA);
                 if (leftA && leftA.resolvedType) {
                     const leftT = leftA.resolvedType;
                     if (!(0, CompilerTypes_1.isMethodType)(leftT)) {
                         throw (0, TError_1.default)((0, R_1.default)("cannotCallNonFunctionType"), srcFile, node.op.pos);
                     }
-                    console.log("OPCALL", leftT);
+                    //console.log("OPCALL", leftT);
                     annotation(node, { resolvedType: leftT.method.returnType });
                 }
             }
