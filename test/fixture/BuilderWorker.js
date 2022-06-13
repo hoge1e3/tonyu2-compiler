@@ -3633,7 +3633,7 @@ function annotateSource2(klass, env) {
                     }
                 }
             });
-            var n = genSym("_it_");
+            var n = `_it_${Object.keys(ctx.locals.varDecls).length}`; //genSym("_it_");
             annotation(node, { iterName: n });
             ctx.locals.varDecls[n] = node; // ??
         }
@@ -3744,8 +3744,8 @@ function annotateSource2(klass, env) {
         },
         "return": function (node) {
             var t;
-            if (!ctx.noWait && node.value) {
-                if ((t = OM.match(node.value, fiberCallTmpl)) &&
+            if (!ctx.noWait) {
+                if (node.value && (t = OM.match(node.value, fiberCallTmpl)) &&
                     isFiberMethod(t.N)) {
                     annotation(node.value, { fiberCall: t });
                     fiberCallRequired(this.path);
@@ -4241,12 +4241,12 @@ function checkTypeDecl(klass, env) {
         },
         paramDecl: function (node) {
             if (node.name && node.typeDecl) {
-                console.log("param typeis", node.name + "", node.typeDecl.vtype + "");
+                //console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
                 var va = annotation(node.typeDecl.vtype);
                 var a = annotation(node);
                 var si = a.scopeInfo;
                 if (si && va.resolvedType) {
-                    console.log("set param type", node.name + "", node.typeDecl.vtype + "");
+                    //console.log("set param type",node.name+"", node.typeDecl.vtype+"");
                     si.resolvedType = va.resolvedType;
                 }
             }
@@ -4330,7 +4330,7 @@ function checkExpr(klass, env) {
                     const fld = klass.decls.fields[node.name + ""];
                     if (!fld) {
                         // because parent field does not contain...
-                        console.log("TC Warning: fld not found", klass, node.name + "");
+                        //console.log("TC Warning: fld not found",klass,node.name+"");
                         return;
                     }
                     var rtype = fld.resolvedType;
@@ -4560,14 +4560,6 @@ var ScopeInfos;
 ;
 let nodeIdSeq = 1;
 let symSeq = 1; //B
-/*export function newScopeType(st, options?) {//B
-    const res:any={type:st};
-    if (options) {
-        for (let k in options) res[k]=options[k];
-    }
-    if (!res.name) res.name=genSym("_"+st+"_");
-    return res;
-}*/
 //cu.newScopeType=genSt;
 function getScopeType(st) {
     return st ? st.type : null;
