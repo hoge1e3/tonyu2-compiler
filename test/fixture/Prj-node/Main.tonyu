@@ -8,12 +8,13 @@ console.log("listing elem");
 for (k of s) {
     console.log("elem",k);
 }
-
+//
 //c=Tonyu.getClass("Chara");
 //console.log(c.meta.fullName);
 //Updatable();
 //a=50a0;
 //Tonyu.run("user.Hoge");
+
 
 $restart=\{
     appear(new Preya);

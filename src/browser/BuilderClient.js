@@ -1,7 +1,7 @@
 const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
 //const FS=(root.parent && root.parent.FS) || root.FS;
@@ -79,6 +79,7 @@ class BuilderClient {
     resetFiles() {
         if (!this.inited) return this.init();
         const files=this.exportWithDependingFiles();
+        this.partialCompilable=false;
         return this.w.run("compiler/resetFiles",{
             //namespace:this.prj.getNamespace(),
             files
@@ -101,8 +102,8 @@ class BuilderClient {
             this.partialCompilable=false;
             await this.init();
             const compres=await this.w.run("compiler/fullCompile");
-            console.log(compres);
-            const sf=SourceFiles.add(compres);
+            //console.log(compres);
+            const sf=sourceFiles.add(compres);
             await sf.saveAs(this.getOutputFile());
             await this.exec(compres);
             this.partialCompilable=true;
@@ -113,7 +114,12 @@ class BuilderClient {
     }
     async partialCompile(f, {content, noexec}={}) {
         if (!this.partialCompilable) {
-            return await this.clean();
+            if (typeof content!=="string") {
+                content=f.text();
+            }
+            const files={};files[f.relPath(this.getDir())]=content;
+            await this.w.run("compiler/uploadFiles",{files});
+            return await this.fullCompile();
         }
         try {
             if (typeof content!=="string") {
@@ -125,7 +131,7 @@ class BuilderClient {
             const files={};files[f.relPath(this.getDir())]=content;
             await this.init();
             const compres=await this.w.run("compiler/postChange",{files});
-            console.log(compres);
+            //console.log(compres);
             if (!noexec) await this.exec(compres);
             return compres;
         } catch(e) {
@@ -174,7 +180,8 @@ class BuilderClient {
         });
     }
 }
-BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.sourceFiles=sourceFiles;
+BuilderClient.SourceFiles=sourceFiles;// deprecated
 BuilderClient.NS2DepSpec=NS2DepSpec;
 //root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;

@@ -1,4 +1,5 @@
 :start
+call tsc
 call .\node_modules\.bin\browserify src\browser\BuilderWorker.js --no-detect-globals -o test\fixture\BuilderWorker.js
 call .\node_modules\.bin\browserify src\browser\BuilderClient.js -s TonyuBuilderClient --no-detect-globals -o test\fixture\BuilderClient.js
 call .\node_modules\.bin\browserify src\browser\BuilderClient4Sys.js -s TonyuBuilderClient --no-detect-globals -o test\fixture\BuilderClient4Sys.js

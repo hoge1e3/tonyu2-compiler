@@ -1,0 +1,111 @@
+extends TObject;
+includes ParallelMod,MathMod,FileMod,EventMod,ThreadGroupMod;
+native GIF;
+native GIF_WORKER_URL;
+native document;
+native URL;
+native setTimeout;
+native console;
+native Uint8Array;
+native FS;
+
+\new(params) {
+    super(params);
+    $currentProject.requestPlugin("gif");
+    // delay   length   after filename
+    target=target || $Screen;
+    fps=fps || 15;
+    interval=interval || floor ( $Boot.getFrameRate() /  fps );
+    duration=( 1000/$Boot.getFrameRate() )*interval;
+    if (!manual) {
+        if (delay) {
+            var cnt=0;
+            var wevt;
+            wevt=$Boot.on("afterDraw") \{
+                cnt++;
+                if (cnt>=delay) {
+                    wevt.remove();
+                    start();
+                }
+            };
+        } else start();
+    }
+}
+\start() {
+    if (e) return;
+    frames=[];
+    e=new GIF({
+        workerScript: GIF_WORKER_URL,
+        //workerScript:"js/graphics/gif2/gif.worker.js",  // CHANGE!
+        workers: 2,
+        quality: 10
+    });
+    //e.setRepeat(0);
+    //e.setDelay(1000/fps);
+    //e.start();
+    encoded=0;
+    if (!manual) {
+        var cnt=0;
+        evt=$Boot.on("afterDraw") \(e) {
+            var drawn=e.drawn;
+            cnt++;
+            if (cnt>=interval) {
+                cnt=0;
+                addFrame();
+            }
+            if (typeof length==="number") {
+                length--;
+                if (length<=0) {
+                    switch (after) {
+                    case "save":return save()["catch"]( \(e) { console.error(e); } );
+                    case "download":return download();
+                    }
+                }
+            }
+        };
+    }
+}
+\addFrame() {
+    if (!e) start();
+    e.addFrame(target.image,{delay:duration,copy:true});
+    //console.log("addF");
+    /*frames.push(target.getImageData(
+        0,0,target.canvas.width,target.canvas.height
+    ));*/
+}
+
+\finish() {
+    var r=runPromise \(onFinish,fail) {
+        if (evt) {
+            evt.remove();
+            evt=null;
+        }
+        e.on('finished', onFinish);
+        e.render();
+    };
+    return r;
+}
+\download(f) {
+    f=f||filename||"download.gif";
+    console.log("DL",f);
+    var r=runPromise \(succ,err) {
+        finish().then \(blob) {
+            FS.Content.download(blob,f);
+            e=null;
+        }.then (\{console.log("DL OK");}, err);
+    };
+    return r;
+}
+\save(f) {
+    console.log("Save",f);
+    var r=runPromise \(succ,err) {
+        finish().then \(blob) {
+            f=file(f||filename);
+            return f.setBlob(blob);
+        }.then \{
+            e=null;
+            succ();
+        }.then (\{console.log("Save OK");}, err  /* \(e){console.error(e);} */ );
+    };
+    return r;
+}

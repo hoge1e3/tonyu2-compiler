@@ -1,0 +1,19 @@
+extends null;
+includes EventMod, QueryMod;
+"field strict";
+
+native Tonyu;
+native Key;
+native console;
+native Math;
+native FS;
+native Array;
+
+nowait \getkey(k) {
+    return $Keys.getkey(k);
+}
+\waitInputDevice(fl) {
+    runAsync \(f){
+        $InputDevice.addOnetimeListener(f);
+    };
+}

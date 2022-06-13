@@ -1,0 +1,186 @@
+extends Actor;
+native Tonyu;
+"field strict";
+
+var padding, left, top ,width, height, text, fillStyle, strokeStyle;
+//var clickedStyle, effect, disabledStrokeStyle;
+var clickedEffect, disabledEffect;
+//var savedEffect, _effectState;
+var disabled, key,autoRepeat;
+var onClick;
+var clickTiming;
+var _clicked,_arth,__binited,_x,_y;
+
+\clickedStyle {
+    return (clickedEffect && clickedEffect.strokeStyle);
+}
+\clickedStyle=v {
+    clickedEffect=clickedEffect||{};
+    clickedEffect.strokeStyle=v;
+}
+\effect {
+    return clickedEffect;
+}
+\effect=v {
+    clickedEffect=v;
+}
+\disabledStrokeStyle {
+    return (disabledEffect && disabledEffect.strokeStyle);
+}
+\disabledStrokeStyle=v {
+    disabledEffect=disabledEffect||{};
+    disabledEffect.strokeStyle=v;
+}
+
+\new(options) {
+    options=options||{};
+    options.layer=options.layer||$frontLayer;
+    super(options);
+    fillStyle=fillStyle||"rgb(179,255,142)";
+    strokeStyle=strokeStyle||"black";
+    alpha=typeof(alpha)=="number"?alpha:255;
+    padding= typeof(padding)=="number"?padding:5;
+    width = width || $screenWidth-100;
+    height = height || 50;
+    left=typeof(left)=="number"?left:typeof(x)=="number"? x- width/2:50;
+    top =typeof(top) =="number"?top :typeof(y)=="number"? y-height/2:50;
+    x=left+width/2;
+    y=top+height/2;
+    clickedEffect=clickedEffect||{strokeStyle:"white"};
+    disabledEffect=disabledEffect||{strokeStyle:"#ddd"};
+    __binited=true;
+}
+\curEffect {
+    var base={
+        fillStyle, strokeStyle, alpha, padding, width, height
+    };
+    if (disabled) {
+        Tonyu.extend(base, disabledEffect);
+    } else if (clicked) {
+        Tonyu.extend(base, clickedEffect);
+    }
+    return base;
+}
+if (key) {
+    on("keyDown",key) \(keyEvent) {
+        if (disabled) return;
+        doStartClick();
+        keyEvent.on("up",doEndClick);
+    };
+}
+on("touch") \(touchEvent) {
+    if (disabled) return;
+    var f=touchEvent.finger;
+    doStartClick();
+    f.on("end",doEndClick);
+};
+\handleClickEvent() {
+    fireEvent("click");
+    if (typeof onClick==="function") onClick(this);
+}
+\doStartClick(){
+    _clicked=$frameCount;
+    Button.last=this;
+    if (clickTiming!=="release" ) handleClickEvent();
+    if (autoRepeat) {
+        if (_arth) _arth.kill();
+        _arth=parallel("procAR");
+    }
+    //doEffect();
+}
+\doEndClick() {
+    fireEvent("release");
+    if (clickTiming==="release" ) handleClickEvent();
+    _clicked=0;
+    //undoEffect();
+    if (_arth) _arth.kill();
+}
+\procAR() {
+    updateEx(autoRepeat);
+    while(true) {
+        handleClickEvent();
+        update();
+    }
+}
+
+/*\checkTouch() {
+    for (i=0 ; i<2; i++) {
+        if ($touches[i].touched>0 && inRect($touches[i])) {
+            return $touches[i].touched;
+        }
+    }
+    if (key) return getkey(key);
+    return 0;
+}*/
+\getCrashRect() {
+    return {x:left+width/2,y:top+height/2,width, height};
+}
+/*\inRect(p) {
+    p=$Screen.convert(p,layer);
+    return p.x>=left && p.x<=left+width && p.y>=top && p.y<=top+height;
+}*/
+\draw(c) {
+    var e=curEffect;
+    c.globalAlpha=e.alpha/255;
+    c.fillStyle=e.fillStyle ? e.fillStyle+"" : "gray";
+    c.strokeStyle=e.strokeStyle ? e.strokeStyle+"" : "black";
+    //if (disabled) c.strokeStyle=disabledStrokeStyle+"";
+    var eleft=left, etop=top;
+    if (e.move) {
+        eleft+=e.move.x||0;
+        etop+=e.move.y||0;
+    }
+    c.fillRect(eleft, etop, e.width, e.height);
+    c.strokeRect(eleft, etop, e.width, e.height);
+    var size=e.height-e.padding*2;
+    var f=c.font.replace(/^[0-9]+px /,"");
+    c.font=size+"px "+f;//monospace";
+    c.textBaseline="top";
+    c.fillStyle=e.strokeStyle;
+    //clicked?clickedStyle+"":
+    //disabled?disabledStrokeStyle+"":strokeStyle+"";
+    var r=c.measureText(text);
+    c.fillText(text, eleft+e.width/2-r.width/2, etop+e.padding);
+}
+/*
+\doEffect() {
+    if (!effect) return;
+    savedEffect={};
+    for (var k,v in effect) {
+        if (k==="move") {
+            savedEffect.x=x;
+            savedEffect.y=y;
+            x+=v.x;
+            y+=v.y;
+        } else {
+            savedEffect[k]=this[k];
+            this[k]=v;
+        }
+    }
+}
+\undoEffect() {
+    if (!savedEffect) return;
+    for (var k,v in savedEffect) {
+        this[k]=v;
+    }
+}*/
+\clicked {
+    if (!_clicked) return 0;
+    return $frameCount-_clicked+1;
+}
+\x {
+    if (__binited) _x=left+width/2;
+    return _x;
+}
+\x=val {
+    if (__binited) left+=(val-x);
+    _x=val;
+}
+\y {
+    if (__binited) _y=top+height/2;
+    return _y;
+}
+\y=val {
+    if (__binited) top+=val-y;
+    _y=val;
+}

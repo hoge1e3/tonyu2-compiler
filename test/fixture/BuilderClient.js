@@ -2,7 +2,7 @@
 const root=require("../lib/root");
 const Worker=root.Worker;
 const WS=require("../lib/WorkerServiceB");
-const SourceFiles=require("../lang/SourceFiles");
+const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
 //const FS=(root.parent && root.parent.FS) || root.FS;
@@ -80,6 +80,7 @@ class BuilderClient {
     resetFiles() {
         if (!this.inited) return this.init();
         const files=this.exportWithDependingFiles();
+        this.partialCompilable=false;
         return this.w.run("compiler/resetFiles",{
             //namespace:this.prj.getNamespace(),
             files
@@ -102,8 +103,8 @@ class BuilderClient {
             this.partialCompilable=false;
             await this.init();
             const compres=await this.w.run("compiler/fullCompile");
-            console.log(compres);
-            const sf=SourceFiles.add(compres);
+            //console.log(compres);
+            const sf=sourceFiles.add(compres);
             await sf.saveAs(this.getOutputFile());
             await this.exec(compres);
             this.partialCompilable=true;
@@ -114,7 +115,12 @@ class BuilderClient {
     }
     async partialCompile(f, {content, noexec}={}) {
         if (!this.partialCompilable) {
-            return await this.clean();
+            if (typeof content!=="string") {
+                content=f.text();
+            }
+            const files={};files[f.relPath(this.getDir())]=content;
+            await this.w.run("compiler/uploadFiles",{files});
+            return await this.fullCompile();
         }
         try {
             if (typeof content!=="string") {
@@ -126,7 +132,7 @@ class BuilderClient {
             const files={};files[f.relPath(this.getDir())]=content;
             await this.init();
             const compres=await this.w.run("compiler/postChange",{files});
-            console.log(compres);
+            //console.log(compres);
             if (!noexec) await this.exec(compres);
             return compres;
         } catch(e) {
@@ -175,213 +181,235 @@ class BuilderClient {
         });
     }
 }
-BuilderClient.SourceFiles=SourceFiles;
+BuilderClient.sourceFiles=sourceFiles;
+BuilderClient.SourceFiles=sourceFiles;// deprecated
 BuilderClient.NS2DepSpec=NS2DepSpec;
 //root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;
 
 },{"../lang/SourceFiles":2,"../lib/FileMap":3,"../lib/WorkerServiceB":4,"../lib/root":5,"../project/NS2DepSpec":6}],2:[function(require,module,exports){
+"use strict";
 //define(function (require,exports,module) {
 /*const root=require("root");*/
-const root=require("../lib/root");
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sourceFiles = exports.SourceFiles = exports.SourceFile = void 0;
+const root_1 = __importDefault(require("../lib/root"));
 function timeout(t) {
-    return new Promise(s=>setTimeout(s,t));
+    return new Promise(s => setTimeout(s, t));
 }
 let vm;
 /*global global*/
-if (typeof global!=="undefined" && global.require && global.require.name!=="requirejs") {
-    vm=global.require("vm");
+if (typeof global !== "undefined" && global.require && global.require.name !== "requirejs") {
+    vm = global.require("vm");
 }
 class SourceFile {
     // var text, sourceMap:S.Sourcemap;
     constructor(text, sourceMap) {
-        if (typeof text==="object") {
-            const params=text;
-            sourceMap=params.sourceMap;
+        if (typeof text === "object") {
+            const params = text;
+            sourceMap = params.sourceMap;
             //functions=params.functions;
-            text=params.text;
+            text = params.text;
             if (params.url) {
-                this.url=params.url;
+                this.url = params.url;
             }
         }
-        this.text=text;
-        this.sourceMap=sourceMap && sourceMap.toString();
+        this.text = text;
+        this.sourceMap = sourceMap && sourceMap.toString();
         //this.functions=functions;
     }
     async saveAs(outf) {
-        const mapFile=outf.sibling(outf.name()+".map");
-        let text=this.text;
+        const mapFile = outf.sibling(outf.name() + ".map");
+        let text = this.text;
         //text+="\n//# traceFunctions="+JSON.stringify(this.functions);
         if (this.sourceMap) {
             await mapFile.text(this.sourceMap);
-            text+="\n//# sourceMappingURL="+mapFile.name();
+            text += "\n//# sourceMappingURL=" + mapFile.name();
         }
         await outf.text(text);
         //return Promise.resolve();
     }
     exec(options) {
-        return new Promise((resolve, reject)=>{
-            if (root.window) {
-                const document=root.document;
+        return new Promise((resolve, reject) => {
+            if (root_1.default.window) {
+                const document = root_1.default.document;
                 let u;
                 if (this.url) {
-                    u=this.url;
-                } else {
-                    const b=new root.Blob([this.text], {type: 'text/plain'});
-                    u=root.URL.createObjectURL(b);
+                    u = this.url;
                 }
-                const s=document.createElement("script");
-                console.log("load script",u);
-                s.setAttribute("src",u);
-                s.addEventListener("load",e=>{
+                else {
+                    const b = new root_1.default.Blob([this.text], { type: 'text/plain' });
+                    u = root_1.default.URL.createObjectURL(b);
+                }
+                const s = document.createElement("script");
+                console.log("load script", u);
+                s.setAttribute("src", u);
+                s.addEventListener("load", e => {
                     resolve(e);
                 });
-                this.parent.url2SourceFile[u]=this;
+                this.parent.url2SourceFile[u] = this;
                 document.body.appendChild(s);
-            } else if (options && options.tmpdir){
-                const tmpdir=options.tmpdir;
-                const uniqFile=tmpdir.rel(Math.random()+".js");
-                const mapFile=uniqFile.sibling(uniqFile.name()+".map");
-                let text=this.text;
-                text+="\n//# sourceMappingURL="+mapFile.name();
+            }
+            else if (options && options.tmpdir) {
+                const tmpdir = options.tmpdir;
+                const uniqFile = tmpdir.rel(Math.random() + ".js");
+                const mapFile = uniqFile.sibling(uniqFile.name() + ".map");
+                let text = this.text;
+                text += "\n//# sourceMappingURL=" + mapFile.name();
                 uniqFile.text(text);
                 mapFile.text(this.sourceMap);
                 //console.log("EX",uniqFile.exists());
                 require(uniqFile.path());
                 uniqFile.rm();
                 mapFile.rm();
-                resolve();
-            } else if (root.importScripts && this.url){
-                root.importScripts(this.url);
-                resolve();
-            } else {
-                const F=Function;
-                const f=(vm? vm.compileFunction(this.text) : new F(this.text));
+                resolve(void (0));
+            }
+            else if (root_1.default.importScripts && this.url) {
+                root_1.default.importScripts(this.url);
+                resolve(void (0));
+            }
+            else {
+                const F = Function;
+                const f = (vm ? vm.compileFunction(this.text) : new F(this.text));
                 resolve(f());
             }
         });
     }
     export() {
-        return {text:this.text, sourceMap:this.sourceMap, functions:this.functions};
+        return { text: this.text, sourceMap: this.sourceMap, functions: this.functions };
     }
 }
+exports.SourceFile = SourceFile;
 class SourceFiles {
     constructor() {
-        this.url2SourceFile={};
+        this.url2SourceFile = {};
     }
     add(text, sourceMap) {
-        const sourceFile=new SourceFile(text, sourceMap);
+        const sourceFile = new SourceFile(text, sourceMap);
         /*if (sourceFile.functions) for (let k in sourceFile.functions) {
             this.functions[k]=sourceFile;
         }*/
-        sourceFile.parent=this;
+        sourceFile.parent = this;
         return sourceFile;
     }
-
 }
-module.exports=new SourceFiles();
+exports.SourceFiles = SourceFiles;
+exports.sourceFiles = new SourceFiles();
 //});/*--end of define--*/
 
 },{"../lib/root":5}],3:[function(require,module,exports){
-class FileMap {
-    constructor(){this.sidesList=[];}
-    add(sides) {// {sideA:path, sideB:path}
+"use strict";
+module.exports = class FileMap {
+    constructor() { this.sidesList = []; }
+    add(sides) {
         this.sidesList.push(sides);
     }
     convert(path, fromSide, toSide) {
         for (let sides of this.sidesList) {
             if (path.startsWith(sides[fromSide])) {
-                return sides[toSide]+path.substring(sides[fromSide].length);
+                return sides[toSide] + path.substring(sides[fromSide].length);
             }
         }
         return path;
     }
-}
-module.exports=FileMap;
+};
 
 },{}],4:[function(require,module,exports){
+"use strict";
 /*global Worker*/
 // Browser Side
-let idseq=0;
+let idseq = 0;
 class Wrapper {
     constructor(worker) {
-        const t=this;
-        t.idseq=1;
-        t.queue={};
-        t.worker=worker;
-        t.readyQueue=[];
-        worker.addEventListener("message",function (e) {
-            var d=e.data;
+        this.isReady = false;
+        const t = this;
+        t.idseq = 1;
+        t.queue = {};
+        t.worker = worker;
+        t.readyQueue = [];
+        worker.addEventListener("message", function (e) {
+            var d = e.data;
             if (d.reverse) {
                 t.procReverse(e);
-            } else if (d.ready) {
+            }
+            else if (d.ready) {
                 t.ready();
-            } else if (d.id) {
+            }
+            else if (d.id) {
                 t.queue[d.id](d);
                 delete t.queue[d.id];
             }
         });
         t.run("WorkerService/isReady").then(function (r) {
-            if (r) t.ready();
+            if (r)
+                t.ready();
         });
     }
     procReverse(e) {
-        const t=this;
-        var d=e.data;
-        var id=d.id;
-        var path=d.path;
-        var params=d.params;
+        const t = this;
+        var d = e.data;
+        var id = d.id;
+        var path = d.path;
+        var params = d.params;
         try {
             Promise.resolve(paths[path](params)).then(function (r) {
                 t.worker.postMessage({
-                    reverse:true,
-                    status:"ok",
-                    id:id,
+                    reverse: true,
+                    status: "ok",
+                    id: id,
                     result: r
                 });
-            },sendError);
-        } catch(err) {
+            }, sendError);
+        }
+        catch (err) {
             sendError(err);
         }
         function sendError(e) {
-            e=Object.assign({name:e.name, message:e.message, stack:e.stack},e||{});
+            e = Object.assign({ name: e.name, message: e.message, stack: e.stack }, e || {});
             try {
-                const j=JSON.stringify(e);
-                e=JSON.parse(j);
-            } catch(je) {
-                e=e ? e.message || e+"" : "unknown";
+                const j = JSON.stringify(e);
+                e = JSON.parse(j);
+            }
+            catch (je) {
+                e = e ? e.message || e + "" : "unknown";
                 console.log("WorkerServiceW", je, e);
             }
             t.worker.postMessage({
                 reverse: true,
-                id:id, error:e, status:"error"
+                id: id, error: e, status: "error"
             });
         }
     }
     ready() {
-        const t=this;
-        if (t.isReady) return;
-        t.isReady=true;
+        const t = this;
+        if (t.isReady)
+            return;
+        t.isReady = true;
         console.log("Worker is ready!");
-        t.readyQueue.forEach(function (f){ f();});
+        t.readyQueue.forEach(function (f) { f(); });
     }
     readyPromise() {
-        const t=this;
+        const t = this;
         return new Promise(function (succ) {
-            if (t.isReady) return succ();
+            if (t.isReady)
+                return succ(undefined);
             t.readyQueue.push(succ);
         });
     }
-    run(path, params) {
-        const t=this;
-        return t.readyPromise().then(function() {
-            return new Promise(function (succ,err) {
-                var id=t.idseq++;
-                t.queue[id]=function (e) {
+    run(path, params = {}) {
+        const t = this;
+        return t.readyPromise().then(function () {
+            return new Promise(function (succ, err) {
+                var id = t.idseq++;
+                t.queue[id] = function (e) {
                     //console.log("Status",e);
-                    if (e.status=="ok") {
+                    if (e.status == "ok") {
                         succ(e.result);
-                    } else {
+                    }
+                    else {
                         err(e.error);
                     }
                 };
@@ -394,39 +422,41 @@ class Wrapper {
         });
     }
     terminate() {
-        const t=this;
+        const t = this;
         t.worker.terminate();
     }
 }
-var paths={};
-const WorkerService={
-    Wrapper:Wrapper,
+var paths = {};
+const WorkerService = {
+    Wrapper: Wrapper,
     load: function (src) {
-        var w=new Worker(src);
+        var w = new Worker(src);
         return new Wrapper(w);
     },
     install: function (path, func) {
-        paths[path]=func;
+        paths[path] = func;
     },
-    serv: function (path,func) {
-        this.install(path,func);
+    serv: function (path, func) {
+        this.install(path, func);
     }
 };
-WorkerService.serv("console/log", function (params){
-    console.log.apply(console,params);
+WorkerService.serv("console/log", function (params) {
+    console.log.apply(console, params);
 });
-module.exports=WorkerService;
+module.exports = WorkerService;
 
 },{}],5:[function(require,module,exports){
-/*global window,self,global*/
-(function (deps, factory) {
-    module.exports=factory();
-})([],function (){
-    if (typeof window!=="undefined") return window;
-    if (typeof self!=="undefined") return self;
-    if (typeof global!=="undefined") return global;
-    return (function (){return this;})();
-});
+"use strict";
+const root = (function () {
+    if (typeof window !== "undefined")
+        return window;
+    if (typeof self !== "undefined")
+        return self;
+    if (typeof global !== "undefined")
+        return global;
+    return (function () { return this; })();
+})();
+module.exports = root;
 
 },{}],6:[function(require,module,exports){
 

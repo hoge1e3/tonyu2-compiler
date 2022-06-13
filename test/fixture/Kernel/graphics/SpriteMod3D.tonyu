@@ -1,0 +1,59 @@
+extends null;
+includes SpriteMod;
+"field strict";
+var x,y,z,direction,transform,_prescale;
+
+\detectSpriteType() {
+    var t=super.detectSpriteType();
+    if (t==="Image" && p && p.draw3D) return "Custom";
+    return t;
+}
+\initTransform() {//called from initModule
+    // position is already initialized
+
+    if (direction) direction=direction.clone();
+    else direction=new Direction;
+
+    var givenTransform=transform;
+    transform=new Transform{
+        direction,position,scale:(_prescale||1),actor:this,
+    };
+    if (givenTransform) transform.set(givenTransform);
+    /*
+    if (transform.position!==position) {// this will be fail unless use givenTransform
+        throw new Error("transform.position not match");
+    }
+    if (transform.direction!==direction) {
+        throw new Error("transform.direction not match");
+    }*/
+    // after that, addToLayer called
+}
+\scale {
+    if (!transform) return _prescale;
+    return transform.scale;
+}
+\scale=s {
+    if (!transform) return _prescale=s;
+    transform.scale=s;
+}
+\draw3D(ctx3d) {
+    var t=detectSpriteType();
+    if ( t==="Image" ) prepareImage();// Just for calculate size TODO
+    //if ( (p==null || typeof p==="number") && (!text && !fillStyle) ) prepareImage();// Just for calculate size TODO
+    //ctx3d.addSprite3D(this);
+    //return;
+    if (p && p.draw3D) {
+        ctx3d.save();
+        ctx3d.transform(transform);
+        p.draw3D(ctx3d);
+        ctx3d.restore();
+    } else {
+        ctx3d.addSprite3D(this);
+    }
+    if (subsprites && subsprites.draw3D) {
+        ctx3d.save();
+        ctx3d.transform(transform);
+        subsprites.draw3D(ctx3d);
+        ctx3d.restore();
+    }
+}

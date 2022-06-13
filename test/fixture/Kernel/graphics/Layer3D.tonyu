@@ -1,0 +1,39 @@
+extends ScreenLayer;
+includes MathMod;
+native console;
+"field strict";
+var spx,spy,camera,screen;
+
+\new(p) {
+    super(p);
+    spx=spx||$screenWidth/2;
+    spy=spy||$screenHeight/2;
+}
+\draw(c2) {
+    spx=$screenWidth/2;
+    spy=$screenHeight/2;
+    var c3=new Context3D{camera};
+    group.draw3D(c3);
+    var s2ds=c3.sprites2D.sort \(a,b) {
+        return b.zOrder-a.zOrder;
+    };
+    c2.save();
+    c2.translate(spx,spy);
+    //console.log("Layer3D::draw",group.sprites.length, c3.sprites2D.length);
+    for (var s2d of c3.sprites2D) {
+        s2d.draw(c2);
+    }
+    c2.restore();
+}
+\world2screen(obj) {// world<=>group
+    spx=$screenWidth/2;
+    spy=$screenHeight/2;
+    var r=camera.to2D(camera.transform.inverse.childToSibling(obj));
+    r.x+=spx;
+    r.y+=spy;
+    return r;
+    //throw new Error("cannot call world2screen for Layer3D");
+}
+\screen2world(obj) {
+    throw new Error("cannot call screen2world for Layer3D");
+}

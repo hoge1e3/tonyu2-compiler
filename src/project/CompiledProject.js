@@ -1,12 +1,7 @@
-/*define(function (require,exports,module) {
-    const F=require("ProjectFactory");
-    const root=require("root");
-    const SourceFiles=require("SourceFiles");
-    const langMod=require("langMod");
-    */
+
     const F=require("./ProjectFactory");
     const root=require("../lib/root");
-    const SourceFiles=require("../lang/SourceFiles");
+    const {sourceFiles}=require("../lang/SourceFiles");
     //const A=require("../lib/assert");
     const langMod=require("../lang/langMod");
 
@@ -29,7 +24,7 @@
             loadClasses: async function (ctx) {
                 console.log("Loading compiled classes ns=",ns,"url=",url);
                 await this.loadDependingClasses();
-                const s=SourceFiles.add({url});
+                const s=sourceFiles.add({url});
                 await s.exec();
                 console.log("Loaded compiled classes ns=",ns,"url=",url);
             },
@@ -43,7 +38,7 @@
                 await this.loadDependingClasses();
                 const outJS=this.getOutputFile();
                 const map=outJS.sibling(outJS.name()+".map");
-                const sf=SourceFiles.add({
+                const sf=sourceFiles.add({
                     text:outJS.text(),
                     sourceMap:map.exists() && map.text(),
                 });
@@ -66,7 +61,7 @@
                 await this.loadDependingClasses();
                 const outJS=outputFile;
                 const map=outJS.sibling(outJS.name()+".map");
-                const sf=SourceFiles.add({
+                const sf=sourceFiles.add({
                     text:outJS.text(),
                     sourceMap:map.exists() && map.text(),
                 });

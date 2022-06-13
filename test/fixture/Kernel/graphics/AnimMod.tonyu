@@ -1,0 +1,41 @@
+extends null;
+includes SpriteMod,SchedulerMod,ParallelMod;
+"field strict";
+var anim,animMode,animFrame,animFps;
+
+\initAnimMod(){
+    if (anim instanceof Array){
+        startAnim();
+    }else{
+        animMode=false;
+    }
+    if (animFps==null) animFps=1;
+}
+nowait \setAnimFps(f){
+    animFps=f;
+    animFrame=0;
+    startAnim();
+}
+nowait \startAnim(){
+    if (!animMode) {
+        animMode=parallel(_animation);
+        animFrame=animFrame||0;
+    }
+}
+nowait \stopAnim(){
+    if (animMode) {
+        animMode.kill();
+        animMode=null;
+    }
+}
+\_animation(){
+    var age=0;
+    while(true) {
+        age++;
+        if (age%animFps==0 && anim instanceof Array){
+            p=anim[animFrame%anim.length];
+            animFrame++;
+        }
+        update();
+    }
+}

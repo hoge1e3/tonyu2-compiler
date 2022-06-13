@@ -1,0 +1,21 @@
+extends Updatable;
+native console;
+var x:Number;
+var s:String;
+\test():A {
+	var i=0,s=0;
+	while(i<n) {
+		console.log(i);
+		update();
+		i++;
+		s+=i;
+	}
+	return this;
+}
+nowait \toste() {
+	console.log(3);
+}
+//a
+/*\hoge(){
+	console.log("hoge");
+}*/

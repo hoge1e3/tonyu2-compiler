@@ -1,0 +1,5 @@
+includes EMod;
+\test() {
+    print("CMod::test");
+    super.test();
+}

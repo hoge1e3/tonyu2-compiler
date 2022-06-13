@@ -1,17 +1,18 @@
 //extends Field;
 extends Updatable;
-//includes Excludes;
+includes Excludes;
 native console;
 
 //"field strict";
-//y=super.man();
+y=super.man();
 x=100;
 //break;
 y=200;
 fillStyle="yellow";
 radius=16;　
 
-while(x<120) {
+//a
+while (x<120) {
     x+=5;
     console.log(x,y,"zen　kaku");
     update();
@@ -24,6 +25,15 @@ nowait a() {
 }
 \move() {
     x+=10;
+}
+\man() {
+    console.log("Chara:man");
+    return 10;
+}
+\men() {
+    man();
+    if (!test) return;
+    man();
 }
 //a.b.x;
 /*while (true) {

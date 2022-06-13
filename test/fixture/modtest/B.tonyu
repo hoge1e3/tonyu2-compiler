@@ -1,0 +1,11 @@
+includes FMod;
+
+\new() {
+    print("new::B");
+    //x=5;
+    //print(this);
+}
+\test() {
+    print("B::test");
+    super.test();
+}

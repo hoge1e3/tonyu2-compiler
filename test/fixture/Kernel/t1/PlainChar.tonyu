@@ -1,0 +1,39 @@
+extends Actor;
+
+native Tonyu;
+native Math;
+\new(x,y,p) {
+    layer=layer||$mainLayer;
+    _th=$Boot.schedule(this,"tMain",[]);
+    addToLayer();
+    _scheduler=_scheduler||$Scheduler;
+    crashScale=1;
+    if (typeof x=="object") Tonyu.extend(this,x);
+    else if (typeof x=="number") {
+        this.x=x;
+        this.y=y;
+        this.p=p;
+    }
+}
+\draw(c) {
+    onDraw();
+    if (_isInvisible) return;
+    //super.draw(c);
+}
+\setVisible(v) {
+    _isInvisible=!v;
+}
+\onDraw() {
+
+}
+\update() {
+    onUpdate();
+    super.update();
+}
+\onUpdate() {
+
+}
+\tMain() {
+    main();
+    die();
+}

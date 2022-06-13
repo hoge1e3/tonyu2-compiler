@@ -1,0 +1,4 @@
+\test() {
+    print("EMod::test");
+    super.test();
+}

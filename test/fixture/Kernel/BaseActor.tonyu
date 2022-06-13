@@ -1,0 +1,51 @@
+extends null;
+includes MathMod,EventMod,
+ThreadGroupMod,EventHandlerCaller,DialogMod,FileMod,AnimMod,SchedulerMod,
+QueryMod,InputMod,LifeCycleMod,SpriteMod,ParallelMod,
+PlayMod, ParallelMod;
+
+"field strict";
+
+native Tonyu;
+native console;
+
+\new(x,y,p) {
+    if (typeof x=="object") Tonyu.extend(this,x);
+    else if (typeof x=="number") {
+        this.x=x;
+        this.y=y;
+        this.p=p;
+    }
+    initSchedulerMod();
+    layer=layer||defaultLayer;
+    if (layer.group instanceof SpriteGroup) layer=layer.group;
+    crashScale=1;
+    if (position) {
+        this.x=position.x;this.y=position.y;//z=position.z;
+    }
+    initSpriteMod();//inits position =new Vec3View;
+    addToLayer();
+    initAnimMod();
+}
+nowait \extend(obj) {
+    return Tonyu.extend(this,obj);
+}
+
+nowait \print() {
+    $_printCount++; if ($_printCount>$printLimit) throw new Error("printをしすぎています.\n"
+    +"       $printLimitの値を変更すると、1フレーム間にできるprint回数を変更できます\n"
+    +"       $printLimit="+$printLimit+"; // 現在のprint回数の限度\n"
+    +"       [参考] https://edit.tonyu.jp/doc/limitations.html\n");
+    console.log.apply(console,arguments);
+    if($consolePanel){
+        $consolePanel.print.apply($consolePanel,arguments);
+    }
+}
+
+\loadPage(){// was nowait, why?
+    $Boot.loadPage.apply($Boot,arguments);
+    update();// I want this!
+}
+\defaultLayer {
+    return $mainLayer;
+}

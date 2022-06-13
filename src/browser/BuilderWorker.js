@@ -42,6 +42,11 @@ WS.serv("compiler/resetFiles", params=>{
     prjDir.importFromObject(files);
     builder.requestRebuild();
 });
+WS.serv("compiler/uploadFiles", params=>{
+    const files=params.files;
+    const prjDir=prj.getDir();
+    prjDir.importFromObject(files);
+});
 WS.serv("compiler/parse", async ({files})=>{
     try {
         // params.files:: relPath=>cont

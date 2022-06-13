@@ -1,6 +1,11 @@
 extends Chara;
 native console;
 
+\man() {
+    y=super.man();
+    console.log("Preya::Man",y);
+}
+man();
 x=0;
 while(x<120) {
     move();
@@ -8,3 +13,13 @@ while(x<120) {
     update();
     //a();
 }
+for (x=0;x<3;x++) {
+    //move();
+    console.log(x);
+    update();
+}
+//a
+x=1+2*3+4>0?50-6-7:8%9+10;
+console.log(x);
+men();
+console.log("Men end");

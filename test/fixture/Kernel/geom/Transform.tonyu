@@ -1,0 +1,173 @@
+extends TObject;
+"field strict";
+var actor:Actor3D;
+var _parent:Transform/*opt*/;
+var direction, position;
+var scale;//scale is Number or {right,down,forward}TODO
+var id;
+/*
++-------
+|
+|   +-->
+|   |
+|   v
+
+*/
+/* the matrix
+Q*s p
+000 1
+
+*/
+
+\_static() {//TODO
+    if (!Transform._static) {
+        Transform._static=true;
+        Transform.IDSEQ=1;
+        Transform.root=new Transform;
+    }
+}
+\parent=p {
+    if (_parent===p) return;
+    _parent=p;
+    /*if (_parent) {
+        parentChanged(p,this);
+    } else {
+    }*/
+}
+\parent {return _parent;}
+\quaternion {
+    return direction.quaternion;
+}
+\new(param) {
+    _static();
+    super(param);
+    id=Transform.IDSEQ++;
+    scale=scale||1;
+    direction=direction||new Direction;
+    position=position||new Vec3(0,0,0);
+    //_parent=_parent||Transform.root;
+}
+\child(param) {
+    param.parent=this;
+    return new Transform(param);
+}
+\isRoot {
+    return this===Transform.root;
+}
+\clone() {
+    return new Transform().set(this);
+}
+
+\set(t:Transform) {
+    position.set(t.position);
+    direction.set(t.direction);
+    scale=t.scale;
+    _parent=t.parent;
+    return this;
+}
+\product(t:Transform, dst:Transform/*opt*/) {
+    // this x t
+    /*
+    Q*s p x t.Q*t.s  t.p = (Qxt.Q)*(s*t.s) lcltw(t.p)
+    000 1   0  0  0  1     0  0   0            1
+    */
+    var writeToThis;
+    if (dst===this) {
+        writeToThis=true;
+        dst=false;
+    }
+    if (!dst) dst=new Transform;
+    quaternion.product(t.quaternion,dst.quaternion);
+    dst.scale=scale*t.scale;
+    localToWorld(t.position,dst.position);
+    if (writeToThis) {
+        set(dst);
+        return this;
+    }
+    return dst;
+}
+
+\parentChanged(to:Transform,dst:Transform) {
+    var p=new ParentChanger(to);
+    return p.change(this,dst);
+}
+\changeParent(to:Transform) {
+    var c=parentChanged(to);
+    return set(c);//parentChanged(to,this);
+}
+\localToWorld(local,dst) {
+    return childToSibling(local,dst);
+}
+\childToSibling(child,dst) {// was localToWorld
+    // how my child looks from view point of my parent's coordinate
+    if (child is Transform) {
+        // res equiv child, res.parent=parent
+        // assume child.parent===this
+        var res=product(child,dst);
+        res._parent=parent;
+        return res;
+    }
+    // local:Vec3
+    dst=direction.localToWorld(child,dst);
+    dst.mulX(scale);
+    dst.addX_v(position);
+    return dst;
+}
+\worldToLocal(local,dst) {
+    return siblingToChild(local,dst);
+}
+
+// was worldToLocal
+\siblingToChild(sibling,dst) {
+    // how my sibling looks from view point of my coordinate.
+    var copyToSibling;
+    if (sibling is Transform) {
+        /*
+        ~(T R S) wT wR wS
+        ~S ~R ~T wT wR wS
+        */
+        if (dst===sibling) {
+            copyToSibling=true;
+            dst=null;
+        }
+        if (!dst) dst=new Transform;
+        siblingToChild(sibling.position,dst.position);
+        quaternion.inverse.product(sibling.quaternion,dst.quaternion);
+        dst.scale=sibling.scale/scale;
+        dst._parent=this;
+        if (copyToSibling) {
+            sibling.set(dst);
+            return sibling;
+        }
+        return dst;
+        //direction.quaternion.
+    }
+    //sibling:Vec3
+    /*
+    T R S l   =  w
+    l =  ~S ~R ~T  w
+
+    */
+    if (!dst) dst=new Vec3(0,0,0);
+    dst.set(sibling);
+    dst.subX_v(position);
+    direction.worldToLocal(dst,dst);
+    dst.divX(scale);
+    return dst;
+}
+\changeScale(vec,by) {
+    // only by:Number TODO
+    return vec.mulX(by);
+}
+\isSibling(sib) {
+    return sib.parent===parent;
+}
+\isParentOf(child) {
+    return child.parent===this;
+}
+\isChildOf(parent) {
+    return this.parent===parent;
+}
+\inverse {
+    return siblingToChild(new Transform());
+}

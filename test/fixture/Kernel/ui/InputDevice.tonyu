@@ -1,0 +1,189 @@
+extends null;
+includes EventMod;
+native $;
+native console;
+native document;
+native window;
+native Tonyu;
+native T2MediaLib;
+\new() {
+    listeners=[];
+    touchEmu=true;
+    wheelVy=0;
+    defaultLayer=$Screen;
+}
+\handleListeners(type,evt) {
+    var l=listeners;
+    listeners=[];
+    while (l.length>0) { (l.shift())(); }
+    if (type && evt) {
+        evt.type=type;
+        fireEvent(type,evt);
+    }
+    if ($Boot.economyMode && !$Boot.economyMode.manualDraw) {
+        $Boot.requestDrawFrame();
+    }
+}
+\addOnetimeListener(l){
+    listeners.push(l);
+}
+\newTouch(i) {
+    return {index:i,px:0,py:0,x:0,y:0,vx:0,vy:0,touched:0,identifier:-1,ended:false,layer:defaultLayer};
+}
+\changeTouchLayer(t,toLayer) {//Retain...?
+    return t.layer=toLayer;//---T
+}
+\initCanvasEvents(cvj) {
+    rootCanvas=cvj;
+    var cv=cvj[0];
+    var ID_MOUSE=31238612;
+    var bmap=[1,4,2];
+    $handleMouseDown=\(e) {
+        debug("mouseDown", $InputDevice.touchEmu, e);
+        mouseDownAtCV=true;
+        Tonyu.resetLoopCheck();
+        if ($t2MediaLib) $t2MediaLib.activate();
+        // [1]for inside iframe (preventDefault prevents also focus into this iframe)
+        // e.preventDefault();
+        e.preventDefault();
+        window.focus();//[1] So, Added this
+        //----
+        var p=cvj.offset();
+        var mp={x:e.clientX-p.left, y:e.clientY-p.top,layer:$Screen.layer};
+        mp=$Screen.convert(mp,defaultLayer);// $Screen.canvas2buf(mp);
+        $mouseX=mp.x;
+        $mouseY=mp.y;
+        mouseButton=mouseButton|(1<<e.button);
+        isMouseDown=true;// TODO: it looks like same as mouseDownAtCV
+        if ($InputDevice.touchEmu) {
+            $handleTouchStart({
+                preventDefault: function (){},
+                originalEvent: {
+                    changedTouches: [
+                    {identifier:ID_MOUSE+e.button, pageX:e.clientX,pageY:e.clientY}
+                    ]
+                },
+                byMouse: bmap[e.button]||1
+            });
+        }
+        handleListeners();
+    };
+    $handleMouseMove=\(e) {
+        debug("mouseMove", $InputDevice.touchEmu, e);
+        Tonyu.resetLoopCheck();
+        if (mouseDownAtCV) e.preventDefault();
+        var p=cvj.offset();
+        var mp={x:e.clientX-p.left, y:e.clientY-p.top,layer:$Screen.layer};
+        mp=$Screen.convert(mp,defaultLayer);// $Screen.canvas2buf(mp);
+        fireEvent("mouseMove",{
+            x: mp.x, y:mp.y,
+            vx:$mouseX==null?0:mp.x-$mouseX,
+            vy:$mouseY==null?0:mp.y-$mouseY
+        });
+        $mouseX=mp.x;
+        $mouseY=mp.y;
+        if (isMouseDown && $InputDevice.touchEmu) {// TODO: isMouseDown looks like same as mouseDownAtCV
+            var changedTouches=[];
+            var btn=mouseButton, bid=0;
+            while(btn) {
+                if (btn & 1) {
+                    changedTouches.push{
+                        identifier:ID_MOUSE+bid,
+                        pageX:e.clientX,pageY:e.clientY
+                    };
+                }
+                btn=btn>>1;
+                bid++;
+            }
+            $handleTouchMove({
+                preventDefault: function (){},
+                originalEvent: {
+                    changedTouches
+                },
+                byMouse: bmap[e.button]||1
+            });
+        }
+        handleListeners();
+    };
+    $handleMouseUp=\(e) {
+        debug("mouseUp", $InputDevice.touchEmu);
+        Tonyu.resetLoopCheck();
+        if ($t2MediaLib) $t2MediaLib.activate();
+        if (mouseDownAtCV) e.preventDefault();
+        mouseDownAtCV=false;
+        isMouseDown=false;// TODO: it looks like same as mouseDownAtCV
+        mouseButton=mouseButton&~(1<<e.button);
+        if ($InputDevice.touchEmu) {
+            $handleTouchEnd({
+                preventDefault: function (){},
+                originalEvent: {
+                    changedTouches: [
+                    {identifier:ID_MOUSE+e.button, pageX:e.clientX,pageY:e.clientY}
+                    ]
+                },
+                byMouse: bmap[e.button]||1
+            });
+        }
+    };
+    //--T
+    touch=new TouchFingers(this);
+    $touches=touch.fingerArray;
+    $handleTouchStart=\(e) {
+        return touch.handleStart(e);    //--T
+    };
+    $handleTouchMove=\(e) {
+        return touch.handleMove(e);    //--T
+    };
+    $handleTouchEnd=\(e) {
+        return touch.handleEnd(e);    //--T
+    };
+    $handleWheel=\(e){
+        e=e.originalEvent;
+        wheelVy+=e.deltaY;
+        fireEvent("wheel",e);
+        return false; 
+    };
+    $unsetTouchEmu=\() {
+        Tonyu.resetLoopCheck();
+        $InputDevice.touchEmu=false;
+        return touch.unsetEmu();    //--T
+    };
+    var handleMouseDown=\(e){$handleMouseDown(e);};
+    var handleMouseMove=\(e){$handleMouseMove(e);};
+    var handleMouseUp=\(e){$handleMouseUp(e);};
+    var handleTouchStart=\(e){$unsetTouchEmu();$handleTouchStart(e);};
+    var handleTouchMove=\(e){$unsetTouchEmu();$handleTouchMove(e);};
+    var handleTouchEnd=\(e){$unsetTouchEmu();$handleTouchEnd(e);};
+    var handleWheel=\(e){$handleWheel(e);};
+    var d=$.data(cv,"events");
+    if (!d) {
+        $.data(cv,"events","true");
+        cvj.mousedown(handleMouseDown);
+        $(document).mousemove(handleMouseMove);
+        $(document).mouseup(handleMouseUp);
+        // TODO: if iframe?
+        $(document).on("mouseleave",handleMouseUp);
+        cvj.on("contextmenu",function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+        cvj.on("touchstart",handleTouchStart);
+        cvj.on("touchmove",handleTouchMove);
+        cvj.on("touchend",handleTouchEnd);
+        cvj.on("touchcancel",handleTouchEnd);
+        cvj.on("wheel", handleWheel);
+    }
+}
+
+\update() {
+    wheelVy=0;
+    return touch.updateFingers();//---T
+}
+\debug() {
+    if (debugFlag) {
+        console.log.apply(console, arguments);
+    }
+}
+\reset() {
+    touch.reset();
+}

@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\bin\\Dropbox\\workspace\\tonyu2-compiler\\test\\fixture\\retbug\\A.tonyu"],"names":[],"mappings":";;;;;;;;;;;;;;;;;;;;;;;;;SACE;SACA,IAAI,EAAC;;;SACL;;;;;;;;;;;;;;eAFA;;;;eACA,MAAI,EAAC;eAAG;;;eACR","sourcesContent":["\\test() {\r\n\ttest2();\r\n\tif (!a) return;\r\n\ttest2();\r\n}\r\n\\test2() {\r\n\r\n}\r\n"]}

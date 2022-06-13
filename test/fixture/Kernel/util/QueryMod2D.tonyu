@@ -1,0 +1,56 @@
+extends null;
+includes QueryMod, SpriteMod2D;
+native Math;
+"field strict";
+\getCrashShape() {// 2D
+    //return new CubeShape(...);// if 3D
+    return new RectShape(getCrashRect());
+}
+nowait \dist(dx,dy,dz) {
+    if (typeof dx=="object") {
+        var t=dx;
+        dx=t.x-x;dy=t.y-y;dz=0;
+    }
+    return super.dist(dx,dy,dz);
+}
+
+nowait \getCrashRect() {//2D
+    if (_align && !_align.isOriginPivot) {
+        var scx=scaleX;
+        var scy=(scaleY==null?scaleX:scaleY);
+        var r=this._align.getDrawRect{
+            width : (width ||radius*2),
+            height: (height||radius*2),
+        };
+        var v=new Vec3(r.x*scx, r.y*scy);
+        v.rotateX(rotation).addX(x,y);
+        return {
+            x=v.x, y=v.y,
+            width =abs(r.width*scx*crashScale),
+            height=abs(r.height*scy*crashScale),
+        };
+    }
+    var actWidth=(width||radius*2)*scaleX*crashScale, actHeight;
+    if(typeof scaleY==="undefined"){
+        actHeight=(height||radius*2)*scaleX*crashScale;
+    }else{
+        actHeight=(height||radius*2)*scaleY*crashScale;
+    }
+    return typeof x=="number" &&
+    typeof y=="number" &&
+    typeof actWidth=="number" &&
+    typeof actHeight=="number" &&
+    {x,y,width:Math.abs(actWidth),height:Math.abs(actHeight)};
+}
+\getTouchShape() {
+    return new RectShape(getTouchRect());
+}
+\getTouchRect(scale){
+    return getCrashRect();
+}
+\screenOut(a) {//2D
+    if (!a) a=0;
+    var cp=$Screen.convert(this,$Screen);
+    return abs(clamped(cp.x,-a,$screenWidth+a))+
+    abs(clamped(cp.y,-a,$screenHeight+a));
+}

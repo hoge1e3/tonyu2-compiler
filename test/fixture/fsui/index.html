@@ -39,8 +39,30 @@ requirejs(["../FS"],FS=>{
             console.log("Start running");
         };*/
         shui.show();
-        shui.sh.cd("/Tonyu/Projects/Test/");
-         shui.sh.run().then(()=>{
+        const dir="/Tonyu/Projects/Test/";
+        if (!FS.get(dir).exists()) {
+            const dirf=FS.get(dir);
+            dirf.rel("options.json").obj({
+                "compiler":{
+                    "dependingProjects": [{"namespace":"kernel"}],
+                    "outputFile": "js/concat.js","namespace":"user",
+            		"defaultSuperClass": "kernel.Actor"
+                },
+                "run":{"mainClass":"user.Main","bootClass":"user.Boot"}
+            });
+            dirf.rel("Main.tonyu").text(`
+x=100;
+y=100;
+fillStyle="white";
+radius=30;
+while(x<200) {
+	x+=1;
+	update();
+}
+            `);
+        }
+        shui.sh.cd(dir);
+         shui.sh.run("kernel.Boot").then(()=>{
              shui.sh.edit("Main.tonyu");
              shui.sh.edit("Test.tonyu");
 

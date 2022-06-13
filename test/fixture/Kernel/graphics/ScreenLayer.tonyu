@@ -1,0 +1,15 @@
+extends TObject;
+includes EventMod;
+
+var group;
+\new(p) {
+    super(p);
+    //on(TouchStartOnLayer) 
+}
+\addSubsprite() {
+    return group.addSubsprite.apply(group,arguments);
+}
+
+\all() {
+    return group.all.apply(group,arguments);
+}

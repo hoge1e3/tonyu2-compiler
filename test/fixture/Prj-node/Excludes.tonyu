@@ -1,0 +1,4 @@
+\man() {
+    console.log("Excludes:man");
+    return 30;
+}

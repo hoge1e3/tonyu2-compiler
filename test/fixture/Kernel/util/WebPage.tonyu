@@ -1,0 +1,169 @@
+extends Actor;
+native document;
+native window;
+native encodeURIComponent;
+native Util;
+
+
+eventWindowOpen = \(e) {
+    //window.console.log("evtwinopen",postUrl);
+
+    if ($RPGAtsumaru) {
+        postOptions=postOptions||{};
+        $RPGAtsumaru.popups.openLink(postUrl, postOptions.comment);
+    } else {
+        window.open(postUrl);
+    }
+    if (canvas.removeEventListener) {
+        canvas.removeEventListener("click", eventWindowOpen, false);
+        canvas.removeEventListener("touchend", eventWindowOpen, false);
+        listenerExists = false;
+    } else if(canvas.detachEvent) {
+        canvas.detachEvent("onclick", eventWindowOpen);
+        canvas.detachEvent("touchend", eventWindowOpen);
+        listenerExists = false;
+    }
+};
+
+\openNewWindow(url, options) {
+    postUrl = url;
+    options=options||{};
+    postOptions = options;
+    //window.console.log("opennw",postUrl,listenerExists);
+    canvas=
+    document.querySelector("canvas.tonyu-canvas") ||
+    document.getElementsByTagName("canvas")[0];
+    if (!listenerExists) {
+        if (canvas.addEventListener) {
+            canvas.addEventListener("click", eventWindowOpen, false);
+            canvas.addEventListener("touchend", eventWindowOpen, false);
+            //window.console.log("openn2",postUrl,eventWindowOpen);
+            listenerExists = true;
+        } else if(canvas.attachEvent) {
+            canvas.attachEvent("onclick", eventWindowOpen);
+            canvas.attachEvent("touchend", eventWindowOpen);
+            listenerExists = true;
+        }
+    }
+}
+
+\openPage(url) {
+    window.location.href = url;
+}
+
+/**
+ * ツイート機能
+ * Tweet Button Intent
+ * https://dev.twitter.com/web/tweet-button/parameters
+ * @param {string} text ツイート本文
+ * @param {string} url ツイートにURLを含める
+ * @param {string} hashtags ツイートにハッシュタグ(#～)を含める。複数タグを含める場合はカンマ(,)で区切る
+ * @param {string} via ツイートに「@～さんより」を含める。Twitterアカウント名を指定する
+ * @param {string} related ツイート後、関連アカウントを表示する。投稿したTwitterアカウントで既にフォローしている場合は表示されない。Twitterアカウント名を指定する。複数含める場合はカンマ(,)で区切る
+ * @param {boolean} tl trueにするとツイート後、Twitterのトップページ(タイムライン)に遷移します。
+ */
+\openTweet(text, url, hashtags, via, related, tl) {
+    var sendUrl = "https://twitter.com/intent/tweet?";
+    sendUrl += "text=" + encodeURIComponent(text);
+    if (url != null) {
+        sendUrl += "&";
+        sendUrl += "url=" + encodeURIComponent(url);
+    }
+    if (hashtags != null) {
+        sendUrl += "&";
+        sendUrl += "hashtags=" + encodeURIComponent(hashtags);
+    }
+    if (via != null) {
+        sendUrl += "&";
+        sendUrl += "via=" + encodeURIComponent(via);
+    }
+    if (related != null) {
+        sendUrl += "&";
+        sendUrl += "related=" + encodeURIComponent(related);
+    }
+    if (tl) {
+        sendUrl += "&";
+        sendUrl += "source=webclient";
+    }
+    openNewWindow(sendUrl, {comment:text});
+}
+
+// OLD
+/*
+\openShareTweet(url,text) {
+    if (arguments.length<2) {
+        text=url;url=null;
+    }
+    if (url == null) {
+        url = window.location.href;
+    }
+    tempUrl = "https://twitter.com/intent/tweet?"
+    +"text=" + encodeURIComponent(text)
+    +"&"+"url=" + encodeURIComponent(url);
+    openNewWindow(tempUrl);
+}
+*/
+
+/**
+ * ツイート機能(URL自動版)
+ * Tweet Button Intent
+ * https://dev.twitter.com/web/tweet-button/parameters
+ * @param {string} text ツイート本文
+ * @param {string} url ツイートにURLを含める
+ * @param {string} hashtags ツイートにハッシュタグ(#～)を含める。複数タグを含める場合はカンマ(,)で区切る
+ * @param {string} via ツイートに「@～さんより」を含める。Twitterアカウント名を指定する
+ * @param {string} related ツイート後、関連アカウントを表示する。投稿したTwitterアカウントで既にフォローしている場合は表示されない。Twitterアカウント名を指定する。複数含める場合はカンマ(,)で区切る
+ * @param {boolean} tl trueにするとツイート後、Twitterのトップページ(タイムライン)に遷移します。
+ */
+\openShareTweet(text, url, hashtags, via, related, tl) {
+    var sendUrl = "https://twitter.com/intent/tweet?";
+
+    // openShareTweet(url,text) だった時の後方互換。第１引数がURLか分析する
+    if (arguments.length==2) {
+        if (text==null || text.match(/^http/)) {
+            var tempText=text;
+            text=url;url=tempText;
+        }
+    }
+    sendUrl += "text=" + encodeURIComponent(text);
+    sendUrl += "&";
+    if (url == null) {
+        sendUrl += "url=" + window.location.href;
+    } else {
+        sendUrl += "url=" + encodeURIComponent(url);
+    }
+    if (hashtags != null) {
+        sendUrl += "&";
+        sendUrl += "hashtags=" + encodeURIComponent(hashtags);
+    }
+    if (via != null) {
+        sendUrl += "&";
+        sendUrl += "via=" + encodeURIComponent(via);
+    }
+    if (related != null) {
+        sendUrl += "&";
+        sendUrl += "related=" + encodeURIComponent(related);
+    }
+    if (tl) {
+        sendUrl += "&";
+        sendUrl += "source=webclient";
+    }
+    openNewWindow(sendUrl) {comment:text};
+}
+\showLink(url,text,options) {
+    $currentProject.requestPlugin("jquery_ui");
+    var $=window.$;
+    var domain;
+    options=options||{};
+    var sz=options.size||20;
+    var target=options.target||"_new";
+    url.replace(/^https?:\/\/([^\/]+)/) \(_,d) {domain=d;};
+    var d=$("<div>").attr{title:"Open URL"}.append(
+    $("<div>").append(domain),
+    $("<a>").css{font_size:sz+"px"}.text(text).attr{href:url,target}
+    );
+    d.dialog();
+}
+\param(name, def) {
+    return Util.getQueryString(name, def);
+}

@@ -1,0 +1,28 @@
+native console;
+"external waitable";
+var a:A= new A();
+
+/*print (__typeof a);
+print (__typeof a.x);
+print (__typeof a.s);*/
+print (__typeof a.test);
+print (__typeof a.test());
+print (__typeof getA);
+print (__typeof getA());
+
+\print(x) {
+	console.log(x);
+}
+\getA():A {
+	return a;
+}
+//a.x();
+var n=3;
+a.n=10;
+
+var r=getA().test();
+print(r);
+//a.n();
+//a.hoge();
+
+//run();

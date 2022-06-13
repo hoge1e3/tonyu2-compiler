@@ -1,0 +1,13 @@
+extends TObject;
+native Tonyu;
+\new (params) {
+    extend(params);
+    if(layer && typeof layer.add=="function"){
+        layer.add(this);
+    }else{
+        $Sprites.add(this);
+    }
+}
+
+\die(){}
+\isDead(){}

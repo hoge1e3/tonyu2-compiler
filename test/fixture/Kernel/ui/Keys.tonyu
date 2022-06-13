@@ -1,0 +1,90 @@
+extends TObject;
+native String;
+native $;
+native document;
+native console;
+//\new () {this.main();}
+stats={};
+codes={
+    left: 37 , up:38 , right: 39, down:40, space:32, enter:13,
+    shift:16, ctrl:17, alt:18, esc:27, bs:8, del:46,
+    mouseleft: 1,mouseright:2, mousewheel: 4,
+};
+preventDefaults={
+    "37":true,"38":true,"39":true,"40":true,"32":true
+};
+for (var i=65 ; i<65+26; i++) {
+    codes[String.fromCharCode(i).toLowerCase()]=i;
+}
+for (var i=48 ; i<58; i++) {
+    codes[String.fromCharCode(i)]=i;
+}
+codesRev={};
+for (var k,v in codes) codesRev[v]=k;
+if (!$.data(document,"key_event")) {
+    var bmap=[1,4,2];
+    $.data(document,"key_event",true);
+    $(document).keydown \(e) {$Keys.keydown(e);};
+    $(document).keyup \(e) {$Keys.keyup(e);};
+    $(document).mousedown \(e) {
+        lastMouseDown=$frameCount;
+        /*if ($InputDevice.touchEmu) {
+            $touches[0].touched=1;
+            $touches[0].vx=$touches[0].vy=0;
+        }*/
+        $Keys.keydown{keyCode:bmap[e.button]||1};
+    };
+    var up=\(e) {
+        var a=\{
+            /*if ($InputDevice.touchEmu) {
+                $touches[0].touched=0;
+                $touches[0].vx=$touches[0].vy=0;
+            }*/
+            $Keys.keyup{keyCode:bmap[e.button]||1};
+        };
+        if (lastMouseDown==$frameCount && !reservedAction) {
+            reservedAction={at:$frameCount+2,action:a};
+        } else {
+            a();
+        }
+    };
+    $(document).mouseup(up);
+    // TODO: if iframe? 
+    $(document).on("mouseleave",up);
+}
+function getkey(code) {
+    if (typeof code=="string") {
+        code=codes[code.toLowerCase()];
+    }
+    if (!code) return 0;
+    if (stats[code]==-1) return 0;
+    if (!stats[code]) stats[code]=0;
+    return stats[code];
+}
+function update() {
+    for (var i in stats) {
+        if (stats[i]>0) {stats[i]++;}
+        if (stats[i]==-1) stats[i]=1;
+    }
+    if (reservedAction && reservedAction.at==$frameCount) {
+        reservedAction.action();
+        reservedAction=null;
+    }
+}
+\keydown(e) {
+    if (preventDefaults[e.keyCode+""] && e.preventDefault) e.preventDefault();
+    if ($t2MediaLib) $t2MediaLib.activate();
+    var s=stats[e.keyCode];
+    if (!s) {
+        stats[e.keyCode]=1;
+    }
+    $InputDevice.fireEvent("keyDownRaw",e);
+    $InputDevice.handleListeners();
+}
+\keyup(e) {
+    if (preventDefaults[e.keyCode+""] && e.preventDefault) e.preventDefault();
+    if ($t2MediaLib) $t2MediaLib.activate();
+    stats[e.keyCode]=0;
+    $InputDevice.fireEvent("keyUpRaw",e);
+    $InputDevice.handleListeners();
+}
