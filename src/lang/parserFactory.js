@@ -187,6 +187,7 @@ module.exports = function PF({ TT }) {
     prio++;
     e.prefix(prio, tk("typeof"));
     e.prefix(prio, tk("__typeof"));
+    e.prefix(prio, tk("__await"));
     e.prefix(prio, tk("delete"));
     e.prefix(prio, tk("++"));
     e.prefix(prio, tk("--"));

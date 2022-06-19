@@ -14,7 +14,7 @@ for (k of s) {
 //Updatable();
 //a=50a0;
 //Tonyu.run("user.Hoge");
-
+console.log(__await "awawa");
 
 $restart=\{
     appear(new Preya);

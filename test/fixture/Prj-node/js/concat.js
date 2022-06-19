@@ -54,20 +54,21 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
-        var _it_1;
+        var _it_0;
         
         _this.s=new Set;
         _this.s.add(5);
         _this.s.add(10);
         console.log("listing elem");
-        _it_1=Tonyu.iterator(_this.s,1);
-        while(_it_1.next()) {
-          _this.k=_it_1[0];
+        _it_0=Tonyu.iterator(_this.s,1);
+        while(_it_0.next()) {
+          _this.k=_it_0[0];
           
           console.log("elem",_this.k);
           
         }
-        Tonyu.globals.$restart=(function anonymous_309() {
+        console.log("awawa");
+        Tonyu.globals.$restart=(function anonymous_338() {
           
           _this.appear(new Tonyu.classes.user.Preya);
         });
@@ -78,26 +79,27 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var __pc=0;
-        var _it_1;
+        var _it_0;
         
         _this.s=new Set;
         _this.s.add(5);
         _this.s.add(10);
         console.log("listing elem");
-        _it_1=Tonyu.iterator(_this.s,1);
-        while(_it_1.next()) {
-          _this.k=_it_1[0];
+        _it_0=Tonyu.iterator(_this.s,1);
+        while(_it_0.next()) {
+          _this.k=_it_0[0];
           
           console.log("elem",_this.k);
           
         }
+        console.log("awawa");
         
         _thread.enter(function _trc_Main_ent_main(_thread) {
           if (_thread.lastEx) __pc=_thread.catchPC;
           for(var __cnt=100 ; __cnt--;) {
             switch (__pc) {
             case 0:
-              Tonyu.globals.$restart=(function anonymous_309() {
+              Tonyu.globals.$restart=(function anonymous_338() {
                 
                 _this.appear(new Tonyu.classes.user.Preya);
               });

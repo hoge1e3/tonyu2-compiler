@@ -409,6 +409,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 					buf.printf("%l","Any");
 				}
 				return;
+			} else if (node.op.text==="__await") {
+				buf.printf("%v", node.right);
+				return;
 			}
 			buf.printf("%v %v", node.op, node.right);
 		},
