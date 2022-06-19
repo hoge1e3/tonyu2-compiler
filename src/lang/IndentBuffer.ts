@@ -158,6 +158,7 @@ export class IndentBuffer {
 			}
 			fmt=fmt.substring(i);
 		}
+		if (ai+1<args.length) throw new Error(`printf: Argument remains ${ai+1}<${args.length}`);
 	}
     visit(n: any) {
 		if (!this.visitor)
@@ -222,10 +223,9 @@ export class IndentBuffer {
 	bufRow=1;
 	bufCol=1;
 	srcmap=new SourceMap.SourceMapGenerator();
-	lazy(place:any) {
+	lazy(place:any={}) {
 		const $=this;
 		const options=$.options;
-		if (!place) place={};
 		place.length=place.length||options.fixLazyLength;
 		place.pad=place.pad||" ";
 		place.gen=(function () {

@@ -196,7 +196,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 			const o=a.otherFiberCall;
 			const ta=annotation(o.T);
 			if (ta.resolvedType && isMethodType(ta.resolvedType) && !ta.resolvedType.method.nowait) {
-				o.fiberCallRequired_lazy();
+				//o.fiberCallRequired_lazy();
 				o.fiberType=ta.resolvedType;
 			}
 		}

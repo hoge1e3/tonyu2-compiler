@@ -175,6 +175,8 @@ class IndentBuffer {
             }
             fmt = fmt.substring(i);
         }
+        if (ai + 1 < args.length)
+            throw new Error(`printf: Argument remains ${ai + 1}<${args.length}`);
     }
     visit(n) {
         if (!this.visitor)
@@ -237,11 +239,9 @@ class IndentBuffer {
         });
     }
     ;
-    lazy(place) {
+    lazy(place = {}) {
         const $ = this;
         const options = $.options;
-        if (!place)
-            place = {};
         place.length = place.length || options.fixLazyLength;
         place.pad = place.pad || " ";
         place.gen = (function () {

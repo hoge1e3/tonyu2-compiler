@@ -483,10 +483,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotation(n,data);
 		});
 	}
-	function fiberCallRequired(path: TNode[]) {//S
+	/*function fiberCallRequired(path: TNode[]) {//S
 		if (ctx.method) ctx.method.fiberCallRequired=true;
 		annotateParents(path, {fiberCallRequired:true} );
-	}
+	}*/
 	var varAccessesAnnotator=new Visitor({//S
 		varAccess: function (node:VarAccess) {
 			var si=getScopeInfo(node.name);
@@ -540,7 +540,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			ctx.enter({brkable:true,contable:true}, function () {
 				t.def!(node);
 			});
-			fiberCallRequired(this.path);//option
+			//fiberCallRequired(this.path);//option
 		},
 		"for": function (node:For) {
 			var t=this;
@@ -566,10 +566,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			if (node._else) {
 				t.visit(node._else);
 			}
-			fiberCallRequired(this.path);
+			//fiberCallRequired(this.path);
 		},
 		"try": function (node:Try) {
-			ctx.finfo.useTry=true;
+			//ctx.finfo.useTry=true;
 			this.def!(node);
 		},
 		"return": function (node:Return) {
@@ -578,9 +578,9 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				if (node.value && (t=OM.match(node.value, fiberCallTmpl)) &&
 				isFiberMethod(t.N)) {
 					annotation(node.value, {fiberCall:t});
-					fiberCallRequired(this.path);
+					//fiberCallRequired(this.path);
 				}
-				annotateParents(this.path,{hasReturn:true});
+				//annotateParents(this.path,{hasReturn:true});
 			}
 			this.visit(node.value);
 		},
@@ -635,23 +635,23 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					isFiberMethod(t.N)) {
 				t.type="noRet";
 				annotation(node, {fiberCall:t});
-				fiberCallRequired(this.path);
+				//fiberCallRequired(this.path);
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,retFiberCallTmpl)) &&
 					isFiberMethod(t.N)) {
 				t.type="ret";
 				annotation(node, {fiberCall:t});
-				fiberCallRequired(this.path);
+				//fiberCallRequired(this.path);
 			} else if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node,noRetOtherFiberCallTmpl))) {
 				console.log("noRetOtherFiberCallTmpl", t);
 				t.type="noRetOther";
-				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
+				//t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
 				annotation(node, {otherFiberCall:t});
 			} else if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node,retOtherFiberCallTmpl))) {
 				t.type="retOther";
-				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
+				//t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
 				annotation(node, {otherFiberCall:t});
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
@@ -662,7 +662,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					t.type="noRetSuper";
 					t.superclass=klass.superclass;
 					annotation(node, {fiberCall:t});
-					fiberCallRequired(this.path);
+					//fiberCallRequired(this.path);
 				}
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,retSuperFiberCallTmpl)) &&
@@ -676,7 +676,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					t.type="retSuper";
 					t.superclass=klass.superclass;
 					annotation(node, {fiberCall:t});
-					fiberCallRequired(this.path);
+					//fiberCallRequired(this.path);
 				}
 			}
 			this.visit(node.expr);
@@ -689,12 +689,12 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					isFiberMethod(t.N)) {
 				t.type="varDecl";
 				annotation(node, {fiberCall:t});
-				fiberCallRequired(this.path);
+				//fiberCallRequired(this.path);
 			}
 			if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node.value,otherFiberCallTmpl))) {
 				t.type="varDecl";
-				t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
+				//t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
 				annotation(node, {otherFiberCall:t});
 			}
 			this.visit(node.value);

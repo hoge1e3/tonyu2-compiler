@@ -225,7 +225,7 @@ function checkExpr(klass, env) {
             const o = a.otherFiberCall;
             const ta = annotation(o.T);
             if (ta.resolvedType && (0, CompilerTypes_1.isMethodType)(ta.resolvedType) && !ta.resolvedType.method.nowait) {
-                o.fiberCallRequired_lazy();
+                //o.fiberCallRequired_lazy();
                 o.fiberType = ta.resolvedType;
             }
         }

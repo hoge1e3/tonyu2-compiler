@@ -3824,13 +3824,13 @@ function annotateSource2(klass, env) {
                 (t = OM.match(node, noRetOtherFiberCallTmpl))) {
                 console.log("noRetOtherFiberCallTmpl", t);
                 t.type = "noRetOther";
-                t.fiberCallRequired_lazy = () => fiberCallRequired(path);
+                //t.fiberCallRequired_lazy = () => fiberCallRequired(path);
                 annotation(node, { otherFiberCall: t });
             }
             else if (!ctx.noWait && external_waitable_enabled() &&
                 (t = OM.match(node, retOtherFiberCallTmpl))) {
                 t.type = "retOther";
-                t.fiberCallRequired_lazy = () => fiberCallRequired(path);
+                //t.fiberCallRequired_lazy = () => fiberCallRequired(path);
                 annotation(node, { otherFiberCall: t });
             }
             else if (!ctx.noWait &&
@@ -3877,7 +3877,7 @@ function annotateSource2(klass, env) {
             if (!ctx.noWait && external_waitable_enabled() &&
                 (t = OM.match(node.value, otherFiberCallTmpl))) {
                 t.type = "varDecl";
-                t.fiberCallRequired_lazy = () => fiberCallRequired(path);
+                //t.fiberCallRequired_lazy = () => fiberCallRequired(path);
                 annotation(node, { otherFiberCall: t });
             }
             this.visit(node.value);
@@ -4367,7 +4367,7 @@ function checkExpr(klass, env) {
             const o = a.otherFiberCall;
             const ta = annotation(o.T);
             if (ta.resolvedType && (0, CompilerTypes_1.isMethodType)(ta.resolvedType) && !ta.resolvedType.method.nowait) {
-                o.fiberCallRequired_lazy();
+                //o.fiberCallRequired_lazy();
                 o.fiberType = ta.resolvedType;
             }
         }
