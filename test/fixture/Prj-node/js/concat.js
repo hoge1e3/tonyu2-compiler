@@ -62,7 +62,8 @@ Tonyu.klass.define({
           console.log("elem",_this.k);
           
         }
-        Tonyu.globals.$restart=(function anonymous_309() {
+        console.log("awawa");
+        Tonyu.globals.$restart=(function anonymous_338() {
           
           _this.appear(new Tonyu.classes.user.Preya);
         });
@@ -85,9 +86,21 @@ Tonyu.klass.define({
           console.log("elem",_this.k);
           
         }
-        Tonyu.globals.$restart=(function anonymous_309() {
-          
-          _this.appear(new Tonyu.classes.user.Preya);
+        console.log("awawa");
+        
+        _thread.enter(function _trc_Main_ent_main(_thread) {
+          if (_thread.lastEx) __pc=_thread.catchPC;
+          for(var __cnt=100 ; __cnt--;) {
+            switch (__pc) {
+            case 0:
+              Tonyu.globals.$restart=(function anonymous_338() {
+                
+                _this.appear(new Tonyu.classes.user.Preya);
+              });
+              Tonyu.globals.$restart();
+              _thread.exit(_this);return;
+            }
+          }
         });
         Tonyu.globals.$restart();
         
