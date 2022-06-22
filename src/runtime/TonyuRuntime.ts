@@ -409,7 +409,9 @@ function is(obj:any, klass:any) {
 	return false;
 }
 //setInterval(resetLoopCheck,16);
-const Tonyu={thread, /*threadGroup:threadGroup,*/
+const Tonyu={
+		thread, 
+		supports_await:true,
 		klass, bless, extend, messages: R,
 		globals, classes, classMetas, setGlobal, getGlobal, getClass,
 		timeout,
@@ -425,7 +427,8 @@ const Tonyu={thread, /*threadGroup:threadGroup,*/
 			throw e;
 		},
 		VERSION:1560828115159,//EMBED_VERSION
-		A, ID:Math.random()};
+		A, ID:Math.random()
+};
 //const TT=TonyuThreadF(Tonyu);
 if (root.Tonyu) {
 	console.error("Tonyu called twice!");

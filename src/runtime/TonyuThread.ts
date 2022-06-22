@@ -8,26 +8,27 @@ interface ThreadGroup {
     isDeadThreadGroup(): boolean;
     objectPoolAge: any;
 }
-type Frame={
+/*type Frame={
     prev?:Frame, func:Function,
-};
+};*/
 //export= function TonyuThreadF(Tonyu) {
 	let idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
 	export class TonyuThread {
-        frame: Frame;
+        //frame: Frame;
+		generator: Generator<any>;
         private _isDead: boolean;
         cnt: number;
         private _isWaiting: boolean;
         fSuspended: boolean;
-        tryStack: any[];
+        //tryStack: any[];
         preemptionTime: number;
         onEndHandlers: any[];
         onTerminateHandlers: any[];
         id: number;
         age: number;
 		_threadGroup: ThreadGroup;
-		termStatus: undefined|"killed"|"exception";
+		termStatus: undefined|"killed"|"exception"|"success";
 		preempted=false;
         retVal: any;
         lastEvent: any[];
@@ -36,13 +37,13 @@ type Frame={
         handleEx: any;
         tGrpObjectPoolAge: any;
 		constructor(public Tonyu:{currentThread:TonyuThread}) {
-			this.frame=null;
+			this.generator=null;
 			this._isDead=false;
 			//this._isAlive=true;
 			this.cnt=0;
 			this._isWaiting=false;
 			this.fSuspended=false;
-			this.tryStack=[];
+			//this.tryStack=[];
 			this.preemptionTime=60;
 			this.onEndHandlers=[];
 			this.onTerminateHandlers=[];
@@ -54,7 +55,7 @@ type Frame={
 			//return this.frame!=null && this._isAlive;
 		}
 		isDead() {
-			this._isDead=this._isDead || (this.frame==null) ||
+			this._isDead=this._isDead || (!!this.termStatus) ||
 			(this._threadGroup && (
 					this._threadGroup.objectPoolAge!=this.tGrpObjectPoolAge ||
 					this._threadGroup.isDeadThreadGroup()
@@ -73,11 +74,11 @@ type Frame={
 			this.fSuspended=true;
 			this.cnt=0;
 		}
-		enter(frameFunc: Function) {
+		/*enter(frameFunc: Function) {
 			//var n=frameFunc.name;
 			//cnts.enterC[n]=(cnts.enterC[n]||0)+1;
 			this.frame={prev:this.frame, func:frameFunc};
-		}
+		}*/
 		apply(obj:any, methodName:string, args:any[]) {
 			if (!args) args=[];
 		    let method: TonyuMethod;
@@ -96,7 +97,8 @@ type Frame={
 				}
 			}
 			args=[this].concat(args);
-			var pc=0;
+			this.generator=method.apply(this, args);
+			/*var pc=0;
 			return this.enter(function (th) {
 				switch (pc){
 				case 0:
@@ -108,7 +110,7 @@ type Frame={
 					args[0].exit();
 					pc=2;break;
 				}
-			});
+			});*/
 		}
 		notifyEnd(r) {
 			this.onEndHandlers.forEach(function (e) {
@@ -149,7 +151,7 @@ type Frame={
 		fail(err) {
 			return this.promise().then(e=>e, err);
 		}
-		gotoCatch(e) {
+		/*gotoCatch(e) {
 			var fb=this;
 			if (fb.tryStack.length==0) {
 				fb.termStatus="exception";
@@ -187,7 +189,7 @@ type Frame={
 		exitTry() {
 			var fb=this;
 			fb.tryStack.pop();
-		}
+		}*/
 		waitEvent(obj:any, eventSpec:any[]) { // eventSpec=[EventType, arg1, arg2....]
 			const fb=this;
 			fb.suspend();
@@ -199,7 +201,7 @@ type Frame={
 				fb.steps();
 			});
 		}
-		runAsync(f:Function) {
+		/*runAsync(f:Function) {
 			var fb=this;
 			var succ=function () {
 				fb.retVal=arguments;
@@ -220,7 +222,7 @@ type Frame={
 			setTimeout(function () {
 				f(succ,err);
 			},0);
-		}
+		}*/
 		waitFor(j:any):Promise<any> {
 			var fb=this;
 			fb._isWaiting=true;
@@ -230,7 +232,7 @@ type Frame={
 				fb.retVal=r;
 				fb.stepsLoop();
 			}).then(e=>e,function (e) {
-				fb.gotoCatch(fb.wrapError(e));
+				fb.exception(fb.wrapError(e));
 				fb.stepsLoop();
 			});
 		}
@@ -252,6 +254,22 @@ type Frame={
 			fb.cnt=fb.preemptionTime;
 			fb.preempted=false;
 			fb.fSuspended=false;
+			try {
+				while (fb.cnt-->0) {
+					const n=this.generator.next();
+					if (n.done) {
+						this.termStatus="success";
+						this.notifyEnd(this.retVal);
+						break;
+					}	
+				}
+				fb.preempted= (!fb.fSuspended) && fb.isAlive();
+			} catch (e){
+				return this.exception(e);
+			} finally {
+				this.Tonyu.currentThread=sv;
+			}
+			/*
 			while (fb.cnt>0 && fb.frame) {
 				try {
 					//while (new Date().getTime()<lim) {
@@ -262,8 +280,14 @@ type Frame={
 				} catch(e) {
 					fb.gotoCatch(e);
 				}
-			}
-			this.Tonyu.currentThread=sv;
+			}*/
+			
+		}
+		exception(e:any) {
+			this.termStatus="exception";
+			this.kill();
+			if (this.handleEx) this.handleEx(e);
+			else this.notifyTermination({status:"exception",exception:e});
 		}
 		stepsLoop() {
 			var fb=this;
@@ -278,14 +302,18 @@ type Frame={
 			var fb=this;
 			//fb._isAlive=false;
 			fb._isDead=true;
-			fb.frame=null;
+			//fb.frame=null;
 			if (!fb.termStatus) {
 				fb.termStatus="killed";
 				fb.notifyTermination({status:"killed"});
 			}
 		}
-		clearFrame() {
+		/*clearFrame() {
 			this.frame=null;
 			this.tryStack=[];
+		}*/
+		*await(p:any) {
+			yield p;
+			return this.retVal;
 		}
 	}
