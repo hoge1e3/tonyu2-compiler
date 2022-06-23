@@ -29,7 +29,7 @@ const context_1 = require("./context");
 const CompilerTypes_1 = require("./CompilerTypes");
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
-var TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$" /*F,RMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100*/; //G
+const TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$" /*F,RMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100*/; //G
 var BINDF = "Tonyu.bindFunc";
 var INVOKE_FUNC = "Tonyu.invokeMethod";
 var CALL_FUNC = "Tonyu.callFunc";
@@ -64,7 +64,7 @@ function genJS(klass, env, genOptions) {
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = (0, context_1.context)();
+    var ctx = context_1.context();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -122,7 +122,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
+            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -181,29 +181,19 @@ function genJS(klass, env, genOptions) {
                         THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)]);
                     }
                     else {
-                        buf.printf("%s.exit(%v);return;", TH, node.value);
+                        buf.printf("return %v;", node.value);
                     }
                 }
                 else {
-                    buf.printf("%s.exit(%s);return;", TH, THIZ);
+                    buf.printf("return %s;", THIZ);
                 }
             }
             else {
-                if (ctx.threadAvail) {
-                    if (node.value) {
-                        buf.printf("%s.retVal=%v;return;%n", TH, node.value);
-                    }
-                    else {
-                        buf.printf("%s.retVal=%s;return;%n", TH, THIZ);
-                    }
+                if (node.value) {
+                    buf.printf("return %v;", node.value);
                 }
                 else {
-                    if (node.value) {
-                        buf.printf("return %v;", node.value);
-                    }
-                    else {
-                        buf.printf("return %s;", THIZ);
-                    }
+                    buf.printf("return %s;", THIZ);
                 }
             }
         },
@@ -288,7 +278,8 @@ function genJS(klass, env, genOptions) {
         exprstmt: function (node) {
             //var t:any={};
             const an = annotation(node);
-            console.log(ctx, an);
+            if (debug)
+                console.log(ctx, an);
             const t = (!ctx.noWait ? an.fiberCall : undefined);
             const to = (!ctx.noWait ? an.otherFiberCall : undefined);
             if (t && t.type == "noRet") {
@@ -354,10 +345,10 @@ function genJS(klass, env, genOptions) {
                 console.log("__typeof", a);
                 if (a.resolvedType) {
                     const t = a.resolvedType;
-                    if ((0, CompilerTypes_1.isMethodType)(t)) {
+                    if (CompilerTypes_1.isMethodType(t)) {
                         buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
                     }
-                    else if ((0, CompilerTypes_1.isMeta)(t)) {
+                    else if (CompilerTypes_1.isMeta(t)) {
                         buf.printf("Tonyu.classMetas[%l]", t.fullName);
                     }
                     else {
@@ -370,7 +361,12 @@ function genJS(klass, env, genOptions) {
                 return;
             }
             else if (node.op.text === "__await") {
-                buf.printf("%v", node.right);
+                if (ctx.noWait) {
+                    buf.printf("%v", node.right);
+                }
+                else {
+                    buf.printf("(yield* %s.await(%v))", TH, node.right);
+                }
                 return;
             }
             buf.printf("%v %v", node.op, node.right);
@@ -671,10 +667,10 @@ function genJS(klass, env, genOptions) {
         return t.fullName || t.class.name;
     }
     function klass2name(t) {
-        if ((0, CompilerTypes_1.isMethodType)(t)) {
+        if (CompilerTypes_1.isMethodType(t)) {
             return `${t.method.klass.fullName}.${t.method.name}()`;
         }
-        else if ((0, CompilerTypes_1.isMeta)(t)) {
+        else if (CompilerTypes_1.isMeta(t)) {
             return t.fullName;
         }
         else {

@@ -30,7 +30,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         _this.console.log("Excludes:man");
-        _thread.exit(30);return;
+        return 30;
         
       },
       __dummy: false
@@ -65,8 +65,10 @@ Tonyu.klass.define({
         console.log("awawa");
         Tonyu.globals.$restart=(function anonymous_338() {
           
+          console.log(_this);
           _this.appear(new Tonyu.classes.user.Preya);
         });
+        console.log(_this);
         Tonyu.globals.$restart();
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
@@ -86,22 +88,13 @@ Tonyu.klass.define({
           console.log("elem",_this.k);
           
         }
-        console.log("awawa");
-        
-        _thread.enter(function _trc_Main_ent_main(_thread) {
-          if (_thread.lastEx) __pc=_thread.catchPC;
-          for(var __cnt=100 ; __cnt--;) {
-            switch (__pc) {
-            case 0:
-              Tonyu.globals.$restart=(function anonymous_338() {
-                
-                _this.appear(new Tonyu.classes.user.Preya);
-              });
-              Tonyu.globals.$restart();
-              _thread.exit(_this);return;
-            }
-          }
+        console.log((yield* _thread.await("awawa")));
+        Tonyu.globals.$restart=(function anonymous_338() {
+          
+          console.log(_this);
+          _this.appear(new Tonyu.classes.user.Preya);
         });
+        console.log(_this);
         Tonyu.globals.$restart();
         
       },
@@ -193,7 +186,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         console.log("Chara:man");
-        _thread.exit(10);return;
+        return 10;
         
       },
       men :function _trc_Chara_men() {
@@ -214,7 +207,7 @@ Tonyu.klass.define({
         (yield* _this.fiber$man(_thread));
         
         if (! _this.test) {
-          _thread.exit(_this);return;
+          return _this;
         }
         (yield* _this.fiber$man(_thread));
         

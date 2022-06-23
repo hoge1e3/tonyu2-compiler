@@ -97,7 +97,7 @@ interface ThreadGroup {
 				}
 			}
 			args=[this].concat(args);
-			this.generator=method.apply(this, args);
+			this.generator=method.apply(obj, args);
 			/*var pc=0;
 			return this.enter(function (th) {
 				switch (pc){
@@ -254,20 +254,29 @@ interface ThreadGroup {
 			fb.cnt=fb.preemptionTime;
 			fb.preempted=false;
 			fb.fSuspended=false;
+			let awaited=null;
 			try {
 				while (fb.cnt-->0) {
 					const n=this.generator.next();
+					if (n.value) {
+						awaited=n.value;
+						break;
+					}
 					if (n.done) {
 						this.termStatus="success";
 						this.notifyEnd(this.retVal);
 						break;
 					}	
 				}
-				fb.preempted= (!fb.fSuspended) && fb.isAlive();
+				fb.preempted= (!awaited) && (!fb.fSuspended) && fb.isAlive();
 			} catch (e){
 				return this.exception(e);
 			} finally {
 				this.Tonyu.currentThread=sv;
+				if (awaited) {
+					//console.log("AWAIT!", awaited);
+					return this.waitFor(awaited);
+				}
 			}
 			/*
 			while (fb.cnt>0 && fb.frame) {

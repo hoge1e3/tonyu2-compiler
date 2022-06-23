@@ -15,7 +15,7 @@ import { DeclsInDefinition } from "../runtime/RuntimeTypes";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
-var TH="_thread",THIZ="_this", ARGS="_arguments",FIBPRE="fiber$" /*F,RMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100*/;//G
+const TH="_thread",THIZ="_this", ARGS="_arguments",FIBPRE="fiber$" /*F,RMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100*/;//G
 var BINDF="Tonyu.bindFunc";
 var INVOKE_FUNC="Tonyu.invokeMethod";
 var CALL_FUNC="Tonyu.callFunc";
@@ -170,25 +170,16 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 								THIZ, FIBPRE, t.N, [", ",[THNode].concat(t.A)],
 						);
 					} else {
-						buf.printf("%s.exit(%v);return;",TH,node.value);
+						buf.printf("return %v;",node.value);
 					}
 				} else {
-					buf.printf("%s.exit(%s);return;",TH,THIZ);
+					buf.printf("return %s;",THIZ);
 				}
 			} else {
-				if (ctx.threadAvail) {
-					if (node.value) {
-						buf.printf("%s.retVal=%v;return;%n",TH, node.value);
-					} else {
-						buf.printf("%s.retVal=%s;return;%n",TH, THIZ);
-					}
+				if (node.value) {
+					buf.printf("return %v;",node.value);
 				} else {
-					if (node.value) {
-						buf.printf("return %v;",node.value);
-					} else {
-						buf.printf("return %s;",THIZ);
-					}
-
+					buf.printf("return %s;",THIZ);
 				}
 			}
 		},
@@ -268,7 +259,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		exprstmt: function (node:Exprstmt) {//exprStmt
 			//var t:any={};
 			const an=annotation(node);
-			console.log(ctx,an);
+			if (debug) console.log(ctx,an);
 		 	const t=(!ctx.noWait?an.fiberCall:undefined);
 			const to=(!ctx.noWait?an.otherFiberCall:undefined);
 			if (t && t.type=="noRet") {
@@ -351,7 +342,11 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				}
 				return;
 			} else if (node.op.text==="__await") {
-				buf.printf("%v", node.right);
+				if (ctx.noWait) {
+					buf.printf("%v", node.right);
+				} else {
+					buf.printf("(yield* %s.await(%v))", TH, node.right);
+				}
 				return;
 			}
 			buf.printf("%v %v", node.op, node.right);

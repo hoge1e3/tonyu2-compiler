@@ -9,20 +9,22 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
+        
+        
       },
-      fiber$main :function _trc_Chara_f_main(_thread) {
+      fiber$main :function* _trc_Chara_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
         
         
-        _thread.retVal=_this;return;
+        
+        
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"x":{},"y":{}}}
 });
 Tonyu.klass.define({
   fullName: 'updatable.Updatable',
@@ -36,79 +38,55 @@ Tonyu.klass.define({
         var _this=this;
         
       },
-      fiber$main :function _trc_Updatable_f_main(_thread) {
+      fiber$main :function* _trc_Updatable_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
         
         
-        _thread.retVal=_this;return;
       },
       waitFor :function _trc_Updatable_waitFor(f) {
         "use strict";
         var _this=this;
-        var r;
         
         if (null) {
-          r = null.waitFor(f);
-          
-          return r;
+          return f;
           
         }
         return f;
       },
-      fiber$waitFor :function _trc_Updatable_f_waitFor(_thread,f) {
+      fiber$waitFor :function* _trc_Updatable_f_waitFor(_thread,f) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
-        var r;
         
         if (_thread) {
-          r = _thread.waitFor(f);
-          
-          _thread.retVal=r;return;
-          
+          return (yield* _thread.await(f));
           
         }
-        _thread.retVal=f;return;
+        return f;
         
-        
-        _thread.retVal=_this;return;
       },
       update :function _trc_Updatable_update(t) {
         "use strict";
         var _this=this;
         
-        _this.waitFor(new Promise((function anonymous_206(s) {
+        _this.waitFor(new Promise((function anonymous_179(s) {
           
           setTimeout(s,t||50);
         })));
       },
-      fiber$update :function _trc_Updatable_f_update(_thread,t) {
+      fiber$update :function* _trc_Updatable_f_update(_thread,t) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
+        
+        (yield* _this.fiber$waitFor(_thread, new Promise((function anonymous_179(s) {
+          
+          setTimeout(s,t||50);
+        }))));
         
         
-        _thread.enter(function _trc_Updatable_ent_update(_thread) {
-          if (_thread.lastEx) __pc=_thread.catchPC;
-          for(var __cnt=100 ; __cnt--;) {
-            switch (__pc) {
-            case 0:
-              _this.fiber$waitFor(_thread, new Promise((function anonymous_206(s) {
-                
-                setTimeout(s,t||50);
-              })));
-              __pc=1;return;
-            case 1:
-              
-              _thread.exit(_this);return;
-            }
-          }
-        });
       },
       appear :function _trc_Updatable_appear(o) {
         "use strict";
@@ -121,21 +99,18 @@ Tonyu.klass.define({
         t.steps();
         return o;
       },
-      fiber$appear :function _trc_Updatable_f_appear(_thread,o) {
+      fiber$appear :function* _trc_Updatable_f_appear(_thread,o) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
         var t;
         
         t = Tonyu.thread();
         
         t.apply(o,"main",[]);
         t.steps();
-        _thread.retVal=o;return;
+        return o;
         
-        
-        _thread.retVal=_this;return;
       },
       __dummy: false
     };

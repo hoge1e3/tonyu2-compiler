@@ -6,6 +6,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TonyuThread = void 0;
 const R_1 = __importDefault(require("../lib/R"));
+/*type Frame={
+    prev?:Frame, func:Function,
+};*/
 //export= function TonyuThreadF(Tonyu) {
 let idSeq = 1;
 //try {window.cnts=cnts;}catch(e){}
@@ -13,13 +16,13 @@ class TonyuThread {
     constructor(Tonyu) {
         this.Tonyu = Tonyu;
         this.preempted = false;
-        this.frame = null;
+        this.generator = null;
         this._isDead = false;
         //this._isAlive=true;
         this.cnt = 0;
         this._isWaiting = false;
         this.fSuspended = false;
-        this.tryStack = [];
+        //this.tryStack=[];
         this.preemptionTime = 60;
         this.onEndHandlers = [];
         this.onTerminateHandlers = [];
@@ -31,7 +34,7 @@ class TonyuThread {
         //return this.frame!=null && this._isAlive;
     }
     isDead() {
-        this._isDead = this._isDead || (this.frame == null) ||
+        this._isDead = this._isDead || (!!this.termStatus) ||
             (this._threadGroup && (this._threadGroup.objectPoolAge != this.tGrpObjectPoolAge ||
                 this._threadGroup.isDeadThreadGroup()));
         return this._isDead;
@@ -48,11 +51,11 @@ class TonyuThread {
         this.fSuspended = true;
         this.cnt = 0;
     }
-    enter(frameFunc) {
+    /*enter(frameFunc: Function) {
         //var n=frameFunc.name;
         //cnts.enterC[n]=(cnts.enterC[n]||0)+1;
-        this.frame = { prev: this.frame, func: frameFunc };
-    }
+        this.frame={prev:this.frame, func:frameFunc};
+    }*/
     apply(obj, methodName, args) {
         if (!args)
             args = [];
@@ -60,7 +63,7 @@ class TonyuThread {
         if (typeof methodName == "string") {
             method = obj["fiber$" + methodName];
             if (!method) {
-                throw new Error((0, R_1.default)("undefinedMethod", methodName));
+                throw new Error(R_1.default("undefinedMethod", methodName));
             }
         }
         if (typeof methodName == "function") {
@@ -68,25 +71,24 @@ class TonyuThread {
             method = fmethod.fiber;
             if (!method) {
                 var n = fmethod.methodInfo ? fmethod.methodInfo.name : fmethod.name;
-                throw new Error((0, R_1.default)("notAWaitableMethod", n));
+                throw new Error(R_1.default("notAWaitableMethod", n));
             }
         }
         args = [this].concat(args);
-        var pc = 0;
+        this.generator = method.apply(obj, args);
+        /*var pc=0;
         return this.enter(function (th) {
-            switch (pc) {
-                case 0:
-                    method.apply(obj, args);
-                    pc = 1;
-                    break;
-                case 1:
-                    th.termStatus = "success";
-                    th.notifyEnd(th.retVal);
-                    args[0].exit();
-                    pc = 2;
-                    break;
+            switch (pc){
+            case 0:
+                method.apply(obj,args);
+                pc=1;break;
+            case 1:
+                th.termStatus="success";
+                th.notifyEnd(th.retVal);
+                args[0].exit();
+                pc=2;break;
             }
-        });
+        });*/
     }
     notifyEnd(r) {
         this.onEndHandlers.forEach(function (e) {
@@ -133,48 +135,45 @@ class TonyuThread {
     fail(err) {
         return this.promise().then(e => e, err);
     }
-    gotoCatch(e) {
-        var fb = this;
-        if (fb.tryStack.length == 0) {
-            fb.termStatus = "exception";
+    /*gotoCatch(e) {
+        var fb=this;
+        if (fb.tryStack.length==0) {
+            fb.termStatus="exception";
             fb.kill();
-            if (fb.handleEx)
-                fb.handleEx(e);
-            else
-                fb.notifyTermination({ status: "exception", exception: e });
+            if (fb.handleEx) fb.handleEx(e);
+            else fb.notifyTermination({status:"exception",exception:e});
             return;
         }
-        fb.lastEx = e;
-        var s = fb.tryStack.pop();
+        fb.lastEx=e;
+        var s=fb.tryStack.pop();
         while (fb.frame) {
-            if (s.frame === fb.frame) {
-                fb.catchPC = s.catchPC;
+            if (s.frame===fb.frame) {
+                fb.catchPC=s.catchPC;
                 break;
-            }
-            else {
-                fb.frame = fb.frame.prev;
+            } else {
+                fb.frame=fb.frame.prev;
             }
         }
     }
     startCatch() {
-        var fb = this;
-        var e = fb.lastEx;
-        fb.lastEx = null;
+        var fb=this;
+        var e=fb.lastEx;
+        fb.lastEx=null;
         return e;
     }
     exit(res) {
         //cnts.exitC++;
-        this.frame = (this.frame ? this.frame.prev : null);
-        this.retVal = res;
+        this.frame=(this.frame ? this.frame.prev:null);
+        this.retVal=res;
     }
     enterTry(catchPC) {
-        var fb = this;
-        fb.tryStack.push({ frame: fb.frame, catchPC: catchPC });
+        var fb=this;
+        fb.tryStack.push({frame:fb.frame,catchPC:catchPC});
     }
     exitTry() {
-        var fb = this;
+        var fb=this;
         fb.tryStack.pop();
-    }
+    }*/
     waitEvent(obj, eventSpec) {
         const fb = this;
         fb.suspend();
@@ -187,29 +186,28 @@ class TonyuThread {
             fb.steps();
         });
     }
-    runAsync(f) {
-        var fb = this;
-        var succ = function () {
-            fb.retVal = arguments;
+    /*runAsync(f:Function) {
+        var fb=this;
+        var succ=function () {
+            fb.retVal=arguments;
             fb.steps();
         };
-        var err = function () {
-            var msg = "";
-            for (var i = 0; i < arguments.length; i++) {
-                msg += arguments[i] + ",";
+        var err=function () {
+            var msg="";
+            for (var i=0; i<arguments.length; i++) {
+                msg+=arguments[i]+",";
             }
-            if (msg.length == 0)
-                msg = "Async fail";
-            var e = new Error(msg);
-            e.args = arguments;
+            if (msg.length==0) msg="Async fail";
+            var e:any=new Error(msg);
+            e.args=arguments;
             fb.gotoCatch(e);
             fb.steps();
         };
         fb.suspend();
         setTimeout(function () {
-            f(succ, err);
-        }, 0);
-    }
+            f(succ,err);
+        },0);
+    }*/
     waitFor(j) {
         var fb = this;
         fb._isWaiting = true;
@@ -220,7 +218,7 @@ class TonyuThread {
             fb.retVal = r;
             fb.stepsLoop();
         }).then(e => e, function (e) {
-            fb.gotoCatch(fb.wrapError(e));
+            fb.exception(fb.wrapError(e));
             fb.stepsLoop();
         });
     }
@@ -244,19 +242,52 @@ class TonyuThread {
         fb.cnt = fb.preemptionTime;
         fb.preempted = false;
         fb.fSuspended = false;
-        while (fb.cnt > 0 && fb.frame) {
-            try {
-                //while (new Date().getTime()<lim) {
-                while (fb.cnt-- > 0 && fb.frame) {
-                    fb.frame.func(fb);
+        let awaited = null;
+        try {
+            while (fb.cnt-- > 0) {
+                const n = this.generator.next();
+                if (n.value) {
+                    awaited = n.value;
+                    break;
                 }
-                fb.preempted = (!fb.fSuspended) && fb.isAlive();
+                if (n.done) {
+                    this.termStatus = "success";
+                    this.notifyEnd(this.retVal);
+                    break;
+                }
             }
-            catch (e) {
-                fb.gotoCatch(e);
+            fb.preempted = (!awaited) && (!fb.fSuspended) && fb.isAlive();
+        }
+        catch (e) {
+            return this.exception(e);
+        }
+        finally {
+            this.Tonyu.currentThread = sv;
+            if (awaited) {
+                //console.log("AWAIT!", awaited);
+                return this.waitFor(awaited);
             }
         }
-        this.Tonyu.currentThread = sv;
+        /*
+        while (fb.cnt>0 && fb.frame) {
+            try {
+                //while (new Date().getTime()<lim) {
+                while (fb.cnt-->0 && fb.frame) {
+                    fb.frame.func(fb);
+                }
+                fb.preempted= (!fb.fSuspended) && fb.isAlive();
+            } catch(e) {
+                fb.gotoCatch(e);
+            }
+        }*/
+    }
+    exception(e) {
+        this.termStatus = "exception";
+        this.kill();
+        if (this.handleEx)
+            this.handleEx(e);
+        else
+            this.notifyTermination({ status: "exception", exception: e });
     }
     stepsLoop() {
         var fb = this;
@@ -271,15 +302,19 @@ class TonyuThread {
         var fb = this;
         //fb._isAlive=false;
         fb._isDead = true;
-        fb.frame = null;
+        //fb.frame=null;
         if (!fb.termStatus) {
             fb.termStatus = "killed";
             fb.notifyTermination({ status: "killed" });
         }
     }
-    clearFrame() {
-        this.frame = null;
-        this.tryStack = [];
+    /*clearFrame() {
+        this.frame=null;
+        this.tryStack=[];
+    }*/
+    *await(p) {
+        yield p;
+        return this.retVal;
     }
 }
 exports.TonyuThread = TonyuThread;

@@ -17,6 +17,8 @@ for (k of s) {
 console.log(__await "awawa");
 
 $restart=\{
+    console.log(this);
     appear(new Preya);
 };
+console.log(this);
 $restart();
