@@ -281,7 +281,7 @@ Tonyu.klass.define({
         _this.x=0;for (; _this.x<3 ; _this.x++) {
           Tonyu.checkLoop();
           {
-            console.log(_this.x);
+            console.log("x=",_this.x);
             _this.update();
           }
         }
@@ -310,7 +310,7 @@ Tonyu.klass.define({
         _this.x=0;for (; _this.x<3 ; _this.x++) {
           Tonyu.checkLoop();
           {
-            console.log(_this.x);
+            console.log("x=",_this.x);
             (yield* _this.fiber$update(_thread));
             
           }

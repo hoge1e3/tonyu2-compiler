@@ -73,6 +73,7 @@ Tonyu.klass.define({
         
         _this.waitFor(new Promise((function anonymous_179(s) {
           
+          Tonyu.resetLoopCheck();
           setTimeout(s,t||50);
         })));
       },
@@ -83,6 +84,7 @@ Tonyu.klass.define({
         
         (yield* _this.fiber$waitFor(_thread, new Promise((function anonymous_179(s) {
           
+          Tonyu.resetLoopCheck();
           setTimeout(s,t||50);
         }))));
         

@@ -10,6 +10,7 @@ native Tonyu;
 }
 \update(t) {
     waitFor(new Promise(\(s) {
+        Tonyu.resetLoopCheck();
         setTimeout(s,t||50);
     }));
 }
