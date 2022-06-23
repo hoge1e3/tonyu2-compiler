@@ -62,8 +62,12 @@ Tonyu.klass.define({
           console.log("elem",_this.k);
           
         }
-        console.log("awawa");
-        Tonyu.globals.$restart=(function anonymous_338() {
+        _this.aw=_this.waitFor(new Promise((function anonymous_337(s) {
+          
+          s("awawawa!");
+        })));
+        console.log("aw=",_this.aw);
+        Tonyu.globals.$restart=(function anonymous_400() {
           
           console.log(_this);
           _this.appear(new Tonyu.classes.user.Preya);
@@ -88,8 +92,13 @@ Tonyu.klass.define({
           console.log("elem",_this.k);
           
         }
-        console.log((yield* _thread.await("awawa")));
-        Tonyu.globals.$restart=(function anonymous_338() {
+        _this.aw=(yield* _this.fiber$waitFor(_thread, new Promise((function anonymous_337(s) {
+          
+          s("awawawa!");
+        }))));
+        
+        console.log("aw=",_this.aw);
+        Tonyu.globals.$restart=(function anonymous_400() {
           
           console.log(_this);
           _this.appear(new Tonyu.classes.user.Preya);
@@ -101,7 +110,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"s":{},"k":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"s":{},"k":{},"aw":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Chara',
