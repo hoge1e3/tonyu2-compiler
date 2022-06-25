@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\bin\\Dropbox\\workspace\\tonyu2-compiler\\test\\fixture\\preempt\\Main.tonyu"],"names":[],"mappings":";;;;;;;;;;;SAEC,OAAM;;WACF,OAAO,CAAC,GAAG;;;;;;;;;SADf,OAAM;;WACF,OAAO,CAAC,GAAG","sourcesContent":["native console;\r\n\r\nwhile(true) {\r\n    console.log(\"hoge\");\r\n}"]}

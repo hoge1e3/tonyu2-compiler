@@ -422,13 +422,13 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		},
 		"while": function (node:While) {
 			buf.printf("while (%v) {%{"+
-				(doLoopCheck?"Tonyu.checkLoop();%n":"")+
+				checkLoopCode()+
 				"%f%n"+
 			"%}}", node.cond, noSurroundCompoundF(node.loop));
 		},
 		"do": function (node:Do) {
 			buf.printf("do {%{"+
-				(doLoopCheck?"Tonyu.checkLoop();%n":"")+
+				checkLoopCode()+
 				"%f%n"+
 			"%}} while (%v);%n",
 				noSurroundCompoundF(node.loop), node.cond );
@@ -457,7 +457,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 					buf.printf(
 							"%v"+
 							"for (; %v ; %v) {%{"+
-								(doLoopCheck?"Tonyu.checkLoop();%n":"")+
+								checkLoopCode()+
 								"%v%n" +
 							"%}}"										,
 							/*enterV({noLastPos:true},*/ inFor.init,
@@ -468,7 +468,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 					buf.printf(
 							"%v%n"+
 							"while(%v) {%{" +
-								(doLoopCheck?"Tonyu.checkLoop();%n":"")+
+								checkLoopCode()+
 								"%v%n" +
 								"%v;%n" +
 							"%}}",
@@ -773,6 +773,15 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			});
 		}
 	}
+	function checkLoopCode() {
+		if (!doLoopCheck) return "";
+		if (ctx.noWait) {
+			return "Tonyu.checkLoop();%n";
+		} else {
+			return "yield null;%n";
+		}
+	}
+	
 	function genFn(/*pos:number ,*/name:string) {//G
 		if (!name) name=(fnSeq++)+"";
 		let n=("_trc_"+klass.shortName+"_"+name);
@@ -831,5 +840,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	klass.src.map=buf.mapStr;
 	return buf;//res;
 }//B
+
+
 //return {genJS:genJS};
 //})();

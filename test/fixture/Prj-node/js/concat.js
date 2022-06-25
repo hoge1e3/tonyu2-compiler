@@ -149,7 +149,7 @@ Tonyu.klass.define({
         _this.fillStyle="yellow";
         _this.radius=16;
         while (_this.x<120) {
-          Tonyu.checkLoop();
+          yield null;
           _this.x+=5;
           console.log(_this.x,_this.y,"zen　kaku");
           (yield* _this.fiber$update(_thread));
@@ -308,7 +308,7 @@ Tonyu.klass.define({
         
         _this.x=0;
         while (_this.x<120) {
-          Tonyu.checkLoop();
+          yield null;
           (yield* _this.fiber$move(_thread));
           
           console.log(_this.x);
@@ -317,7 +317,7 @@ Tonyu.klass.define({
           
         }
         _this.x=0;for (; _this.x<3 ; _this.x++) {
-          Tonyu.checkLoop();
+          yield null;
           {
             console.log("x=",_this.x);
             (yield* _this.fiber$update(_thread));

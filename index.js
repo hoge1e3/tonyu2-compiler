@@ -68,7 +68,14 @@ builder.fullCompile(opt).then(async function (s) {
         let th=Tonyu.thread();
         let mainObj=new Tonyu.classes[prj.getNamespace()].Main();
         th.apply(mainObj,"main");
-        th.steps();
+        function stepsLoop() {
+            th.steps();
+            if (th.preempted) {
+                console.log("PREEMPTED");
+                setTimeout(stepsLoop,0);
+            }    
+        }
+        stepsLoop();
         /*th.then(r=>console.log("Done",r),e=>{
             //sourceFiles.decodeTrace(e);
             console.error(e);
