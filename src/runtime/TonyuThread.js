@@ -8,6 +8,7 @@ exports.TonyuThread = void 0;
 const R_1 = __importDefault(require("../lib/R"));
 class KilledError extends Error {
 }
+//const SYM_Exception=Symbol("exception");
 /*type Frame={
     prev?:Frame, func:Function,
 };*/
@@ -226,13 +227,16 @@ class TonyuThread {
         var fb = this;
         fb._isWaiting = true;
         fb.suspend();
-        if (j instanceof TonyuThread)
-            j = j.promise();
-        return Promise.resolve(j).then(function (r) {
+        let p = j;
+        if (p instanceof TonyuThread)
+            p = p.promise();
+        return Promise.resolve(p).then(function (r) {
             fb.retVal = r;
+            fb.lastEx = null;
             fb.stepsLoop();
         }).then(e => e, function (e) {
-            fb.exception(fb.wrapError(e));
+            e = fb.wrapError(e);
+            fb.lastEx = e;
             fb.stepsLoop();
         });
     }
@@ -328,7 +332,10 @@ class TonyuThread {
         this.tryStack=[];
     }*/
     *await(p) {
+        this.lastEx = null;
         yield p;
+        if (this.lastEx)
+            throw this.lastEx;
         return this.retVal;
     }
 }
