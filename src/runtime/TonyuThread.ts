@@ -4,9 +4,20 @@ import { TonyuMethod } from "./RuntimeTypes";
 import R from "../lib/R";
 
 //const R=require("../lib/R");
-interface ThreadGroup {
+interface ThreadGroup {// See Kernel/thread/ThreadGroupMod.tonyu
+	setThreadGroup(g:ThreadGroup):void;
     isDeadThreadGroup(): boolean;
+	killThreadGroup():void;
     objectPoolAge: any;
+}
+type TerminateStatus=undefined|"killed"|"exception"|"success";
+type TerminateEvent=
+	{status: "killed"}|
+	{status: "success", value:any}|
+	{status: "exception", exception:Error};
+type TerminateHandler=(st:TerminateEvent)=>void;
+class KilledError extends Error {
+	isKilled:true
 }
 /*type Frame={
     prev?:Frame, func:Function,
@@ -14,7 +25,7 @@ interface ThreadGroup {
 //export= function TonyuThreadF(Tonyu) {
 	let idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
-	export class TonyuThread {
+	export class TonyuThread implements ThreadGroup {
         //frame: Frame;
 		generator: Generator<any>;
         private _isDead: boolean;
@@ -24,17 +35,18 @@ interface ThreadGroup {
         //tryStack: any[];
         preemptionTime: number;
         onEndHandlers: any[];
-        onTerminateHandlers: any[];
+        onTerminateHandlers: TerminateHandler[];
         id: number;
         age: number;
-		_threadGroup: ThreadGroup;
-		termStatus: undefined|"killed"|"exception"|"success";
+		termStatus: TerminateStatus;
 		preempted=false;
         retVal: any;
         lastEvent: any[];
-        lastEx: any;
-        catchPC: any;
+        lastEx: Error;
+        //catchPC: any;
         handleEx: any;
+		_threadGroup: undefined|ThreadGroup;
+		objectPoolAge: any;
         tGrpObjectPoolAge: any;
 		constructor(public Tonyu:{currentThread:TonyuThread}) {
 			this.generator=null;
@@ -61,6 +73,12 @@ interface ThreadGroup {
 					this._threadGroup.isDeadThreadGroup()
 			));
 			return this._isDead;
+		}
+		isDeadThreadGroup(): boolean {
+			return this.isDead();
+		}
+		killThreadGroup(): void {
+			this.kill();
 		}
 		setThreadGroup(g:ThreadGroup) {// g:TonyuThread
 			this._threadGroup=g;
@@ -118,10 +136,8 @@ interface ThreadGroup {
 			});
 			this.notifyTermination({status:"success",value:r});
 		}
-		notifyTermination(tst) {
-			this.onTerminateHandlers.forEach(function (e) {
-				e(tst);
-			});
+		notifyTermination(tst:TerminateEvent) {
+			this.onTerminateHandlers.forEach((e)=>e(tst));
 		}
 		on(type,f) {
 			if (type==="end"||type==="success") this.onEndHandlers.push(f);
@@ -131,15 +147,23 @@ interface ThreadGroup {
 			}
 		}
 		promise() {
-			var fb=this;
-			return new Promise(function (succ,err) {
-				fb.on("terminate",function (st) {
+			switch(this.termStatus) {
+				case "success":
+					return Promise.resolve(this.retVal);
+				case "exception":
+					return Promise.reject(this.lastEx);
+				case "killed":
+					return Promise.reject(new KilledError(this.termStatus));
+				default:
+			}
+			return new Promise((succ,err)=>{
+				this.on("terminate",(st:TerminateEvent)=>{
 					if (st.status==="success") {
 						succ(st.value);
 					} else if (st.status==="exception"){
 						err(st.exception);
 					} else {
-						err(new Error(st.status));
+						err(new KilledError(st.status));
 					}
 				});
 			});
@@ -292,8 +316,9 @@ interface ThreadGroup {
 			}*/
 			
 		}
-		exception(e:any) {
+		exception(e:Error) {
 			this.termStatus="exception";
+			this.lastEx=e;
 			this.kill();
 			if (this.handleEx) this.handleEx(e);
 			else this.notifyTermination({status:"exception",exception:e});
