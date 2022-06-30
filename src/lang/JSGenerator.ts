@@ -453,10 +453,10 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			} else {
 				const inFor:NormalFor=node.inFor;
 		
-				if (inFor.init.type=="varsDecl" || inFor.init.type=="exprstmt") {
+				if ( (inFor.init.type=="varsDecl" && inFor.init.decls.length==1) || inFor.init.type=="exprstmt") {
 					buf.printf(
-							"%v"+
-							"for (; %v ; %v) {%{"+
+							//"%v"+
+							"for (%v %v ; %v) {%{"+
 								checkLoopCode()+
 								"%v%n" +
 							"%}}"										,

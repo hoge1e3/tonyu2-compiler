@@ -62,7 +62,7 @@ function orderByInheritance(classes) {
                     break;
                 }
             }
-            throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", ""), "Unknown", 0);
+            throw TError_1.default(R_1.default("circularDependencyDetected", ""), "Unknown", 0);
         }
     }
     function dep1(c) {
@@ -81,7 +81,7 @@ function orderByInheritance(classes) {
         function pushPath(c) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
-                throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", path.join("->")), "Unknown", 0);
+                throw TError_1.default(R_1.default("circularDependencyDetected", path.join("->")), "Unknown", 0);
             }
             visited[c.fullName] = true;
         }
@@ -127,7 +127,7 @@ module.exports = class Builder {
     }
     isTonyu1() {
         const options = this.getOptions();
-        return (0, tonyu1_1.isTonyu1)(options);
+        return tonyu1_1.isTonyu1(options);
     }
     getOptions() { return this.prj.getOptions(); }
     getOutputFile(...f) { return this.prj.getOutputFile(...f); }
@@ -332,10 +332,10 @@ module.exports = class Builder {
         if (env.options.compiler.typeCheck) {
             console.log("Type check");
             for (let n_1 in compilingClasses) {
-                (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n_1], env);
+                TypeChecker_1.checkTypeDecl(compilingClasses[n_1], env);
             }
             for (let n_2 in compilingClasses) {
-                (0, TypeChecker_1.checkExpr)(compilingClasses[n_2], env);
+                TypeChecker_1.checkExpr(compilingClasses[n_2], env);
             }
         }
         await this.showProgress("genJS");
@@ -347,7 +347,7 @@ module.exports = class Builder {
             traceIndex: buf.traceIndex,
         });
         const s = SourceFiles_1.sourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
-        if ((0, CompilerTypes_1.isFileDest)(destinations)) {
+        if (CompilerTypes_1.isFileDest(destinations)) {
             const outf = this.getOutputFile();
             await s.saveAs(outf);
         }

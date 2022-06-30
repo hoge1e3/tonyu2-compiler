@@ -1,5 +1,5 @@
 import R from "../lib/R";
-import IT from "./TonyuIterator";
+import {IT,IT2} from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
@@ -417,7 +417,7 @@ const Tonyu={
 		timeout,
 		bindFunc, not_a_tonyu_object, is,
 		hasKey, invokeMethod, callFunc, checkNonNull,
-		iterator:IT, run, checkLoop, resetLoopCheck,
+		iterator:IT, iterator2:IT2, run, checkLoop, resetLoopCheck,
 		currentProject: null,
 		currentThread: null as TonyuThread,
 		runMode: false,

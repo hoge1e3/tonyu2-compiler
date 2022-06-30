@@ -4,6 +4,7 @@
 	interface ITonyuIterator {
 		set: any;
 		i: number;
+		next():boolean;
 	}
 	class ArrayValueIterator implements ITonyuIterator {
         set: any;
@@ -85,7 +86,7 @@
 			return true;
 		}
 	}
-	export= function IT(set, arity) {
+	export function IT(set:any, arity:number):ITonyuIterator {
 		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);
@@ -108,7 +109,19 @@
 			throw new Error(set+" is not iterable");
 		}
 	}
-//	module.exports=IT;
+	export function IT2(set:any, arity:number):Generator<any> {
+		const it=IT(set,arity);
+		return function *() {
+			while(it.next()) {
+				const yielded=[];
+				for (let i=0;i<arity;i++) {
+					yielded[i]=it[i];
+				}
+				yield yielded;
+			}
+		}();
+	}
+		//	module.exports=IT;
 //   Tonyu.iterator=IT;
 //	return IT;
 //});
