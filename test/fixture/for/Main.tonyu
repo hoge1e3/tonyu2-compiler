@@ -10,6 +10,11 @@ native Promise;
     };
     return 5;
 }
+a=[1,5,3];
+for (e of a) {
+    console.log(e);
+}
+
 console.log("START");
 for (i=test();i<10;i++) {
     console.log(i);
@@ -19,6 +24,11 @@ test2();
     console.log("START2");
     for (var i=test();i<10;i++) {
         console.log(i);
+    }
+    for (var k,v of this) {
+        if (typeof v==="function") continue;
+        console.log(k,v);
+
     }
 
 }

@@ -23,7 +23,7 @@ var CHK_NN="Tonyu.checkNonNull";
 var CLASS_HEAD="Tonyu.classes.", GLOBAL_HEAD="Tonyu.globals.";
 var GET_THIS="this";//"this.isTonyuObject?this:Tonyu.not_a_tonyu_object(this)";
 var USE_STRICT='"use strict";%n';
-var ITER="Tonyu.iterator";
+var ITER2="Tonyu.iterator2";
 var SUPER="__superClass";
 /*var ScopeTypes={FIELD:"field", METHOD:"method", NATIVE:"native",//B
 		LOCAL:"local", THVAR:"threadvar", PARAM:"param", GLOBAL:"global", CLASS:"class"};*/
@@ -438,7 +438,15 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			var an=annotation(node);
 			if (node.inFor.type=="forin") {
 				const inFor:Forin=node.inFor;
-				var itn=annotation(node.inFor).iterName;
+				buf.printf(
+					"for ([%f] of %s(%v,%s)) {%{"+
+						"%f%n" +
+					"%}}",
+					loopVarsF(inFor.isVar, inFor.vars),  ITER2, inFor.set, inFor.vars.length,
+					noSurroundCompoundF(node.loop)
+				);
+				
+				/*var itn=annotation(node.inFor).iterName;
 				buf.printf(
 					"%s=%s(%v,%s);%n"+
 					"while(%s.next()) {%{" +
@@ -450,6 +458,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 					getElemF(itn, inFor.isVar, inFor.vars),
 					noSurroundCompoundF(node.loop)
 				);
+				*/
 			} else {
 				const inFor:NormalFor=node.inFor;
 		
@@ -479,6 +488,15 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 						);
 				}
 		
+			}
+			function loopVarsF(isVar: Token, vars: Token[]) {
+				return function () {
+					vars.forEach((v,i)=>{
+						var an=annotation(v);
+						if (i>0) buf.printf(", ");
+						varAccess(v.text, an.scopeInfo,an);
+					});
+				};
 			}
 			function getElemF(itn: string, isVar: Token, vars: Token[]) {
 				return function () {

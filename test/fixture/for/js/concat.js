@@ -8,7 +8,13 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
+        var _it_0;
         
+        _this.a=[1,5,3];
+        for ([_this.e] of Tonyu.iterator2(_this.a,1)) {
+          console.log(_this.e);
+          
+        }
         console.log("START");
         for (_this.i=_this.test(); _this.i<10 ; _this.i++) {
           Tonyu.checkLoop();
@@ -22,7 +28,13 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
+        var _it_0;
         
+        _this.a=[1,5,3];
+        for ([_this.e] of Tonyu.iterator2(_this.a,1)) {
+          console.log(_this.e);
+          
+        }
         console.log("START");
         for (_this.i=(yield* _this.fiber$test(_thread));
          _this.i<10 ; _this.i++) {
@@ -67,6 +79,9 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var i;
+        var k;
+        var v;
+        var _it_3;
         
         console.log("START2");
         for (i = _this.test();
@@ -76,12 +91,23 @@ Tonyu.klass.define({
             console.log(i);
           }
         }
+        for ([k, v] of Tonyu.iterator2(_this,2)) {
+          if (typeof  v==="function") {
+            continue;
+            
+          }
+          console.log(k,v);
+          
+        }
       },
       fiber$test2 :function* _trc_Main_f_test2(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var i;
+        var k;
+        var v;
+        var _it_3;
         
         console.log("START2");
         for (i=yield* _this.fiber$test(_thread);
@@ -91,12 +117,20 @@ Tonyu.klass.define({
             console.log(i);
           }
         }
+        for ([k, v] of Tonyu.iterator2(_this,2)) {
+          if (typeof  v==="function") {
+            continue;
+            
+          }
+          console.log(k,v);
+          
+        }
         
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"test2":{"nowait":false}},"fields":{"i":{}}}
+  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"test2":{"nowait":false}},"fields":{"a":{},"e":{},"i":{}}}
 });
 
 //# sourceMappingURL=concat.js.map
