@@ -15,8 +15,9 @@ exports.ScopeTypes = {
 var ScopeInfos;
 (function (ScopeInfos) {
     class LOCAL {
-        constructor(declaringFunc) {
+        constructor(declaringFunc, isBlockScope) {
             this.declaringFunc = declaringFunc;
+            this.isBlockScope = isBlockScope;
             this.type = exports.ScopeTypes.LOCAL;
         }
     }

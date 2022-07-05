@@ -18,7 +18,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 	export namespace ScopeInfos{
 		export class LOCAL {
 			type=ScopeTypes.LOCAL;
-			constructor(public declaringFunc:FuncInfo){}
+			constructor(public declaringFunc:FuncInfo, public isBlockScope:boolean){}
 		}
 		export class PARAM {
 			type=ScopeTypes.PARAM;

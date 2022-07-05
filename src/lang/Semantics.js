@@ -152,9 +152,17 @@ function initClassDecls(klass, env) {
                 pos: node.pos
             };
         }
+        const ctx = context_1.context();
         var fieldsCollector = new Visitor_1.Visitor({
             varDecl: function (node) {
                 addField(node.name, node);
+            },
+            varsDecl(node) {
+                if (ctx.inBlockScope && node.declPrefix.text !== "var")
+                    return;
+                for (let d of node.decls) {
+                    fieldsCollector.visit(d);
+                }
             },
             nativeDecl: function (node) {
             },
@@ -174,9 +182,15 @@ function initClassDecls(klass, env) {
                     }
                 }
             },
+            "for": function (node) {
+                ctx.enter({ inBlockScope: true }, () => fieldsCollector.def(node));
+            },
+            compound(node) {
+                ctx.enter({ inBlockScope: true }, () => fieldsCollector.def(node));
+            },
             "forin": function (node) {
                 var isVar = node.isVar;
-                if (isVar) {
+                if (isVar && isVar.text === "var") {
                     node.vars.forEach((v) => {
                         addField(v);
                     });
@@ -237,6 +251,8 @@ function annotateSource2(klass, env) {
     // ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，モジュール変数の集まり．親クラスの宣言は含まない
     var ST = ScopeTypes;
     var topLevelScope = {};
+    // ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
+    //  キー： 変数名   値： ScopeTypesのいずれか
     const ctx = context_1.context();
     const debug = false;
     const othersMethodCallTmpl = {
@@ -450,6 +466,7 @@ function annotateSource2(klass, env) {
         }
         return si;
     }
+    // locals are only var, not let or const
     var localsCollector = new Visitor_1.Visitor({
         varDecl: function (node) {
             if (ctx.isMain) {
@@ -458,9 +475,17 @@ function annotateSource2(klass, env) {
                 //console.log("var in main",node.name.text);
             }
             else {
+                //if (node.name.text==="nonvar") throw new Error("WHY1!!!");
                 ctx.locals.varDecls[node.name.text] = node;
                 //console.log("DeclaringFunc of ",node.name.text,ctx.finfo);
                 annotation(node, { declaringFunc: ctx.finfo });
+            }
+        },
+        varsDecl(node) {
+            if (node.declPrefix.text !== "var")
+                return;
+            for (let d of node.decls) {
+                localsCollector.visit(d);
             }
         },
         funcDecl: function (node) {
@@ -478,12 +503,13 @@ function annotateSource2(klass, env) {
         "forin": function (node) {
             var isVar = node.isVar;
             node.vars.forEach(function (v) {
-                if (isVar) {
+                if (isVar && isVar.text === "var") {
                     if (ctx.isMain) {
                         annotation(v, { varInMain: true });
                         annotation(v, { declaringClass: klass });
                     }
                     else {
+                        //if (v.text==="nonvar") throw new Error("WHY2!!!");
                         ctx.locals.varDecls[v.text] = v; //node??;
                         annotation(v, { declaringFunc: ctx.finfo });
                     }
@@ -569,8 +595,23 @@ function annotateSource2(klass, env) {
         },
         "for": function (node) {
             var t = this;
-            ctx.enter({ brkable: true, contable: true }, function () {
-                t.def(node);
+            if (node.isToken)
+                return;
+            ctx.enter({ inBlockScope: true }, () => {
+                const ns = newScope(ctx.scope);
+                if (node.inFor.type === "normalFor") {
+                    collectBlockScopedVardecl([node.inFor.init], ns);
+                }
+                else {
+                    if (node.inFor.isVar && node.inFor.isVar.text !== "var") {
+                        for (let v of node.inFor.vars) {
+                            ns[v.text] = new SI.LOCAL(ctx.finfo, true);
+                        }
+                    }
+                }
+                ctx.enter({ scope: ns, brkable: true, contable: true }, function () {
+                    t.def(node);
+                });
             });
         },
         "forin": function (node) {
@@ -579,6 +620,16 @@ function annotateSource2(klass, env) {
                 annotation(v, { scopeInfo: si });
             });
             this.visit(node.set);
+        },
+        compound(node) {
+            ctx.enter({ inBlockScope: true }, () => {
+                const ns = newScope(ctx.scope);
+                collectBlockScopedVardecl(node.stmts, ns);
+                ctx.enter({ scope: ns }, () => {
+                    for (let stmt of node.stmts)
+                        this.visit(stmt);
+                });
+            });
         },
         ifWait: function (node) {
             var TH = "_thread";
@@ -764,7 +815,9 @@ function annotateSource2(klass, env) {
     }
     varAccessesAnnotator.def = visitSub; //S
     function annotateVarAccesses(node, scope) {
-        ctx.enter({ scope }, function () {
+        const ns = newScope(scope);
+        collectBlockScopedVardecl(node, ns);
+        ctx.enter({ scope: ns }, function () {
             varAccessesAnnotator.visit(node);
         });
     }
@@ -772,12 +825,12 @@ function annotateSource2(klass, env) {
         const locals = finfo.locals;
         for (var i in locals.varDecls) {
             //console.log("LocalVar ",i,"declared by ",finfo);
-            var si = new SI.LOCAL(finfo); //genSt(ST.LOCAL,{declaringFunc:finfo});
+            var si = new SI.LOCAL(finfo, false);
             scope[i] = si;
             annotation(locals.varDecls[i], { scopeInfo: si });
         }
         for (let i in locals.subFuncDecls) {
-            const si = new SI.LOCAL(finfo); //genSt(ST.LOCAL,{declaringFunc:finfo});
+            const si = new SI.LOCAL(finfo, false);
             scope[i] = si;
             annotation(locals.subFuncDecls[i], { scopeInfo: si });
         }
@@ -799,6 +852,26 @@ function annotateSource2(klass, env) {
         //if (!f.params) throw new Error("f.params is not inited");
         resolveTypesOfParams(f.params);
     }
+    function collectBlockScopedVardecl(stmts, scope) {
+        for (let stmt of stmts) {
+            if (stmt.type === "varsDecl" && stmt.declPrefix.text !== "var") {
+                const ism = ctx.finfo.isMain;
+                //console.log("blockscope",ctx,ism);
+                if (ism && !ctx.inBlockScope)
+                    annotation(stmt, { varInMain: true });
+                for (const d of stmt.decls) {
+                    if (ism && !ctx.inBlockScope) {
+                        annotation(d, { varInMain: true });
+                        annotation(d, { declaringClass: klass });
+                    }
+                    else {
+                        scope[d.name.text] = new SI.LOCAL(ctx.finfo, true);
+                        annotation(d, { declaringFunc: ctx.finfo });
+                    }
+                }
+            }
+        }
+    }
     function annotateSubFuncExpr(node) {
         var m, ps;
         var body = node.body;
@@ -815,13 +888,13 @@ function annotateSource2(klass, env) {
         //var locals;
         ctx.enter({ finfo }, function () {
             ps.forEach(function (p) {
-                var si = new SI.PARAM(finfo); //genSt(ST.PARAM,{declaringFunc:finfo});
+                var si = new SI.PARAM(finfo);
                 annotation(p, { scopeInfo: si });
                 ns[p.name.text] = si;
             });
             finfo.locals = collectLocals(body);
             copyLocals(finfo, ns);
-            annotateVarAccesses(body, ns);
+            annotateVarAccesses(body.stmts, ns);
         });
         finfo.scope = ns;
         //finfo.name=name;

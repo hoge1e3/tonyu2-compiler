@@ -201,7 +201,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			}
 		},
 		varDecl(node:VarDecl) {
-			var a=annotation(node);
+			console.log(node);
+			throw new Error("Abolished. use varDecl(just a function) ");
+			/*var a=annotation(node);
 			var thisForVIM=a.varInMain? THIZ+"." :"";
 			if (node.value) {
 				const t=(!ctx.noWait) && annotation(node).fiberCall;
@@ -221,14 +223,20 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				}
 			} else {
 				//buf.printf("%v", node.name);
-			}
+			}*/
 		},
 		varsDecl: function (node:VarsDecl) {
-			var decls=node.decls.filter(function (n) { return n.value; });
-			if (decls.length>0) {
-				decls.forEach(function (decl) {
-					buf.printf("%v",decl);
-				});
+			if (node.declPrefix.text==="var") {
+				const decls=node.decls.filter((n)=>n.value);
+				if (decls.length>0) {
+					for (let decl of decls) {
+						varDecl(decl, node);
+					}	
+				}	
+			} else {
+				for (let decl of node.decls) {
+					varDecl(decl, node);
+				}	
 			}
 		},
 		jsonElem: function (node:JsonElem) {
@@ -438,11 +446,12 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			var an=annotation(node);
 			if (node.inFor.type=="forin") {
 				const inFor:Forin=node.inFor;
+				const pre=(inFor.isVar && inFor.isVar.text!=="var" ? inFor.isVar.text+" ": "");
 				buf.printf(
-					"for ([%f] of %s(%v,%s)) {%{"+
+					"for (%s[%f] of %s(%v,%s)) {%{"+
 						"%f%n" +
 					"%}}",
-					loopVarsF(inFor.isVar, inFor.vars),  ITER2, inFor.set, inFor.vars.length,
+					pre, loopVarsF(inFor.isVar, inFor.vars),  ITER2, inFor.set, inFor.vars.length,
 					noSurroundCompoundF(node.loop)
 				);
 				
@@ -594,6 +603,33 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			buf.printf("%s",node.text);
 		}
 	});
+	function varDecl(node:VarDecl, parent: VarsDecl) {
+		var a=annotation(node);
+		var thisForVIM=a.varInMain? THIZ+"." :"";
+		var pa=annotation(parent);
+		const pre=(parent.declPrefix.text==="var" || pa.varInMain ?"":parent.declPrefix+" ");
+		if (node.value) {
+			const t=(!ctx.noWait) && annotation(node).fiberCall;
+			const to=(!ctx.noWait) && annotation(node).otherFiberCall;
+			if (t) {
+				buf.printf(//VDC
+					"%s%s%v=yield* %s.%s%s(%j);%n" ,//FIBERCALL
+					pre, thisForVIM, node.name, THIZ, FIBPRE, t.N, [", ",[THNode].concat(t.A)],
+				);
+			} else if (to && to.fiberType) {
+				buf.printf(//VDC
+					"%s%s%v=yield* %v.%s%s(%j);%n" ,//FIBERCALL
+					pre, thisForVIM, node.name, to.O, FIBPRE, to.N, [", ",[THNode].concat(to.A)],
+				);
+			} else {
+				buf.printf("%s%s%v = %v;%n", pre, thisForVIM, node.name, node.value);
+			}
+		} else {
+			if (pre) {
+				buf.printf("%s%v;", pre, node.name);
+			}
+		}
+	}
 	var opTokens=["++", "--", "!==", "===", "+=", "-=", "*=", "/=",
 			"%=", ">=", "<=",
 	"!=", "==", ">>>",">>", "<<", "&&", "||", ">", "<", "+", "?", "=", "*",

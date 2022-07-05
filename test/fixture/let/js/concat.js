@@ -10,16 +10,21 @@ Tonyu.klass.define({
         var _this=this;
         var _it_0;
         
-        _this.a=[1,5,3];
-        for ([_this.e] of Tonyu.iterator2(_this.a,1)) {
-          console.log(_this.e);
+        "field strict";
+        _this.a = [1,5,3];
+        
+        for (let [e] of Tonyu.iterator2(_this.a,1)) {
+          let nofld = e+1;
+          
+          console.log(nofld);
           
         }
         console.log("START");
-        for (_this.i=_this.test(); _this.i<10 ; _this.i++) {
+        for (let i = _this.test();
+         i<10 ; i++) {
           Tonyu.checkLoop();
           {
-            console.log(_this.i);
+            console.log(i);
           }
         }
         _this.test2();
@@ -30,17 +35,21 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var _it_0;
         
-        _this.a=[1,5,3];
-        for ([_this.e] of Tonyu.iterator2(_this.a,1)) {
-          console.log(_this.e);
+        "field strict";
+        _this.a = [1,5,3];
+        
+        for (let [e] of Tonyu.iterator2(_this.a,1)) {
+          let nofld = e+1;
+          
+          console.log(nofld);
           
         }
         console.log("START");
-        for (_this.i=(yield* _this.fiber$test(_thread));
-         _this.i<10 ; _this.i++) {
+        for (let i=yield* _this.fiber$test(_thread);
+         i<10 ; i++) {
           yield null;
           {
-            console.log(_this.i);
+            console.log(i);
           }
         }
         (yield* _this.fiber$test2(_thread));
@@ -51,9 +60,9 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        new Promise((function anonymous_91(s,e) {
+        new Promise((function anonymous_108(s,e) {
           
-          setTimeout((function anonymous_120() {
+          setTimeout((function anonymous_137() {
             
             s(100);
           }),500);
@@ -65,9 +74,9 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        (yield* _thread.await(new Promise((function anonymous_91(s,e) {
+        (yield* _thread.await(new Promise((function anonymous_108(s,e) {
           
-          setTimeout((function anonymous_120() {
+          setTimeout((function anonymous_137() {
             
             s(100);
           }),500);
@@ -78,20 +87,18 @@ Tonyu.klass.define({
       test2 :function _trc_Main_test2() {
         "use strict";
         var _this=this;
-        var i;
-        var k;
-        var v;
-        var _it_3;
+        var _it_0;
         
-        console.log("START2");
-        for (i = _this.test();
+        for (let i = _this.test();
          i<10 ; i++) {
           Tonyu.checkLoop();
           {
             console.log(i);
           }
         }
-        for ([k, v] of Tonyu.iterator2(_this,2)) {
+        let v = 50;
+        
+        for (let [k, v] of Tonyu.iterator2(_this,2)) {
           if (typeof  v==="function") {
             continue;
             
@@ -99,25 +106,24 @@ Tonyu.klass.define({
           console.log(k,v);
           
         }
+        console.log("after v=",v);
       },
       fiber$test2 :function* _trc_Main_f_test2(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var i;
-        var k;
-        var v;
-        var _it_3;
+        var _it_0;
         
-        console.log("START2");
-        for (i=yield* _this.fiber$test(_thread);
+        for (let i=yield* _this.fiber$test(_thread);
          i<10 ; i++) {
           yield null;
           {
             console.log(i);
           }
         }
-        for ([k, v] of Tonyu.iterator2(_this,2)) {
+        let v = 50;
+        
+        for (let [k, v] of Tonyu.iterator2(_this,2)) {
           if (typeof  v==="function") {
             continue;
             
@@ -125,6 +131,7 @@ Tonyu.klass.define({
           console.log(k,v);
           
         }
+        console.log("after v=",v);
         
       },
       test3 :function _trc_Main_test3() {
@@ -160,7 +167,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"test2":{"nowait":false},"test3":{"nowait":false}},"fields":{"a":{},"e":{},"i":{}}}
+  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"test2":{"nowait":false},"test3":{"nowait":false}},"fields":{"a":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

@@ -235,7 +235,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	/*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
 		return {cond: cond, next:next  };
 	});*/
-	var forin=g("forin").ands(tk("var").opt()/*.firstTokens(["var","symbol"])*/, symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
+	var forin=g("forin").ands( (tk("var").or(tk("let"))).opt()/*.firstTokens(["var","symbol"])*/, symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
 										"isVar", "vars","inof", "set" );
 	var normalFor=g("normalFor").ands(stmt_l, expr.opt() , tk(";") , expr.opt()).ret(
 									"init", "cond",     null, "next");
@@ -262,7 +262,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var typeExpr=g("typeExpr").ands(symbol).ret("name");
 	var typeDecl=g("typeDecl").ands(tk(":"),typeExpr).ret(null,"vtype");
 	var varDecl=g("varDecl").ands(symbol, typeDecl.opt(), tk("=").and(expr).retN(1).opt() ).ret("name","typeDecl","value");
-	var varsDecl= g("varsDecl").ands(tk("var"), varDecl.sep1(tk(","),true), tk(";") ).ret(null ,"decls");
+	var varsDecl= g("varsDecl").ands(tk("var").or(tk("let")), varDecl.sep1(tk(","),true), tk(";") ).ret("declPrefix" ,"decls");
 	var paramDecl= g("paramDecl").ands(symbol,typeDecl.opt() ).ret("name","typeDecl");
 	var paramDecls=g("paramDecls").ands(tk("("), comLastOpt(paramDecl), tk(")")  ).ret(null, "params");
 	var setterDecl= g("setterDecl").ands(tk("="), paramDecl).ret(null,"value");

@@ -299,6 +299,7 @@ export function isVarDecl(n:TNode):n is VarDecl {
 }
 export type VarsDecl=NodeBase&{
   type: "varsDecl";
+  declPrefix: Token, // var const let
   decls: VarDecl[]
 };
 export function isVarsDecl(n:TNode):n is VarsDecl {
