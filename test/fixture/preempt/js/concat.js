@@ -9,6 +9,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
+        null.preemptionTime=100;
         while (true) {
           Tonyu.checkLoop();
           console.log("hoge");
@@ -20,6 +21,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
+        _thread.preemptionTime=100;
         while (true) {
           yield null;
           console.log("hoge");

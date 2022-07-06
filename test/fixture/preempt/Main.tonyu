@@ -1,5 +1,6 @@
 native console;
 
+//$preemptionTime=100;
 while(true) {
     console.log("hoge");
 }

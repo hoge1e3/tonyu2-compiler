@@ -30,7 +30,7 @@ class KilledError extends Error {
         //frame: Frame;
 		generator: Generator<any>;
         private _isDead: boolean;
-        cnt: number;
+        //cnt: number;
         private _isWaiting: boolean;
         fSuspended: boolean;
         //tryStack: any[];
@@ -49,15 +49,15 @@ class KilledError extends Error {
 		_threadGroup: undefined|ThreadGroup;
 		objectPoolAge: any;
         tGrpObjectPoolAge: any;
-		constructor(public Tonyu:{currentThread:TonyuThread}) {
+		constructor(public Tonyu:{currentThread:TonyuThread, globals:{[key:string]:any}}) {
 			this.generator=null;
 			this._isDead=false;
 			//this._isAlive=true;
-			this.cnt=0;
+			//this.cnt=0;
 			this._isWaiting=false;
 			this.fSuspended=false;
 			//this.tryStack=[];
-			this.preemptionTime=60;
+			this.preemptionTime=Tonyu.globals.$preemptionTime||5;
 			this.onEndHandlers=[];
 			this.onTerminateHandlers=[];
 			this.id=idSeq++;
@@ -91,7 +91,7 @@ class KilledError extends Error {
 		}
 		suspend() {
 			this.fSuspended=true;
-			this.cnt=0;
+			//this.cnt=0;
 		}
 		/*enter(frameFunc: Function) {
 			//var n=frameFunc.name;
@@ -279,12 +279,12 @@ class KilledError extends Error {
 			if (fb.isDead()) return;
 			const sv=this.Tonyu.currentThread;
 			this.Tonyu.currentThread=fb;
-			fb.cnt=fb.preemptionTime;
+			const lim=performance.now()+fb.preemptionTime;
 			fb.preempted=false;
 			fb.fSuspended=false;
 			let awaited=null;
 			try {
-				while (fb.cnt-->0) {
+				while (performance.now()<lim) {
 					const n=this.generator.next();
 					if (n.value) {
 						awaited=n.value;
@@ -296,7 +296,7 @@ class KilledError extends Error {
 						break;
 					}	
 				}
-				fb.preempted= (!awaited) && (!fb.fSuspended) && fb.isAlive();
+				fb.preempted= (!awaited) && (!this.fSuspended) && this.isAlive();
 			} catch (e){
 				return this.exception(e);
 			} finally {
