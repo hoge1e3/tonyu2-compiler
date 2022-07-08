@@ -284,7 +284,7 @@ class KilledError extends Error {
 			fb.fSuspended=false;
 			let awaited=null;
 			try {
-				while (performance.now()<lim) {
+				while (performance.now()<lim && !this.fSuspended) {
 					const n=this.generator.next();
 					if (n.value) {
 						awaited=n.value;

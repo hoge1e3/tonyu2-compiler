@@ -14477,11 +14477,11 @@ class TonyuThread {
         this.generator = null;
         this._isDead = false;
         //this._isAlive=true;
-        this.cnt = 0;
+        //this.cnt=0;
         this._isWaiting = false;
         this.fSuspended = false;
         //this.tryStack=[];
-        this.preemptionTime = 60;
+        this.preemptionTime = Tonyu.globals.$preemptionTime || 5;
         this.onEndHandlers = [];
         this.onTerminateHandlers = [];
         this.id = idSeq++;
@@ -14513,7 +14513,7 @@ class TonyuThread {
     }
     suspend() {
         this.fSuspended = true;
-        this.cnt = 0;
+        //this.cnt=0;
     }
     /*enter(frameFunc: Function) {
         //var n=frameFunc.name;
@@ -14712,12 +14712,12 @@ class TonyuThread {
             return;
         const sv = this.Tonyu.currentThread;
         this.Tonyu.currentThread = fb;
-        fb.cnt = fb.preemptionTime;
+        const lim = performance.now() + fb.preemptionTime;
         fb.preempted = false;
         fb.fSuspended = false;
         let awaited = null;
         try {
-            while (fb.cnt-- > 0) {
+            while (performance.now() < lim && !this.fSuspended) {
                 const n = this.generator.next();
                 if (n.value) {
                     awaited = n.value;
@@ -14729,7 +14729,7 @@ class TonyuThread {
                     break;
                 }
             }
-            fb.preempted = (!awaited) && (!fb.fSuspended) && fb.isAlive();
+            fb.preempted = (!awaited) && (!this.fSuspended) && this.isAlive();
         }
         catch (e) {
             return this.exception(e);

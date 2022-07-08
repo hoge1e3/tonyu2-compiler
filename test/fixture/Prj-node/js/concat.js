@@ -55,10 +55,7 @@ Tonyu.klass.define({
         _this.s.add(5);
         _this.s.add(10);
         console.log("listing elem");
-        _it_0=Tonyu.iterator(_this.s,1);
-        while(_it_0.next()) {
-          _this.k=_it_0[0];
-          
+        for ([_this.k] of Tonyu.iterator2(_this.s,1)) {
           console.log("elem",_this.k);
           
         }
@@ -85,10 +82,7 @@ Tonyu.klass.define({
         _this.s.add(5);
         _this.s.add(10);
         console.log("listing elem");
-        _it_0=Tonyu.iterator(_this.s,1);
-        while(_it_0.next()) {
-          _this.k=_it_0[0];
-          
+        for ([_this.k] of Tonyu.iterator2(_this.s,1)) {
           console.log("elem",_this.k);
           
         }
@@ -287,7 +281,7 @@ Tonyu.klass.define({
           _this.update();
           
         }
-        _this.x=0;for (; _this.x<3 ; _this.x++) {
+        for (_this.x=0; _this.x<3 ; _this.x++) {
           Tonyu.checkLoop();
           {
             console.log("x=",_this.x);
@@ -316,7 +310,7 @@ Tonyu.klass.define({
           
           
         }
-        _this.x=0;for (; _this.x<3 ; _this.x++) {
+        for (_this.x=0; _this.x<3 ; _this.x++) {
           yield null;
           {
             console.log("x=",_this.x);
