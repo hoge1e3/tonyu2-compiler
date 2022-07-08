@@ -68,7 +68,7 @@ function visitSub(node) {
     es.forEach((e) => t.visit(e));
 }
 function getSourceFile(klass) {
-    return assert_1.default(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
+    return (0, assert_1.default)(klass.src && klass.src.tonyu, "File for " + klass.fullName + " not found.");
 }
 function parse(klass, options = {}) {
     const s = getSourceFile(klass); //.src.tonyu; //file object
@@ -78,7 +78,7 @@ function parse(klass, options = {}) {
     }
     if (!node) {
         //console.log("Parse "+s);
-        if (tonyu1_1.isTonyu1(options)) {
+        if ((0, tonyu1_1.isTonyu1)(options)) {
             node = parse_tonyu1_1.default.parse(s);
         }
         else {
@@ -124,7 +124,7 @@ function initClassDecls(klass, env) {
                 var p = i.pos;
                 var incc = env.classes[env.aliases[n] || n]; /*ENVC*/ //CFN env.classes[env.aliases[n]]
                 if (!incc)
-                    throw TError_1.default(R_1.default("classIsUndefined", n), s, p);
+                    throw (0, TError_1.default)((0, R_1.default)("classIsUndefined", n), s, p);
                 klass.includes.push(incc);
             });
         }
@@ -134,7 +134,7 @@ function initClassDecls(klass, env) {
         else if (spcn) {
             var spc = env.classes[env.aliases[spcn] || spcn]; /*ENVC*/ //CFN env.classes[env.aliases[spcn]]
             if (!spc) {
-                throw TError_1.default(R_1.default("superClassIsUndefined", spcn), s, pos);
+                throw (0, TError_1.default)((0, R_1.default)("superClassIsUndefined", spcn), s, pos);
             }
             klass.superclass = spc;
         }
@@ -152,7 +152,7 @@ function initClassDecls(klass, env) {
                 pos: node.pos
             };
         }
-        const ctx = context_1.context();
+        const ctx = (0, context_1.context)();
         var fieldsCollector = new Visitor_1.Visitor({
             varDecl: function (node) {
                 addField(node.name, node);
@@ -253,7 +253,7 @@ function annotateSource2(klass, env) {
     var topLevelScope = {};
     // ↑ このソースコードのトップレベル変数の種類 ，親クラスの宣言を含む
     //  キー： 変数名   値： ScopeTypesのいずれか
-    const ctx = context_1.context();
+    const ctx = (0, context_1.context)();
     const debug = false;
     const othersMethodCallTmpl = {
         type: "postfix",
@@ -361,7 +361,7 @@ function annotateSource2(klass, env) {
         var s = topLevelScope;
         getDependingClasses(klass).forEach(initTopLevelScope2);
         var decls = klass.decls; // Do not inherit parents' natives
-        if (!tonyu1_1.isTonyu1(env.options)) {
+        if (!(0, tonyu1_1.isTonyu1)(env.options)) {
             for (let i in JSNATIVES) {
                 s[i] = new SI.NATIVE("native::" + i, { class: root_1.default[i] });
             }
@@ -404,15 +404,15 @@ function annotateSource2(klass, env) {
             !getMethod(name).nowait;
     }
     function checkLVal(node) {
-        if (NodeTypes_1.isVarAccess(node) ||
-            NodeTypes_1.isPostfix(node) && (node.op.type == "member" || node.op.type == "arrayElem")) {
+        if ((0, NodeTypes_1.isVarAccess)(node) ||
+            (0, NodeTypes_1.isPostfix)(node) && (node.op.type == "member" || node.op.type == "arrayElem")) {
             if (node.type == "varAccess") {
                 annotation(node, { noBind: true });
             }
             return true;
         }
         console.log("LVal", node);
-        throw TError_1.default(R_1.default("invalidLeftValue", getSource(node)), srcFile, node.pos);
+        throw (0, TError_1.default)((0, R_1.default)("invalidLeftValue", getSource(node)), srcFile, node.pos);
     }
     function getScopeInfo(node) {
         const n = node + "";
@@ -428,7 +428,7 @@ function annotateSource2(klass, env) {
             var isg = n.match(/^\$/);
             if (env.options.compiler.field_strict || klass.directives.field_strict) {
                 if (!isg)
-                    throw TError_1.default(R_1.default("fieldDeclarationRequired", n), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("fieldDeclarationRequired", n), srcFile, node.pos);
             }
             if (isg) {
                 topLevelScope[n] = new SI.GLOBAL(n);
@@ -555,7 +555,7 @@ function annotateSource2(klass, env) {
                     e.key.text.substring(1, e.key.text.length - 1) :
                     e.key.text;
                 if (dup.hasOwnProperty(kn)) {
-                    throw TError_1.default(R_1.default("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("duplicateKeyInObjectLiteral", kn), srcFile, e.pos);
                 }
                 dup[kn] = 1;
                 //console.log("objlit",e.key.text);
@@ -568,7 +568,7 @@ function annotateSource2(klass, env) {
             }
             else {
                 if (node.key.type == "literal") {
-                    throw TError_1.default(R_1.default("cannotUseStringLiteralAsAShorthandOfObjectValue"), srcFile, node.pos);
+                    throw (0, TError_1.default)((0, R_1.default)("cannotUseStringLiteralAsAShorthandOfObjectValue"), srcFile, node.pos);
                 }
                 var si = getScopeInfo(node.key);
                 annotation(node, { scopeInfo: si });
@@ -662,13 +662,13 @@ function annotateSource2(klass, env) {
         },
         "break": function (node) {
             if (!ctx.brkable)
-                throw TError_1.default(R_1.default("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("breakShouldBeUsedInIterationOrSwitchStatement"), srcFile, node.pos);
             if (!ctx.noWait)
                 annotateParents(this.path, { hasJump: true });
         },
         "continue": function (node) {
             if (!ctx.contable)
-                throw TError_1.default(R_1.default("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("continueShouldBeUsedInIterationStatement"), srcFile, node.pos);
             if (!ctx.noWait)
                 annotateParents(this.path, { hasJump: true });
         },
@@ -706,7 +706,7 @@ function annotateSource2(klass, env) {
         exprstmt: function (node) {
             var t, m;
             if (node.expr.type === "objlit") {
-                throw TError_1.default(R_1.default("cannotUseObjectLiteralAsTheExpressionOfStatement"), srcFile, node.pos);
+                throw (0, TError_1.default)((0, R_1.default)("cannotUseObjectLiteralAsTheExpressionOfStatement"), srcFile, node.pos);
             }
             const path = this.path.slice();
             /*if (klass.fullName==="user.Main") {
@@ -744,7 +744,7 @@ function annotateSource2(klass, env) {
                 t.S.name) {
                 const m = getSuperMethod(t.S.name.text);
                 if (!m)
-                    throw new Error(R_1.default("undefinedSuperMethod", t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedSuperMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "noRetSuper";
                     t.superclass = klass.superclass;
@@ -756,11 +756,11 @@ function annotateSource2(klass, env) {
                 (t = OM.match(node, retSuperFiberCallTmpl)) &&
                 t.S.name) {
                 if (!klass.superclass) {
-                    throw new Error(R_1.default("Class {1} has no superclass", klass.shortName));
+                    throw new Error((0, R_1.default)("Class {1} has no superclass", klass.shortName));
                 }
                 m = getSuperMethod(t.S.name.text);
                 if (!m)
-                    throw new Error(R_1.default("undefinedSuperMethod", t.S.name.text));
+                    throw new Error((0, R_1.default)("undefinedSuperMethod", t.S.name.text));
                 if (!m.nowait) {
                     t.type = "retSuper";
                     t.superclass = klass.superclass;
@@ -804,7 +804,7 @@ function annotateSource2(klass, env) {
         }
         else if (env.options.compiler.typeCheck) {
             console.log("typeNotFound: topLevelScope", topLevelScope, si, env.classes);
-            throw TError_1.default(R_1.default("typeNotFound", node.name), srcFile, node.pos);
+            throw (0, TError_1.default)((0, R_1.default)("typeNotFound", node.name), srcFile, node.pos);
         }
         return resolvedType;
         /*if (si instanceof SI.NATIVE) {
