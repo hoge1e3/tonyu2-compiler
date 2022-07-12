@@ -886,6 +886,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		klass.src.js=buf.buf;//G
 	}
 	delete klass.jsNotUpToDate;
+	cu.packAnnotation(klass.annotation);
 	if (debug) {
 		console.log("method4", buf.buf);
 		//throw "ERR";

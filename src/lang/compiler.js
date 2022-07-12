@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getMethod = exports.className2ResolvedType = exports.getField = exports.getSource = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
+exports.getParams = exports.getDependingClasses = exports.getMethod = exports.className2ResolvedType = exports.getField = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 exports.ScopeTypes = {
@@ -141,6 +141,18 @@ function annotation(aobjs, node, aobj = undefined) {
     return res;
 }
 exports.annotation = annotation;
+function packAnnotation(aobjs) {
+    if (!aobjs)
+        return;
+    function isEmptyAnnotation(a) {
+        return a && typeof a === "object" && Object.keys(a).length === 1 && Object.keys(a)[0] === "node";
+    }
+    for (let k of Object.keys(aobjs)) {
+        if (isEmptyAnnotation(aobjs[k]))
+            delete aobjs[k];
+    }
+}
+exports.packAnnotation = packAnnotation;
 //cu.extend=extend;
 /*function extend(res,aobj) {
     for (let i in aobj) res[i]=aobj[i];

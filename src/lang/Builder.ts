@@ -346,87 +346,86 @@ export = class Builder {
 	/*setAMDPaths(paths: string[]) {
 		this.getEnv().amdPaths=paths;
 	}*/
-    renameClassName (o:string ,n:string) {// o: key of aliases
-        return this.fullCompile().then(()=>{
-            const EXT=".tonyu";
-            const env=this.getEnv();
-            const changed=[];
-            let renamingFile: SFile;
-            var cls=env.classes;/*ENVC*/
-            for (var cln in cls) {/*ENVC*/
-                var klass=cls[cln];/*ENVC*/
-                var f=klass.src ? klass.src.tonyu : null;
-                var a=klass.annotation;
-                var changes=[];
-                if (a && f && f.exists()) {
-                    if (klass.node) {// not exist when loaded from compiledProject
-                        if (klass.node.ext) {
-                            const spcl=klass.node.ext.superclassName;// {pos, len, text}
-                            console.log("SPCl",spcl);
-                            if (spcl.text===o) {
-                                changes.push({pos:spcl.pos,len:spcl.len});
-                            }
-                        }
-                        if (klass.node.incl) {
-                            const incl=klass.node.incl.includeClassNames;// [{pos, len, text}]
-                            console.log("incl",incl);
-                            for (let e of incl) {
-                                if (e.text===o) {
-                                    changes.push({pos:e.pos,len:e.len});
-                                }
-                            }
+    async renameClassName (o:string ,n:string) {// o: key of aliases
+        await this.fullCompile();
+        const EXT=".tonyu";
+        const env=this.getEnv();
+        const changed:SFile[]=[];
+        let renamingFile: SFile;
+        const cls=env.classes;/*ENVC*/
+        for (let cln in cls) {/*ENVC*/
+            const klass=cls[cln];/*ENVC*/
+            const f:SFile =klass.src ? klass.src.tonyu : null;
+            const a=klass.annotation;
+            let changes:{pos:number,len:number}[]=[];
+            if (a && f && f.exists()) {
+                if (klass.node) {// not exist when loaded from compiledProject
+                    if (klass.node.ext) {
+                        const spcl=klass.node.ext.superclassName;// {pos, len, text}
+                        console.log("SPCl",spcl);
+                        if (spcl.text===o) {
+                            changes.push({pos:spcl.pos,len:spcl.len});
                         }
                     }
-                    //console.log("klass.node",klass.node.ext, klass.node.incl );
-                    if (f.truncExt(EXT)===o) {
-                        renamingFile=f;
-                    }
-                    console.log("Check", cln);
-                    for (var id in a) {
-                        try {
-                            var an=a[id];
-                            var si=an.scopeInfo;
-                            if (si && si.type=="class") {
-                                //console.log("si.type==class",an,si);
-                                if (si.name==o) {
-                                    var pos=an.node.pos;
-                                    var len=an.node.len;
-                                    var sub=f.text().substring(pos,pos+len);
-                                    if (sub==o) {
-                                        changes.push({pos:pos,len:len});
-                                        console.log(f.path(), pos, len, f.text().substring(pos-5,pos+len+5) ,"->",n);
-                                    }
-                                }
+                    if (klass.node.incl) {
+                        const incl=klass.node.incl.includeClassNames;// [{pos, len, text}]
+                        console.log("incl",incl);
+                        for (let e of incl) {
+                            if (e.text===o) {
+                                changes.push({pos:e.pos,len:e.len});
                             }
-                        } catch(e) {
-                            console.log(e);
                         }
                     }
-                    changes=changes.sort(function (a,b) {return b.pos-a.pos;});
-                    console.log(f.path(),changes);
-                    var src=f.text();
-                    var ssrc=src;
-                    for (let ch of changes) {
-                        src=src.substring(0,ch.pos)+n+src.substring(ch.pos+ch.len);
-                    }
-                    if (ssrc!=src && !f.isReadOnly()) {
-                        console.log("Refact:",f.path(),src);
-                        f.text(src);
-                        changed.push(f);
-                    }
-                } else {
-                    console.log("No Check", cln);
                 }
+                //console.log("klass.node",klass.node.ext, klass.node.incl );
+                if (f.truncExt(EXT)===o) {
+                    renamingFile=f;
+                }
+                console.log("Check", cln);
+                for (let id in a) {
+                    try {
+                        var an=a[id];
+                        var si=an.scopeInfo;
+                        if (si && si.type=="class") {
+                            //console.log("si.type==class",an,si);
+                            if (si.name==o) {
+                                var pos=an.node.pos;
+                                var len=an.node.len;
+                                var sub=f.text().substring(pos,pos+len);
+                                if (sub==o) {
+                                    changes.push({pos:pos,len:len});
+                                    console.log(f.path(), pos, len, f.text().substring(pos-5,pos+len+5) ,"->",n);
+                                }
+                            }
+                        }
+                    } catch(e) {
+                        console.log(e);
+                    }
+                }
+                changes=changes.sort(function (a,b) {return b.pos-a.pos;});
+                console.log(f.path(),changes);
+                var src=f.text();
+                var ssrc=src;
+                for (let ch of changes) {
+                    src=src.substring(0,ch.pos)+n+src.substring(ch.pos+ch.len);
+                }
+                if (ssrc!=src && !f.isReadOnly()) {
+                    console.log("Refact:",f.path(),src);
+                    f.text(src);
+                    changed.push(f);
+                }
+            } else {
+                console.log("No Check", cln);
+            }
 
-            }
-            if (renamingFile) {
-                const renamedFile=renamingFile.sibling(n+EXT);
-                renamingFile.moveTo(renamedFile);
-                changed.push(renamingFile);
-                changed.push(renamedFile);
-            }
-            return changed;
-        });
+        }
+        if (renamingFile) {
+            const renamedFile=renamingFile.sibling(n+EXT);
+            renamingFile.moveTo(renamedFile);
+            changed.push(renamingFile);
+            changed.push(renamedFile);
+        }
+        return changed;
     }
 
 };

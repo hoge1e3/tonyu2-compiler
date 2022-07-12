@@ -15,6 +15,7 @@ import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { AnnotatedType, Annotation, BuilderEnv, C_Meta, FuncInfo, Locals, Methods } from "./CompilerTypes";
+import { packAnnotation } from "./compiler";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -899,6 +900,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				annotateMethodFiber(method);
 			}
 		});
+		packAnnotation(klass.annotation);
 	}
 	initTopLevelScope();//S
 	inheritSuperMethod();//S

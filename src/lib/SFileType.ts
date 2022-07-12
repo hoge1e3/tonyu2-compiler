@@ -8,4 +8,6 @@ export type SFile={
 	truncExt(ext?:string):string,
 	moveTo(s:SFile):void,
 	sibling(n:string):SFile,
+	exists():boolean,
+	isReadOnly():boolean,
 };

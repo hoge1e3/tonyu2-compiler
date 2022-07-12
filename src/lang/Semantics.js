@@ -38,6 +38,7 @@ const Visitor_1 = require("./Visitor");
 const context_1 = require("./context");
 const parser_1 = require("./parser");
 const NodeTypes_1 = require("./NodeTypes");
+const compiler_1 = require("./compiler");
 var ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype = cu.getScopeType;
@@ -946,6 +947,7 @@ function annotateSource2(klass, env) {
                 annotateMethodFiber(method);
             }
         });
+        (0, compiler_1.packAnnotation)(klass.annotation);
     }
     initTopLevelScope(); //S
     inheritSuperMethod(); //S

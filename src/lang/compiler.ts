@@ -98,6 +98,15 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		}
 		return res;
 	}
+	export function packAnnotation(aobjs) {
+		if (!aobjs) return;
+		function isEmptyAnnotation(a) {
+			return a && typeof a==="object" && Object.keys(a).length===1 && Object.keys(a)[0]==="node";
+		}
+		for (let k of Object.keys(aobjs)) {
+			if (isEmptyAnnotation(aobjs[k])) delete aobjs[k];
+		}
+	}
 	//cu.extend=extend;
 	/*function extend(res,aobj) {
 		for (let i in aobj) res[i]=aobj[i];

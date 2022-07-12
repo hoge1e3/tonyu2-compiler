@@ -1,0 +1,112 @@
+native Tonyu;
+native console;
+native JSON;
+native Set;
+native Symbol;
+native Map;
+"field strict";
+
+let cl=Tonyu.classMetas["user.Main"];
+//console.log(JSON.stringify(cl.node));
+//let SYM_VISITED=Symbol("_aid");
+let idseq=1;
+let types={};
+//JSON.stringify(cl.annotation, traverse) 
+let map=new Map();
+let res={};
+let root=traverse({node:cl.node, annotation:cl.annotation},{path:["root"]});
+if (root.REF!==1) {
+    throw new Error(root.REF);
+}
+console.log(types);
+/*for (let k of Object.keys(types).sort()) {
+    console.log(k, types[k].length);
+}*/
+console.log(JSON.stringify(res));
+//console.log(types.node);
+console.log(JSON.stringify(res["1"]));
+
+\refobj(id) {
+    return {REF:id};
+}
+\builtin(name) {
+    return {BUILTIN:name};
+}
+\packAnnotations(ans) {
+    let res={};
+    for (let k of Object.keys(ans)) {
+        if (isEmptyAnnotation(ans[k])) continue;
+        res[k]=ans[k];
+    }
+    return res;
+}
+\isEmptyAnnotation(a) {
+    return a && typeof a==="object" && Object.keys(a).length===1 && Object.keys(a)[0]==="node";
+}
+\isArray(a) {
+    return a && typeof a.slice==="function" && 
+    typeof a.map==="function" && typeof a.length==="number" ;
+}
+\pushPath(ctx, k) {
+    let nc={path: ctx.path.slice()};
+    if (looksLikeNum(k)) k="[]";
+    nc.path.push(k);
+    return nc;
+}
+\isNativeSI(a) {
+    return a.type==="native" && a.value;
+}
+function isSFile(path) {
+    return path && typeof (path.isSFile)=="function" && path.isSFile();
+}
+\traverse(a,ctx) {
+    if (a && typeof a==="object") {
+        if (map.has(a)) {
+            return refobj(map.get(a));
+        }
+        let id=idseq++;
+        map.set(a, id);
+        let res;
+        if (isSFile(a)) {
+            res={isSFile:true, path:a.path()};
+        } else if (isArray(a)) {
+            res=a.map\(e){
+                return traverse(e,pushPath(ctx,"[]"));
+            };
+        } else {
+            keys(a, ctx);
+            res={};
+            let nsi=isNativeSI(a);
+            for (let k of Object.keys(a)) {
+                if (nsi && k==="value") continue;
+                if (k==="toString") continue;
+                let nc=pushPath(ctx,k);
+                res[k]=traverse(a[k], nc);
+            }
+        }
+        this.res[id]=res;
+        return refobj(id);
+    } else if (typeof a==="function") {
+        return "<function>";
+    } else {
+        return a;
+    }
+}
+\keys(obj,ctx) {
+    let k=Object.keys(obj).sort().join(",");
+    types[k]=types[k]||{first:ctx.path.join(".")};
+    let pathTail=ctx.path[ctx.path.length-1];
+    if (pathTail==="[]") {
+        pathTail=ctx.path[ctx.path.length-2]+pathTail;
+    }
+    types[k][pathTail]=types[k][pathTail]||0;
+    types[k][pathTail]++;
+}
+\looksLikeNum(k) {
+    return k.match(/^\d+$/);
+}
+\mul(s, n) {
+    let r="";
+    while(--n>0) r+=s;
+    return r;
+}

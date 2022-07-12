@@ -880,6 +880,7 @@ function genJS(klass, env, genOptions) {
         klass.src.js = buf.buf; //G
     }
     delete klass.jsNotUpToDate;
+    cu.packAnnotation(klass.annotation);
     if (debug) {
         console.log("method4", buf.buf);
         //throw "ERR";
