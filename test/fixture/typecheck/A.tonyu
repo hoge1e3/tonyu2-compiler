@@ -10,6 +10,7 @@ var s:String;
 		i++;
 		s+=i;
 	}
+	i.test();
 	return this;
 }
 nowait \toste() {

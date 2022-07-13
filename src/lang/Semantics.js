@@ -866,8 +866,9 @@ function annotateSource2(klass, env) {
                         annotation(d, { declaringClass: klass });
                     }
                     else {
-                        scope[d.name.text] = new SI.LOCAL(ctx.finfo, true);
-                        annotation(d, { declaringFunc: ctx.finfo });
+                        const si = new SI.LOCAL(ctx.finfo, true);
+                        scope[d.name.text] = si;
+                        annotation(d, { declaringFunc: ctx.finfo, scopeInfo: si });
                     }
                 }
             }

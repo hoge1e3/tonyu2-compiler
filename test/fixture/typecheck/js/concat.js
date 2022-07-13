@@ -25,11 +25,9 @@ Tonyu.klass.define({
       test :function _trc_A_test() {
         "use strict";
         var _this=this;
-        var i;
-        var s;
         
-        i = 0;
-        s = 0;
+        let i = 0;
+        let s = 0;
         
         while (i<_this.n) {
           Tonyu.checkLoop();
@@ -45,11 +43,9 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var i;
-        var s;
         
-        i = 0;
-        s = 0;
+        let i = 0;
+        let s = 0;
         
         while (i<_this.n) {
           yield null;
@@ -151,6 +147,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
+        let b;
         return _this.a;
       },
       fiber$getA :function* _trc_Main_f_getA(_thread) {
@@ -158,6 +155,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
+        let b;
         return _this.a;
         
       },

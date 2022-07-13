@@ -5,7 +5,7 @@ import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCa
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
-import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 import TError from "../runtime/TError";
 
@@ -139,6 +139,13 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 						annotation(node,{resolvedType:field.resolvedType});
 					} else if (method) {
 						annotation(node,{resolvedType:{method}});
+					}
+				}
+				if (vtype && isNativeClass(vtype)) {
+					if (vtype.class.prototype[name]) {
+						//OK (as any)
+					} else {
+						throw TError( R("memberNotFoundInClass",vtype.class.name, name) , srcFile, node.op.name.pos);
 					}
 				}
 			} else if (isCall(node.op)) {

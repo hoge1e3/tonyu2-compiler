@@ -10,8 +10,6 @@ Tonyu.klass.define({
         var _this=this;
         
         "field strict";
-        _this.cl = Tonyu.classMetas["user.Main"];
-        
         _this.idseq = 1;
         
         _this.types = {};
@@ -20,16 +18,7 @@ Tonyu.klass.define({
         
         _this.res = {};
         
-        _this.root = _this.traverse({node: _this.cl.node,annotation: _this.cl.annotation},{path: ["root"]});
-        
-        if (_this.root.REF!==1) {
-          throw new Error(_this.root.REF);
-          
-          
-        }
-        console.log(_this.types);
-        console.log(JSON.stringify(_this.res));
-        console.log(JSON.stringify(_this.res["1"]));
+        _this.proc();
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
@@ -37,8 +26,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         "field strict";
-        _this.cl = Tonyu.classMetas["user.Main"];
-        
         _this.idseq = 1;
         
         _this.types = {};
@@ -47,10 +34,38 @@ Tonyu.klass.define({
         
         _this.res = {};
         
-        _this.root=yield* _this.fiber$traverse(_thread, {node: _this.cl.node,annotation: _this.cl.annotation}, {path: ["root"]});
+        (yield* _this.fiber$proc(_thread));
         
-        if (_this.root.REF!==1) {
-          throw new Error(_this.root.REF);
+        
+      },
+      proc :function _trc_Main_proc() {
+        "use strict";
+        var _this=this;
+        
+        let cl = Tonyu.classMetas["user.Main"];
+        
+        let root = _this.traverse({node: cl.node,annotation: cl.annotation},{path: ["root"]});
+        
+        if (root.REF!==1) {
+          throw new Error(root.REF);
+          
+          
+        }
+        console.log(_this.types);
+        console.log(JSON.stringify(_this.res));
+        console.log(JSON.stringify(_this.res["1"]));
+      },
+      fiber$proc :function* _trc_Main_f_proc(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let cl = Tonyu.classMetas["user.Main"];
+        
+        let root=yield* _this.fiber$traverse(_thread, {node: cl.node,annotation: cl.annotation}, {path: ["root"]});
+        
+        if (root.REF!==1) {
+          throw new Error(root.REF);
           
           
         }
@@ -224,7 +239,7 @@ Tonyu.klass.define({
             
           } else {
             if (_this.isArray(a)) {
-              res=a.map((function anonymous_1835(e) {
+              res=a.map((function anonymous_1918(e) {
                 
                 return _this.traverse(e,_this.pushPath(ctx,"[]"));
               }));
@@ -285,7 +300,7 @@ Tonyu.klass.define({
             
           } else {
             if (_this.isArray(a)) {
-              res=a.map((function anonymous_1835(e) {
+              res=a.map((function anonymous_1918(e) {
                 
                 return _this.traverse(e,_this.pushPath(ctx,"[]"));
               }));
@@ -406,7 +421,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"refobj":{"nowait":false},"builtin":{"nowait":false},"packAnnotations":{"nowait":false},"isEmptyAnnotation":{"nowait":false},"isArray":{"nowait":false},"pushPath":{"nowait":false},"isNativeSI":{"nowait":false},"isSFile":{"nowait":false},"traverse":{"nowait":false},"keys":{"nowait":false},"looksLikeNum":{"nowait":false},"mul":{"nowait":false}},"fields":{"cl":{},"idseq":{},"types":{},"map":{},"res":{},"root":{}}}
+  decls: {"methods":{"main":{"nowait":false},"proc":{"nowait":false},"refobj":{"nowait":false},"builtin":{"nowait":false},"packAnnotations":{"nowait":false},"isEmptyAnnotation":{"nowait":false},"isArray":{"nowait":false},"pushPath":{"nowait":false},"isNativeSI":{"nowait":false},"isSFile":{"nowait":false},"traverse":{"nowait":false},"keys":{"nowait":false},"looksLikeNum":{"nowait":false},"mul":{"nowait":false}},"fields":{"idseq":{},"types":{},"map":{},"res":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

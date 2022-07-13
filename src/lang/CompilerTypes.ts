@@ -118,6 +118,9 @@ export type FuncInfo={// also includes Method
 export type NativeClass={class: Constructor};
 export type MethodType={method: FuncInfo};
 export type AnnotatedType=NativeClass|C_Meta|MethodType;
+export function isNativeClass(klass: AnnotatedType): klass is NativeClass {
+	return (klass as any).class;
+}
 export function isMeta(klass: AnnotatedType): klass is C_Meta {
 	return (klass as any).decls;
 }

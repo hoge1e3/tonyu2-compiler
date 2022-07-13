@@ -6,25 +6,28 @@ native Symbol;
 native Map;
 "field strict";
 
-let cl=Tonyu.classMetas["user.Main"];
-//console.log(JSON.stringify(cl.node));
-//let SYM_VISITED=Symbol("_aid");
 let idseq=1;
 let types={};
-//JSON.stringify(cl.annotation, traverse) 
 let map=new Map();
 let res={};
-let root=traverse({node:cl.node, annotation:cl.annotation},{path:["root"]});
-if (root.REF!==1) {
-    throw new Error(root.REF);
+proc();
+\proc() {
+    let cl=Tonyu.classMetas["user.Main"];
+    //console.log(JSON.stringify(cl.node));
+    //let SYM_VISITED=Symbol("_aid");
+    //JSON.stringify(cl.annotation, traverse) 
+    let root=traverse({node:cl.node, annotation:cl.annotation},{path:["root"]});
+    if (root.REF!==1) {
+        throw new Error(root.REF);
+    }
+    console.log(types);
+    /*for (let k of Object.keys(types).sort()) {
+        console.log(k, types[k].length);
+    }*/
+    console.log(JSON.stringify(res));
+    //console.log(types.node);
+    console.log(JSON.stringify(res["1"]));
 }
-console.log(types);
-/*for (let k of Object.keys(types).sort()) {
-    console.log(k, types[k].length);
-}*/
-console.log(JSON.stringify(res));
-//console.log(types.node);
-console.log(JSON.stringify(res["1"]));
 
 \refobj(id) {
     return {REF:id};

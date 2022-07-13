@@ -167,6 +167,14 @@ function checkExpr(klass, env) {
                         annotation(node, { resolvedType: { method } });
                     }
                 }
+                if (vtype && CompilerTypes_1.isNativeClass(vtype)) {
+                    if (vtype.class.prototype[name]) {
+                        //OK (as any)
+                    }
+                    else {
+                        throw TError_1.default(R_1.default("memberNotFoundInClass", vtype.class.name, name), srcFile, node.op.name.pos);
+                    }
+                }
             }
             else if (NodeTypes_1.isCall(node.op)) {
                 const leftA = annotation(node.left);
