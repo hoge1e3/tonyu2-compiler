@@ -1,7 +1,7 @@
 import * as cu from "./compiler";
 import R from "../lib/R";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
@@ -51,27 +51,30 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		varDecl: function (node: VarDecl) {
 			//console.log("TCV","varDecl",node);
 			if (node.value) this.visit(node.value);
-			if (node.name && node.typeDecl) {
-				var va=annotation(node.typeDecl.vtype);
-				//console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
-				const rt=va.resolvedType;
-				if (rt) {
-					const a=annotation(node);
-					const si=a.scopeInfo;// for local
-					const info=a.fieldInfo;// for field
-					if (si) {
-						//console.log("set var type",node.name+"", va.resolvedType );
-						si.resolvedType=va.resolvedType;
-					} else if (info) {
-						//console.log("set fld type",node.name+"", va.resolvedType );
-						info.resolvedType=va.resolvedType;
+			let rt:AnnotatedType;
+			if (env.options.compiler.typeInference) {
+				if (node.value) {
+					const a=annotation(node.value);
+					if (a.resolvedType) {
+						rt=a.resolvedType;
+						console.log("Inferred",rt);
 					}
-
 				}
-				/*} else if (a.declaringClass) {
-					//console.log("set fld type",a.declaringClass,a.declaringClass.decls.fields[node.name+""],node.name+"", node.typeDecl.vtype+"");
-					a.declaringClass.decls.fields[node.name+""].vtype=node.typeDecl.vtype;
-				}*/
+				if (!rt) env.unresolvedVars++;
+			}
+			if (node.name && node.typeDecl) {
+				const va=annotation(node.typeDecl.vtype);
+				rt=va.resolvedType;
+			}
+			if (rt) {
+				const a=annotation(node);
+				const si=a.scopeInfo;// for local
+				const info=a.fieldInfo;// for field
+				if (si) {
+					si.resolvedType=rt;
+				} else if (info) {
+					info.resolvedType=rt;
+				}
 			}
 		},
 		paramDecl: function (node: ParamDecl) {
@@ -149,6 +152,13 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 					//console.log("OPCALL", leftT);
 					annotation(node, {resolvedType: leftT.method.returnType});
 				}
+			}
+		},
+		newExpr: function (node:NewExpr) {
+			const a=annotation(node.klass);
+			if (a.scopeInfo && a.scopeInfo.type===cu.ScopeTypes.CLASS) {
+				const rt:AnnotatedType=a.scopeInfo.info;
+				annotation(node, {resolvedType:rt});
 			}
 		},
 		varAccess: function (node: VarAccess) {

@@ -17,6 +17,7 @@ export type BuilderContext={
 }*/
 export type Aliases={[key:string]:string};//shortName->fullName
 export type BuilderEnv={
+	unresolvedVars: number,
 	options: ProjectOptions,
 	classes: C_MetaMap,
 	aliases: Aliases,
@@ -30,6 +31,7 @@ export type BuilderContextDef={
 };
 export type CompilerOptions={
 	typeCheck?: boolean,
+	typeInference?: boolean,
 	defaultSuperClass?: string,
 	field_strict?: boolean,
 	external_waitable?: boolean,

@@ -129,6 +129,7 @@ export = class Builder {
                 options: this.getOptions(),
                 aliases:{},
                 classes: Tonyu.classMetas as C_MetaMap,
+                unresolvedVars: 0,
                 //amdPaths:[],
             };
         }
@@ -309,12 +310,19 @@ export = class Builder {
 		});
 		if (env.options.compiler.typeCheck) {
 			console.log("Type check");
-			for (let n_1 in compilingClasses) {
-				checkTypeDecl(compilingClasses[n_1], env);
-			}
-			for (let n_2 in compilingClasses) {
-				checkExpr(compilingClasses[n_2], env);
-			}
+            let prevU:number|null=null;
+            while(true) {
+                env.unresolvedVars=0;
+                for (let n_1 in compilingClasses) {
+                    checkTypeDecl(compilingClasses[n_1], env);
+                }
+                for (let n_2 in compilingClasses) {
+                    checkExpr(compilingClasses[n_2], env);
+                }
+                if (env.unresolvedVars<=0) break;
+                if (typeof prevU==="number" && env.unresolvedVars>=prevU) break;    
+                prevU=env.unresolvedVars;
+            } 
 		}
 		await this.showProgress("genJS");
 		//throw "test break";

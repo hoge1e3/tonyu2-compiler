@@ -64,7 +64,7 @@ class ParserContext {
                 }
                 if (tbl[exports.ALL])
                     return tbl[exports.ALL].parse(s);
-                return s.withError((0, R_1.default)("expected", Object.keys(tbl).join("")));
+                return s.withError(R_1.default("expected", Object.keys(tbl).join("")));
             });
             res._first = tbl; //{space:space,tbl:tbl};
             //res.checkTbl();
@@ -84,7 +84,7 @@ class ParserContext {
             }
             if (tbl[exports.ALL])
                 return tbl[exports.ALL].parse(s);
-            return s.withError((0, R_1.default)("expected", Object.keys(tbl).join(", ")));
+            return s.withError(R_1.default("expected", Object.keys(tbl).join(", ")));
         });
         res._first = tbl; //{space:"TOKEN",tbl:tbl};
         //res.checkTbl();
@@ -797,7 +797,7 @@ exports.TokensParser = {
                 s.result = [t];
             }
             else {
-                s = s.withError((0, R_1.default)("expected", type));
+                s = s.withError(R_1.default("expected", type));
             }
             return s;
         }).setName("'" + type + "'", { type: "primitive", name: type }).firstTokens(type);

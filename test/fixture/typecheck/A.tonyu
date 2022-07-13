@@ -3,7 +3,7 @@ native console;
 var x:Number;
 var s:String;
 \test():A {
-	var i=0,s=0;
+	let i=0,s=0;
 	while(i<n) {
 		console.log(i);
 		update();
