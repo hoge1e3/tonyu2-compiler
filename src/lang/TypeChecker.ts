@@ -68,12 +68,12 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 			}
 			if (rt) {
 				const a=annotation(node);
-				const si=a.scopeInfo;// for local
-				const info=a.fieldInfo;// for field
+				const si=a.scopeInfo;
 				if (si) {
 					si.resolvedType=rt;
-				} else if (info) {
-					info.resolvedType=rt;
+					if (si.type===cu.ScopeTypes.FIELD) {
+						si.info.resolvedType=rt;
+					}
 				}
 			}
 		},

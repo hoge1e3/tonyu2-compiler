@@ -340,7 +340,7 @@ function annotateSource2(klass, env) {
             const info = decls.fields[i];
             s[i] = new SI.FIELD(klass, i, info);
             if (info.node) {
-                annotation(info.node, { fieldInfo: info });
+                annotation(info.node, { /*fieldInfo: info,*/ scopeInfo: s[i] });
             }
         }
         for (let i in decls.methods) {

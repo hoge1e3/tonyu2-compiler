@@ -61,7 +61,7 @@ export type Locals={
 };
 export type C_FieldInfo=FieldInfo & {
 	node?:TNode,
-	pos?:number,
+	//pos?:number,
 	resolvedType?: AnnotatedType,
 };
 export type C_Decls={
@@ -129,9 +129,8 @@ export function isMethodType(klass: AnnotatedType): klass is MethodType {
 }
 export type Annotation={
 	scopeInfo?: ScopeInfo,
-	fieldInfo?: C_FieldInfo,
+	//fieldInfo?: C_FieldInfo,
 	funcInfo?: FuncInfo,
-	//info?: C_FieldInfo|FuncInfo,
 	declaringFunc?: FuncInfo,
 	resolvedType?: AnnotatedType,
 	fiberCall?: {N:Token, A:Expression[]}&(
