@@ -11,6 +11,7 @@ import {ExpressionParser} from "./ExpressionParser2";
 import Grammar from "./Grammar";
 import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
 import { Tokenizer } from "./tokenizerFactory";
+import { L } from "./ObjectMatcher";
 
 
 export= function PF({TT}:{TT:Tokenizer}) {
@@ -259,7 +260,20 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var catches=g("catches").ors("catch","finally");
 	var trys=g("try").ands(tk("try"),"stmt",catches.rep1() ).ret(null, "stmt","catches");
 	var throwSt=g("throw").ands(tk("throw"),expr,tk(";")).ret(null,"ex");
-	var typeExpr=g("typeExpr").ands(symbol).ret("name");
+	const namedTypeExpr=g("namedTypeExpr").ands(symbol).ret("name");
+	const tExp=ExpressionParser(TokensParser.context);
+	tExp.mkPostfix((left, op)=>{
+		if (op.type==="arrayTypePostfix") {
+			//console.log("ARRAYTYPE",left,op);
+			return {type:"arrayTypeExpr", element:left};
+		}
+		console.log(left,op);
+		throw new Error("Invalid type op type");
+	});
+	const arrayTypePostfix=g("arrayTypePostfix").ands(tk("["),tk("]")).ret();
+	tExp.postfix(0, arrayTypePostfix);
+	tExp.element(namedTypeExpr);
+	const typeExpr=tExp.build();
 	var typeDecl=g("typeDecl").ands(tk(":"),typeExpr).ret(null,"vtype");
 	var varDecl=g("varDecl").ands(symbol, typeDecl.opt(), tk("=").and(expr).retN(1).opt() ).ret("name","typeDecl","value");
 	var varsDecl= g("varsDecl").ands(tk("var").or(tk("let")), varDecl.sep1(tk(","),true), tk(";") ).ret("declPrefix" ,"decls");

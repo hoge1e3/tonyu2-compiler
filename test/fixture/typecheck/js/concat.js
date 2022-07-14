@@ -51,7 +51,6 @@ Tonyu.klass.define({
           yield null;
           console.log(i);
           (yield* _this.fiber$update(_thread));
-          
           i++;
           s+=i;
           
@@ -97,6 +96,12 @@ Tonyu.klass.define({
         _this.r = _this.getA().test();
         
         _this.print(_this.r);
+        _this.alist = [];
+        
+        _this.print([Tonyu.classMetas['user.A']]);
+        _this.print(Tonyu.classMetas['user.A']);
+        _this.alist.push(_this.a);
+        _this.alist[0].test();
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
@@ -107,26 +112,24 @@ Tonyu.klass.define({
         _this.a = new Tonyu.classes.user.A();
         
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
-        
         (yield* _this.fiber$print(_thread, Number));
-        
         (yield* _this.fiber$print(_thread, String));
-        
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A'].decls.methods.test));
-        
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
-        
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.Main'].decls.methods.getA));
-        
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
-        
         _this.n = 3;
         
         _this.a.n=10;
         _this.r=yield* _this.getA().fiber$test(_thread);
         
         (yield* _this.fiber$print(_thread, _this.r));
+        _this.alist = [];
         
+        (yield* _this.fiber$print(_thread, [Tonyu.classMetas['user.A']]));
+        (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
+        _this.alist.push(_this.a);
+        (yield* _this.alist[0].fiber$test(_thread));
         
       },
       print :function _trc_Main_print(x) {
@@ -162,7 +165,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false},"getA":{"nowait":false}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"r":{"vtype":"user.A"}}}
+  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false},"getA":{"nowait":false}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"r":{"vtype":"user.A"},"alist":{"vtype":"user.A[]"}}}
 });
 
 //# sourceMappingURL=concat.js.map

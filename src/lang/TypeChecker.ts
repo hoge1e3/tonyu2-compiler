@@ -1,11 +1,11 @@
 import * as cu from "./compiler";
 import R from "../lib/R";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr, isArrayElem } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
-import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isArrayType, isMeta, isMethodType, isNativeClass } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 import TError from "../runtime/TError";
 
@@ -57,7 +57,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 					const a=annotation(node.value);
 					if (a.resolvedType) {
 						rt=a.resolvedType;
-						console.log("Inferred",rt);
+						//console.log("Inferred",rt);
 					}
 				}
 				if (!rt) env.unresolvedVars++;
@@ -158,6 +158,12 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 					}
 					//console.log("OPCALL", leftT);
 					annotation(node, {resolvedType: leftT.method.returnType});
+				}
+			} else if (isArrayElem(node.op)) {
+				const leftA=annotation(node.left);
+				if (leftA && leftA.resolvedType && isArrayType(leftA.resolvedType)) {
+					const rt=leftA.resolvedType.element;
+					annotation(node,{resolvedType:rt});
 				}
 			}
 		},

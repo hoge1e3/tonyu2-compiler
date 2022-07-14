@@ -8,7 +8,7 @@ import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
-import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta } from "./CompilerTypes";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass } from "./CompilerTypes";
 import { ArgList, Arylit, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { DeclsInDefinition } from "../runtime/RuntimeTypes";
@@ -272,34 +272,34 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			const to=(!ctx.noWait?an.otherFiberCall:undefined);
 			if (t && t.type=="noRet") {
 				buf.printf(
-						"(yield* %s.%s%s(%j));%n" ,//FIBERCALL
+						"(yield* %s.%s%s(%j));" ,//FIBERCALL
 							THIZ, FIBPRE, t.N,  [", ",[THNode].concat(t.A)]
 				);
 			} else if (to && to.fiberType && to.type=="noRetOther") {
 				buf.printf(
-						"(yield* %v.%s%s(%j));%n" ,//FIBERCALL
+						"(yield* %v.%s%s(%j));" ,//FIBERCALL
 							to.O, FIBPRE, to.N,  [", ",[THNode].concat(to.A)],
 				);
 			} else if (t && t.type=="ret") {
 				buf.printf(//VDC
-						"%v%v(yield* %s.%s%s(%j));%n", //FIBERCALL
+						"%v%v(yield* %s.%s%s(%j));", //FIBERCALL
 							t.L, t.O, THIZ, FIBPRE, t.N, [", ",[THNode].concat(t.A)],
 				);
 			} else if (to && to.fiberType && to.type=="retOther") {
 				buf.printf(//VDC
-						"%v%v(yield* %v.%s%s(%j));%n", //FIBERCALL
+						"%v%v(yield* %v.%s%s(%j));", //FIBERCALL
 						to.L, to.P, to.O, FIBPRE, to.N, [", ",[THNode].concat(to.A)],
 				);
 			} else if (t && t.type=="noRetSuper") {
 				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
-							"(yield* %s.prototype.%s%s.apply( %s, [%j]));%n" ,//FIBERCALL
+							"(yield* %s.prototype.%s%s.apply( %s, [%j]));" ,//FIBERCALL
 							p,  FIBPRE, t.S.name.text,  THIZ,  [", ",[THNode].concat(t.A)],
 					);
 			} else if (t && t.type=="retSuper") {
 				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
-							"%v%v(yield* %s.prototype.%s%s.apply( %s, [%j]));%n" ,//FIBERCALL
+							"%v%v(yield* %s.prototype.%s%s.apply( %s, [%j]));" ,//FIBERCALL
 							t.L, t.O, p,  FIBPRE, t.S.name.text,  THIZ, [", ",[THNode].concat(t.A)]
 					);
 			} else {
@@ -335,19 +335,22 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		prefix: function (node:Prefix) {
 			if (node.op.text==="__typeof") {
 				const a=annotation(node.right);
-				console.log("__typeof",a);
-				if (a.resolvedType) {
+				//console.log("__typeof",a);
+				typeToLiteral(a.resolvedType);
+				/*if (a.resolvedType) {
 					const t=a.resolvedType;
 					if (isMethodType(t)) {
 						buf.printf("Tonyu.classMetas[%l].decls.methods.%s",t.method.klass.fullName, t.method.name);
 					} else if (isMeta(t)) {
 						buf.printf("Tonyu.classMetas[%l]",t.fullName);
-					} else {
+					} else if (isNativeClass(t)) {
 						buf.printf(t.class.name);
+					} else {
+						buf.printf("[%v]",t.element);
 					}
 				} else {
 					buf.printf("%l","Any");
-				}
+				}*/
 				return;
 			} else if (node.op.text==="__await") {
 				if (ctx.noWait) {
@@ -603,6 +606,22 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			buf.printf("%s",node.text);
 		}
 	});
+	function typeToLiteral(resolvedType:AnnotatedType) {
+		if (resolvedType) {
+			const t=resolvedType;
+			if (isMethodType(t)) {
+				buf.printf("Tonyu.classMetas[%l].decls.methods.%s",t.method.klass.fullName, t.method.name);
+			} else if (isMeta(t)) {
+				buf.printf("Tonyu.classMetas[%l]",t.fullName);
+			} else if (isNativeClass(t)) {
+				buf.printf(t.class.name);
+			} else {
+				buf.printf("[%f]",()=>typeToLiteral(t.element));
+			}
+		} else {
+			buf.printf("%l","Any");
+		}
+	}
 	function varDecl(node:VarDecl, parent: VarsDecl) {
 		var a=annotation(node);
 		var thisForVIM=a.varInMain? THIZ+"." :"";
@@ -722,8 +741,10 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			return `${t.method.klass.fullName}.${t.method.name}()`;
 		} else if (isMeta(t)) {
 			return t.fullName;
-		} else {
+		} else if (isNativeClass(t)) {
 			return t.class.name;
+		} else {
+			return `${klass2name(t.element)}[]`;
 		}
 	}
 	function digestDecls(klass: C_Meta):DeclsInDefinition {

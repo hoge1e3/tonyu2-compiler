@@ -24,6 +24,13 @@ a.n=10;
 
 var r=getA().test();
 print(r);
+
+let alist:A[]=[];
+print(__typeof alist);
+print(__typeof alist[0]);
+alist.push(a);
+alist[0].test();
+
 //a.n();
 //a.hoge();
 

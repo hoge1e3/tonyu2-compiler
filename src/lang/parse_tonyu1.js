@@ -4,5 +4,5 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 const parserFactory_1 = __importDefault(require("./parserFactory"));
 const tonyu1_token_1 = __importDefault(require("./tonyu1_token"));
-const Tonyu1Lang = parserFactory_1.default({ TT: tonyu1_token_1.default });
+const Tonyu1Lang = (0, parserFactory_1.default)({ TT: tonyu1_token_1.default });
 module.exports = Tonyu1Lang;

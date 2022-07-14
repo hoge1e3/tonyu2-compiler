@@ -117,7 +117,12 @@ export type FuncInfo={// also includes Method
 };
 export type NativeClass={class: Constructor};
 export type MethodType={method: FuncInfo};
-export type AnnotatedType=NativeClass|C_Meta|MethodType;
+export type ArrayType={element:AnnotatedType};
+export type NamedType=NativeClass|C_Meta;
+export type AnnotatedType=NamedType|MethodType|ArrayType;
+export function isArrayType(klass: AnnotatedType): klass is ArrayType {
+	return (klass as any).element;
+}
 export function isNativeClass(klass: AnnotatedType): klass is NativeClass {
 	return (klass as any).class;
 }

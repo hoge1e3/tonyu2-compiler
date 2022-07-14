@@ -274,12 +274,20 @@ export type Throw=NodeBase&{
 export function isThrow(n:TNode):n is Throw {
    return n && n.type==="throw";
 }
-export type TypeExpr=NodeBase&{
-  type: "typeExpr";
+export type TypeExpr=NamedTypeExpr|ArrayTypeExpr;
+export type ArrayTypeExpr=NodeBase&{
+    type: "arrayTypeExpr",
+    element: TypeExpr;
+};
+export function isArrayTypeExpr(n:TNode):n is ArrayTypeExpr {
+  return n && n.type==="arrayTypeExpr";
+}
+export type NamedTypeExpr=NodeBase&{
+  type: "namedTypeExpr";
   name: Token
 };
-export function isTypeExpr(n:TNode):n is TypeExpr {
-   return n && n.type==="typeExpr";
+export function isNamedTypeExpr(n:TNode):n is NamedTypeExpr {
+   return n && n.type==="namedTypeExpr";
 }
 export type TypeDecl=NodeBase&{
   type: "typeDecl";

@@ -64,7 +64,7 @@ function genJS(klass, env, genOptions) {
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = context_1.context();
+    var ctx = (0, context_1.context)();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -122,7 +122,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
+            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -291,31 +291,31 @@ function genJS(klass, env, genOptions) {
             const t = (!ctx.noWait ? an.fiberCall : undefined);
             const to = (!ctx.noWait ? an.otherFiberCall : undefined);
             if (t && t.type == "noRet") {
-                buf.printf("(yield* %s.%s%s(%j));%n", //FIBERCALL
+                buf.printf("(yield* %s.%s%s(%j));", //FIBERCALL
                 THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)]);
             }
             else if (to && to.fiberType && to.type == "noRetOther") {
-                buf.printf("(yield* %v.%s%s(%j));%n", //FIBERCALL
+                buf.printf("(yield* %v.%s%s(%j));", //FIBERCALL
                 to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)]);
             }
             else if (t && t.type == "ret") {
                 buf.printf(//VDC
-                "%v%v(yield* %s.%s%s(%j));%n", //FIBERCALL
+                "%v%v(yield* %s.%s%s(%j));", //FIBERCALL
                 t.L, t.O, THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)]);
             }
             else if (to && to.fiberType && to.type == "retOther") {
                 buf.printf(//VDC
-                "%v%v(yield* %v.%s%s(%j));%n", //FIBERCALL
+                "%v%v(yield* %v.%s%s(%j));", //FIBERCALL
                 to.L, to.P, to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)]);
             }
             else if (t && t.type == "noRetSuper") {
                 const p = SUPER; //getClassName(klass.superclass);
-                buf.printf("(yield* %s.prototype.%s%s.apply( %s, [%j]));%n", //FIBERCALL
+                buf.printf("(yield* %s.prototype.%s%s.apply( %s, [%j]));", //FIBERCALL
                 p, FIBPRE, t.S.name.text, THIZ, [", ", [THNode].concat(t.A)]);
             }
             else if (t && t.type == "retSuper") {
                 const p = SUPER; //getClassName(klass.superclass);
-                buf.printf("%v%v(yield* %s.prototype.%s%s.apply( %s, [%j]));%n", //FIBERCALL
+                buf.printf("%v%v(yield* %s.prototype.%s%s.apply( %s, [%j]));", //FIBERCALL
                 t.L, t.O, p, FIBPRE, t.S.name.text, THIZ, [", ", [THNode].concat(t.A)]);
             }
             else {
@@ -350,22 +350,22 @@ function genJS(klass, env, genOptions) {
         prefix: function (node) {
             if (node.op.text === "__typeof") {
                 const a = annotation(node.right);
-                console.log("__typeof", a);
-                if (a.resolvedType) {
-                    const t = a.resolvedType;
-                    if (CompilerTypes_1.isMethodType(t)) {
-                        buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
-                    }
-                    else if (CompilerTypes_1.isMeta(t)) {
-                        buf.printf("Tonyu.classMetas[%l]", t.fullName);
-                    }
-                    else {
+                //console.log("__typeof",a);
+                typeToLiteral(a.resolvedType);
+                /*if (a.resolvedType) {
+                    const t=a.resolvedType;
+                    if (isMethodType(t)) {
+                        buf.printf("Tonyu.classMetas[%l].decls.methods.%s",t.method.klass.fullName, t.method.name);
+                    } else if (isMeta(t)) {
+                        buf.printf("Tonyu.classMetas[%l]",t.fullName);
+                    } else if (isNativeClass(t)) {
                         buf.printf(t.class.name);
+                    } else {
+                        buf.printf("[%v]",t.element);
                     }
-                }
-                else {
-                    buf.printf("%l", "Any");
-                }
+                } else {
+                    buf.printf("%l","Any");
+                }*/
                 return;
             }
             else if (node.op.text === "__await") {
@@ -603,6 +603,26 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s", node.text);
         }
     });
+    function typeToLiteral(resolvedType) {
+        if (resolvedType) {
+            const t = resolvedType;
+            if ((0, CompilerTypes_1.isMethodType)(t)) {
+                buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
+            }
+            else if ((0, CompilerTypes_1.isMeta)(t)) {
+                buf.printf("Tonyu.classMetas[%l]", t.fullName);
+            }
+            else if ((0, CompilerTypes_1.isNativeClass)(t)) {
+                buf.printf(t.class.name);
+            }
+            else {
+                buf.printf("[%f]", () => typeToLiteral(t.element));
+            }
+        }
+        else {
+            buf.printf("%l", "Any");
+        }
+    }
     function varDecl(node, parent) {
         var a = annotation(node);
         var thisForVIM = a.varInMain ? THIZ + "." : "";
@@ -725,14 +745,17 @@ function genJS(klass, env, genOptions) {
         return t.fullName || t.class.name;
     }
     function klass2name(t) {
-        if (CompilerTypes_1.isMethodType(t)) {
+        if ((0, CompilerTypes_1.isMethodType)(t)) {
             return `${t.method.klass.fullName}.${t.method.name}()`;
         }
-        else if (CompilerTypes_1.isMeta(t)) {
+        else if ((0, CompilerTypes_1.isMeta)(t)) {
             return t.fullName;
         }
-        else {
+        else if ((0, CompilerTypes_1.isNativeClass)(t)) {
             return t.class.name;
+        }
+        else {
+            return `${klass2name(t.element)}[]`;
         }
     }
     function digestDecls(klass) {

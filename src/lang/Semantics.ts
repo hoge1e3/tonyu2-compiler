@@ -12,9 +12,9 @@ import * as cu from "./compiler";
 import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { AnnotatedType, Annotation, BuilderEnv, C_Meta, FuncInfo, Locals, Methods } from "./CompilerTypes";
+import { AnnotatedType, Annotation, ArrayType, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType } from "./CompilerTypes";
 import { packAnnotation } from "./compiler";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -391,7 +391,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 			return true;
 		}
-		console.log("LVal",node);
+		//console.log("LVal",node);
 		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
 	}
 	function getScopeInfo(node:Token):cu.ScopeInfo {//S
@@ -691,7 +691,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				//fiberCallRequired(this.path);
 			} else if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node,noRetOtherFiberCallTmpl))) {
-				console.log("noRetOtherFiberCallTmpl", t);
+				//console.log("noRetOtherFiberCallTmpl", t);
 				t.type="noRetOther";
 				//t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
 				annotation(node, {otherFiberCall:t});
@@ -747,14 +747,27 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.visit(node.value);
 			this.visit(node.typeDecl);
 		},
-		typeExpr: function (node:TypeExpr) {
-			resolveType(node);
+		namedTypeExpr: function (node:NamedTypeExpr) {
+			resolveNamedType(node);
+		},
+		arrayTypeExpr(node: ArrayTypeExpr) {
+			//console.log("ARRATYTPEEXPR",node);
+			resolveArrayType(node);
 		}
 	});
-	function resolveType(node:TypeExpr):AnnotatedType {//node:typeExpr
-		//var name:string=node.name+"";
+	function resolveType(node:TypeExpr):AnnotatedType {
+		if (isNamedTypeExpr(node)) return resolveNamedType(node);
+		else if (isArrayTypeExpr(node)) return resolveArrayType(node);
+	}
+	function resolveArrayType(node:ArrayTypeExpr):ArrayType {
+		const et=resolveType(node.element);
+		//console.log("ET",et);
+		const rt={element:et};
+		if (rt) annotation(node, {resolvedType:rt});
+		return rt;
+	}
+	function resolveNamedType(node:NamedTypeExpr):NamedType {
 		const si=getScopeInfo(node.name);
-		//console.log("TExpr",name,si,t);
 		const resolvedType=
 			(si instanceof SI.NATIVE)?si.value:
 			(si instanceof SI.CLASS) ?si.info : undefined;
@@ -765,11 +778,6 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			throw TError(R("typeNotFound",node.name),srcFile,node.pos);
 		}
 		return resolvedType;
-		/*if (si instanceof SI.NATIVE) {
-			annotation(node, {resolvedType: si.value});
-		} else if (si instanceof SI.CLASS){
-			annotation(node, {resolvedType: si.info});
-		}*/
 	}
 	varAccessesAnnotator.def=visitSub;//S
 	function annotateVarAccesses(node:Stmt[],scope:ScopeMap) {//S
