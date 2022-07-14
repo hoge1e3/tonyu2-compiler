@@ -70,7 +70,27 @@ function checkTypeDecl(klass, env) {
         return annotation3(klass.annotation, node, aobj);
     }
     var typeDeclVisitor = new Visitor_1.Visitor({
-        varDecl: function (node) {
+        forin(node) {
+            this.visit(node.set);
+            const a = annotation(node.set);
+            if (a.resolvedType && (0, CompilerTypes_1.isArrayType)(a.resolvedType) &&
+                node.isVar && node.isVar.text !== "var") {
+                if (node.vars.length == 1) {
+                    const sa = annotation(node.vars[0]);
+                    sa.scopeInfo.resolvedType = a.resolvedType.element;
+                }
+                else if (node.vars.length == 2) {
+                    const sa = annotation(node.vars[1]);
+                    sa.scopeInfo.resolvedType = a.resolvedType.element;
+                    const si = annotation(node.vars[0]);
+                    si.scopeInfo.resolvedType = { class: Number };
+                }
+            }
+            else {
+                this.visit(node.vars);
+            }
+        },
+        varDecl(node) {
             //console.log("TCV","varDecl",node);
             if (node.value)
                 this.visit(node.value);
@@ -101,7 +121,7 @@ function checkTypeDecl(klass, env) {
                 }
             }
         },
-        paramDecl: function (node) {
+        paramDecl(node) {
             if (node.name && node.typeDecl) {
                 //console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
                 var va = annotation(node.typeDecl.vtype);
@@ -113,7 +133,7 @@ function checkTypeDecl(klass, env) {
                 }
             }
         },
-        funcDecl: function (node) {
+        funcDecl(node) {
             //console.log("Visit funcDecl",node);
             var head = node.head;
             /*const finfo=annotation(node).funcInfo;

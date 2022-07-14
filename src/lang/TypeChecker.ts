@@ -1,7 +1,7 @@
 import * as cu from "./compiler";
 import R from "../lib/R";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr, isArrayElem } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr, isArrayElem, Forin } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
@@ -48,7 +48,27 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=new Visitor({
-		varDecl: function (node: VarDecl) {
+		forin(node:Forin) {
+			this.visit(node.set);
+			const a=annotation(node.set);
+			if (a.resolvedType && isArrayType(a.resolvedType) &&
+				node.isVar && node.isVar.text!=="var") {
+				if (node.vars.length==1) {
+					const sa=annotation(node.vars[0]);
+					sa.scopeInfo.resolvedType=a.resolvedType.element;
+				} else if (node.vars.length==2) {
+					const sa=annotation(node.vars[1]);
+					sa.scopeInfo.resolvedType=a.resolvedType.element;
+
+					const si=annotation(node.vars[0]);
+					si.scopeInfo.resolvedType={class:Number};
+
+				}
+			} else {
+				this.visit(node.vars);
+			}
+		},
+		varDecl(node: VarDecl) {
 			//console.log("TCV","varDecl",node);
 			if (node.value) this.visit(node.value);
 			let rt:AnnotatedType;
@@ -77,7 +97,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 				}
 			}
 		},
-		paramDecl: function (node: ParamDecl) {
+		paramDecl(node: ParamDecl) {
 			if (node.name && node.typeDecl) {
 				//console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
 				var va=annotation(node.typeDecl.vtype);
@@ -89,7 +109,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 				}
 			}
 		},
-		funcDecl: function (node: FuncDecl) {
+		funcDecl(node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
 			/*const finfo=annotation(node).funcInfo;

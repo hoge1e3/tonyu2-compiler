@@ -79,6 +79,7 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
+        var _it_0;
         
         "external waitable";
         _this.a = new Tonyu.classes.user.A();
@@ -102,11 +103,17 @@ Tonyu.klass.define({
         _this.print(Tonyu.classMetas['user.A']);
         _this.alist.push(_this.a);
         _this.alist[0].test();
+        for (let [i, e] of Tonyu.iterator2(_this.alist,2)) {
+          _this.print(i,e.test());
+          _this.print(Number,Tonyu.classMetas['user.A']);
+          
+        }
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
+        var _it_0;
         
         "external waitable";
         _this.a = new Tonyu.classes.user.A();
@@ -130,6 +137,11 @@ Tonyu.klass.define({
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
         _this.alist.push(_this.a);
         (yield* _this.alist[0].fiber$test(_thread));
+        for (let [i, e] of Tonyu.iterator2(_this.alist,2)) {
+          (yield* _this.fiber$print(_thread, i, e.test()));
+          (yield* _this.fiber$print(_thread, Number, Tonyu.classMetas['user.A']));
+          
+        }
         
       },
       print :function _trc_Main_print(x) {

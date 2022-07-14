@@ -30,6 +30,10 @@ print(__typeof alist);
 print(__typeof alist[0]);
 alist.push(a);
 alist[0].test();
+for (let i,e of alist) {
+	print (i, e.test());
+	print(__typeof i, __typeof e);
+}
 
 //a.n();
 //a.hoge();
