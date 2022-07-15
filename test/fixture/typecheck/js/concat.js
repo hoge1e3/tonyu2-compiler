@@ -79,7 +79,6 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         "external waitable";
         _this.a = new Tonyu.classes.user.A();
@@ -113,7 +112,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         "external waitable";
         _this.a = new Tonyu.classes.user.A();

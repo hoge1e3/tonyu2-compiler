@@ -72,15 +72,12 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 			//console.log("TCV","varDecl",node);
 			if (node.value) this.visit(node.value);
 			let rt:AnnotatedType;
-			if (env.options.compiler.typeInference) {
-				if (node.value) {
-					const a=annotation(node.value);
-					if (a.resolvedType) {
-						rt=a.resolvedType;
-						//console.log("Inferred",rt);
-					}
+			if (node.value) {
+				const a=annotation(node.value);
+				if (a.resolvedType) {
+					rt=a.resolvedType;
+					//console.log("Inferred",rt);
 				}
-				if (!rt) env.unresolvedVars++;
 			}
 			if (node.name && node.typeDecl) {
 				const va=annotation(node.typeDecl.vtype);
@@ -95,6 +92,8 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 						si.info.resolvedType=rt;
 					}
 				}
+			} else {
+				env.unresolvedVars++;
 			}
 		},
 		paramDecl(node: ParamDecl) {

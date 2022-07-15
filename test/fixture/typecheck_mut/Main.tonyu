@@ -1,0 +1,9 @@
+
+let a=new A();
+let b=new B();
+print(__typeof a);
+print(__typeof b);
+print(__typeof a.b);
+print(__typeof b.a);
+print(__typeof a.b.a);
+print(__typeof b.a.b);

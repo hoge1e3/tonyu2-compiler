@@ -95,16 +95,12 @@ function checkTypeDecl(klass, env) {
             if (node.value)
                 this.visit(node.value);
             let rt;
-            if (env.options.compiler.typeInference) {
-                if (node.value) {
-                    const a = annotation(node.value);
-                    if (a.resolvedType) {
-                        rt = a.resolvedType;
-                        //console.log("Inferred",rt);
-                    }
+            if (node.value) {
+                const a = annotation(node.value);
+                if (a.resolvedType) {
+                    rt = a.resolvedType;
+                    //console.log("Inferred",rt);
                 }
-                if (!rt)
-                    env.unresolvedVars++;
             }
             if (node.name && node.typeDecl) {
                 const va = annotation(node.typeDecl.vtype);
@@ -119,6 +115,9 @@ function checkTypeDecl(klass, env) {
                         si.info.resolvedType = rt;
                     }
                 }
+            }
+            else {
+                env.unresolvedVars++;
             }
         },
         paramDecl(node) {

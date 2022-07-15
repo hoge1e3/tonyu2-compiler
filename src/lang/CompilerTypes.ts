@@ -31,7 +31,7 @@ export type BuilderContextDef={
 };
 export type CompilerOptions={
 	typeCheck?: boolean,
-	typeInference?: boolean,
+	//typeInference?: boolean,
 	defaultSuperClass?: string,
 	field_strict?: boolean,
 	external_waitable?: boolean,
