@@ -323,7 +323,6 @@ Tonyu.klass.define({
           try {
             r=(yield* _this.fiber$runAsync(_thread, f));
             
-            
           } catch (e) {
             throw _thread.wrapError(e.args[0]);
             
@@ -570,7 +569,6 @@ Tonyu.klass.define({
           _this.zOrder=0;
         }
         (yield* _this.fiber$initTransform(_thread));
-        
         
       },
       initTransform :function _trc_SpriteMod_initTransform() {
@@ -1592,7 +1590,6 @@ Tonyu.klass.define({
          updateCount<updateT ; updateCount++) {
           {
             (yield* _this.fiber$update(_thread));
-            
           }
         }
         
@@ -2699,7 +2696,6 @@ Tonyu.klass.define({
           name = speca.shift();
           
           res[name]=(yield* _this.fiber$shift(_thread));
-          
           
         }
         opt=yield* _this.fiber$shift(_thread);
@@ -3835,7 +3831,6 @@ Tonyu.klass.define({
           if (res==null||v>=res) {
             if (v>res) {
               reso=(yield* _this.fiber$create(_thread));
-              
             }
             reso.push(o);
             res=v;
@@ -3896,7 +3891,6 @@ Tonyu.klass.define({
           if (res==null||v<=res) {
             if (v<res) {
               reso=(yield* _this.fiber$create(_thread));
-              
             }
             reso.push(o);
             res=v;
@@ -4200,7 +4194,6 @@ Tonyu.klass.define({
         if (Tonyu.is(e,Tonyu.classes.kernel.TQuery)||Tonyu.is(e,Array)) {
           for ([ee] of Tonyu.iterator2(e,1)) {
             (yield* _this.fiber$push(_thread, ee));
-            
           }
           
         } else {
@@ -4668,7 +4661,6 @@ Tonyu.klass.define({
         }
         for ([listener] of Tonyu.iterator2(_this.listeners.slice(),1)) {
           (yield* _this.fiber$callEventHandler(_thread, listener.action, args));
-          
           
         }
         
@@ -5300,22 +5292,18 @@ Tonyu.klass.define({
         switch (n.relation) {
         case "parent":
           (yield* _this.fiber$chk(_thread, n.next.transform.isParentOf(n.transform), "cn::parent not match"));
-          
           break;
           
         case "child":
           (yield* _this.fiber$chk(_thread, n.next.transform.isChildOf(n.transform), "cn::child not match"));
-          
           break;
           
         case "sibling":
           (yield* _this.fiber$chk(_thread, n.next.transform.isSibling(n.transform), "cn::sibling not match"));
-          
           break;
           
         default:
           (yield* _this.fiber$chk(_thread, n.isDst, "cn::relation not set"));
-          
         }
         return n;
         
@@ -5400,7 +5388,6 @@ Tonyu.klass.define({
         
         while (true) {
           (yield* _this.fiber$chk(_thread, t, "t reached to root(null)"));
-          
           cnode=_this.nodes[t.id];
           if (cnode) {
             break;
@@ -5418,12 +5405,10 @@ Tonyu.klass.define({
         }
         while (t=path.shift()) {
           (yield* _this.fiber$chk(_thread, t.parent===cnode.transform, "getNode cnode parent not match"));
-          
           cnode=_this.nodes[t.id]=_this.cn({next: cnode,relation: "parent",transform: t});
           
         }
         (yield* _this.fiber$chk(_thread, cnode.transform===tt, "getNode cnode not match"));
-        
         return cnode;
         
       },
@@ -5487,7 +5472,6 @@ Tonyu.klass.define({
         
         while (n!==dstNode) {
           (yield* _this.fiber$chk(_thread, res.parent===n.transform, "convert not match "));
-          
           switch (n.relation) {
           case "parent":
             n.transform.childToSibling(res,res);
@@ -5495,26 +5479,22 @@ Tonyu.klass.define({
             
           case "child":
             (yield* _this.fiber$chk(_thread, n.next.transform.isSibling(res), "convert::child not match"));
-            
             n.next.transform.siblingToChild(res,res);
             break;
             
           case "sibling":
             n.transform.childToSibling(res,res);
             (yield* _this.fiber$chk(_thread, n.next.transform.isSibling(res), "convert::sibling not match"));
-            
             n.next.transform.siblingToChild(res,res);
             break;
             
           default:
             (yield* _this.fiber$chk(_thread, false, "Unknown relation:"+n.relation+"/"+n.transform.id+"/"+_this.dstParent.id));
-            
           }
           n=n.next;
           
         }
         (yield* _this.fiber$chk(_thread, res.parent===_this.dstParent, "change::fail"));
-        
         return res;
         
       },
@@ -6370,10 +6350,8 @@ Tonyu.klass.define({
         _this.quaternion.product(t.quaternion,dst.quaternion);
         dst.scale=_this.scale*t.scale;
         (yield* _this.fiber$localToWorld(_thread, t.position, dst.position));
-        
         if (writeToThis) {
           (yield* _this.fiber$set(_thread, dst));
-          
           return _this;
           
         }
@@ -6540,7 +6518,6 @@ Tonyu.klass.define({
             dst=new Tonyu.classes.kernel.Transform;
           }
           (yield* _this.fiber$siblingToChild(_thread, sibling.position, dst.position));
-          
           _this.quaternion.inverse.product(sibling.quaternion,dst.quaternion);
           dst.scale=sibling.scale/_this.scale;
           dst._parent=_this;
@@ -7847,7 +7824,6 @@ Tonyu.klass.define({
           }
           (yield* _this.fiber$update(_thread));
           
-          
         }
         
       },
@@ -8172,10 +8148,8 @@ Tonyu.klass.define({
         }
         if (_this.imageData) {
           (yield* _this.fiber$makeRGBA(_thread, true));
-          
         } else {
           (yield* _this.fiber$clearRGBA(_thread));
-          
         }
         return true;
         
@@ -8229,9 +8203,7 @@ Tonyu.klass.define({
             _this.value.a=a;
           }
           (yield* _this.fiber$clearHSLA(_thread));
-          
           (yield* _this.fiber$clearName(_thread));
-          
           
         }
         
@@ -8499,7 +8471,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$nameToRGB(_thread));
         
-        
       },
       nameToRGB :function _trc_Color_nameToRGB() {
         "use strict";
@@ -8594,16 +8565,13 @@ Tonyu.klass.define({
         }
         if (! _this.hasRGBA()) {
           (yield* _this.fiber$nameToRGB(_thread));
-          
         }
         
         if (_this.imageData) {
           hsl=(yield* _this.fiber$RGBToHSL(_thread, _this.imageData.data[_this.index]/_this.maxs.r, _this.imageData.data[_this.index+1]/_this.maxs.g, _this.imageData.data[_this.index+2]/_this.maxs.b));
           
-          
         } else {
           hsl=(yield* _this.fiber$RGBToHSL(_thread, _this.value.r/_this.maxs.r, _this.value.g/_this.maxs.g, _this.value.b/_this.maxs.b));
-          
           
         }
         _this.value.h=hsl[0];
@@ -8655,7 +8623,6 @@ Tonyu.klass.define({
         type=type||"rgb";
         if (type=="rgb") {
           (yield* _this.fiber$makeRGBA(_thread));
-          
           if (_this.imageData) {
             _this.value.name="rgba("+[_this.floor(_this.imageData.data[_this.index]),_this.floor(_this.imageData.data[_this.index+1]),_this.floor(_this.imageData.data[_this.index+2]),_this.imageData.data[_this.index+3]/_this.maxs.a].join(",")+")";
             
@@ -8667,7 +8634,6 @@ Tonyu.klass.define({
         }
         if (type=="hsl") {
           (yield* _this.fiber$makeHSLA(_thread));
-          
           _this.value.name="hsla("+[_this.floor(_this.value.h),p(_this.value.s),p(_this.value.l),_this.value.a/_this.maxs.a].join(",")+")";
           
         }
@@ -8937,7 +8903,6 @@ Tonyu.klass.define({
           
           (yield* _this.fiber$addSprite2D(_thread, {x: pt.x,y: pt.y,zOrder: pt.z,scaleX: (s.scaleX||1)*scl,scaleY: (s.scaleY||s.scaleX||1)*scl,p: s.p,text: s.text,fillStyle: s.fillStyle,width: s.width,height: s.height,radius: s.radius,rotation: s.rotation||0,alpha: s.alpha||255}));
           
-          
         }
         
       },
@@ -9194,7 +9159,6 @@ Tonyu.klass.define({
         
         if (! _this.e) {
           (yield* _this.fiber$start(_thread));
-          
         }
         _this.e.addFrame(_this.target.image,{delay: _this.duration,copy: true});
         
@@ -10715,7 +10679,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* __superClass.prototype.fiber$initSpriteMod.apply( _this, [_thread]));
-        
         _this._align=_this._align||new Tonyu.classes.kernel.Align2D();
         
       },
@@ -11922,11 +11885,9 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         mesg=(yield* _this.fiber$cloneEvent(_thread, mesg));
-        
         mesg[_this.SYM_CLIENTID]=_this.myId;
         _this.m.send(mesg);
         (yield* _this.fiber$keepAlive(_thread));
-        
         
       },
       keepAlive :function _trc_M_T2Room_keepAlive() {
@@ -12759,7 +12720,6 @@ Tonyu.klass.define({
         if (! _this.isPlaying()) {
           (yield* _this.fiber$playNext(_thread));
           
-          
         }
         
       },
@@ -12959,9 +12919,7 @@ Tonyu.klass.define({
         if (typeof  T!=="undefined") {
           _this.env=T("env",{table: [1,[0.6,50],[0,100]],releaseNode: 2});
           (yield* _this.fiber$setEnv(_thread, 0, _this.env));
-          
           (yield* _this.fiber$setWav(_thread, 0, T("pulse")));
-          
           
         }
         
@@ -13556,7 +13514,6 @@ Tonyu.klass.define({
         th.apply(obj,name,args);
         th.name=(obj.getClassInfo?obj.getClassInfo().shortName:"Unknown")+"::"+name;
         (yield* _this.fiber$addToCur(_thread, th));
-        
         return th;
         
       },
@@ -13827,7 +13784,6 @@ Tonyu.klass.define({
         var t;
         
         (yield* _this.fiber$resetLastSteps(_thread));
-        
         dupc = {};
         
         while (_this.cur.length) {
@@ -13845,13 +13801,11 @@ Tonyu.klass.define({
             t.waitCount--;
             (yield* _this.fiber$addToNext(_thread, t));
             
-            
           } else {
             t.steps();
             if (t.preempted) {
               Tonyu.globals.$Boot.fireEvent("preempted",{thread: t,scheduler: _this});
               (yield* _this.fiber$addToNext(_thread, t));
-              
               
             }
             
@@ -13938,7 +13892,6 @@ Tonyu.klass.define({
         Tonyu.globals.$currentProject.requestPlugin("jquery_ui");
         
         r=(yield* _this.fiber$waitFor(_thread, Tonyu.globals.$InputBox.prompt(mesg,val,geom)));
-        
         return r;
         
       },
@@ -13974,7 +13927,6 @@ Tonyu.klass.define({
         
         
         r=(yield* _this.fiber$prompt(_thread, mesg, val, geom));
-        
         return r-0;
         
       },
@@ -13997,7 +13949,6 @@ Tonyu.klass.define({
         
         Tonyu.globals.$currentProject.requestPlugin("jquery_ui");
         r=(yield* _this.fiber$waitFor(_thread, Tonyu.globals.$InputBox.confirm(mesg)));
-        
         return r;
         
       },
@@ -14020,7 +13971,6 @@ Tonyu.klass.define({
         
         Tonyu.globals.$currentProject.requestPlugin("jquery_ui");
         r=(yield* _this.fiber$waitFor(_thread, Tonyu.globals.$InputBox.alert(mesg)));
-        
         return r;
         
       },
@@ -14092,7 +14042,6 @@ Tonyu.klass.define({
         
         if (! _this.useGamePad) {
           (yield* _this.fiber$update(_thread));
-          
           _this.useGamePad=true;
           
         }
@@ -14115,7 +14064,6 @@ Tonyu.klass.define({
         var pads;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         pads = navigator.getGamepads?navigator.getGamepads():(navigator.webkitGetGamepads?navigator.webkitGetGamepads:[]);
         
         return pads;
@@ -14170,7 +14118,6 @@ Tonyu.klass.define({
         var i;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         count = 0;
         
         for (i = 0;
@@ -14204,7 +14151,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp) {
@@ -14233,7 +14179,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad) {
@@ -14262,7 +14207,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad) {
@@ -14291,7 +14235,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad) {
@@ -14320,7 +14263,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.status||! gp.status[no]) {
@@ -14349,7 +14291,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad||! gp.pad.buttons||! gp.pad.buttons[no]) {
@@ -14378,7 +14319,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad||! gp.pad.buttons) {
@@ -14407,7 +14347,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad||! gp.pad.axes) {
@@ -14436,7 +14375,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp||! gp.pad||! gp.pad.axes) {
@@ -14465,7 +14403,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp) {
@@ -14494,7 +14431,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp) {
@@ -14523,7 +14459,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp) {
@@ -14552,7 +14487,6 @@ Tonyu.klass.define({
         var gp;
         
         (yield* _this.fiber$enableGamePad(_thread));
-        
         gp = _this.gamepads[index];
         
         if (! gp) {
@@ -16438,7 +16372,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$onAppear(_thread));
         
-        
       },
       changeLayer :function _trc_LifeCycleMod_changeLayer(l) {
         "use strict";
@@ -16551,7 +16484,6 @@ Tonyu.klass.define({
         for ([i, row] of Tonyu.iterator2(array,2)) {
           for ([j, val] of Tonyu.iterator2(row,2)) {
             (yield* _this.fiber$set(_thread, j, i, val));
-            
             
           }
           
@@ -16672,7 +16604,6 @@ Tonyu.klass.define({
           x=0;
           for ([_this.cell] of Tonyu.iterator2(_this.row,1)) {
             (yield* _this.fiber$set(_thread, x, y, _this.cell));
-            
             x++;
             
           }
@@ -17288,7 +17219,6 @@ Tonyu.klass.define({
         
         if (v===undefined) {
           k=(yield* _this.fiber$key(_thread, x, y));
-          
           if (_this.data[k]===undefined) {
             return v;
           }
@@ -17297,7 +17227,6 @@ Tonyu.klass.define({
           
         } else {
           k=(yield* _this.fiber$key(_thread, x, y, true));
-          
           if (_this.data[k]===v) {
             return v;
           }
@@ -17390,7 +17319,6 @@ Tonyu.klass.define({
           
           if (_this.exists(x+j,y+i)) {
             r=(yield* _this.fiber$get(_thread, x+j, y+i));
-            
             res.push({x: x+j,y: y+i,ox: j,oy: i,value: r});
             
           } else {
@@ -17462,7 +17390,6 @@ Tonyu.klass.define({
                   }
                 }
                 (yield* _this.fiber$set(_thread, j, i, d));
-                
               }
             }
           }
@@ -17720,18 +17647,15 @@ Tonyu.klass.define({
             for ([obj] of Tonyu.iterator2(_this.allCrash(d),1)) {
               (yield* _this.fiber$callEventHandler(_thread, f, [obj]));
               
-              
             }
             
           } else {
             if (_this.crashTo(d)) {
               (yield* _this.fiber$callEventHandler(_thread, f, [d]));
               
-              
             }
           }
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -17830,7 +17754,6 @@ Tonyu.klass.define({
           }
           (yield* _this.fiber$update(_thread));
           
-          
         }
         
       },
@@ -17886,7 +17809,6 @@ Tonyu.klass.define({
             }
             (yield* _this.fiber$update(_thread));
             
-            
           }
           while (true) {
             if (_this.screenOut()<=d) {
@@ -17896,10 +17818,8 @@ Tonyu.klass.define({
             }
             (yield* _this.fiber$update(_thread));
             
-            
           }
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -18821,7 +18741,6 @@ Tonyu.klass.define({
         } else {
           (yield* _this.fiber$setPanel(_thread, _this.width||Tonyu.globals.$screenWidth||465, _this.height||Tonyu.globals.$screenHeight||465));
           
-          
         }
         if (_this._fillStyle&&_this.canvas) {
           _this.canvas.getContext("2d").fillStyle=_this._fillStyle+"";
@@ -18887,7 +18806,6 @@ Tonyu.klass.define({
           return _this;
         }
         (yield* _this.fiber$setPanel(_thread, width, height));
-        
         
       },
       getContext :function _trc_PanelMod_getContext() {
@@ -19130,7 +19048,6 @@ Tonyu.klass.define({
         
         if (typeof  getX=="number"&&! isNaN(getX)&&typeof  getY=="number"&&! isNaN(getY)) {
           ctx=(yield* _this.fiber$getContext(_thread));
-          
           imagedata=ctx.getImageData(getX,getY,1,1);
           colordata=[imagedata.data[0],imagedata.data[1],imagedata.data[2],imagedata.data[3]];
           
@@ -19169,7 +19086,6 @@ Tonyu.klass.define({
         imagedata = ctx.getImageData(0,0,_this.width,_this.height);
         
         (yield* _this.fiber$clearRect(_thread, 0, 0, _this.width, _this.height));
-        
         ctx.putImageData(imagedata,- scrollX,- scrollY);
         ctx.restore();
         
@@ -19452,7 +19368,6 @@ Tonyu.klass.define({
         
         if (typeof  fn==="string") {
           fn=(yield* _this.fiber$file(_thread, fn));
-          
         }
         return fn.text(url);
         
@@ -19502,7 +19417,6 @@ Tonyu.klass.define({
         
         if (typeof  fn==="string") {
           fn=(yield* _this.fiber$file(_thread, fn));
-          
         }
         d = new $.Deferred();
         
@@ -19687,7 +19601,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$putImageData(_thread, data, left, top));
         
-        
       },
       __dummy: false
     };
@@ -19812,7 +19725,6 @@ Tonyu.klass.define({
         while (_this._mml.bufferCount()>2) {
           (yield* _this.fiber$update(_thread));
           
-          
         }
         return _this._mml;
         
@@ -19888,7 +19800,6 @@ Tonyu.klass.define({
           
           Tonyu.globals.$InputDevice.addOnetimeListener(f);
         })));
-        
         
       },
       __dummy: false
@@ -20051,7 +19962,6 @@ Tonyu.klass.define({
         Tonyu.globals.$Boot.loadPage.apply(Tonyu.globals.$Boot,_arguments);
         (yield* _this.fiber$update(_thread));
         
-        
       },
       __getter__defaultLayer :function _trc_BaseActor___getter__defaultLayer() {
         "use strict";
@@ -20105,7 +20015,6 @@ Tonyu.klass.define({
         }
         for (n; n>0 ; n--) {
           (yield* _this.fiber$update(_thread));
-          
         }
         
       },
@@ -20150,7 +20059,6 @@ Tonyu.klass.define({
           size=15;
         }
         (yield* _this.fiber$initSprite(_thread));
-        
         _this._sprite._fukidashi={text: text,size: size,c: 30};
         
       },
@@ -20166,7 +20074,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$go(_thread, x, y, p));
-        
         
       },
       show :function _trc_NoviceActor_show(x,y,p) {
@@ -20212,7 +20119,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$initSprite(_thread));
-        
         _this._sprite.x=x;
         _this._sprite.y=y;
         if (p!=null) {
@@ -20233,7 +20139,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$initSprite(_thread));
-        
         _this._sprite.p=p;
         
       },
@@ -20575,7 +20480,6 @@ Tonyu.klass.define({
           return _this;
         }
         (yield* __superClass.prototype.fiber$draw3D.apply( _this, [_thread, ctx3d]));
-        
         
       },
       goBehind :function _trc_Camera3D_goBehind(target,dist) {
@@ -20992,7 +20896,6 @@ Tonyu.klass.define({
              j<_this.col ; j++) {
               {
                 (yield* _this.fiber$setAll(_thread, j, i, _this.mapData[i][j], _this.mapOnData[i][j]));
-                
               }
             }
           }
@@ -21061,7 +20964,6 @@ Tonyu.klass.define({
           return _this;
         }
         _this.bufAry=(yield* _this.fiber$createBuf(_thread, _this.col*_this.chipWidth, _this.row*_this.chipHeight));
-        
         for (i = 0;
          i<_this.row ; i++) {
           {
@@ -21069,7 +20971,6 @@ Tonyu.klass.define({
              j<_this.col ; j++) {
               {
                 (yield* _this.fiber$set(_thread, j, i, _this.mapTable[i][j]));
-                
               }
             }
           }
@@ -21084,7 +20985,6 @@ Tonyu.klass.define({
              j<_this.col ; j++) {
               {
                 (yield* _this.fiber$setOn(_thread, j, i, _this.mapOnTable[i][j]));
-                
               }
             }
           }
@@ -21121,7 +21021,6 @@ Tonyu.klass.define({
             return r;
           }
           r=(yield* _this.fiber$file(_thread, fileName));
-          
           return r;
           
         }
@@ -21148,7 +21047,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         dataFile=(yield* _this.fiber$resolve(_thread, dataFile, true));
-        
         if (! dataFile||! dataFile.obj) {
           _this.print(dataFile);
           throw new Error(dataFile+" is not a file!");
@@ -21157,7 +21055,6 @@ Tonyu.klass.define({
         }
         _this.baseData=dataFile.obj();
         (yield* _this.fiber$loadFromBaseData(_thread, _this.baseData));
-        
         
       },
       loadFromBaseData :function _trc_Map_loadFromBaseData(baseData) {
@@ -21197,9 +21094,7 @@ Tonyu.klass.define({
           _this.chipHeight=(baseData[3]-0)||_this.chipHeight||32;
         }
         _this.bufAry=(yield* _this.fiber$createBuf(_thread, _this.col*_this.chipWidth, _this.row*_this.chipHeight));
-        
         (yield* _this.fiber$initMap(_thread));
-        
         
       },
       save :function _trc_Map_save(saveFileName) {
@@ -21415,7 +21310,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$setAll(_thread, setCol, setRow, p, _this.mapOnTable[setRow][setCol]));
         
-        
       },
       setOn :function _trc_Map_setOn(setCol,setRow,onP) {
         "use strict";
@@ -21436,7 +21330,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$setAll(_thread, setCol, setRow, _this.mapTable[setRow][setCol], onP));
         
-        
       },
       setOnAt :function _trc_Map_setOnAt(setX,setY,p) {
         "use strict";
@@ -21451,7 +21344,6 @@ Tonyu.klass.define({
         
         (yield* _this.fiber$setOn(_thread, Math.floor((setX-_this.sx)/_this.chipWidth), Math.floor((setY-_this.sy)/_this.chipHeight), p));
         
-        
       },
       setAt :function _trc_Map_setAt(setX,setY,p) {
         "use strict";
@@ -21465,7 +21357,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$set(_thread, Math.floor((setX-_this.sx)/_this.chipWidth), Math.floor((setY-_this.sy)/_this.chipHeight), p));
-        
         
       },
       get :function _trc_Map_get(getCol,getRow) {
@@ -21872,7 +21763,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$parseBufferSize(_thread));
         
-        
       },
       parseBufferSize :function _trc_Map2_parseBufferSize() {
         "use strict";
@@ -21968,7 +21858,6 @@ Tonyu.klass.define({
         var canvas;
         
         (yield* _this.fiber$initBuf(_thread));
-        
         w = _this.bufferSize.w;
         
         h = _this.bufferSize.h;
@@ -22054,7 +21943,6 @@ Tonyu.klass.define({
         var j;
         
         (yield* _this.fiber$initBuf(_thread));
-        
         for (i = 0;
          i<_this.row ; i++) {
           {
@@ -22062,7 +21950,6 @@ Tonyu.klass.define({
              j<_this.col ; j++) {
               {
                 (yield* _this.fiber$redrawChip(_thread, j, i));
-                
               }
             }
           }
@@ -22099,7 +21986,6 @@ Tonyu.klass.define({
             return r;
           }
           r=(yield* _this.fiber$file(_thread, fileName));
-          
           return r;
           
         }
@@ -22132,7 +22018,6 @@ Tonyu.klass.define({
         
         _this.bufMat=null;
         dataFile=(yield* _this.fiber$resolve(_thread, dataFile, true));
-        
         if (! dataFile||! dataFile.obj) {
           _this.print(dataFile);
           throw new Error(dataFile+" is not a file!");
@@ -22143,7 +22028,6 @@ Tonyu.klass.define({
         
         c.load(dataFile);
         (yield* _this.fiber$redraw(_thread));
-        
         
       },
       save :function _trc_Map2_save(saveFileName) {
@@ -22297,7 +22181,6 @@ Tonyu.klass.define({
         var l;
         
         (yield* _this.fiber$initBuf(_thread, p));
-        
         if (setCol>=_this.col&&! _this._expand.right||setRow>=_this.row&&! _this._expand.bottom||setCol<0&&! _this._expand.left||setRow<0&&! _this._expand.top) {
           return _this;
           
@@ -22319,7 +22202,6 @@ Tonyu.klass.define({
         }
         l.set(setCol,setRow,p);
         (yield* _this.fiber$redrawChip(_thread, setCol, setRow));
-        
         
       },
       range :function _trc_Map2_range(options) {
@@ -22705,7 +22587,6 @@ Tonyu.klass.define({
         }
         _this._wallFilter=(yield* _this.fiber$chipFilter(_thread, options));
         
-        
       },
       set :function _trc_Map2_set(setCol,setRow,p) {
         "use strict";
@@ -22720,7 +22601,6 @@ Tonyu.klass.define({
         
         (yield* _this.fiber$setWithLayerName(_thread, "base", setCol, setRow, p));
         
-        
       },
       setOn :function _trc_Map2_setOn(setCol,setRow,onP) {
         "use strict";
@@ -22734,7 +22614,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$setWithLayerName(_thread, "on", setCol, setRow, onP));
-        
         
       },
       worldToChip :function _trc_Map2_worldToChip(o) {
@@ -22762,7 +22641,6 @@ Tonyu.klass.define({
         r=yield* _this.fiber$getDrawRect(_thread);
         
         (yield* _this.fiber$initBuf(_thread));
-        
         return {x: Math.floor((l.x-r.left)/_this.chipWidth),y: Math.floor((l.y-r.top)/_this.chipHeight)};
         
       },
@@ -22803,7 +22681,6 @@ Tonyu.klass.define({
         r=yield* _this.fiber$getDrawRect(_thread);
         
         (yield* _this.fiber$initBuf(_thread));
-        
         co = {x: r.left+o.x*_this.chipWidth+_this.chipWidth/2,y: r.top+o.y*_this.chipHeight+_this.chipHeight/2};
         
         return _this.transform.localToWorld(co);
@@ -22828,7 +22705,6 @@ Tonyu.klass.define({
         
         (yield* _this.fiber$setOn(_thread, l.x, l.y, p));
         
-        
       },
       setAt :function _trc_Map2_setAt(x,y,p) {
         "use strict";
@@ -22848,7 +22724,6 @@ Tonyu.klass.define({
         l=yield* _this.fiber$worldToChip(_thread, {x: x,y: y});
         
         (yield* _this.fiber$set(_thread, l.x, l.y, p));
-        
         
       },
       getWithLayerName :function _trc_Map2_getWithLayerName(name,setCol,setRow) {
@@ -23077,7 +22952,6 @@ Tonyu.klass.define({
         var r;
         
         (yield* _this.fiber$initBuf(_thread));
-        
         r = _this._align.getDrawRect({width: _this.chipWidth*_this.col,height: _this.chipHeight*_this.row});
         
         r.left=r.x-r.width/2;
@@ -23275,7 +23149,6 @@ Tonyu.klass.define({
           }
           (yield* _this.fiber$runPromise(_thread, requestAnimationFrame));
           
-          
         }
         
       },
@@ -23333,7 +23206,6 @@ Tonyu.klass.define({
           return _this;
         }
         (yield* _this.fiber$setPanel(_thread, width, height));
-        
         
       },
       getContext :function _trc_Panel_getContext() {
@@ -23583,7 +23455,6 @@ Tonyu.klass.define({
         
         if (typeof  getX=="number"&&! isNaN(getX)&&typeof  getY=="number"&&! isNaN(getY)) {
           ctx=(yield* _this.fiber$getContext(_thread));
-          
           _this.imagedata=ctx.getImageData(getX,getY,1,1);
           _this.colordata=[_this.imagedata.data[0],_this.imagedata.data[1],_this.imagedata.data[2],_this.imagedata.data[3]];
           
@@ -23618,7 +23489,6 @@ Tonyu.klass.define({
         ctx.save();
         _this.imagedata=ctx.getImageData(0,0,_this.width,_this.height);
         (yield* _this.fiber$clearRect(_thread, 0, 0, _this.width, _this.height));
-        
         ctx.putImageData(_this.imagedata,- scrollX,- scrollY);
         ctx.restore();
         
@@ -24107,7 +23977,6 @@ Tonyu.klass.define({
         rect = _this.drawTextRect(_this.context,text,padding.left,padding.top,size,a,"test");
         
         (yield* _this.fiber$resize(_thread, padding.left+rect.w+padding.right, padding.top+rect.h+padding.bottom));
-        
         bg = options.background||options.bg||(function anonymous_10888() {
           
         });
@@ -24159,7 +24028,6 @@ Tonyu.klass.define({
         
         if (typeof  fn==="string") {
           fn=(yield* _this.fiber$file(_thread, fn));
-          
         }
         return fn.text(url);
         
@@ -24231,7 +24099,6 @@ Tonyu.klass.define({
         
         if (typeof  fn==="string") {
           fn=(yield* _this.fiber$file(_thread, fn));
-          
         }
         d = new $.Deferred();
         
@@ -24427,7 +24294,6 @@ Tonyu.klass.define({
           }
         }
         (yield* _this.fiber$putImageData(_thread, data, left, top));
-        
         
       },
       __dummy: false
@@ -24785,7 +24651,6 @@ Tonyu.klass.define({
           if (_this.clearBG) {
             (yield* _this.fiber$clearRect(_thread, 0, 0, _this.width, _this.height));
             
-            
           }
           _this.fillStyle=_this._color+"";
           _this.fillRect(0,0,_this.width,_this.height);
@@ -24866,7 +24731,6 @@ Tonyu.klass.define({
         }
         if (_this.layers.length==1&&_this.index==null) {
           (yield* _this.fiber$selectLayer(_thread, layer));
-          
           
         }
         return layer;
@@ -25464,9 +25328,7 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$initBody(_thread));
-        
         (yield* __superClass.prototype.fiber$update.apply( _this, [_thread]));
-        
         
       },
       initBody :function _trc_BodyActor_initBody() {
@@ -25630,11 +25492,8 @@ Tonyu.klass.define({
         fixDef = new b2FixtureDef;
         
         fixDef.density=(yield* _this.fiber$defv(_thread, _this.density, 1));
-        
         fixDef.friction=(yield* _this.fiber$defv(_thread, _this.friction, 0.5));
-        
         fixDef.restitution=(yield* _this.fiber$defv(_thread, _this.restitution, 0.2));
-        
         bodyDef = new b2BodyDef;
         
         bodyDef.type=_this.isStatic?b2Body.b2_staticBody:b2Body.b2_dynamicBody;
@@ -26427,7 +26286,6 @@ Tonyu.klass.define({
         
         Tonyu.globals.$currentProject.requestPlugin("box2d");
         (yield* _this.fiber$initWorld(_thread));
-        
         _this.parallel(Tonyu.bindFunc(_this,_this.loop));
         
       },
@@ -26462,9 +26320,7 @@ Tonyu.klass.define({
         var b2Vec2;
         
         _this.gravity=(yield* _this.fiber$defv(_thread, _this.gravity, 9.8));
-        
         _this.gravityX=(yield* _this.fiber$defv(_thread, _this.gravityX, 0));
-        
         _this.fps=Tonyu.globals.$Boot.getFrameRate();
         b2World = Box2D.Dynamics.b2World;
         
@@ -26521,7 +26377,6 @@ Tonyu.klass.define({
           _this.world.Step(1/_this.fps,10,10);
           _this.world.ClearForces();
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -26614,7 +26469,6 @@ Tonyu.klass.define({
           
         }
         (yield* _this.fiber$resetSEFrame(_thread));
-        
         _this.bgmPlayerMax=Tonyu.globals.$t2MediaLib.bgmPlayerMax;
         
       },
@@ -26942,12 +26796,10 @@ Tonyu.klass.define({
             name=s.name;
             url=Tonyu.Assets.resolve(s.url,prj);
             (yield* _this.fiber$loadSound(_thread, name, url, callbacks));
-            
           }
         }
         while (cnt<r.sounds.length) {
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -28212,7 +28064,6 @@ Tonyu.klass.define({
         Tonyu.globals.$t2MediaLib.loadAudio(idx,src);
         while (Tonyu.globals.$t2MediaLib.getAudioData(idx)==null) {
           (yield* _this.fiber$update(_thread));
-          
         }
         
       },
@@ -28519,7 +28370,6 @@ Tonyu.klass.define({
         _this.onUpdate();
         (yield* __superClass.prototype.fiber$update.apply( _this, [_thread]));
         
-        
       },
       onUpdate :function _trc_PlainChar_onUpdate() {
         "use strict";
@@ -28539,7 +28389,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$main(_thread));
-        
         _this.die();
         
       },
@@ -28705,16 +28554,13 @@ Tonyu.klass.define({
         _this.chipHeight=o.chipHeight;
         _this.baseData=o.baseData;
         _this.mapTable=(yield* _this.fiber$conv(_thread, _this.baseData[0], o.pTable));
-        
         _this.mapData=_this.mapTable;
         _this.row=_this.mapTable.length;
         _this.col=_this.mapTable[0].length;
         _this.mapOnTable=(yield* _this.fiber$conv(_thread, _this.baseData[1], o.pTable));
-        
         _this.mapOnData=_this.mapOnTable;
         _this.buf=$("<canvas>").attr({width: _this.col*_this.chipWidth,height: _this.row*_this.chipHeight});
         (yield* _this.fiber$initMap(_thread));
-        
         
       },
       conv :function _trc_T1Map_conv(mat,tbl) {
@@ -28919,7 +28765,6 @@ Tonyu.klass.define({
         
         if (! _this.auto) {
           (yield* _this.fiber$loop(_thread));
-          
         }
         
       },
@@ -29100,7 +28945,6 @@ Tonyu.klass.define({
           _this.vx=_this.clamp(vx/_this.outerRadius,- 1,1);
           _this.vy=_this.clamp(vy/_this.outerRadius,- 1,1);
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -29323,7 +29167,6 @@ Tonyu.klass.define({
         Tonyu.classes.kernel.Button.last=_this;
         if (_this.clickTiming!=="release") {
           (yield* _this.fiber$handleClickEvent(_thread));
-          
         }
         if (_this.autoRepeat) {
           if (_this._arth) {
@@ -29355,7 +29198,6 @@ Tonyu.klass.define({
         _this.fireEvent("release");
         if (_this.clickTiming==="release") {
           (yield* _this.fiber$handleClickEvent(_thread));
-          
         }
         _this._clicked=0;
         if (_this._arth) {
@@ -29380,12 +29222,9 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$updateEx(_thread, _this.autoRepeat));
-        
         while (true) {
           (yield* _this.fiber$handleClickEvent(_thread));
-          
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -30111,7 +29950,6 @@ Tonyu.klass.define({
         }));
         _this.print("map file(s)");
         _this.fileList=(yield* _this.fiber$file(_thread, "../maps/"));
-        
         if (_this.fileList.exists()) {
           _this.fileList.recursive((function a(f) {
             
@@ -30137,11 +29975,9 @@ Tonyu.klass.define({
             }
             (yield* _this.fiber$update(_thread));
             
-            
           }
           if (_this.loadMode) {
             _this.fileName=(yield* _this.fiber$prompt(_thread, "Input json file (*.json)", "map.json"));
-            
             if (_this.fileName) {
               _this.mapDataFile=_this.file("../maps/").rel(_this.fileName);
               
@@ -30152,7 +29988,6 @@ Tonyu.klass.define({
               
             } else {
               _this.mapDataFile=(yield* _this.fiber$file(_thread, _this.fileName));
-              
               if (_this.mapDataFile.obj()) {
                 _this.baseData=_this.mapDataFile.obj();
                 _this.loadedFile=_this.fileName;
@@ -30186,18 +30021,13 @@ Tonyu.klass.define({
           
         }
         (yield* _this.fiber$update(_thread));
-        
         if (! _this.loadMode) {
           _this.row=(yield* _this.fiber$prompt(_thread, "input row"));
-          
           _this.row=(_this.row-0)||50;
           _this.col=(yield* _this.fiber$prompt(_thread, "input col"));
-          
           _this.col=(_this.col-0)||50;
           _this.chipWidth=(yield* _this.fiber$prompt(_thread, "input chipWidth"));
-          
           _this.chipHeight=(yield* _this.fiber$prompt(_thread, "input chipHeight"));
-          
           _this.chipWidth=(_this.chipWidth-0)||32;
           _this.chipHeight=(_this.chipHeight-0)||32;
           _this.panel=new Tonyu.classes.kernel.Panel({width: _this.col*_this.chipWidth,height: _this.row*_this.chipHeight});
@@ -30253,9 +30083,7 @@ Tonyu.klass.define({
         _this.lc=0;
         _this.selectedLayer=_this.layers[_this.lc];
         (yield* _this.fiber$drawPanel(_thread));
-        
         (yield* _this.fiber$drawLetter(_thread, _this.mode));
-        
         while (true) {
           _this.p=_this.mapp;
           if (Tonyu.globals.$touches[0].touched==1&&Tonyu.globals.$touches[0].x>0&&Tonyu.globals.$touches[0].x<120&&Tonyu.globals.$touches[0].y>560&&Tonyu.globals.$touches[0].y<640) {
@@ -30263,22 +30091,18 @@ Tonyu.klass.define({
             _this.mode="erase";
             (yield* _this.fiber$drawLetter(_thread, _this.mode));
             
-            
           }
           if (Tonyu.globals.$touches[0].touched==1&&Tonyu.globals.$touches[0].x>0&&Tonyu.globals.$touches[0].x<120&&Tonyu.globals.$touches[0].y>480&&Tonyu.globals.$touches[0].y<560) {
             Tonyu.globals.$mp.scrollTo(1000,1000);
             _this.mode="set";
             (yield* _this.fiber$drawLetter(_thread, _this.mode));
             
-            
           }
           if (Tonyu.globals.$touches[0].touched==1&&Tonyu.globals.$touches[0].x>120&&Tonyu.globals.$touches[0].x<240&&Tonyu.globals.$touches[0].y>480&&Tonyu.globals.$touches[0].y<560) {
             _this.lc++;
             _this.selectedLayer=_this.layers[_this.lc%3];
             (yield* _this.fiber$drawPanel(_thread));
-            
             (yield* _this.fiber$drawLetter(_thread, _this.mode));
-            
             
           }
           if (Tonyu.globals.$touches[0].touched==1&&Tonyu.globals.$touches[0].x>240&&Tonyu.globals.$touches[0].x<360&&Tonyu.globals.$touches[0].y>480&&Tonyu.globals.$touches[0].y<560) {
@@ -30296,21 +30120,17 @@ Tonyu.klass.define({
             }
             (yield* _this.fiber$drawLetter(_thread, _this.mode));
             
-            
           }
           if (Tonyu.globals.$touches[0].touched==1&&Tonyu.globals.$touches[0].x>360&&Tonyu.globals.$touches[0].x<480&&Tonyu.globals.$touches[0].y>480&&Tonyu.globals.$touches[0].y<560) {
             if (_this.loadedFile) {
               _this.saveFileName=(yield* _this.fiber$prompt(_thread, "input json file(*.json)", _this.loadedFile));
               
-              
             } else {
               _this.saveFileName=(yield* _this.fiber$prompt(_thread, "input json file(*.json)", "map.json"));
-              
               
             }
             if (_this.saveFileName) {
               (yield* _this.fiber$save(_thread, _this.saveFileName));
-              
               
             }
             
@@ -30319,7 +30139,6 @@ Tonyu.klass.define({
             Tonyu.globals.$mp.scrollTo(1000,1000);
             _this.mode="copy";
             (yield* _this.fiber$drawLetter(_thread, _this.mode));
-            
             
           }
           if (_this.mode!="get") {
@@ -30430,9 +30249,7 @@ Tonyu.klass.define({
                 _this.mode="set";
                 Tonyu.globals.$mp.scrollTo(1000,1000);
                 (yield* _this.fiber$drawLetter(_thread, _this.mode));
-                
                 (yield* _this.fiber$updateEx(_thread, 10));
-                
                 
               } else {
                 if (_this.mode=="setOn"&&_this.getkey(1)>0&&_this.inRect()) {
@@ -30457,9 +30274,7 @@ Tonyu.klass.define({
                     }
                     _this.mode="set";
                     (yield* _this.fiber$drawLetter(_thread, _this.mode));
-                    
                     (yield* _this.fiber$updateEx(_thread, 10));
-                    
                     
                   }
                 }
@@ -30467,7 +30282,6 @@ Tonyu.klass.define({
             }
           }
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -30524,17 +30338,13 @@ Tonyu.klass.define({
         
         if (r) {
           (yield* _this.fiber$save(_thread, curFileName));
-          
           (yield* _this.fiber$update(_thread));
-          
           e.die();
           
         } else {
           r=(yield* _this.fiber$confirm(_thread, "Discard changes?"));
-          
           if (r) {
             (yield* _this.fiber$update(_thread));
-            
             e.die();
             
           }
@@ -30981,7 +30791,6 @@ Tonyu.klass.define({
           }
           (yield* _this.fiber$update(_thread));
           
-          
         }
         if (_this.loadMode) {
           _this.fileName=prompt("Input json file (*.json)","map.json");
@@ -30994,7 +30803,6 @@ Tonyu.klass.define({
             
           } else {
             _this.mapDataFile=(yield* _this.fiber$file(_thread, _this.fileName));
-            
             if (_this.mapDataFile.obj()) {
               _this.baseData=_this.mapDataFile.obj();
               
@@ -31015,11 +30823,9 @@ Tonyu.klass.define({
           
         }
         (yield* _this.fiber$update(_thread));
-        
         if (! _this.loadMode) {
           _this.row=prompt("input row");
           (yield* _this.fiber$update(_thread));
-          
           _this.col=prompt("input col");
           _this.panel=new Tonyu.classes.kernel.Panel({width: _this.col*32,height: _this.row*32});
           _this.panel.x=_this.panel.width/2+10;
@@ -31170,7 +30976,6 @@ Tonyu.klass.define({
                 _this.print(_this.mode+" mode");
                 (yield* _this.fiber$updateEx(_thread, 10));
                 
-                
               } else {
                 if (_this.mode=="setOn"&&_this.getkey(1)>0) {
                   Tonyu.globals.$map.setOnAt(Tonyu.globals.$mouseX+_this.mx,Tonyu.globals.$mouseY+_this.my,_this.mapp);
@@ -31182,14 +30987,12 @@ Tonyu.klass.define({
                     _this.print(_this.mode+" mode");
                     (yield* _this.fiber$updateEx(_thread, 10));
                     
-                    
                   }
                 }
               }
             }
           }
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -31509,7 +31312,6 @@ Tonyu.klass.define({
         _this.fileExist=false;
         _this.print("map file(s)");
         _this.fileList=(yield* _this.fiber$file(_thread, "../maps/"));
-        
         if (_this.fileList.exists()) {
           _this.fileList.recursive((function a(f) {
             
@@ -31537,7 +31339,6 @@ Tonyu.klass.define({
             }
             (yield* _this.fiber$update(_thread));
             
-            
           }
           if (_this.loadMode) {
             _this.fileName=prompt("Input json file (*.json)","map.json");
@@ -31551,7 +31352,6 @@ Tonyu.klass.define({
               
             } else {
               _this.mapDataFile=(yield* _this.fiber$file(_thread, _this.fileName));
-              
               if (_this.mapDataFile.obj()) {
                 _this.baseData=_this.mapDataFile.obj();
                 _this.loadedFile=_this.fileName;
@@ -31580,7 +31380,6 @@ Tonyu.klass.define({
           
         }
         (yield* _this.fiber$update(_thread));
-        
         if (! _this.loadMode) {
           _this.row=prompt("input row");
           _this.col=prompt("input col");
@@ -31622,7 +31421,6 @@ Tonyu.klass.define({
           }
         }
         (yield* _this.fiber$drawPanel(_thread));
-        
         _this.mode="get";
         _this.prevMode="set";
         _this.mapp=0;
@@ -31777,7 +31575,6 @@ Tonyu.klass.define({
                 _this.print(_this.mode+" mode");
                 (yield* _this.fiber$updateEx(_thread, 10));
                 
-                
               } else {
                 if (_this.mode=="setOn"&&_this.getkey(1)>0&&_this.inRect()) {
                   Tonyu.globals.$map.setOnAt(Tonyu.globals.$mouseX+_this.mx,Tonyu.globals.$mouseY+_this.my,_this.mapp);
@@ -31789,14 +31586,12 @@ Tonyu.klass.define({
                     _this.print(_this.mode+" mode");
                     (yield* _this.fiber$updateEx(_thread, 10));
                     
-                    
                   }
                 }
               }
             }
           }
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -31921,9 +31716,7 @@ Tonyu.klass.define({
         
         while (true) {
           (yield* _this.fiber$padUpdate(_thread));
-          
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -31984,9 +31777,7 @@ Tonyu.klass.define({
           if (opt.buttonCnt) {
             _this.buttonCnt=opt.buttonCnt;
             (yield* _this.fiber$drawPanel(_thread));
-            
             (yield* _this.fiber$setXYPanel(_thread));
-            
             
           }
           
@@ -32036,7 +31827,6 @@ Tonyu.klass.define({
           _this.layer=Tonyu.globals.$frontLayer;
         }
         (yield* _this.fiber$initButton(_thread));
-        
         
       },
       newPadV1 :function _trc_Pad_newPadV1(opt) {
@@ -32255,9 +32045,7 @@ Tonyu.klass.define({
         _this.padUpdateFrame=- 1;
         if (_this.layout==1) {
           (yield* _this.fiber$initButtonLayout1(_thread));
-          
           (yield* _this.fiber$setXYPanelLayout1(_thread));
-          
           
         }
         
@@ -32733,7 +32521,6 @@ Tonyu.klass.define({
         }
         if (_this.autoMove) {
           (yield* _this.fiber$drawPanel(_thread));
-          
         }
         
       },
@@ -32920,7 +32707,6 @@ Tonyu.klass.define({
         if (_this.layout==1) {
           (yield* _this.fiber$setXYPanelLayout1(_thread));
           
-          
         }
         
       },
@@ -33035,14 +32821,11 @@ Tonyu.klass.define({
           return _this;
         }
         (yield* _this.fiber$activate(_thread));
-        
         if (_this.version==1) {
           (yield* _this.fiber$padUpdateV1(_thread));
           
-          
         } else {
           (yield* _this.fiber$padUpdateV2(_thread));
-          
           
         }
         
@@ -33083,7 +32866,6 @@ Tonyu.klass.define({
         var screenSize;
         
         (yield* _this.fiber$padsUpdateV2(_thread));
-        
         screenSize = Tonyu.globals.$screenWidth;
         
         if (Tonyu.globals.$screenWidth>Tonyu.globals.$screenHeight) {
@@ -33093,7 +32875,6 @@ Tonyu.klass.define({
         if (_this.padScaleX!=_this.oldPadScaleX) {
           if (_this.autoMove) {
             (yield* _this.fiber$drawPanel(_thread));
-            
           }
           _this.oldPadScaleX=_this.padScaleX;
           
@@ -33101,7 +32882,6 @@ Tonyu.klass.define({
         if (Tonyu.globals.$screenWidth!=_this.oldScreenWidth||Tonyu.globals.$screenHeight!=_this.oldScreenHeight) {
           if (_this.autoMove) {
             (yield* _this.fiber$setXYPanel(_thread));
-            
           }
           _this.oldScreenWidth=Tonyu.globals.$screenWidth;
           _this.oldScreenHeight=Tonyu.globals.$screenHeight;
@@ -33400,9 +33180,7 @@ Tonyu.klass.define({
           return 0;
         }
         (yield* _this.fiber$activate(_thread));
-        
         (yield* _this.fiber$padUpdate(_thread));
-        
         value = 0;
         
         if (_this.version==1) {
@@ -33456,9 +33234,7 @@ Tonyu.klass.define({
           return 0;
         }
         (yield* _this.fiber$activate(_thread));
-        
         (yield* _this.fiber$padUpdate(_thread));
-        
         value = 0;
         
         if (_this.jujiPads==null) {
@@ -33512,9 +33288,7 @@ Tonyu.klass.define({
           return 0;
         }
         (yield* _this.fiber$activate(_thread));
-        
         (yield* _this.fiber$padUpdate(_thread));
-        
         value = 0;
         
         if (_this.jujiPads==null) {
@@ -33568,9 +33342,7 @@ Tonyu.klass.define({
           return 0;
         }
         (yield* _this.fiber$activate(_thread));
-        
         (yield* _this.fiber$padUpdate(_thread));
-        
         value = 0;
         
         if (_this.jujiPads==null) {
@@ -33627,9 +33399,7 @@ Tonyu.klass.define({
           return 0;
         }
         (yield* _this.fiber$activate(_thread));
-        
         (yield* _this.fiber$padUpdate(_thread));
-        
         value = 0;
         
         if (_this.buttons==null) {
@@ -33676,7 +33446,6 @@ Tonyu.klass.define({
         var obj;
         
         (yield* _this.fiber$activate(_thread));
-        
         if (_this.jujiPads==null) {
           return null;
         }
@@ -33707,7 +33476,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$activate(_thread));
-        
         if (_this.jujiPads==null) {
           return null;
         }
@@ -33740,7 +33508,6 @@ Tonyu.klass.define({
         var obj;
         
         (yield* _this.fiber$activate(_thread));
-        
         if (_this.buttons==null) {
           return null;
         }
@@ -33771,7 +33538,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$activate(_thread));
-        
         if (_this.buttons==null) {
           return null;
         }
@@ -33911,9 +33677,7 @@ Tonyu.klass.define({
         
         while (_this.loop) {
           (yield* _this.fiber$padUpdate(_thread));
-          
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -34245,7 +34009,6 @@ Tonyu.klass.define({
                 _this.panel=new Tonyu.classes.kernel.PadPanel({layer: _this.layer});
                 _this.panelPush=new Tonyu.classes.kernel.PadPanel({layer: _this.layer});
                 (yield* _this.fiber$drawPanel(_thread));
-                
                 _this.padPush=0;
                 _this.padPushList=[];
                 for (i = 0;
@@ -34306,7 +34069,6 @@ Tonyu.klass.define({
                   _this.panelPushU=new Tonyu.classes.kernel.PadPanel({layer: _this.layer});
                   _this.panelPushD=new Tonyu.classes.kernel.PadPanel({layer: _this.layer});
                   (yield* _this.fiber$drawPanel(_thread));
-                  
                   _this.padPushTouchNo=- 1;
                   
                 } else {
@@ -34314,7 +34076,6 @@ Tonyu.klass.define({
                     _this.p=- 1;
                     _this.panel=new Tonyu.classes.kernel.PadPanel;
                     (yield* _this.fiber$drawPanel(_thread));
-                    
                     
                   }
                 }
@@ -34351,16 +34112,13 @@ Tonyu.klass.define({
         if (_this.mode==10000) {
           (yield* _this.fiber$drawPanelMode10000(_thread));
           
-          
         } else {
           if (_this.mode==10001) {
             (yield* _this.fiber$drawPanelMode10001(_thread));
             
-            
           } else {
             if (_this.mode==10002) {
               (yield* _this.fiber$drawPanelMode10002(_thread));
-              
               
             }
           }
@@ -34669,31 +34427,25 @@ Tonyu.klass.define({
         if (_this.mode==0) {
           (yield* _this.fiber$padUpdateMode0(_thread));
           
-          
         } else {
           if (_this.mode==1) {
             (yield* _this.fiber$padUpdateMode1(_thread));
-            
             
           } else {
             if (_this.mode==2) {
               (yield* _this.fiber$padUpdateMode2(_thread));
               
-              
             } else {
               if (_this.mode==10000) {
                 (yield* _this.fiber$padUpdateMode10000(_thread));
-                
                 
               } else {
                 if (_this.mode==10001) {
                   (yield* _this.fiber$padUpdateMode10001(_thread));
                   
-                  
                 } else {
                   if (_this.mode==10002) {
                     (yield* _this.fiber$padUpdateMode10002(_thread));
-                    
                     
                   }
                 }
@@ -35383,7 +35135,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         _this.ctx=(yield* _this.fiber$getContext(_thread));
-        
         _this.ctx.save();
         _this.ctx.beginPath();
         _this.ctx.moveTo(x1,y1);
@@ -35458,7 +35209,6 @@ Tonyu.klass.define({
         var colCount;
         
         _this.ctx=(yield* _this.fiber$getContext(_thread));
-        
         _this.ctx.save();
         text=text+"";
         splits = text.split("\n");
@@ -35513,7 +35263,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$doLayout(_thread));
-        
         Tonyu.globals.$Screen.on("resize",Tonyu.bindFunc(_this,_this.doLayout));
         Tonyu.globals.$uiScreen.on("resize",Tonyu.bindFunc(_this,_this.doLayout));
         
@@ -35848,7 +35597,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$openNewWindow(_thread, sendUrl, {comment: text}));
         
-        
       },
       openShareTweet :function _trc_WebPage_openShareTweet(text,url,hashtags,via,related,tl) {
         "use strict";
@@ -35948,7 +35696,6 @@ Tonyu.klass.define({
           
         }
         (yield* _this.fiber$openNewWindow(_thread, sendUrl, {comment: text}));
-        
         
       },
       showLink :function _trc_WebPage_showLink(url,text,options) {
@@ -36087,15 +35834,10 @@ Tonyu.klass.define({
         Tonyu.resetLoopCheck(10000);
         Tonyu.globals.$Boot=_this;
         (yield* _this.fiber$setScheduler(_thread, new Tonyu.classes.kernel.Scheduler));
-        
         (yield* _this.fiber$initGlobals(_thread));
-        
         (yield* _this.fiber$initLayers(_thread));
-        
         (yield* _this.fiber$initPeripherals(_thread));
-        
         (yield* _this.fiber$loadPlugins(_thread));
-        
         if (Tonyu.globals.$customLoading) {
           _this.tt = Tonyu.thread();
           
@@ -36105,14 +35847,10 @@ Tonyu.klass.define({
         } else {
           (yield* _this.fiber$loadAssets(_thread));
           
-          
         }
         (yield* _this.fiber$createMainObject(_thread));
-        
         (yield* _this.fiber$progress(_thread));
-        
         (yield* _this.fiber$mainLoop(_thread));
-        
         
       },
       initialize :function _trc_Boot_initialize(param) {
@@ -36240,7 +35978,6 @@ Tonyu.klass.define({
         oldS = _this._scheduler;
         
         (yield* _this.fiber$setScheduler(_thread, new Tonyu.classes.kernel.Scheduler));
-        
         newS = _this._scheduler;
         
         oldS.doTimeStop();
@@ -36282,7 +36019,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$waitFor(_thread, Tonyu.timeout(50)));
-        
         
       },
       initGlobals :function _trc_Boot_initGlobals() {
@@ -36628,14 +36364,11 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$progress(_thread, "Loading plugins.."));
-        
         (yield* _this.fiber$runAsync(_thread, (function anonymous_6472(r) {
           
           Tonyu.globals.$currentProject.loadPlugins(r);
         })));
-        
         (yield* _this.fiber$progress(_thread, "Loading plugins done"));
-        
         
       },
       loadImages :function _trc_Boot_loadImages() {
@@ -36673,7 +36406,6 @@ Tonyu.klass.define({
         var _it_4;
         
         (yield* _this.fiber$progress(_thread, "Loading pats.."));
-        
         rs = Tonyu.globals.$currentProject.getResource();
         
         
@@ -36681,14 +36413,12 @@ Tonyu.klass.define({
           
           ImageList.load(rs.images,succ,{baseDir: Tonyu.globals.$currentProject.getDir(),prj: Tonyu.globals.$currentProject});
         })));
-        
         Tonyu.globals.$imageList=r[0];
         for ([name, val] of Tonyu.iterator2(r[0].names,2)) {
           Tonyu.setGlobal(name,val);
           
         }
         (yield* _this.fiber$progress(_thread, "Loading pats done."));
-        
         
       },
       loadSounds :function _trc_Boot_loadSounds() {
@@ -36711,13 +36441,9 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$progress(_thread, "Loading sounds..."));
-        
         (yield* _this.fiber$initT2MediaPlayer(_thread));
-        
         (yield* _this.fiber$loadFromProject(_thread, Tonyu.globals.$currentProject));
-        
         (yield* _this.fiber$progress(_thread, "Loading sounds done."));
-        
         _this.on("stop",(function anonymous_7218() {
           
           _this.allResetBGM();
@@ -36742,13 +36468,10 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$loadImages(_thread));
-        
         (yield* _this.fiber$loadSounds(_thread));
-        
         _this.loadedAll=true;
         if (para) {
           (yield* _this.fiber$progress(_thread));
-          
         }
         
       },
@@ -36810,7 +36533,6 @@ Tonyu.klass.define({
         mainClassName = o.run.mainClass;
         
         (yield* _this.fiber$progress(_thread, "MainClass= "+mainClassName));
-        
         _this.mainClass=Tonyu.getClass(mainClassName);
         if (! _this.mainClass) {
           throw new Error(mainClassName+" というクラスはありません");
@@ -36833,7 +36555,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$getMainClass(_thread));
-        
         Tonyu.globals.$excludeFromAll=Tonyu.globals.$Screen.all();
         new _this.mainClass();
         
@@ -36966,10 +36687,8 @@ Tonyu.klass.define({
           Tonyu.globals.$t2World=saved.t2World;
           newS=saved.scheduler;
           (yield* _this.fiber$setScheduler(_thread, newS));
-          
           for ([pa] of Tonyu.iterator2(saved.pass,1)) {
             (yield* _this.fiber$moveToScheduler(_thread, pa, oldS, newS));
-            
             
           }
           
@@ -36979,10 +36698,8 @@ Tonyu.klass.define({
             
             newS=new Tonyu.classes.kernel.Scheduler;
             (yield* _this.fiber$setScheduler(_thread, newS));
-            
             for ([pa] of Tonyu.iterator2(pass,1)) {
               (yield* _this.fiber$moveToScheduler(_thread, pa, oldS, newS));
-              
               
             }
             Tonyu.globals.$t2World=null;
@@ -37216,14 +36933,11 @@ Tonyu.klass.define({
         while (true) {
           if (_this._useRAF) {
             (yield* _this.fiber$loopRAF(_thread));
-            
           } else {
             (yield* _this.fiber$loopTimer(_thread));
-            
           }
           _this.measureFps();
           (yield* _this.fiber$handlePause(_thread));
-          
           if (typeof  Mezonet!=="undefined"&&typeof  Mezonet.doRefresh==="function") {
             Mezonet.doRefresh();
           }
@@ -37333,7 +37047,6 @@ Tonyu.klass.define({
         }
         (yield* _this.fiber$runPromise(_thread, requestAnimationFrame));
         
-        
       },
       loopTimer :function _trc_Boot_loopTimer() {
         "use strict";
@@ -37382,7 +37095,6 @@ Tonyu.klass.define({
         _this.afterDraw({drawn: _this.doDraw});
         (yield* _this.fiber$waitFrame(_thread));
         
-        
       },
       handlePause :function _trc_Boot_handlePause() {
         "use strict";
@@ -37417,7 +37129,6 @@ Tonyu.klass.define({
           while (_this._scheduler.isEmpty) {
             (yield* _this.fiber$runPromise(_thread, requestAnimationFrame));
             
-            
           }
           _this.resetDeadLine();
           
@@ -37425,7 +37136,6 @@ Tonyu.klass.define({
         while (_this.paused) {
           _this.isIdle=true;
           (yield* _this.fiber$runPromise(_thread, requestAnimationFrame));
-          
           if (! _this.paused) {
             _this.resetDeadLine();
           }
@@ -37544,7 +37254,6 @@ Tonyu.klass.define({
         }
         wt=_this.floor(wt);
         (yield* _this.fiber$waitFor(_thread, Tonyu.timeout(wt)));
-        
         _this.deadLine+=1000/_this._fps;
         
       },
@@ -37874,29 +37583,23 @@ Tonyu.klass.define({
         switch (_this.type) {
         case "in":
           (yield* _this.fiber$morph(_thread, 255, 0));
-          
           break;
           
         case "out":
           (yield* _this.fiber$morph(_thread, 0, 255));
-          
           break;
           
         case "outin":
           (yield* _this.fiber$morph(_thread, 0, 255));
-          
           _this.sendEvent("out");
           (yield* _this.fiber$loadPage(_thread, _this.page, _this.params||{}, {pass: [_this].concat(_this.pass||[])}));
-          
           (yield* _this.fiber$morph(_thread, 255, 0));
-          
           break;
           
         }
         _this.sendEvent("complete");
         if (_this.page&&_this.type!=="outin") {
           (yield* _this.fiber$loadPage(_thread, _this.page, _this.params||{}));
-          
           
         }
         if (_this.type!=="out") {
@@ -37941,7 +37644,6 @@ Tonyu.klass.define({
             
             _this.alpha=to*progress+from*(1-progress);
             (yield* _this.fiber$update(_thread));
-            
           }
         }
         _this.alpha=to;
