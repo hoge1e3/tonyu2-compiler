@@ -1,6 +1,6 @@
 extends Parent;
 native console;
-\x=v{
+\x=v:Number{
    console.log("set x",v);
    test=v/2;
 }

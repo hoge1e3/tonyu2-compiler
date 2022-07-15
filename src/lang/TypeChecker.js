@@ -249,7 +249,7 @@ function checkExpr(klass, env) {
                     annotation(node, { resolvedType: { method: si.info } });
                 }
                 else if (si.type === ScopeTypes.PROP) {
-                    //TODO
+                    annotation(node, { resolvedType: { method: si.info } });
                 }
             }
         },

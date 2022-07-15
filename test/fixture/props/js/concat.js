@@ -11,6 +11,7 @@ Tonyu.klass.define({
         
         console.log("Parent");
         _this.p=new Tonyu.classes.user.Parent;
+        _this.print('Any');
         _this.p.test=5;
         console.log(_this.p.x);
         console.log("Child");
@@ -18,14 +19,14 @@ Tonyu.klass.define({
         _this.c.x=10;
         console.log(_this.c.x,_this.c.test);
       },
-      fiber$main :function _trc_Main_f_main(_thread) {
+      fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
         
         console.log("Parent");
         _this.p=new Tonyu.classes.user.Parent;
+        _this.print('Any');
         _this.p.test=5;
         console.log(_this.p.x);
         console.log("Child");
@@ -33,12 +34,11 @@ Tonyu.klass.define({
         _this.c.x=10;
         console.log(_this.c.x,_this.c.test);
         
-        _thread.retVal=_this;return;
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"p":{},"c":{}}}
+  decls: {"methods":{"main":{"nowait":false}},"fields":{"p":{},"print":{},"c":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Parent',
@@ -53,15 +53,13 @@ Tonyu.klass.define({
         
         _this.test=5;
       },
-      fiber$main :function _trc_Parent_f_main(_thread) {
+      fiber$main :function* _trc_Parent_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
         
         _this.test=5;
         
-        _thread.retVal=_this;return;
       },
       __getter__x :function _trc_Parent___getter__x() {
         "use strict";
@@ -88,14 +86,12 @@ Tonyu.klass.define({
         var _this=this;
         
       },
-      fiber$main :function _trc_Child_f_main(_thread) {
+      fiber$main :function* _trc_Child_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var __pc=0;
         
         
-        _thread.retVal=_this;return;
       },
       __setter__x :function _trc_Child___setter__x(v) {
         "use strict";

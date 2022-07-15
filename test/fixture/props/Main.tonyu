@@ -1,7 +1,8 @@
 native console;
 
 console.log("Parent");
-p=new Parent;
+let p=new Parent;
+print(__typeof p.x);
 p.test=5;
 //p.x=10;
 console.log(p.x);

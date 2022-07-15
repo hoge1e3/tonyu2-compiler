@@ -217,7 +217,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				} else if (si.type===ScopeTypes.METHOD) {
 					annotation(node,{resolvedType:{method:si.info}});
 				} else if (si.type===ScopeTypes.PROP) {
-					//TODO
+					annotation(node,{resolvedType:{method:si.info}});
 				}
 			}
 		},
