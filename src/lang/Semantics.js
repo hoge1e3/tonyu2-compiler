@@ -516,9 +516,9 @@ function annotateSource2(klass, env) {
                     }
                 }
             });
-            var n = `_it_${Object.keys(ctx.locals.varDecls).length}`; //genSym("_it_");
-            annotation(node, { iterName: n });
-            ctx.locals.varDecls[n] = node; // ??
+            /*var n=`_it_${Object.keys(ctx.locals.varDecls).length}`;//genSym("_it_");
+            annotation(node, {iterName:n});
+            ctx.locals.varDecls[n]=node;// ??*/
         }
     });
     localsCollector.def = visitSub; //S

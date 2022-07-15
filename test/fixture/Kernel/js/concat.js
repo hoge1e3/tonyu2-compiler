@@ -94,7 +94,6 @@ Tonyu.klass.define({
         var _this=this;
         var k;
         var v;
-        var _it_2;
         
         for ([k, v] of Tonyu.iterator2(_this._eventHandlers,2)) {
           v.release();
@@ -2622,8 +2621,6 @@ Tonyu.klass.define({
         var notOption;
         var k;
         var v;
-        var _it_7;
-        var _it_8;
         
         speca = spec.split(",");
         
@@ -2680,8 +2677,6 @@ Tonyu.klass.define({
         var notOption;
         var k;
         var v;
-        var _it_7;
-        var _it_8;
         
         speca = spec.split(",");
         
@@ -3479,7 +3474,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var o;
-        var _it_1;
         
         for ([o] of Tonyu.iterator2(_this,1)) {
           if (o===t) {
@@ -3494,7 +3488,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var o;
-        var _it_1;
         
         for ([o] of Tonyu.iterator2(_this,1)) {
           if (o===t) {
@@ -3585,7 +3578,6 @@ Tonyu.klass.define({
         var values;
         var i;
         var e;
-        var _it_3;
         
         
         if (_this.length==0) {
@@ -3623,7 +3615,6 @@ Tonyu.klass.define({
         var values;
         var i;
         var e;
-        var _it_3;
         
         
         if (_this.length==0) {
@@ -3788,7 +3779,6 @@ Tonyu.klass.define({
         var res;
         var reso;
         var o;
-        var _it_4;
         var v;
         
         f = _this.genKeyfunc(key);
@@ -3818,7 +3808,6 @@ Tonyu.klass.define({
         var res;
         var reso;
         var o;
-        var _it_4;
         var v;
         
         f=yield* _this.fiber$genKeyfunc(_thread, key);
@@ -3848,7 +3837,6 @@ Tonyu.klass.define({
         var res;
         var reso;
         var o;
-        var _it_4;
         var v;
         
         f = _this.genKeyfunc(key);
@@ -3878,7 +3866,6 @@ Tonyu.klass.define({
         var res;
         var reso;
         var o;
-        var _it_4;
         var v;
         
         f=yield* _this.fiber$genKeyfunc(_thread, key);
@@ -4129,7 +4116,6 @@ Tonyu.klass.define({
         var f;
         var res;
         var o;
-        var _it_3;
         var v;
         
         f = _this.genKeyfunc(key);
@@ -4151,7 +4137,6 @@ Tonyu.klass.define({
         var f;
         var res;
         var o;
-        var _it_3;
         var v;
         
         f = _this.genKeyfunc(key);
@@ -4171,7 +4156,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var ee;
-        var _it_1;
         
         if (Tonyu.is(e,Tonyu.classes.kernel.TQuery)||Tonyu.is(e,Array)) {
           for ([ee] of Tonyu.iterator2(e,1)) {
@@ -4189,7 +4173,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var ee;
-        var _it_1;
         
         if (Tonyu.is(e,Tonyu.classes.kernel.TQuery)||Tonyu.is(e,Array)) {
           for ([ee] of Tonyu.iterator2(e,1)) {
@@ -4223,7 +4206,6 @@ Tonyu.klass.define({
         var no;
         var q;
         var o;
-        var _it_3;
         
         no = _this.create();
         
@@ -4233,7 +4215,6 @@ Tonyu.klass.define({
           f=(function anonymous_4483(o) {
             var k;
             var v;
-            var _it_2;
             
             for ([k, v] of Tonyu.iterator2(q,2)) {
               if (o[k]!==v) {
@@ -4260,7 +4241,6 @@ Tonyu.klass.define({
         var no;
         var q;
         var o;
-        var _it_3;
         
         no=yield* _this.fiber$create(_thread);
         
@@ -4270,7 +4250,6 @@ Tonyu.klass.define({
           f=(function anonymous_4483(o) {
             var k;
             var v;
-            var _it_2;
             
             for ([k, v] of Tonyu.iterator2(q,2)) {
               if (o[k]!==v) {
@@ -4330,7 +4309,6 @@ Tonyu.klass.define({
         var _this=this;
         var res;
         var o;
-        var _it_2;
         var f;
         
         
@@ -4354,7 +4332,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var res;
         var o;
-        var _it_2;
         var f;
         
         
@@ -4639,7 +4616,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var listener;
-        var _it_1;
         
         if (_this.released) {
           return _this;
@@ -4654,7 +4630,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var listener;
-        var _it_1;
         
         if (_this.released) {
           return _this;
@@ -6764,7 +6739,6 @@ Tonyu.klass.define({
         var _this=this;
         var name;
         var val;
-        var _it_2;
         
         for ([name, val] of Tonyu.iterator2(o,2)) {
           if (typeof  val!=="number") {
@@ -6781,7 +6755,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var name;
         var val;
-        var _it_2;
         
         for ([name, val] of Tonyu.iterator2(o,2)) {
           if (typeof  val!=="number") {
@@ -7926,7 +7899,6 @@ Tonyu.klass.define({
         var _this=this;
         var a;
         var k;
-        var _it_2;
         
         a = new Tonyu.classes.kernel.ArgParser(arguments);
         
@@ -7943,7 +7915,6 @@ Tonyu.klass.define({
         var _arguments=Tonyu.A(arguments);
         var a;
         var k;
-        var _it_2;
         
         a = new Tonyu.classes.kernel.ArgParser(_arguments);
         
@@ -9330,7 +9301,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var l;
-        var _it_1;
         
         if (params.layer) {
           params.layers=[params.layer];
@@ -9434,7 +9404,6 @@ Tonyu.klass.define({
         var _this=this;
         var res;
         var l;
-        var _it_2;
         
         res = {};
         
@@ -9449,7 +9418,6 @@ Tonyu.klass.define({
         var _this=this;
         var l;
         var val;
-        var _it_2;
         
         for ([l, val] of Tonyu.iterator2(vals,2)) {
           _this.map.setWithLayerName(l,_this.x,_this.y,val);
@@ -9475,7 +9443,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var chipLayer;
-        var _it_1;
         
         if (p==null) {
           return _this.hasExcept(- 1);
@@ -9497,7 +9464,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var chipLayer;
-        var _it_1;
         
         if (p==null) {
           return yield* _this.fiber$hasExcept(_thread, - 1);
@@ -9521,7 +9487,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var chipLayer;
-        var _it_1;
         
         if (typeof  p==="number") {
           p=[p];
@@ -9540,7 +9505,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var chipLayer;
-        var _it_1;
         
         if (typeof  p==="number") {
           p=[p];
@@ -9650,7 +9614,6 @@ Tonyu.klass.define({
       main :function _trc_MapCodec_main() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         "field strict";
         
@@ -9674,7 +9637,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         "field strict";
         
@@ -9707,7 +9669,6 @@ Tonyu.klass.define({
         var _this=this;
         var header;
         var l;
-        var _it_2;
         
         header = {size: {row: _this.map.row,col: _this.map.col,w: _this.map.chipWidth,h: _this.map.chipHeight},expand: _this.map._expand||{},layerNames: [],e2c: {}};
         
@@ -9724,7 +9685,6 @@ Tonyu.klass.define({
         var e2c;
         var e;
         var c;
-        var _it_4;
         var layerNames;
         
         header = _this.entire.header;
@@ -9890,7 +9850,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var r;
-        var _it_1;
         
         for ([r] of Tonyu.iterator2(_this.patVals,1)) {
           if (p>=r.value) {
@@ -10130,7 +10089,6 @@ Tonyu.klass.define({
         var ts;
         var localShape;
         var t;
-        var _it_6;
         var c;
         var ch;
         var shape;
@@ -10221,7 +10179,6 @@ Tonyu.klass.define({
         var ts;
         var localShape;
         var t;
-        var _it_6;
         var c;
         var ch;
         var shape;
@@ -11589,7 +11546,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var s;
-        var _it_1;
         
         for ([s] of Tonyu.iterator2(_this.sprites,1)) {
           s.draw3D(ctx);
@@ -11601,7 +11557,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var s;
-        var _it_1;
         
         for ([s] of Tonyu.iterator2(_this.sprites,1)) {
           s.draw3D(ctx);
@@ -13654,8 +13609,6 @@ Tonyu.klass.define({
         var _this=this;
         var dupc;
         var t;
-        var _it_2;
-        var _it_3;
         
         dupc = {};
         
@@ -13682,8 +13635,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var dupc;
         var t;
-        var _it_2;
-        var _it_3;
         
         dupc = {};
         
@@ -15016,7 +14967,6 @@ Tonyu.klass.define({
         });
         e.sendUp=(function anonymous_359() {
           var f;
-          var _it_1;
           
           for ([f] of Tonyu.iterator2(e.sendUps,1)) {
             f();
@@ -15047,7 +14997,6 @@ Tonyu.klass.define({
         });
         e.sendUp=(function anonymous_359() {
           var f;
-          var _it_1;
           
           for ([f] of Tonyu.iterator2(e.sendUps,1)) {
             f();
@@ -15067,8 +15016,6 @@ Tonyu.klass.define({
           var a;
           var e;
           var f;
-          var _it_3;
-          var _it_4;
           
           if (_this.pressState[raw.keyCode]) {
             return _this;
@@ -15096,7 +15043,6 @@ Tonyu.klass.define({
         Tonyu.globals.$InputDevice.on("keyUpRaw",(function anonymous_1008(e) {
           var a;
           var e;
-          var _it_2;
           
           a = _this.pressState[e.keyCode]=_this.pressState[e.keyCode]||[];
           
@@ -15149,7 +15095,6 @@ Tonyu.klass.define({
       main :function _trc_Keys_main() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         _this.stats={};
         _this.codes={left: 37,up: 38,right: 39,down: 40,space: 32,enter: 13,shift: 16,ctrl: 17,alt: 18,esc: 27,bs: 8,del: 46,mouseleft: 1,mouseright: 2,mousewheel: 4};
@@ -15213,7 +15158,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         _this.stats={};
         _this.codes={left: 37,up: 38,right: 39,down: 40,space: 32,enter: 13,shift: 16,ctrl: 17,alt: 18,esc: 27,bs: 8,del: 46,mouseleft: 1,mouseright: 2,mousewheel: 4};
@@ -15318,7 +15262,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var i;
-        var _it_1;
         
         for ([i] of Tonyu.iterator2(_this.stats,1)) {
           if (_this.stats[i]>0) {
@@ -15341,7 +15284,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var i;
-        var _it_1;
         
         for ([i] of Tonyu.iterator2(_this.stats,1)) {
           if (_this.stats[i]>0) {
@@ -15743,7 +15685,6 @@ Tonyu.klass.define({
         _this.fingerArray.findWithin=(function anonymous_277(o,d) {
           var j;
           var t;
-          var _it_2;
           
           for ([j, t] of Tonyu.iterator2(_this.fingerSet,2)) {
             if (o.within(t,d)) {
@@ -15756,7 +15697,6 @@ Tonyu.klass.define({
         _this.fingerArray.findTouch=(function anonymous_454(f) {
           var j;
           var t;
-          var _it_2;
           
           for ([j, t] of Tonyu.iterator2(_this.fingerSet,2)) {
             if (f(t)) {
@@ -16013,9 +15953,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var t;
-        var _it_1;
         var i;
-        var _it_3;
         
         for ([t] of Tonyu.iterator2(_this.fingerArray,1)) {
           if (t.identifier==ID_MOUSE) {
@@ -16037,9 +15975,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var t;
-        var _it_1;
         var i;
-        var _it_3;
         
         for ([t] of Tonyu.iterator2(_this.fingerArray,1)) {
           if (t.identifier==ID_MOUSE) {
@@ -16061,9 +15997,7 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var t;
-        var _it_1;
         var i;
-        var _it_3;
         
         for ([t] of Tonyu.iterator2(_this.fingerArray,1)) {
           t.update();
@@ -16079,9 +16013,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var t;
-        var _it_1;
         var i;
-        var _it_3;
         
         for ([t] of Tonyu.iterator2(_this.fingerArray,1)) {
           t.update();
@@ -16097,7 +16029,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var t;
-        var _it_1;
         
         for ([t] of Tonyu.iterator2(_this.fingerArray,1)) {
           t.reset();
@@ -16109,7 +16040,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var t;
-        var _it_1;
         
         for ([t] of Tonyu.iterator2(_this.fingerArray,1)) {
           t.reset();
@@ -16230,7 +16160,6 @@ Tonyu.klass.define({
         var _this=this;
         var p;
         var k;
-        var _it_2;
         
         if (typeof  o=="function") {
           if (param) {
@@ -16265,7 +16194,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var p;
         var k;
-        var _it_2;
         
         if (typeof  o=="function") {
           if (param) {
@@ -16457,10 +16385,8 @@ Tonyu.klass.define({
         var _this=this;
         var i;
         var row;
-        var _it_2;
         var j;
         var val;
-        var _it_5;
         
         for ([i, row] of Tonyu.iterator2(array,2)) {
           for ([j, val] of Tonyu.iterator2(row,2)) {
@@ -16476,10 +16402,8 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var i;
         var row;
-        var _it_2;
         var j;
         var val;
-        var _it_5;
         
         for ([i, row] of Tonyu.iterator2(array,2)) {
           for ([j, val] of Tonyu.iterator2(row,2)) {
@@ -16553,8 +16477,6 @@ Tonyu.klass.define({
         var SEP;
         var lines;
         var l;
-        var _it_6;
-        var _it_7;
         
         f = _this.file(csvFile);
         
@@ -16587,8 +16509,6 @@ Tonyu.klass.define({
         var SEP;
         var lines;
         var l;
-        var _it_6;
-        var _it_7;
         
         f=yield* _this.fiber$file(_thread, csvFile);
         
@@ -16644,7 +16564,6 @@ Tonyu.klass.define({
         var _this=this;
         var k;
         var v;
-        var _it_2;
         
         for ([k, v] of Tonyu.iterator2(_this.data,2)) {
           if (v===cell) {
@@ -16660,7 +16579,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var k;
         var v;
-        var _it_2;
         
         for ([k, v] of Tonyu.iterator2(_this.data,2)) {
           if (v===cell) {
@@ -16801,7 +16719,6 @@ Tonyu.klass.define({
         var _this=this;
         var res;
         var e;
-        var _it_2;
         
         res = [];
         
@@ -16817,7 +16734,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var res;
         var e;
-        var _it_2;
         
         res = [];
         
@@ -16862,7 +16778,6 @@ Tonyu.klass.define({
         var res;
         var k;
         var v;
-        var _it_3;
         
         res = {i: 0,keys: []};
         
@@ -16904,7 +16819,6 @@ Tonyu.klass.define({
         var res;
         var k;
         var v;
-        var _it_3;
         
         res = {i: 0,keys: []};
         
@@ -17242,7 +17156,6 @@ Tonyu.klass.define({
         var dirs;
         var res;
         var dir;
-        var _it_3;
         var i;
         var j;
         var r;
@@ -17290,7 +17203,6 @@ Tonyu.klass.define({
         var dirs;
         var res;
         var dir;
-        var _it_3;
         var i;
         var j;
         var r;
@@ -17402,7 +17314,6 @@ Tonyu.klass.define({
         var t;
         var k;
         var v;
-        var _it_3;
         var xy;
         var x;
         var y;
@@ -17446,7 +17357,6 @@ Tonyu.klass.define({
         var t;
         var k;
         var v;
-        var _it_3;
         var xy;
         var x;
         var y;
@@ -17616,7 +17526,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var obj;
-        var _it_1;
         
         while (true) {
           if (typeof  d=="function") {
@@ -17640,7 +17549,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var obj;
-        var _it_1;
         
         while (true) {
           if (typeof  d=="function") {
@@ -17713,7 +17621,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var obj;
-        var _it_1;
         
         while (true) {
           if (typeof  d=="function") {
@@ -17737,7 +17644,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var obj;
-        var _it_1;
         
         while (true) {
           if (typeof  d=="function") {
@@ -18577,7 +18483,6 @@ Tonyu.klass.define({
         var c3;
         var s2ds;
         var s2d;
-        var _it_3;
         
         _this.spx=Tonyu.globals.$screenWidth/2;
         _this.spy=Tonyu.globals.$screenHeight/2;
@@ -18604,7 +18509,6 @@ Tonyu.klass.define({
         var c3;
         var s2ds;
         var s2d;
-        var _it_3;
         
         _this.spx=Tonyu.globals.$screenWidth/2;
         _this.spy=Tonyu.globals.$screenHeight/2;
@@ -19655,7 +19559,6 @@ Tonyu.klass.define({
         var _this=this;
         var k;
         var v;
-        var _it_2;
         
         if (Tonyu.globals.$MMLS) {
           for ([k, v] of Tonyu.iterator2(Tonyu.globals.$MMLS,2)) {
@@ -20316,7 +20219,6 @@ Tonyu.klass.define({
         var res;
         var name;
         var k;
-        var _it_3;
         var vec;
         
         res = _this.position.clone();
@@ -20338,7 +20240,6 @@ Tonyu.klass.define({
         var res;
         var name;
         var k;
-        var _it_3;
         var vec;
         
         res = _this.position.clone();
@@ -21577,7 +21478,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var mp;
-        var _it_1;
         
         for ([mp] of Tonyu.iterator2(_this.chipLayers,1)) {
           if (mp.name===name) {
@@ -21592,7 +21492,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var mp;
-        var _it_1;
         
         for ([mp] of Tonyu.iterator2(_this.chipLayers,1)) {
           if (mp.name===name) {
@@ -21631,7 +21530,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var k;
-        var _it_1;
         
         switch (typeof  v) {
         case "string":
@@ -21884,7 +21782,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var chipLayer;
-        var _it_1;
         
         _this.row=_this.col=0;
         for ([chipLayer] of Tonyu.iterator2(_this.chipLayers,1)) {
@@ -21902,7 +21799,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var chipLayer;
-        var _it_1;
         
         _this.row=_this.col=0;
         for ([chipLayer] of Tonyu.iterator2(_this.chipLayers,1)) {
@@ -22067,7 +21963,6 @@ Tonyu.klass.define({
         var w;
         var h;
         var l;
-        var _it_8;
         var p;
         var pImg;
         
@@ -22112,7 +22007,6 @@ Tonyu.klass.define({
         var w;
         var h;
         var l;
-        var _it_8;
         var p;
         var pImg;
         
@@ -22386,7 +22280,6 @@ Tonyu.klass.define({
         var r;
         var f;
         var re;
-        var _it_3;
         var c;
         
         r = _this.range(actor);
@@ -22969,7 +22862,6 @@ Tonyu.klass.define({
         var j;
         var i;
         var pCv;
-        var _it_7;
         var pCtx;
         var dx;
         var dy;
@@ -23017,7 +22909,6 @@ Tonyu.klass.define({
         var klass;
         var params;
         var r;
-        var _it_4;
         var n;
         
         p = options.p;
@@ -23046,7 +22937,6 @@ Tonyu.klass.define({
         var klass;
         var params;
         var r;
-        var _it_4;
         var n;
         
         p = options.p;
@@ -25045,7 +24935,6 @@ Tonyu.klass.define({
         var _this=this;
         var res;
         var l;
-        var _it_2;
         var q;
         
         res = new Tonyu.classes.kernel.TQuery({screen: _this});
@@ -25063,7 +24952,6 @@ Tonyu.klass.define({
         var _this=this;
         var res;
         var l;
-        var _it_2;
         
         res = [];
         
@@ -25080,7 +24968,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var res;
         var l;
-        var _it_2;
         
         res = [];
         
@@ -25097,7 +24984,6 @@ Tonyu.klass.define({
         var _this=this;
         var i;
         var l;
-        var _it_2;
         
         i = 0;
         
@@ -25117,7 +25003,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var i;
         var l;
-        var _it_2;
         
         i = 0;
         
@@ -25137,7 +25022,6 @@ Tonyu.klass.define({
         var _this=this;
         var res;
         var e;
-        var _it_2;
         var r;
         var i;
         var t;
@@ -25176,7 +25060,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var res;
         var e;
-        var _it_2;
         var r;
         var i;
         var t;
@@ -26616,7 +26499,6 @@ Tonyu.klass.define({
         var func;
         var callbacks;
         var reqP;
-        var _it_9;
         var i;
         
         if (! _this.available) {
@@ -26716,7 +26598,6 @@ Tonyu.klass.define({
         var func;
         var callbacks;
         var reqP;
-        var _it_9;
         var i;
         
         if (! _this.available) {
@@ -28841,7 +28722,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var t;
-        var _it_1;
         
         for ([t] of Tonyu.iterator2(Tonyu.globals.$touches,1)) {
           if ((! _this.touchRadius||_this.dist(t)<_this.touchRadius)&&t.touched==1) {
@@ -35952,7 +35832,6 @@ Tonyu.klass.define({
         }),releaseAll: (function anonymous_2090() {
           var a;
           var e;
-          var _it_2;
           
           a = Tonyu.globals.$Screen.all();
           
@@ -35991,7 +35870,6 @@ Tonyu.klass.define({
         }),releaseAll: (function anonymous_2090() {
           var a;
           var e;
-          var _it_2;
           
           a = Tonyu.globals.$Screen.all();
           
@@ -36027,7 +35905,6 @@ Tonyu.klass.define({
         var opt;
         var g;
         var name;
-        var _it_3;
         
         opt = Tonyu.globals.$currentProject.getOptions();
         
@@ -36049,7 +35926,6 @@ Tonyu.klass.define({
         var opt;
         var g;
         var name;
-        var _it_3;
         
         opt = Tonyu.globals.$currentProject.getOptions();
         
@@ -36378,7 +36254,6 @@ Tonyu.klass.define({
         var r;
         var name;
         var val;
-        var _it_4;
         
         _this.progress("Loading pats..");
         rs = Tonyu.globals.$currentProject.getResource();
@@ -36403,7 +36278,6 @@ Tonyu.klass.define({
         var r;
         var name;
         var val;
-        var _it_4;
         
         (yield* _this.fiber$progress(_thread, "Loading pats.."));
         rs = Tonyu.globals.$currentProject.getResource();
@@ -36569,8 +36443,6 @@ Tonyu.klass.define({
         var newS;
         var saved;
         var pa;
-        var _it_7;
-        var _it_8;
         var a;
         
         switch (typeof  arg) {
@@ -36651,8 +36523,6 @@ Tonyu.klass.define({
         var newS;
         var saved;
         var pa;
-        var _it_7;
-        var _it_8;
         var a;
         
         switch (typeof  arg) {

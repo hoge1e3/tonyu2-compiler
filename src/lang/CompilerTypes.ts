@@ -153,7 +153,7 @@ export type Annotation={
 	myMethodCall?: {name:string, args:TNode[], scopeInfo: ScopeInfo},
 	othersMethodCall?: {target:TNode, name:string, args:TNode[]},
 	memberAccess?: {target:TNode, name:string},
-	iterName?: string,
+	//iterName?: string,
 	varInMain?: boolean,
 	declaringClass?: C_Meta,
 	noBind?: boolean,

@@ -489,9 +489,9 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					}
 				}
 			});
-			var n=`_it_${Object.keys(ctx.locals.varDecls).length}`;//genSym("_it_");
+			/*var n=`_it_${Object.keys(ctx.locals.varDecls).length}`;//genSym("_it_");
 			annotation(node, {iterName:n});
-			ctx.locals.varDecls[n]=node;// ??
+			ctx.locals.varDecls[n]=node;// ??*/
 		}
 	});
 	localsCollector.def=visitSub;//S
