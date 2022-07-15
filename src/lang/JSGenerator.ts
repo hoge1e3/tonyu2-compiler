@@ -717,7 +717,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			printf("__dummy: false%n");
 			printf("%}};%n");
 			printf("%}},%n");
-			printf("decls: %s%n", JSON.stringify(digestDecls(klass)));
+			printf("decls: %s%n", JSON.stringify(cu.digestDecls(klass)));
 			printf("%}});");
 			if (genMod) printf("%n%}});");
 			printf("%n");
@@ -736,32 +736,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		}
 		return (t as C_Meta).fullName || (t as NativeClass).class.name;
 	}
-	function klass2name(t: AnnotatedType) {
-		if (isMethodType(t)) {
-			return `${t.method.klass.fullName}.${t.method.name}()`;
-		} else if (isMeta(t)) {
-			return t.fullName;
-		} else if (isNativeClass(t)) {
-			return t.class.name;
-		} else {
-			return `${klass2name(t.element)}[]`;
-		}
-	}
-	function digestDecls(klass: C_Meta):DeclsInDefinition {
-		var res={methods:{},fields:{}} as DeclsInDefinition;
-		for (let i in klass.decls.methods) {
-			res.methods[i]=
-			{nowait:!!klass.decls.methods[i].nowait};
-		}
-		for (let i in klass.decls.fields) {
-			const src=klass.decls.fields[i];
-			const dst={
-				vtype:src.resolvedType ? klass2name(src.resolvedType) : src.vtype
-			};
-			res.fields[i]=dst;
-		}
-		return res;
-	}
+	
 	function digestMeta(klass:C_Meta) {//G
 		var res={
 				fullName: klass.fullName,

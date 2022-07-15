@@ -1,8 +1,8 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
-import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, NativeClass } from "./CompilerTypes";
-import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
+import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, NativeClass } from "./CompilerTypes";
+import { DeclsInDefinition, Meta, ShimMeta } from "../runtime/RuntimeTypes";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
@@ -118,6 +118,39 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 	}
 	//cu.getSource=getSource;
 	//cu.getField=getField;
+	export function klass2name(t: AnnotatedType) {
+		if (isMethodType(t)) {
+			return `${t.method.klass.fullName}.${t.method.name}()`;
+		} else if (isMeta(t)) {
+			return t.fullName;
+		} else if (isNativeClass(t)) {
+			return t.class.name;
+		} else {
+			return `${klass2name(t.element)}[]`;
+		}
+	}
+	export function digestDecls(klass: C_Meta):DeclsInDefinition {
+		var res={methods:{},fields:{}} as DeclsInDefinition;
+		for (let i in klass.decls.methods) {
+			res.methods[i]=
+			{nowait:!!klass.decls.methods[i].nowait};
+		}
+		for (let i in klass.decls.fields) {
+			const src=klass.decls.fields[i];
+			const dst={
+				vtype:src.resolvedType ? klass2name(src.resolvedType) : src.vtype
+			};
+			res.fields[i]=dst;
+		}
+		return res;
+	}
+	export function className2ResolvedType(name:string):AnnotatedType|undefined {
+		if (Tonyu.classMetas[name]) {
+			return Tonyu.classMetas[name] as C_Meta;
+		} else if (root[name]) {
+			return {class: root[name]};
+		}
+	}
 	export function getField(klass: C_Meta, name: string){
 		if (klass instanceof Function) return null;
 		let res:C_FieldInfo=null;
@@ -130,13 +163,6 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			res.resolvedType=className2ResolvedType(res.vtype);
 		}
 		return res;
-	};
-	export function className2ResolvedType(name:string):AnnotatedType|undefined {
-		if (Tonyu.classMetas[name]) {
-			return Tonyu.classMetas[name] as C_Meta;
-		} else if (root[name]) {
-			return {class: root[name]};
-		}
 	}
 	export function getMethod(klass: C_Meta,name:string) {//B
 		let res:FuncInfo=null;

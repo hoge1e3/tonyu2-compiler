@@ -724,7 +724,7 @@ function genJS(klass, env, genOptions) {
             printf("__dummy: false%n");
             printf("%}};%n");
             printf("%}},%n");
-            printf("decls: %s%n", JSON.stringify(digestDecls(klass)));
+            printf("decls: %s%n", JSON.stringify(cu.digestDecls(klass)));
             printf("%}});");
             if (genMod)
                 printf("%n%}});");
@@ -743,35 +743,6 @@ function genJS(klass, env, genOptions) {
             throw new Error("Invalid annotatedType" + t);
         }
         return t.fullName || t.class.name;
-    }
-    function klass2name(t) {
-        if ((0, CompilerTypes_1.isMethodType)(t)) {
-            return `${t.method.klass.fullName}.${t.method.name}()`;
-        }
-        else if ((0, CompilerTypes_1.isMeta)(t)) {
-            return t.fullName;
-        }
-        else if ((0, CompilerTypes_1.isNativeClass)(t)) {
-            return t.class.name;
-        }
-        else {
-            return `${klass2name(t.element)}[]`;
-        }
-    }
-    function digestDecls(klass) {
-        var res = { methods: {}, fields: {} };
-        for (let i in klass.decls.methods) {
-            res.methods[i] =
-                { nowait: !!klass.decls.methods[i].nowait };
-        }
-        for (let i in klass.decls.fields) {
-            const src = klass.decls.fields[i];
-            const dst = {
-                vtype: src.resolvedType ? klass2name(src.resolvedType) : src.vtype
-            };
-            res.fields[i] = dst;
-        }
-        return res;
     }
     function digestMeta(klass) {
         var res = {

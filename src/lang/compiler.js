@@ -3,9 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getMethod = exports.className2ResolvedType = exports.getField = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
+exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.className2ResolvedType = exports.digestDecls = exports.klass2name = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
+const CompilerTypes_1 = require("./CompilerTypes");
 exports.ScopeTypes = {
     FIELD: "field", METHOD: "method", NATIVE: "native",
     LOCAL: "local", THVAR: "threadvar", PROP: "property",
@@ -165,6 +166,46 @@ function getSource(srcCont, node) {
 exports.getSource = getSource;
 //cu.getSource=getSource;
 //cu.getField=getField;
+function klass2name(t) {
+    if ((0, CompilerTypes_1.isMethodType)(t)) {
+        return `${t.method.klass.fullName}.${t.method.name}()`;
+    }
+    else if ((0, CompilerTypes_1.isMeta)(t)) {
+        return t.fullName;
+    }
+    else if ((0, CompilerTypes_1.isNativeClass)(t)) {
+        return t.class.name;
+    }
+    else {
+        return `${klass2name(t.element)}[]`;
+    }
+}
+exports.klass2name = klass2name;
+function digestDecls(klass) {
+    var res = { methods: {}, fields: {} };
+    for (let i in klass.decls.methods) {
+        res.methods[i] =
+            { nowait: !!klass.decls.methods[i].nowait };
+    }
+    for (let i in klass.decls.fields) {
+        const src = klass.decls.fields[i];
+        const dst = {
+            vtype: src.resolvedType ? klass2name(src.resolvedType) : src.vtype
+        };
+        res.fields[i] = dst;
+    }
+    return res;
+}
+exports.digestDecls = digestDecls;
+function className2ResolvedType(name) {
+    if (TonyuRuntime_1.default.classMetas[name]) {
+        return TonyuRuntime_1.default.classMetas[name];
+    }
+    else if (root_1.default[name]) {
+        return { class: root_1.default[name] };
+    }
+}
+exports.className2ResolvedType = className2ResolvedType;
 function getField(klass, name) {
     if (klass instanceof Function)
         return null;
@@ -181,16 +222,6 @@ function getField(klass, name) {
     return res;
 }
 exports.getField = getField;
-;
-function className2ResolvedType(name) {
-    if (TonyuRuntime_1.default.classMetas[name]) {
-        return TonyuRuntime_1.default.classMetas[name];
-    }
-    else if (root_1.default[name]) {
-        return { class: root_1.default[name] };
-    }
-}
-exports.className2ResolvedType = className2ResolvedType;
 function getMethod(klass, name) {
     let res = null;
     for (let k of getDependingClasses(klass)) {
