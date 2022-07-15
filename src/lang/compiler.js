@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.className2ResolvedType = exports.digestDecls = exports.klass2name = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
+exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.typeDigest2ResolvedType = exports.digestDecls = exports.klass2name = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 const CompilerTypes_1 = require("./CompilerTypes");
@@ -197,15 +197,20 @@ function digestDecls(klass) {
     return res;
 }
 exports.digestDecls = digestDecls;
-function className2ResolvedType(name) {
-    if (TonyuRuntime_1.default.classMetas[name]) {
-        return TonyuRuntime_1.default.classMetas[name];
+function typeDigest2ResolvedType(d) {
+    if (typeof d === "string") {
+        if (TonyuRuntime_1.default.classMetas[d]) {
+            return TonyuRuntime_1.default.classMetas[d];
+        }
+        else if (root_1.default[d]) {
+            return { class: root_1.default[d] };
+        }
     }
-    else if (root_1.default[name]) {
-        return { class: root_1.default[name] };
+    else {
+        return { element: typeDigest2ResolvedType(d.element) };
     }
 }
-exports.className2ResolvedType = className2ResolvedType;
+exports.typeDigest2ResolvedType = typeDigest2ResolvedType;
 function getField(klass, name) {
     if (klass instanceof Function)
         return null;
@@ -217,7 +222,7 @@ function getField(klass, name) {
         res = k.decls.fields[name];
     }
     if (res && res.vtype && !res.resolvedType) {
-        res.resolvedType = className2ResolvedType(res.vtype);
+        res.resolvedType = typeDigest2ResolvedType(res.vtype);
     }
     return res;
 }

@@ -2,7 +2,7 @@ import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
 import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, NativeClass } from "./CompilerTypes";
-import { DeclsInDefinition, Meta, ShimMeta } from "../runtime/RuntimeTypes";
+import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/RuntimeTypes";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
@@ -144,11 +144,15 @@ import { DeclsInDefinition, Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		}
 		return res;
 	}
-	export function className2ResolvedType(name:string):AnnotatedType|undefined {
-		if (Tonyu.classMetas[name]) {
-			return Tonyu.classMetas[name] as C_Meta;
-		} else if (root[name]) {
-			return {class: root[name]};
+	export function typeDigest2ResolvedType(d:TypeDigest):AnnotatedType|undefined {
+		if (typeof d==="string") {
+			if (Tonyu.classMetas[d]) {
+				return Tonyu.classMetas[d] as C_Meta;
+			} else if (root[d]) {
+				return {class: root[d]};
+			}	
+		} else {
+			return {element: typeDigest2ResolvedType(d.element)};
 		}
 	}
 	export function getField(klass: C_Meta, name: string){
@@ -160,7 +164,7 @@ import { DeclsInDefinition, Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			res=k.decls.fields[name];
 		}
 		if (res && res.vtype && !res.resolvedType) {
-			res.resolvedType=className2ResolvedType(res.vtype);
+			res.resolvedType=typeDigest2ResolvedType(res.vtype);
 		}
 		return res;
 	}

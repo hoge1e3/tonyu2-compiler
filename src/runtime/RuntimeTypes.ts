@@ -1,6 +1,6 @@
 export type MetaMap={[key: string]:Meta};
 export type ClassTree={[key:string]:ClassTree}|TonyuClass; // Tonyu.classes.user.Hoge  Tonyu.classes.kernel.Actor etc
-export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:{name:string}};
+export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:MethodInfo};
 export type Constructor = new (...args: any[]) => any;
 export type Extender=(parent:TonyuShimClass, ctx:ClassDefinitionContext)=>TonyuShimClass;
 export type TonyuClass= Constructor & {meta:Meta, extendFrom:Extender};
@@ -8,16 +8,13 @@ export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Extender};
 export function isTonyuClass(v:any):v is TonyuClass {
 	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
-export type MethodInfo={
-	name:string, isMain?:boolean, nowait:boolean,
-	// compile time?
-	/*
-	stmts:TNode[],pos:number,
-    ftype?:string,//"function"|"fiber"|"constructor"|"\\",
-	klass:string,
-	head?:FuncDeclHead,
-	node?:FuncDecl,*/
+export type TypeDigest="string"|{element: TypeDigest};
+export type MethodTypeDigest={
+	params: TypeDigest[], returnValue: TypeDigest
 };
+export type MethodInfoInDefinition={isMain?:boolean, nowait:boolean, vtype?: MethodTypeDigest};
+export type MethodInfo={name:string} & MethodInfoInDefinition;
+
 export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type FuncMap={[key:string]: Function};
 export type FuncMapFactory=(superclass:TonyuShimClass)=>FuncMap;
@@ -41,8 +38,8 @@ export type ClassDefinitionContext={
 
 };
 export type DeclsInDefinition={
-	methods: {[key:string]:{nowait:boolean}},
-	fields: {[key:string]:{vtype: string}},
+	methods: {[key:string]:MethodInfoInDefinition},
+	fields: {[key:string]:FieldInfoInDefinition},
 };
 export type Decls={
 	methods: {[key:string]: MethodInfo},
@@ -51,15 +48,12 @@ export type Decls={
 	amds?: object,
 	softRefClasses?: object*/
 };
+export type FieldInfoInDefinition={vtype?: TypeDigest};
 export type FieldInfo={
 	klass:Meta,// not in DeclsInDefinition, add at klass definition
     name:string,// not  in DeclsInDefinition, add at klass definition
-	vtype?: string, // "String" , "Number", "user.A"
-	// --- compile time?
-    /*node?:TNode,
-	pos?:number,
-	vtype?: any,*/
-};
+} & FieldInfoInDefinition;
+
 export type Meta={
 	func: TonyuShimClass,
 	fullName:string, shortName:string, namespace:string,

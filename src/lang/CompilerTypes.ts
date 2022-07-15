@@ -111,6 +111,7 @@ export type FuncInfo={// also includes Method
 	//fiberCallRequired?:boolean,
 	useArgs?:boolean,
 	//useTry?:boolean,
+	paramTypes?: AnnotatedType[],
 	returnType?: AnnotatedType,
 	nowait: boolean,
 
