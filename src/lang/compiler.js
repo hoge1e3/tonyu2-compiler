@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getMethod = exports.getField = exports.typeDigest2ResolvedType = exports.digestDecls = exports.klass2name = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
+exports.getParams = exports.getDependingClasses = exports.getProperty = exports.getMethod = exports.getField = exports.typeDigest2ResolvedType = exports.digestDecls = exports.resolvedType2Digest = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 const CompilerTypes_1 = require("./CompilerTypes");
@@ -166,7 +166,18 @@ function getSource(srcCont, node) {
 exports.getSource = getSource;
 //cu.getSource=getSource;
 //cu.getField=getField;
-function klass2name(t) {
+/*export function klass2name(t: AnnotatedType) {
+    if (isMethodType(t)) {
+        return `${t.method.klass.fullName}.${t.method.name}()`;
+    } else if (isMeta(t)) {
+        return t.fullName;
+    } else if (isNativeClass(t)) {
+        return t.class.name;
+    } else {
+        return `${klass2name(t.element)}[]`;
+    }
+}*/
+function resolvedType2Digest(t) {
     if ((0, CompilerTypes_1.isMethodType)(t)) {
         return `${t.method.klass.fullName}.${t.method.name}()`;
     }
@@ -177,20 +188,30 @@ function klass2name(t) {
         return t.class.name;
     }
     else {
-        return `${klass2name(t.element)}[]`;
+        return { element: resolvedType2Digest(t.element) };
     }
 }
-exports.klass2name = klass2name;
+exports.resolvedType2Digest = resolvedType2Digest;
 function digestDecls(klass) {
+    //console.log("DIGEST", klass.decls.methods);
     var res = { methods: {}, fields: {} };
     for (let i in klass.decls.methods) {
-        res.methods[i] =
-            { nowait: !!klass.decls.methods[i].nowait };
+        const mi = klass.decls.methods[i];
+        res.methods[i] = {
+            nowait: !!mi.nowait,
+            isMain: !!mi.isMain,
+        };
+        if (mi.paramTypes || mi.returnType) {
+            res.methods[i].vtype = {
+                params: mi.paramTypes ? mi.paramTypes.map((t) => t ? resolvedType2Digest(t) : null) : null,
+                returnValue: mi.returnType ? resolvedType2Digest(mi.returnType) : null,
+            };
+        }
     }
     for (let i in klass.decls.fields) {
         const src = klass.decls.fields[i];
         const dst = {
-            vtype: src.resolvedType ? klass2name(src.resolvedType) : src.vtype
+            vtype: src.resolvedType ? resolvedType2Digest(src.resolvedType) : src.vtype
         };
         res.fields[i] = dst;
     }
@@ -237,6 +258,12 @@ function getMethod(klass, name) {
     return res;
 }
 exports.getMethod = getMethod;
+function getProperty(klass, name) {
+    const getter = getMethod(klass, TonyuRuntime_1.default.klass.property.methodFor("get", name));
+    const setter = getMethod(klass, TonyuRuntime_1.default.klass.property.methodFor("set", name));
+    return { getter, setter };
+}
+exports.getProperty = getProperty;
 //cu.getMethod=getMethod2;
 // includes klass itself
 function getDependingClasses(klass) {

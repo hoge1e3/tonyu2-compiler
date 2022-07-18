@@ -4,4 +4,6 @@ test=5;
    console.log("get x",test*2);
    return test*2;
 }
-
+\x=val:Number {
+   console.log("Set x",val);
+}

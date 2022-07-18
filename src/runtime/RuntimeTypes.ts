@@ -8,12 +8,15 @@ export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Extender};
 export function isTonyuClass(v:any):v is TonyuClass {
 	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
-export type TypeDigest="string"|{element: TypeDigest};
+export type TypeDigest=string|{element: TypeDigest};
 export type MethodTypeDigest={
-	params: TypeDigest[], returnValue: TypeDigest
+	params?: TypeDigest[], returnValue?: TypeDigest
 };
 export type MethodInfoInDefinition={isMain?:boolean, nowait:boolean, vtype?: MethodTypeDigest};
-export type MethodInfo={name:string} & MethodInfoInDefinition;
+export type MethodInfo={
+	klass:Meta,// not in DeclsInDefinition, add at klass definition
+    name:string,// not  in DeclsInDefinition, add at klass definition
+} & MethodInfoInDefinition;
 
 export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type FuncMap={[key:string]: Function};

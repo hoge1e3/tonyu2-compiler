@@ -149,7 +149,8 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				if (vtype && isMeta(vtype)) {
 					const field=cu.getField(vtype,name);
 					const method=cu.getMethod(vtype,name);
-					if (!field && !method) {
+					const prop=cu.getProperty(vtype,name);
+					if (!field && !method && !prop) {
 						throw TError( R("memberNotFoundInClass",vtype.shortName, name) , srcFile, node.op.name.pos);
 					}
 					//console.log("GETF",vtype,m.name,f);
@@ -158,6 +159,10 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 						annotation(node,{resolvedType:field.resolvedType});
 					} else if (method) {
 						annotation(node,{resolvedType:{method}});
+					} else if (prop && prop.getter) {
+						annotation(node,{resolvedType:prop.getter.returnType});
+					} else if (prop && prop.setter && prop.setter.paramTypes) {
+						annotation(node,{resolvedType:prop.setter.paramTypes[0]});
 					}
 				}
 				if (vtype && isNativeClass(vtype)) {

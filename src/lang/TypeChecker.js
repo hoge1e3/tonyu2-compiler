@@ -173,7 +173,8 @@ function checkExpr(klass, env) {
                 if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
                     const field = cu.getField(vtype, name);
                     const method = cu.getMethod(vtype, name);
-                    if (!field && !method) {
+                    const prop = cu.getProperty(vtype, name);
+                    if (!field && !method && !prop) {
                         throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.op.name.pos);
                     }
                     //console.log("GETF",vtype,m.name,f);
@@ -183,6 +184,9 @@ function checkExpr(klass, env) {
                     }
                     else if (method) {
                         annotation(node, { resolvedType: { method } });
+                    }
+                    else if (prop && prop.getter) {
+                        annotation(node, { resolvedType: prop.getter.returnType });
                     }
                 }
                 if (vtype && (0, CompilerTypes_1.isNativeClass)(vtype)) {

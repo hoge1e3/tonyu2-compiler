@@ -801,12 +801,13 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotation(locals.subFuncDecls[i],{scopeInfo:si});
 		}
 	}
-	function resolveTypesOfParams(params:ParamDecl[]) {
-		params.forEach(function (param) {
+	function resolveTypesOfParams(params:ParamDecl[]):AnnotatedType[] {
+		return params.map((param, i)=>{
 			if (param.typeDecl) {
 				//console.log("restype",param);
-				resolveType(param.typeDecl.vtype);
+				return resolveType(param.typeDecl.vtype);
 			}
+			return null;
 		});
 	}
 	function initParamsLocals(f: FuncInfo) {//S
@@ -816,7 +817,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			f.params=getParams(f);
 		});
 		//if (!f.params) throw new Error("f.params is not inited");
-		resolveTypesOfParams(f.params!);
+		f.paramTypes=resolveTypesOfParams(f.params!);
+		//console.log("F_PARAMTYPES", f.name, f.paramTypes);
 	}
 	function collectBlockScopedVardecl(stmts:Stmt[],scope:ScopeMap) {
 		for (let stmt of stmts) {
@@ -864,7 +866,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		//finfo.name=name;
 		finfo.params=ps;
 		//var res={scope:ns, locals:finfo.locals, name:name, params:ps};
-		resolveTypesOfParams(finfo.params);
+		finfo.paramTypes=resolveTypesOfParams(finfo.params);
 		//annotation(node,res);
 		annotation(node,{funcInfo:finfo});
 		annotateSubFuncExprs(finfo.locals!, ns);
@@ -879,10 +881,8 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	}
 	function annotateMethodFiber(f: FuncInfo) {//S
 		var ns=newScope(ctx.scope);
-		f.params!.forEach(function (p) {
+		f.params!.forEach((p, i:number)=>{
 			var si=new SI.PARAM(f);
-			//	klass:klass.name, name:f.name, no:cnt, declaringFunc:f
-			//});
 			ns[p.name.text]=si;
 			annotation(p,{scopeInfo:si,declaringFunc:f});
 		});

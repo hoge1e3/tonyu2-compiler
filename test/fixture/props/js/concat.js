@@ -10,8 +10,9 @@ Tonyu.klass.define({
         var _this=this;
         
         console.log("Parent");
-        _this.p=new Tonyu.classes.user.Parent;
-        _this.print('Any');
+        _this.p = new Tonyu.classes.user.Parent;
+        
+        _this.print(Number);
         _this.p.test=5;
         console.log(_this.p.x);
         console.log("Child");
@@ -25,8 +26,9 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         console.log("Parent");
-        _this.p=new Tonyu.classes.user.Parent;
-        _this.print('Any');
+        _this.p = new Tonyu.classes.user.Parent;
+        
+        _this.print(Number);
         _this.p.test=5;
         console.log(_this.p.x);
         console.log("Child");
@@ -38,7 +40,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"p":{},"print":{},"c":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"p":{"vtype":"user.Parent"},"print":{},"c":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Parent',
@@ -68,10 +70,16 @@ Tonyu.klass.define({
         console.log("get x",_this.test*2);
         return _this.test*2;
       },
+      __setter__x :function _trc_Parent___setter__x(val) {
+        "use strict";
+        var _this=this;
+        
+        console.log("Set x",val);
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"__getter__x":{"nowait":true}},"fields":{"test":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"__getter__x":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":"Number"}},"__setter__x":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}}},"fields":{"test":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Child',
@@ -103,7 +111,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"__setter__x":{"nowait":true}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"__setter__x":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}}},"fields":{}}
 });
 
 //# sourceMappingURL=concat.js.map

@@ -118,7 +118,7 @@ import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/Runtim
 	}
 	//cu.getSource=getSource;
 	//cu.getField=getField;
-	export function klass2name(t: AnnotatedType) {
+	/*export function klass2name(t: AnnotatedType) {
 		if (isMethodType(t)) {
 			return `${t.method.klass.fullName}.${t.method.name}()`;
 		} else if (isMeta(t)) {
@@ -128,17 +128,39 @@ import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/Runtim
 		} else {
 			return `${klass2name(t.element)}[]`;
 		}
+	}*/
+	export function resolvedType2Digest(t: AnnotatedType):TypeDigest {
+		if (isMethodType(t)) {
+			return `${t.method.klass.fullName}.${t.method.name}()`;
+		} else if (isMeta(t)) {
+			return t.fullName;
+		} else if (isNativeClass(t)) {
+			return t.class.name;
+		} else {
+			return {element: resolvedType2Digest(t.element)};
+		}
 	}
 	export function digestDecls(klass: C_Meta):DeclsInDefinition {
+		//console.log("DIGEST", klass.decls.methods);
 		var res={methods:{},fields:{}} as DeclsInDefinition;
 		for (let i in klass.decls.methods) {
-			res.methods[i]=
-			{nowait:!!klass.decls.methods[i].nowait};
+			const mi=klass.decls.methods[i];
+			res.methods[i]={
+				nowait:!!mi.nowait,
+				isMain:!!mi.isMain,
+			};
+			if(mi.paramTypes || mi.returnType) {
+				res.methods[i].vtype={
+					params: mi.paramTypes ? mi.paramTypes.map(
+						(t)=>t?resolvedType2Digest(t):null): null,
+					returnValue: mi.returnType ? resolvedType2Digest(mi.returnType): null,
+				};	
+			}
 		}
 		for (let i in klass.decls.fields) {
 			const src=klass.decls.fields[i];
 			const dst={
-				vtype:src.resolvedType ? klass2name(src.resolvedType) : src.vtype
+				vtype:src.resolvedType ? resolvedType2Digest(src.resolvedType) : src.vtype
 			};
 			res.fields[i]=dst;
 		}
@@ -175,6 +197,11 @@ import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/Runtim
 			res=k.decls.methods[name];
 		}
 		return res;
+	}
+	export function getProperty(klass: C_Meta,name:string):{setter?: FuncInfo, getter?: FuncInfo} {
+		const getter=getMethod(klass, Tonyu.klass.property.methodFor("get", name));
+		const setter=getMethod(klass, Tonyu.klass.property.methodFor("set", name));
+		return {getter,setter};
 	}
 	//cu.getMethod=getMethod2;
 	// includes klass itself

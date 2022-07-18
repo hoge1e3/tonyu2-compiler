@@ -58,16 +58,16 @@ Tonyu.klass.define({
         return _this;
         
       },
-      toste :function _trc_A_toste() {
+      toste :function _trc_A_toste(x) {
         "use strict";
         var _this=this;
         
-        console.log(3);
+        console.log(x);
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"toste":{"nowait":true}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"},"n":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}},"toste":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":"user.A"}}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"},"n":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Main',
@@ -175,7 +175,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"print":{"nowait":false},"getA":{"nowait":false}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"r":{"vtype":"user.A"},"alist":{"vtype":"user.A[]"}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"print":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"getA":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"r":{"vtype":"user.A"},"alist":{"vtype":{"element":"user.A"}}}}
 });
 
 //# sourceMappingURL=concat.js.map

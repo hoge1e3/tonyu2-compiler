@@ -1,4 +1,4 @@
-import { Constructor, FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
+import { Constructor, FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
 import { IndentBuffer } from "./IndentBuffer";
 import { Catch, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes";

@@ -13,8 +13,8 @@ var s:String;
 	//i.test();
 	return this;
 }
-nowait \toste() {
-	console.log(3);
+nowait \toste(x:Number):A {
+	console.log(x);
 }
 //a
 /*\hoge(){
