@@ -261,6 +261,8 @@ exports.getMethod = getMethod;
 function getProperty(klass, name) {
     const getter = getMethod(klass, TonyuRuntime_1.default.klass.property.methodFor("get", name));
     const setter = getMethod(klass, TonyuRuntime_1.default.klass.property.methodFor("set", name));
+    if (!getter && !setter)
+        return null;
     return { getter, setter };
 }
 exports.getProperty = getProperty;

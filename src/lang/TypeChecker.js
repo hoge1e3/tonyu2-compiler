@@ -188,6 +188,9 @@ function checkExpr(klass, env) {
                     else if (prop && prop.getter) {
                         annotation(node, { resolvedType: prop.getter.returnType });
                     }
+                    else if (prop && prop.setter && prop.setter.paramTypes) {
+                        annotation(node, { resolvedType: prop.setter.paramTypes[0] });
+                    }
                 }
                 if (vtype && (0, CompilerTypes_1.isNativeClass)(vtype)) {
                     if (vtype.class.prototype[name]) {

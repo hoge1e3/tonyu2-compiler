@@ -90,6 +90,7 @@ Tonyu.klass.define({
         _this.print(Tonyu.classMetas['user.A']);
         _this.print(Tonyu.classMetas['user.Main'].decls.methods.getA);
         _this.print(Tonyu.classMetas['user.A']);
+        _this.a.hoge;
         _this.n = 3;
         
         _this.a.n=10;
@@ -123,6 +124,7 @@ Tonyu.klass.define({
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.Main'].decls.methods.getA));
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
+        _this.a.hoge;
         _this.n = 3;
         
         _this.a.n=10;

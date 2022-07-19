@@ -201,6 +201,7 @@ import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/Runtim
 	export function getProperty(klass: C_Meta,name:string):{setter?: FuncInfo, getter?: FuncInfo} {
 		const getter=getMethod(klass, Tonyu.klass.property.methodFor("get", name));
 		const setter=getMethod(klass, Tonyu.klass.property.methodFor("set", name));
+		if (!getter && !setter) return null;
 		return {getter,setter};
 	}
 	//cu.getMethod=getMethod2;

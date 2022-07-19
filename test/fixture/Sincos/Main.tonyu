@@ -1,0 +1,20 @@
+
+t=10;
+$panel.fillStyle="white";
+let a=new Actor;
+a.teseet();
+print(__typeof a);
+print(__typeof a.test);
+
+while(true) {
+    //  x=200;
+    p=-1;
+    x=200+cos(t)*100;
+    y=200+sin(t)*100;
+    //print(t,cos(t)*cos(t)+sin(t)*sin(t));
+    $panel.fillRect(a.x,a.y,1,1);
+    t++;
+    a.x=x+sin(t*2.1)*50;
+    a.y=y+cos(t*2.1)*50;
+    update();
+}

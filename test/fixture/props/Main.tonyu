@@ -1,8 +1,11 @@
 native console;
 
+\foo(s:Number):String {
+    return s+"";
+}
 console.log("Parent");
 let p=new Parent;
-print(__typeof p.x);
+console.log(__typeof p.x);
 p.test=5;
 //p.x=10;
 console.log(p.x);

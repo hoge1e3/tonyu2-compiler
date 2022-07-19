@@ -18,7 +18,7 @@ print (__typeof getA());
 	//b.hoge;
 	return a;
 }
-//a.hoge;
+a.hoge;
 var n=3;
 a.n=10;
 
