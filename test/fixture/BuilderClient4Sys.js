@@ -160,33 +160,50 @@ class BuilderClient {
     }
     async serializeAnnotatedNodes() {
         try {
-            const REF="REF";
+            const REF="REF",FUNC="FUNC";
             await this.init();
-            let rr=await this.w.run("compiler/serializeAnnotatedNodes",{});
-            root.temp1=rr;
-            console.log(rr);
-            for(let k of Object.keys(rr)) conv(rr[k]);
-            console.log(rr);
+            let objs=await this.w.run("compiler/serializeAnnotatedNodes",{});
+            root.temp1=objs;
+            console.log(objs);
+            const sfiles={};
+            for(let k of Object.keys(objs)) {
+                if (isSFile(objs[k])) {
+                    let n=this.convertFromWorkerPath(objs[k].path);
+                    objs[k]=FS.get(n);
+                    sfiles[k]=1;
+                }
+            }
+            for(let k of Object.keys(objs)) {
+                conv(objs[k]);
+            }
+            console.log(objs);
             function conv(r) {
+                if (FS.isFile(r)) return;
                 if (r&&typeof r==="object") {
                     for (let k of Object.keys(r)) {                        
-                        if (isSFile(r[k])) {
-                            n=this.convertFromWorkerPath(r[k].path);
-                            r[k]=FS.get(n);
-                        } else if (isRef(r[k])) {
-                            r[k]=rr[r[k][REF]];
+                        if (isRef(r[k])) {
+                            r[k]=objs[r[k][REF]];
+                        } else if (isFunc(r[k])) {
+                            let n=r[k][FUNC];
+                            if (root[n] && typeof root[n]==="function") {
+                                r[k]=root[n];
+                            }
                         } else conv(r[k]);
                     }
                 }  
             }
-            function isSFile(o){
-                return o.isSFile && o.path;
+            function isFunc(r) {
+                return (r&& typeof r[FUNC]==="string");
             }
-            function isRef(o) {
+            function isSFile(o){
+                return o && o.isSFile && o.path;
+            }
+            function isRef(r) {
                 return (r&& typeof r[REF]==="number");
             }
-            return rr[1];
+            return objs[1];
         } catch(e) {
+            console.error(e);
             throw this.convertError(e);
         }
     }

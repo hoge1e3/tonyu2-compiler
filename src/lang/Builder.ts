@@ -440,9 +440,9 @@ export = class Builder {
         let idseq=1;
         let map=new Map<any,number>();
         let objs:{[key:number]:any}={};
-        let rootSrc={};
-        for (let cl of cls) {rootSrc[cl.fullName]={node:cl.node, annotation:cl.annotation};}
-        let root=traverse(rootSrc);
+        //let rootSrc={};
+        //for (let cl of cls) {rootSrc[cl.fullName]={node:cl.node, annotation:cl.annotation};}
+        let root=traverse(cls);
         if (root.REF!==1) {
             throw new Error(root.REF);
         }
@@ -486,7 +486,7 @@ export = class Builder {
                 objs[id]=res;
                 return refobj(id);
             } else if (typeof a==="function") {
-                return "<function>";
+                return {FUNC:a.name};
             } else {
                 return a;
             }
