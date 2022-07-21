@@ -12,6 +12,8 @@ Tonyu.klass.define({
         
         
         
+        _this.print(Number);
+        _this.print(Number);
       },
       fiber$main :function* _trc_A_f_main(_thread) {
         "use strict";
@@ -20,6 +22,8 @@ Tonyu.klass.define({
         
         
         
+        _this.print(Number);
+        _this.print(Number);
         
       },
       test :function _trc_A_test() {
@@ -64,10 +68,52 @@ Tonyu.klass.define({
         
         console.log(x);
       },
+      __setter__e :function _trc_A___setter__e(x) {
+        "use strict";
+        var _this=this;
+        
+        return 3;
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}},"toste":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":"user.A"}}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"},"n":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}},"toste":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":"user.A"}},"__setter__e":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"},"print":{},"n":{}}}
+});
+Tonyu.klass.define({
+  fullName: 'user.Ary',
+  shortName: 'Ary',
+  namespace: 'user',
+  includes: [],
+  methods: function (__superClass) {
+    return {
+      main :function _trc_Ary_main() {
+        "use strict";
+        var _this=this;
+        
+        _this.list = [new Tonyu.classes.user.A];
+        
+        _this.print("typeofx",Tonyu.classMetas['user.A']);
+      },
+      fiber$main :function* _trc_Ary_f_main(_thread) {
+        "use strict";
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        _this.list = [new Tonyu.classes.user.A];
+        
+        _this.print("typeofx",Tonyu.classMetas['user.A']);
+        
+      },
+      __getter__x :function _trc_Ary___getter__x() {
+        "use strict";
+        var _this=this;
+        
+        return new Tonyu.classes.user.A;
+      },
+      __dummy: false
+    };
+  },
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"__getter__x":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}}},"fields":{"list":{"vtype":{"element":"user.A"}},"print":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Main',
@@ -90,7 +136,7 @@ Tonyu.klass.define({
         _this.print(Tonyu.classMetas['user.A']);
         _this.print(Tonyu.classMetas['user.Main'].decls.methods.getA);
         _this.print(Tonyu.classMetas['user.A']);
-        _this.a.hoge;
+        _this.print(Number);
         _this.n = 3;
         
         _this.a.n=10;
@@ -124,7 +170,7 @@ Tonyu.klass.define({
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.Main'].decls.methods.getA));
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
-        _this.a.hoge;
+        (yield* _this.fiber$print(_thread, Number));
         _this.n = 3;
         
         _this.a.n=10;

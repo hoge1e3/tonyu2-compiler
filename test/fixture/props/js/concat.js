@@ -13,6 +13,7 @@ Tonyu.klass.define({
         _this.p = new Tonyu.classes.user.Parent;
         
         console.log(Number);
+        console.log(Tonyu.classMetas['user.Main'].decls.methods.__getter__y);
         _this.p.test=5;
         console.log(_this.p.x);
         console.log("Child");
@@ -29,6 +30,7 @@ Tonyu.klass.define({
         _this.p = new Tonyu.classes.user.Parent;
         
         console.log(Number);
+        console.log(Tonyu.classMetas['user.Main'].decls.methods.__getter__y);
         _this.p.test=5;
         console.log(_this.p.x);
         console.log("Child");
@@ -51,10 +53,16 @@ Tonyu.klass.define({
         return s+"";
         
       },
+      __getter__y :function _trc_Main___getter__y() {
+        "use strict";
+        var _this=this;
+        
+        return 3;
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"foo":{"nowait":false,"isMain":false,"vtype":{"params":["Number"],"returnValue":"String"}}},"fields":{"p":{"vtype":"user.Parent"},"c":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"foo":{"nowait":false,"isMain":false,"vtype":{"params":["Number"],"returnValue":"String"}},"__getter__y":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":"Number"}}},"fields":{"p":{"vtype":"user.Parent"},"c":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Parent',

@@ -40,10 +40,9 @@ var ScopeInfos;
     }
     ScopeInfos.FIELD = FIELD;
     class PROP {
-        constructor(klass, name, info) {
+        constructor(klass, name) {
             this.klass = klass;
             this.name = name;
-            this.info = info;
             this.type = exports.ScopeTypes.PROP;
         }
     }
@@ -178,13 +177,13 @@ exports.getSource = getSource;
     }
 }*/
 function resolvedType2Digest(t) {
-    if ((0, CompilerTypes_1.isMethodType)(t)) {
+    if (CompilerTypes_1.isMethodType(t)) {
         return `${t.method.klass.fullName}.${t.method.name}()`;
     }
-    else if ((0, CompilerTypes_1.isMeta)(t)) {
+    else if (CompilerTypes_1.isMeta(t)) {
         return t.fullName;
     }
-    else if ((0, CompilerTypes_1.isNativeClass)(t)) {
+    else if (CompilerTypes_1.isNativeClass(t)) {
         return t.class.name;
     }
     else {

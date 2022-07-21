@@ -16,6 +16,11 @@ var s:String;
 nowait \toste(x:Number):A {
 	console.log(x);
 }
+print(__typeof e);
+\e=x:Number {
+	return 3;
+}
+print(__typeof e);
 //a
 /*\hoge(){
 	console.log("hoge");

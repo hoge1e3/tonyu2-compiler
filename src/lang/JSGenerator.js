@@ -64,7 +64,7 @@ function genJS(klass, env, genOptions) {
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = (0, context_1.context)();
+    var ctx = context_1.context();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -122,7 +122,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
+            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -606,13 +606,13 @@ function genJS(klass, env, genOptions) {
     function typeToLiteral(resolvedType) {
         if (resolvedType) {
             const t = resolvedType;
-            if ((0, CompilerTypes_1.isMethodType)(t)) {
+            if (CompilerTypes_1.isMethodType(t)) {
                 buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
             }
-            else if ((0, CompilerTypes_1.isMeta)(t)) {
+            else if (CompilerTypes_1.isMeta(t)) {
                 buf.printf("Tonyu.classMetas[%l]", t.fullName);
             }
-            else if ((0, CompilerTypes_1.isNativeClass)(t)) {
+            else if (CompilerTypes_1.isNativeClass(t)) {
                 buf.printf(t.class.name);
             }
             else {

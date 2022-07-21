@@ -329,7 +329,20 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			var r=Tonyu.klass.propReg.exec(i);
 			if (r) {
 				const name=r[2];
-				s[name]=new SI.PROP(klass.fullName, name, info);
+				let p:cu.ScopeInfos.PROP;
+				if (s[name] && s[name].type===ScopeTypes.PROP) {
+					p=s[name] as cu.ScopeInfos.PROP;
+				} else {
+					p=new SI.PROP(klass.fullName, name);
+					s[name]=p;
+				}
+				if (r[1]==="get") {
+					p.getter=info;
+				} else if (r[1]==="set") {
+					p.setter=info;
+				} else {
+					throw new Error(`${r[1]} is neither get or set: ${name}`);
+				}
 			} else {
 				s[i]=new SI.METHOD(klass.fullName, i, info);
 			}

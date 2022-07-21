@@ -30,7 +30,9 @@ import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/Runtim
 		}
 		export class PROP {
 			type=ScopeTypes.PROP;
-			constructor(public klass:string, public name:string , public info:FuncInfo){}
+			public getter?:FuncInfo;
+			public setter?:FuncInfo;
+			constructor(public klass:string, public name:string){}
 		}
 		export class METHOD{
 			type=ScopeTypes.METHOD;
