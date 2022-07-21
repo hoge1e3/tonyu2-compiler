@@ -4,6 +4,7 @@ const WS=require("../lib/WorkerServiceB");
 const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
+const { P } = require("../lang/ObjectMatcher");
 //const FS=(root.parent && root.parent.FS) || root.FS;
 const FS=root.FS;// TODO
 
@@ -152,6 +153,38 @@ class BuilderClient {
                 }
             }
             return changed;
+        } catch(e) {
+            throw this.convertError(e);
+        }
+    }
+    async serializeAnnotatedNodes() {
+        try {
+            const REF="REF";
+            await this.init();
+            let rr=await this.w.run("compiler/serializeAnnotatedNodes",{});
+            root.temp1=rr;
+            console.log(rr);
+            for(let k of Object.keys(rr)) conv(rr[k]);
+            console.log(rr);
+            function conv(r) {
+                if (r&&typeof r==="object") {
+                    for (let k of Object.keys(r)) {                        
+                        if (isSFile(r[k])) {
+                            n=this.convertFromWorkerPath(r[k].path);
+                            r[k]=FS.get(n);
+                        } else if (isRef(r[k])) {
+                            r[k]=rr[r[k][REF]];
+                        } else conv(r[k]);
+                    }
+                }  
+            }
+            function isSFile(o){
+                return o.isSFile && o.path;
+            }
+            function isRef(o) {
+                return (r&& typeof r[REF]==="number");
+            }
+            return rr[1];
         } catch(e) {
             throw this.convertError(e);
         }

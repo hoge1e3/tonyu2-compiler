@@ -5,6 +5,7 @@ const WS=require("../lib/WorkerServiceB");
 const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
+const { P } = require("../lang/ObjectMatcher");
 //const FS=(root.parent && root.parent.FS) || root.FS;
 const FS=root.FS;// TODO
 
@@ -157,6 +158,38 @@ class BuilderClient {
             throw this.convertError(e);
         }
     }
+    async serializeAnnotatedNodes() {
+        try {
+            const REF="REF";
+            await this.init();
+            let rr=await this.w.run("compiler/serializeAnnotatedNodes",{});
+            root.temp1=rr;
+            console.log(rr);
+            for(let k of Object.keys(rr)) conv(rr[k]);
+            console.log(rr);
+            function conv(r) {
+                if (r&&typeof r==="object") {
+                    for (let k of Object.keys(r)) {                        
+                        if (isSFile(r[k])) {
+                            n=this.convertFromWorkerPath(r[k].path);
+                            r[k]=FS.get(n);
+                        } else if (isRef(r[k])) {
+                            r[k]=rr[r[k][REF]];
+                        } else conv(r[k]);
+                    }
+                }  
+            }
+            function isSFile(o){
+                return o.isSFile && o.path;
+            }
+            function isRef(o) {
+                return (r&& typeof r[REF]==="number");
+            }
+            return rr[1];
+        } catch(e) {
+            throw this.convertError(e);
+        }
+    }
     convertError(e) {
         if (e.isTError) {
             try {
@@ -187,7 +220,108 @@ BuilderClient.NS2DepSpec=NS2DepSpec;
 //root.TonyuBuilderClient=BuilderClient;
 module.exports=BuilderClient;
 
-},{"../lang/SourceFiles":2,"../lib/FileMap":3,"../lib/WorkerServiceB":4,"../lib/root":5,"../project/NS2DepSpec":6}],2:[function(require,module,exports){
+},{"../lang/ObjectMatcher":2,"../lang/SourceFiles":3,"../lib/FileMap":4,"../lib/WorkerServiceB":5,"../lib/root":6,"../project/NS2DepSpec":7}],2:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.match = exports.isVar = exports.Z = exports.Y = exports.X = exports.W = exports.V = exports.U = exports.T = exports.S = exports.R = exports.Q = exports.P = exports.O = exports.N = exports.M = exports.L = exports.K = exports.J = exports.I = exports.H = exports.G = exports.F = exports.E = exports.D = exports.C = exports.B = exports.A = exports.v = void 0;
+//var OM:any={};
+const VAR = Symbol("$var"); //,THIZ="$this";
+function v(name, cond = {}) {
+    const res = function (cond2) {
+        const cond3 = { ...cond };
+        Object.assign(cond3, cond2);
+        return v(name, cond3);
+    };
+    res.vname = name;
+    res.cond = cond;
+    res[VAR] = true;
+    //if (cond) res[THIZ]=cond;
+    return res;
+}
+exports.v = v;
+function isVariable(a) {
+    return a[VAR];
+}
+//OM.isVar=isVar;
+exports.A = v("A");
+exports.B = v("B");
+exports.C = v("C");
+exports.D = v("D");
+exports.E = v("E");
+exports.F = v("F");
+exports.G = v("G");
+exports.H = v("H");
+exports.I = v("I");
+exports.J = v("J");
+exports.K = v("K");
+exports.L = v("L");
+exports.M = v("M");
+exports.N = v("N");
+exports.O = v("O");
+exports.P = v("P");
+exports.Q = v("Q");
+exports.R = v("R");
+exports.S = v("S");
+exports.T = v("T");
+exports.U = v("U");
+exports.V = v("V");
+exports.W = v("W");
+exports.X = v("X");
+exports.Y = v("Y");
+exports.Z = v("Z");
+/*var names="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+for (var i =0 ; i<names.length ; i++) {
+    var c=names.substring(i,i+1);
+    OM[c]=v(c);
+}*/
+function isVar(o) {
+    return o && o[VAR];
+}
+exports.isVar = isVar;
+function match(obj, tmpl) {
+    var res = {};
+    if (m(obj, tmpl, res))
+        return res;
+    return null;
+}
+exports.match = match;
+;
+function m(obj, tmpl, res) {
+    if (obj === tmpl)
+        return true;
+    else if (obj == null)
+        return false;
+    else if (isVariable(tmpl)) {
+        if (!m(obj, tmpl.cond, res))
+            return false;
+        res[tmpl.vname] = obj;
+        return true;
+    }
+    else if (typeof obj == "string" && tmpl instanceof RegExp) {
+        return obj.match(tmpl);
+    }
+    else if (typeof tmpl == "function") {
+        return tmpl(obj, res);
+    }
+    else if (typeof tmpl == "object") {
+        //if (typeof obj!="object") obj={$this:obj};
+        for (var i in tmpl) {
+            //if (i==VAR) continue;
+            var oe = obj[i]; //(i==THIZ? obj :  obj[i] );
+            var te = tmpl[i];
+            if (!m(oe, te, res))
+                return false;
+        }
+        /*if (tmpl[VAR]) {
+            res[tmpl[VAR]]=obj;
+        }*/
+        return true;
+    }
+    return false;
+}
+//export= OM;
+
+},{}],3:[function(require,module,exports){
 "use strict";
 //define(function (require,exports,module) {
 /*const root=require("root");*/
@@ -300,7 +434,7 @@ exports.SourceFiles = SourceFiles;
 exports.sourceFiles = new SourceFiles();
 //});/*--end of define--*/
 
-},{"../lib/root":5}],3:[function(require,module,exports){
+},{"../lib/root":6}],4:[function(require,module,exports){
 "use strict";
 module.exports = class FileMap {
     constructor() { this.sidesList = []; }
@@ -317,7 +451,7 @@ module.exports = class FileMap {
     }
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 /*global Worker*/
 // Browser Side
@@ -445,7 +579,7 @@ WorkerService.serv("console/log", function (params) {
 });
 module.exports = WorkerService;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 const root = (function () {
     if (typeof window !== "undefined")
@@ -458,7 +592,7 @@ const root = (function () {
 })();
 module.exports = root;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
 class NS2DepSpec {
     constructor(hashOrArray) {

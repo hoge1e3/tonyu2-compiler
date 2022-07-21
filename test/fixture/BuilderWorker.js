@@ -101,6 +101,14 @@ WS.serv("compiler/renameClassName", async params=>{
         throw convertTError(e);
     }
 });
+WS.serv("compiler/serializeAnnotatedNodes",async params=>{
+    try {
+        const res=await builder.serializeAnnotatedNodes();
+        return res;
+    } catch(e) {
+        throw convertTError(e);
+    }
+});
 function convertTError(e) {
     if (e.isTError) {
         e.src=e.src.path();
@@ -284,8 +292,8 @@ module.exports = class Builder {
         var env = this.getEnv();
         env.options = this.getOptions();
         for (let k of this.getMyClasses()) {
-            console.log("RMMeta", k);
-            delete env.classes[k];
+            console.log("RMMeta", k.fullName);
+            delete env.classes[k.fullName];
         }
         const myNsp = this.getNamespace();
         TonyuRuntime_1.default.klass.removeMetaAll(myNsp);
@@ -571,6 +579,70 @@ module.exports = class Builder {
             changed.push(renamedFile);
         }
         return changed;
+    }
+    serializeAnnotatedNodes() {
+        const cls = this.getMyClasses();
+        let idseq = 1;
+        let map = new Map();
+        let objs = {};
+        let rootSrc = {};
+        for (let cl of cls) {
+            rootSrc[cl.fullName] = { node: cl.node, annotation: cl.annotation };
+        }
+        let root = traverse(rootSrc);
+        if (root.REF !== 1) {
+            throw new Error(root.REF);
+        }
+        return objs;
+        //console.log(JSON.stringify(objs));
+        function refobj(id) {
+            return { REF: id };
+        }
+        function isArray(a) {
+            return a && typeof a.slice === "function" &&
+                typeof a.map === "function" && typeof a.length === "number";
+        }
+        function isNativeSI(a) {
+            return a.type === "native" && a.value;
+        }
+        function isSFile(path) {
+            return path && typeof (path.isSFile) == "function" && path.isSFile();
+        }
+        function traverse(a) {
+            if (a && typeof a === "object") {
+                if (map.has(a)) {
+                    return refobj(map.get(a));
+                }
+                let id = idseq++;
+                map.set(a, id);
+                let res;
+                if (isSFile(a)) {
+                    res = { isSFile: true, path: a.path() };
+                }
+                else if (isArray(a)) {
+                    res = a.map(traverse);
+                }
+                else {
+                    res = {};
+                    let nsi = isNativeSI(a);
+                    for (let k of Object.keys(a)) {
+                        if (nsi && k === "value")
+                            continue;
+                        if (k === "toString")
+                            continue;
+                        res[k] = traverse(a[k]);
+                    }
+                }
+                objs[id] = res;
+                return refobj(id);
+            }
+            else if (typeof a === "function") {
+                return "<function>";
+            }
+            else {
+                return a;
+            }
+        }
     }
 };
 

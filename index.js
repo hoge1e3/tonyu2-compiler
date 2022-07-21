@@ -65,6 +65,7 @@ builder.fullCompile(opt).then(async function (s) {
     if (run||daemon) {
         let Tonyu=root.Tonyu;
         Tonyu.onRuntimeError=e=>console.error(e);
+        Tonyu.globals.$builder=builder;
         let th=Tonyu.thread();
         let mainObj=new Tonyu.classes[prj.getNamespace()].Main();
         th.apply(mainObj,"main");

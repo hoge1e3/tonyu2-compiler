@@ -153,8 +153,8 @@ export = class Builder {
 		var env=this.getEnv();
         env.options=this.getOptions();
 		for (let k of this.getMyClasses()) {
-            console.log("RMMeta", k);
-			delete env.classes[k];
+            console.log("RMMeta", k.fullName);
+			delete env.classes[k.fullName];
 		}
         const myNsp=this.getNamespace();
         Tonyu.klass.removeMetaAll(myNsp);
@@ -162,7 +162,7 @@ export = class Builder {
 	getMyClasses() {
 		var env=this.getEnv();
 		var ns=this.getNamespace();
-		const res=[];
+		const res:C_Meta[]=[];
 		for (var kn in env.classes) {
 			var k=env.classes[kn];
 			if (k.namespace==ns) {
@@ -435,5 +435,61 @@ export = class Builder {
         }
         return changed;
     }
+    serializeAnnotatedNodes() {
+        const cls=this.getMyClasses();
+        let idseq=1;
+        let map=new Map<any,number>();
+        let objs:{[key:number]:any}={};
+        let rootSrc={};
+        for (let cl of cls) {rootSrc[cl.fullName]={node:cl.node, annotation:cl.annotation};}
+        let root=traverse(rootSrc);
+        if (root.REF!==1) {
+            throw new Error(root.REF);
+        }
+        return objs;
+        //console.log(JSON.stringify(objs));
 
+        function refobj(id:number) {
+            return {REF:id};
+        }
+        function isArray(a:any) {
+            return a && typeof a.slice==="function" && 
+            typeof a.map==="function" && typeof a.length==="number" ;
+        }
+        function isNativeSI(a:any) {
+            return a.type==="native" && a.value;
+        }
+        function isSFile(path:any) {
+            return path && typeof (path.isSFile)=="function" && path.isSFile();
+        }
+        function traverse(a:any) {
+            if (a && typeof a==="object") {
+                if (map.has(a)) {
+                    return refobj(map.get(a));
+                }
+                let id=idseq++;
+                map.set(a, id);
+                let res:any;
+                if (isSFile(a)) {
+                    res={isSFile:true, path:a.path()};
+                } else if (isArray(a)) {
+                    res=a.map(traverse);
+                } else {
+                    res={};
+                    let nsi=isNativeSI(a);
+                    for (let k of Object.keys(a)) {
+                        if (nsi && k==="value") continue;
+                        if (k==="toString") continue;
+                        res[k]=traverse(a[k]);
+                    }
+                }
+                objs[id]=res;
+                return refobj(id);
+            } else if (typeof a==="function") {
+                return "<function>";
+            } else {
+                return a;
+            }
+        }
+    }
 };

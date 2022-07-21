@@ -18,7 +18,9 @@ Tonyu.klass.define({
         
         _this.res = {};
         
-        _this.proc();
+        _this.r = Tonyu.globals.$builder.serializeAnnotatedNodes();
+        
+        console.log(_this.r);
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         "use strict";
@@ -34,8 +36,9 @@ Tonyu.klass.define({
         
         _this.res = {};
         
-        (yield* _this.fiber$proc(_thread));
+        _this.r = Tonyu.globals.$builder.serializeAnnotatedNodes();
         
+        console.log(_this.r);
         
       },
       proc :function _trc_Main_proc() {
@@ -105,7 +108,6 @@ Tonyu.klass.define({
       packAnnotations :function _trc_Main_packAnnotations(ans) {
         "use strict";
         var _this=this;
-        var _it_0;
         
         let res = {};
         
@@ -123,7 +125,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         let res = {};
         
@@ -223,7 +224,6 @@ Tonyu.klass.define({
       traverse :function _trc_Main_traverse(a,ctx) {
         "use strict";
         var _this=this;
-        var _it_0;
         
         if (a&&typeof  a==="object") {
           if (_this.map.has(a)) {
@@ -239,7 +239,7 @@ Tonyu.klass.define({
             
           } else {
             if (_this.isArray(a)) {
-              res=a.map((function anonymous_1918(e) {
+              res=a.map((function anonymous_1982(e) {
                 
                 return _this.traverse(e,_this.pushPath(ctx,"[]"));
               }));
@@ -283,7 +283,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         if (a&&typeof  a==="object") {
           if (_this.map.has(a)) {
@@ -300,14 +299,13 @@ Tonyu.klass.define({
             
           } else {
             if (_this.isArray(a)) {
-              res=a.map((function anonymous_1918(e) {
+              res=a.map((function anonymous_1982(e) {
                 
                 return _this.traverse(e,_this.pushPath(ctx,"[]"));
               }));
               
             } else {
               (yield* _this.fiber$keys(_thread, a, ctx));
-              
               res={};
               let nsi=yield* _this.fiber$isNativeSI(_thread, a);
               
@@ -323,7 +321,6 @@ Tonyu.klass.define({
                 let nc=yield* _this.fiber$pushPath(_thread, ctx, k);
                 
                 res[k]=(yield* _this.fiber$traverse(_thread, a[k], nc));
-                
                 
               }
               
@@ -421,7 +418,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"proc":{"nowait":false},"refobj":{"nowait":false},"builtin":{"nowait":false},"packAnnotations":{"nowait":false},"isEmptyAnnotation":{"nowait":false},"isArray":{"nowait":false},"pushPath":{"nowait":false},"isNativeSI":{"nowait":false},"isSFile":{"nowait":false},"traverse":{"nowait":false},"keys":{"nowait":false},"looksLikeNum":{"nowait":false},"mul":{"nowait":false}},"fields":{"idseq":{},"types":{},"map":{},"res":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"proc":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"refobj":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"builtin":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"packAnnotations":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"isEmptyAnnotation":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"isArray":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"pushPath":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"isNativeSI":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"isSFile":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"traverse":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"keys":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"looksLikeNum":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"mul":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}}},"fields":{"idseq":{},"types":{},"map":{},"res":{},"r":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

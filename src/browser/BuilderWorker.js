@@ -98,6 +98,14 @@ WS.serv("compiler/renameClassName", async params=>{
         throw convertTError(e);
     }
 });
+WS.serv("compiler/serializeAnnotatedNodes",async params=>{
+    try {
+        const res=await builder.serializeAnnotatedNodes();
+        return res;
+    } catch(e) {
+        throw convertTError(e);
+    }
+});
 function convertTError(e) {
     if (e.isTError) {
         e.src=e.src.path();

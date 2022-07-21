@@ -10,7 +10,10 @@ let idseq=1;
 let types={};
 let map=new Map();
 let res={};
-proc();
+//proc();
+let r=$builder.serializeAnnotatedNodes();
+console.log(r);
+
 \proc() {
     let cl=Tonyu.classMetas["user.Main"];
     //console.log(JSON.stringify(cl.node));

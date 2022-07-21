@@ -62,7 +62,7 @@ function orderByInheritance(classes) {
                     break;
                 }
             }
-            throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", ""), "Unknown", 0);
+            throw TError_1.default(R_1.default("circularDependencyDetected", ""), "Unknown", 0);
         }
     }
     function dep1(c) {
@@ -81,7 +81,7 @@ function orderByInheritance(classes) {
         function pushPath(c) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
-                throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", path.join("->")), "Unknown", 0);
+                throw TError_1.default(R_1.default("circularDependencyDetected", path.join("->")), "Unknown", 0);
             }
             visited[c.fullName] = true;
         }
@@ -127,7 +127,7 @@ module.exports = class Builder {
     }
     isTonyu1() {
         const options = this.getOptions();
-        return (0, tonyu1_1.isTonyu1)(options);
+        return tonyu1_1.isTonyu1(options);
     }
     getOptions() { return this.prj.getOptions(); }
     getOutputFile(...f) { return this.prj.getOutputFile(...f); }
@@ -172,8 +172,8 @@ module.exports = class Builder {
         var env = this.getEnv();
         env.options = this.getOptions();
         for (let k of this.getMyClasses()) {
-            console.log("RMMeta", k);
-            delete env.classes[k];
+            console.log("RMMeta", k.fullName);
+            delete env.classes[k.fullName];
         }
         const myNsp = this.getNamespace();
         TonyuRuntime_1.default.klass.removeMetaAll(myNsp);
@@ -336,10 +336,10 @@ module.exports = class Builder {
             while (true) {
                 env.unresolvedVars = 0;
                 for (let n_1 in compilingClasses) {
-                    (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n_1], env);
+                    TypeChecker_1.checkTypeDecl(compilingClasses[n_1], env);
                 }
                 for (let n_2 in compilingClasses) {
-                    (0, TypeChecker_1.checkExpr)(compilingClasses[n_2], env);
+                    TypeChecker_1.checkExpr(compilingClasses[n_2], env);
                 }
                 if (env.unresolvedVars <= 0)
                     break;
@@ -357,7 +357,7 @@ module.exports = class Builder {
             traceIndex: buf.traceIndex,
         });
         const s = SourceFiles_1.sourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
-        if ((0, CompilerTypes_1.isFileDest)(destinations)) {
+        if (CompilerTypes_1.isFileDest(destinations)) {
             const outf = this.getOutputFile();
             await s.saveAs(outf);
         }
@@ -459,5 +459,69 @@ module.exports = class Builder {
             changed.push(renamedFile);
         }
         return changed;
+    }
+    serializeAnnotatedNodes() {
+        const cls = this.getMyClasses();
+        let idseq = 1;
+        let map = new Map();
+        let objs = {};
+        let rootSrc = {};
+        for (let cl of cls) {
+            rootSrc[cl.fullName] = { node: cl.node, annotation: cl.annotation };
+        }
+        let root = traverse(rootSrc);
+        if (root.REF !== 1) {
+            throw new Error(root.REF);
+        }
+        return objs;
+        //console.log(JSON.stringify(objs));
+        function refobj(id) {
+            return { REF: id };
+        }
+        function isArray(a) {
+            return a && typeof a.slice === "function" &&
+                typeof a.map === "function" && typeof a.length === "number";
+        }
+        function isNativeSI(a) {
+            return a.type === "native" && a.value;
+        }
+        function isSFile(path) {
+            return path && typeof (path.isSFile) == "function" && path.isSFile();
+        }
+        function traverse(a) {
+            if (a && typeof a === "object") {
+                if (map.has(a)) {
+                    return refobj(map.get(a));
+                }
+                let id = idseq++;
+                map.set(a, id);
+                let res;
+                if (isSFile(a)) {
+                    res = { isSFile: true, path: a.path() };
+                }
+                else if (isArray(a)) {
+                    res = a.map(traverse);
+                }
+                else {
+                    res = {};
+                    let nsi = isNativeSI(a);
+                    for (let k of Object.keys(a)) {
+                        if (nsi && k === "value")
+                            continue;
+                        if (k === "toString")
+                            continue;
+                        res[k] = traverse(a[k]);
+                    }
+                }
+                objs[id] = res;
+                return refobj(id);
+            }
+            else if (typeof a === "function") {
+                return "<function>";
+            }
+            else {
+                return a;
+            }
+        }
     }
 };
