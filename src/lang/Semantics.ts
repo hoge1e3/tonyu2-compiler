@@ -15,7 +15,7 @@ import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { AnnotatedType, Annotation, ArrayType, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType } from "./CompilerTypes";
-import { packAnnotation } from "./compiler";
+import { NONBLOCKSCOPE_DECLPREFIX, packAnnotation } from "./compiler";
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
 var stype=cu.getScopeType;
@@ -143,7 +143,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 				addField(node.name, node);
 			},
 			varsDecl(node:VarsDecl) {
-				if (ctx.inBlockScope && node.declPrefix.text!=="var") return;
+				if (ctx.inBlockScope && node.declPrefix.text!==NONBLOCKSCOPE_DECLPREFIX) return;
 				for (let d of node.decls) {
 					fieldsCollector.visit(d);
 				}
@@ -174,7 +174,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 			},
 			"forin": function (node:Forin) {
 				var isVar=node.isVar;
-				if (isVar && isVar.text==="var") {
+				if (isVar && isVar.text===NONBLOCKSCOPE_DECLPREFIX) {
 					node.vars.forEach((v:Token)=>{
 						addField(v);
 					});
@@ -456,7 +456,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 		return si;
 	}
-	// locals are only var, not let or const
+	// locals are only var, not let or const. see collectBlockScopedVardecl
 	var localsCollector=new Visitor({
 		varDecl: function (node: VarDecl) {
 			if (ctx.isMain) {
@@ -471,7 +471,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		},
 		varsDecl(node:VarsDecl) {
-			if (node.declPrefix.text!=="var") return;
+			if (node.declPrefix.text!==NONBLOCKSCOPE_DECLPREFIX) return;
 			for (let d of node.decls) {
 				localsCollector.visit(d);
 			}
@@ -491,7 +491,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		"forin": function (node: Forin) {
 			var isVar=node.isVar;
 			node.vars.forEach(function (v) {
-				if (isVar && isVar.text==="var") {
+				if (isVar && isVar.text===NONBLOCKSCOPE_DECLPREFIX) {
 					if (ctx.isMain) {
 						annotation(v,{varInMain:true});
 						annotation(v,{declaringClass:klass});
@@ -588,7 +588,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				if (node.inFor.type==="normalFor") {
 					collectBlockScopedVardecl([node.inFor.init],ns);
 				} else {
-					if (node.inFor.isVar && node.inFor.isVar.text!=="var") {
+					if (node.inFor.isVar && node.inFor.isVar.text!==NONBLOCKSCOPE_DECLPREFIX) {
 						for (let v of node.inFor.vars) {
 							ns[v.text]=new SI.LOCAL(ctx.finfo,true);
 						}
@@ -835,7 +835,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	}
 	function collectBlockScopedVardecl(stmts:Stmt[],scope:ScopeMap) {
 		for (let stmt of stmts) {
-			if (stmt.type==="varsDecl" && stmt.declPrefix.text!=="var") {
+			if (stmt.type==="varsDecl" && stmt.declPrefix.text!==NONBLOCKSCOPE_DECLPREFIX) {
 				const ism=ctx.finfo.isMain;
 				//console.log("blockscope",ctx,ism);
 				if (ism && !ctx.inBlockScope) annotation(stmt, {varInMain:true});

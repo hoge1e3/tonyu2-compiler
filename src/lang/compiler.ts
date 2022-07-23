@@ -9,6 +9,7 @@ import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/Runtim
 	//const TError=require("TError");
 	const root=require("../lib/root");*/
 	type valueOf<T>=T[keyof T];
+	export const NONBLOCKSCOPE_DECLPREFIX="var";
 	export const ScopeTypes={
 			FIELD:"field", METHOD:"method", NATIVE:"native",//B
 			LOCAL:"local", THVAR:"threadvar",PROP:"property",

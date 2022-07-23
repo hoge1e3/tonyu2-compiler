@@ -27,6 +27,7 @@ const OM = __importStar(require("./ObjectMatcher"));
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
 const CompilerTypes_1 = require("./CompilerTypes");
+const compiler_1 = require("./compiler");
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
 const TH = "_thread", THIZ = "_this", ARGS = "_arguments", FIBPRE = "fiber$" /*F,RMPC="__pc", LASTPOS="$LASTPOS",CNTV="__cnt",CNTC=100*/; //G
@@ -243,7 +244,7 @@ function genJS(klass, env, genOptions) {
             }*/
         },
         varsDecl: function (node) {
-            if (node.declPrefix.text === "var") {
+            if (node.declPrefix.text === compiler_1.NONBLOCKSCOPE_DECLPREFIX) {
                 const decls = node.decls.filter((n) => n.value);
                 if (decls.length > 0) {
                     for (let decl of decls) {
@@ -462,7 +463,7 @@ function genJS(klass, env, genOptions) {
             var an = annotation(node);
             if (node.inFor.type == "forin") {
                 const inFor = node.inFor;
-                const pre = (inFor.isVar && inFor.isVar.text !== "var" ? inFor.isVar.text + " " : "");
+                const pre = (inFor.isVar && inFor.isVar.text !== compiler_1.NONBLOCKSCOPE_DECLPREFIX ? inFor.isVar.text + " " : "");
                 buf.printf("for (%s[%f] of %s(%v,%s)) {%{" +
                     "%f%n" +
                     "%}}", pre, loopVarsF(inFor.isVar, inFor.vars), ITER2, inFor.set, inFor.vars.length, noSurroundCompoundF(node.loop));
@@ -627,7 +628,7 @@ function genJS(klass, env, genOptions) {
         var a = annotation(node);
         var thisForVIM = a.varInMain ? THIZ + "." : "";
         var pa = annotation(parent);
-        const pre = (parent.declPrefix.text === "var" || pa.varInMain ? "" : parent.declPrefix + " ");
+        const pre = (parent.declPrefix.text === compiler_1.NONBLOCKSCOPE_DECLPREFIX || pa.varInMain ? "" : parent.declPrefix + " ");
         if (node.value) {
             const t = (!ctx.noWait) && annotation(node).fiberCall;
             const to = (!ctx.noWait) && annotation(node).otherFiberCall;
