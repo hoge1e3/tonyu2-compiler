@@ -294,20 +294,21 @@ function genJS(klass, env, genOptions) {
             if (t && t.type == "noRet") {
                 buf.printf("(yield* %s.%s%s(%j));", //FIBERCALL
                 THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)]);
-            }
-            else if (to && to.fiberType && to.type == "noRetOther") {
-                buf.printf("(yield* %v.%s%s(%j));", //FIBERCALL
-                to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)]);
+                /*} else if (to && to.fiberType && to.type=="noRetOther") {
+                    buf.printf(
+                            "(yield* %v.%s%s(%j));" ,//FIBERCALL
+                                to.O, FIBPRE, to.N,  [", ",[THNode].concat(to.A)],
+                    );*/
             }
             else if (t && t.type == "ret") {
                 buf.printf(//VDC
                 "%v%v(yield* %s.%s%s(%j));", //FIBERCALL
                 t.L, t.O, THIZ, FIBPRE, t.N, [", ", [THNode].concat(t.A)]);
-            }
-            else if (to && to.fiberType && to.type == "retOther") {
-                buf.printf(//VDC
-                "%v%v(yield* %v.%s%s(%j));", //FIBERCALL
-                to.L, to.P, to.O, FIBPRE, to.N, [", ", [THNode].concat(to.A)]);
+                /*} else if (to && to.fiberType && to.type=="retOther") {
+                    buf.printf(//VDC
+                            "%v%v(yield* %v.%s%s(%j));", //FIBERCALL
+                            to.L, to.P, to.O, FIBPRE, to.N, [", ",[THNode].concat(to.A)],
+                    );*/
             }
             else if (t && t.type == "noRetSuper") {
                 const p = SUPER; //getClassName(klass.superclass);

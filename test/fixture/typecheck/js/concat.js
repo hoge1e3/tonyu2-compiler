@@ -182,7 +182,7 @@ Tonyu.klass.define({
         (yield* _this.fiber$print(_thread, [Tonyu.classMetas['user.A']]));
         (yield* _this.fiber$print(_thread, Tonyu.classMetas['user.A']));
         _this.alist.push(_this.a);
-        (yield* _this.alist[0].fiber$test(_thread));
+        _this.alist[0].test();
         for (let [i, e] of Tonyu.iterator2(_this.alist,2)) {
           (yield* _this.fiber$print(_thread, i, e.test()));
           (yield* _this.fiber$print(_thread, Number, Tonyu.classMetas['user.A']));

@@ -281,6 +281,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}),
 		op:{type:"call", args:OM.A }
 	};
+	/*
 	const noRetOtherFiberCallTmpl={
 		expr: otherFiberCallTmpl
 	};
@@ -291,7 +292,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			left: OM.L,
 			right: otherFiberCallTmpl
 		}
-	};
+	};*/
 	function external_waitable_enabled(){
 		return env.options.compiler.external_waitable || klass.directives.external_waitable;
 	}
@@ -708,7 +709,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				t.type="ret";
 				annotation(node, {fiberCall:t});
 				//fiberCallRequired(this.path);
-			} else if (!ctx.noWait && external_waitable_enabled() &&
+			/*} else if (!ctx.noWait && external_waitable_enabled() &&
 					(t=OM.match(node,noRetOtherFiberCallTmpl))) {
 				//console.log("noRetOtherFiberCallTmpl", t);
 				t.type="noRetOther";
@@ -718,7 +719,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					(t=OM.match(node,retOtherFiberCallTmpl))) {
 				t.type="retOther";
 				//t.fiberCallRequired_lazy=()=>fiberCallRequired(path);
-				annotation(node, {otherFiberCall:t});
+				annotation(node, {otherFiberCall:t});*/
 			} else if (!ctx.noWait &&
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
 					t.S.name) {
