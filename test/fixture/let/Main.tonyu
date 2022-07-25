@@ -41,3 +41,7 @@ test2();
     }
     console.log(x);
 }
+/*let $x=3;
+for (let $y=3;$y<3; $y++) {
+
+}*/

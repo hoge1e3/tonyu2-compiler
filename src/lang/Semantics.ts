@@ -408,6 +408,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		//console.log("LVal",node);
 		throw TError( R("invalidLeftValue",getSource(node)) , srcFile, node.pos);
 	}
+	function prohibitGlobalNameOnBlockScopeDecl(v: Token) {
+		var isg=v.text.match(/^\$/);
+		if (isg) throw TError(R("CannotUseGlobalVariableInLetOrConst"),srcFile, v.pos);
+	}	
 	function getScopeInfo(node:Token):cu.ScopeInfo {//S
 		const n=node+"";
 		const si=ctx.scope[n];
@@ -591,6 +595,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				} else {
 					if (isBlockScopeDeclprefix(node.inFor.isVar)) {
 						for (let v of node.inFor.vars) {
+							prohibitGlobalNameOnBlockScopeDecl(v);
 							ns[v.text]=new SI.LOCAL(ctx.finfo,true);
 						}
 					}
@@ -841,6 +846,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				//console.log("blockscope",ctx,ism);
 				if (ism && !ctx.inBlockScope) annotation(stmt, {varInMain:true});
 				for (const d of stmt.decls) {
+					prohibitGlobalNameOnBlockScopeDecl(d.name);
 					if (ism && !ctx.inBlockScope) {
 						annotation(d,{varInMain:true});
 						annotation(d,{declaringClass:klass});
