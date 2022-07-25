@@ -3,13 +3,20 @@ import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
 import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, NativeClass } from "./CompilerTypes";
 import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/RuntimeTypes";
+import { Token } from "./parser";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
 	//const TError=require("TError");
 	const root=require("../lib/root");*/
 	type valueOf<T>=T[keyof T];
-	export const NONBLOCKSCOPE_DECLPREFIX="var";
+	const NONBLOCKSCOPE_DECLPREFIX="var";
+	export function isBlockScopeDeclprefix(t:Token){
+		return t && t.text!==NONBLOCKSCOPE_DECLPREFIX;
+	}
+	export function isNonBlockScopeDeclprefix(t:Token){
+		return t && t.text===NONBLOCKSCOPE_DECLPREFIX;
+	}
 	export const ScopeTypes={
 			FIELD:"field", METHOD:"method", NATIVE:"native",//B
 			LOCAL:"local", THVAR:"threadvar",PROP:"property",

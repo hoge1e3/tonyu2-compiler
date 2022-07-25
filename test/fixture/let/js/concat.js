@@ -8,7 +8,6 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         "field strict";
         _this.a = [1,5,3];
@@ -33,7 +32,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         "field strict";
         _this.a = [1,5,3];
@@ -53,7 +51,6 @@ Tonyu.klass.define({
           }
         }
         (yield* _this.fiber$test2(_thread));
-        
         
       },
       test :function _trc_Main_test() {
@@ -87,7 +84,6 @@ Tonyu.klass.define({
       test2 :function _trc_Main_test2() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         for (let i = _this.test();
          i<10 ; i++) {
@@ -112,7 +108,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         for (let i=yield* _this.fiber$test(_thread);
          i<10 ; i++) {
@@ -138,7 +133,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var i;
-        var _it_1;
         var x;
         
         for ([i] of Tonyu.iterator2([1,2,3],1)) {
@@ -153,7 +147,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var i;
-        var _it_1;
         var x;
         
         for ([i] of Tonyu.iterator2([1,2,3],1)) {
@@ -167,7 +160,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"test2":{"nowait":false},"test3":{"nowait":false}},"fields":{"a":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test2":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test3":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

@@ -12,7 +12,7 @@ import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, Na
 import { ArgList, Arylit, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { DeclsInDefinition } from "../runtime/RuntimeTypes";
-import { NONBLOCKSCOPE_DECLPREFIX } from "./compiler";
+import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -227,7 +227,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			}*/
 		},
 		varsDecl: function (node:VarsDecl) {
-			if (node.declPrefix.text===NONBLOCKSCOPE_DECLPREFIX) {
+			if (isNonBlockScopeDeclprefix(node.declPrefix)) {
 				const decls=node.decls.filter((n)=>n.value);
 				if (decls.length>0) {
 					for (let decl of decls) {
@@ -450,7 +450,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			var an=annotation(node);
 			if (node.inFor.type=="forin") {
 				const inFor:Forin=node.inFor;
-				const pre=(inFor.isVar && inFor.isVar.text!==NONBLOCKSCOPE_DECLPREFIX ? inFor.isVar.text+" ": "");
+				const pre=( isBlockScopeDeclprefix(inFor.isVar) ? inFor.isVar.text+" ": "");
 				buf.printf(
 					"for (%s[%f] of %s(%v,%s)) {%{"+
 						"%f%n" +
@@ -627,7 +627,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		var a=annotation(node);
 		var thisForVIM=a.varInMain? THIZ+"." :"";
 		var pa=annotation(parent);
-		const pre=(parent.declPrefix.text===NONBLOCKSCOPE_DECLPREFIX || pa.varInMain ?"":parent.declPrefix+" ");
+		const pre=(isNonBlockScopeDeclprefix(parent.declPrefix) || pa.varInMain ?"":parent.declPrefix+" ");
 		if (node.value) {
 			const t=(!ctx.noWait) && annotation(node).fiberCall;
 			const to=(!ctx.noWait) && annotation(node).otherFiberCall;

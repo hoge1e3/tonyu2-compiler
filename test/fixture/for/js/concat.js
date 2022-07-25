@@ -8,7 +8,6 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         _this.a=[1,5,3];
         for ([_this.e] of Tonyu.iterator2(_this.a,1)) {
@@ -28,7 +27,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         _this.a=[1,5,3];
         for ([_this.e] of Tonyu.iterator2(_this.a,1)) {
@@ -36,15 +34,13 @@ Tonyu.klass.define({
           
         }
         console.log("START");
-        for (_this.i=(yield* _this.fiber$test(_thread));
-         _this.i<10 ; _this.i++) {
+        for (_this.i=(yield* _this.fiber$test(_thread)); _this.i<10 ; _this.i++) {
           yield null;
           {
             console.log(_this.i);
           }
         }
         (yield* _this.fiber$test2(_thread));
-        
         
       },
       test :function _trc_Main_test() {
@@ -81,7 +77,6 @@ Tonyu.klass.define({
         var i;
         var k;
         var v;
-        var _it_3;
         
         console.log("START2");
         for (i = _this.test();
@@ -107,7 +102,6 @@ Tonyu.klass.define({
         var i;
         var k;
         var v;
-        var _it_3;
         
         console.log("START2");
         for (i=yield* _this.fiber$test(_thread);
@@ -131,7 +125,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var i;
-        var _it_1;
         var x;
         
         for ([i] of Tonyu.iterator2([1,2,3],1)) {
@@ -146,7 +139,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var i;
-        var _it_1;
         var x;
         
         for ([i] of Tonyu.iterator2([1,2,3],1)) {
@@ -160,7 +152,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"test":{"nowait":false},"test2":{"nowait":false},"test3":{"nowait":false}},"fields":{"a":{},"e":{},"i":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test2":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test3":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{},"e":{},"i":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

@@ -3,11 +3,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getParams = exports.getDependingClasses = exports.getProperty = exports.getMethod = exports.getField = exports.typeDigest2ResolvedType = exports.digestDecls = exports.resolvedType2Digest = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = exports.NONBLOCKSCOPE_DECLPREFIX = void 0;
+exports.getParams = exports.getDependingClasses = exports.getProperty = exports.getMethod = exports.getField = exports.typeDigest2ResolvedType = exports.digestDecls = exports.resolvedType2Digest = exports.getSource = exports.packAnnotation = exports.annotation = exports.genSym = exports.nullCheck = exports.newScope = exports.getScopeType = exports.ScopeInfos = exports.ScopeTypes = exports.isNonBlockScopeDeclprefix = exports.isBlockScopeDeclprefix = void 0;
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 const CompilerTypes_1 = require("./CompilerTypes");
-exports.NONBLOCKSCOPE_DECLPREFIX = "var";
+const NONBLOCKSCOPE_DECLPREFIX = "var";
+function isBlockScopeDeclprefix(t) {
+    return t && t.text !== NONBLOCKSCOPE_DECLPREFIX;
+}
+exports.isBlockScopeDeclprefix = isBlockScopeDeclprefix;
+function isNonBlockScopeDeclprefix(t) {
+    return t && t.text === NONBLOCKSCOPE_DECLPREFIX;
+}
+exports.isNonBlockScopeDeclprefix = isNonBlockScopeDeclprefix;
 exports.ScopeTypes = {
     FIELD: "field", METHOD: "method", NATIVE: "native",
     LOCAL: "local", THVAR: "threadvar", PROP: "property",

@@ -25,7 +25,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"b":{"vtype":"user.B"}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"b":{"vtype":"user.B"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.B',
@@ -54,7 +54,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"a":{"vtype":"user.A"}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{"vtype":"user.A"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Main',
@@ -98,7 +98,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"a":{"vtype":"user.A"},"b":{"vtype":"user.B"},"print":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{"vtype":"user.A"},"b":{"vtype":"user.B"},"print":{}}}
 });
 
 //# sourceMappingURL=concat.js.map
