@@ -775,6 +775,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			resolveArrayType(node);
 		}
 	});
+	varAccessesAnnotator.def=visitSub;//S
 	function resolveType(node:TypeExpr):AnnotatedType {
 		if (isNamedTypeExpr(node)) return resolveNamedType(node);
 		else if (isArrayTypeExpr(node)) return resolveArrayType(node);
@@ -799,11 +800,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 		return resolvedType;
 	}
-	varAccessesAnnotator.def=visitSub;//S
 	function annotateVarAccesses(node:Stmt[],scope:ScopeMap) {//S
-		const ns=newScope(scope);
-		collectBlockScopedVardecl(node, ns);
-		ctx.enter({scope:ns}, function () {
+		//const ns=newScope(scope);
+		collectBlockScopedVardecl(node, scope);
+		ctx.enter({scope}, function () {
 			varAccessesAnnotator.visit(node);
 		});
 	}
