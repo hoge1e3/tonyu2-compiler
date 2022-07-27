@@ -802,6 +802,15 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	}
 	function annotateVarAccesses(node:Stmt[],scope:ScopeMap) {//S
 		//const ns=newScope(scope);
+		/* ^ this occurs this:  
+		\f() { 
+			let x=5; 
+			\sub() { 
+				console.log(x);//10??
+		 	} 
+			sub();
+		} x=10;f(); 
+		*/
 		collectBlockScopedVardecl(node, scope);
 		ctx.enter({scope}, function () {
 			varAccessesAnnotator.visit(node);
