@@ -1,0 +1,27 @@
+//extends BaseActor;
+extends null;
+"field strict";
+
+nowait \parallel() {
+     var args=[];
+     for (var i=1; i<arguments.length; i++) {
+         args.push(arguments[i]);
+     }
+     var name=arguments[0];
+     var th;
+     th=$Boot.schedule(this,name,args);
+     return th;
+}
+\call() {
+    if (!_thread) throw new Error("callは待機可能モードで呼び出してください");
+    var a=new ArgParser(arguments);
+    var t=a.shift();
+    var n=a.shift();
+    var f=t["fiber$"+n];
+    if (!f) {
+        throw new Error("メソッド"+n+"が見つかりません");
+    }
+    var ag2=a.toArray();
+    ag2.unshift(_thread);
+    return f.apply(t,ag2);
+}

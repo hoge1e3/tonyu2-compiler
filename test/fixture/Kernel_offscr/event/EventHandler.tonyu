@@ -1,0 +1,67 @@
+extends TObject;
+includes EventHandlerCaller;
+native Tonyu;
+"field strict";
+// listeners is private (maybe)
+var listeners,target,released;
+\new(param) {
+    super(param);
+    listeners=[];
+}
+
+nowait \toListener(f) {
+    if (target && (typeof f)=="string") {
+        f=target[f];
+    }
+    if (typeof f!="function") throw new Error("Not a event listener: "+target+" / "+f);
+    return f;
+}
+nowait \newListener(f) {
+    var listener={
+        action: f
+    };
+    return listener;
+}
+nowait \addListener() {
+    var a=new ArgParser(arguments).toArray();
+    var f=a.pop();
+    f=toListener(f);
+    a.push(f);
+    var listener=newListener.apply(this,a);
+    listener.remove=\{
+       removeListener(listener);
+    };
+    listener.dispose=listener.dispose||\{};
+    listener.action=listener.action||f;
+    listeners.push(listener);
+    return listener;
+}
+nowait \doDispose(listener) {
+    if (typeof listener.dispose==="function") {
+        listener.dispose{last:listeners.length==0,listener};
+    }
+}
+nowait \removeListener(listener) {
+    var i=listeners.indexOf(listener);
+    if (i>=0) {
+        listeners.splice(i,1);
+        doDispose(listener);
+    }
+}
+nowait \removeAllListeners() {
+    var listener;
+    while(listener=listeners.shift()) {
+        doDispose(listener);
+    }
+}
+\fire(args) {
+    if (released) return;
+    // prevent remove listeners element while invoking(mainly on die)
+    for (var listener of listeners.slice()) {
+        callEventHandler(listener.action, args);
+    }
+}
+nowait \release() {
+    released=true;
+    removeAllListeners();
+}

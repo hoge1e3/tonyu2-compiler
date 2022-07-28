@@ -1,0 +1,51 @@
+extends Bot;
+
+\play(ctx:Context, s:State):Action {
+    if (!ctx) throw new Error("CTX is null");
+    var acts=s.actionsEvents(ctx);
+    // todo: Event
+    var a=spraying(acts);
+    return a;
+}
+
+\searchCorner(stationArray){//取られていない角の駅の配列を受け取る
+    var biggest=stationArray[0];
+    for(var i=1;i<stationArray.length;i++){
+        if($stations[biggest].nexts.length < $stations[stationArray[i]].nexts.length){
+        /*隣接駅数が多ければそちらを最大の角とする*/
+            biggest=stationArray[i];
+        }
+    }
+    return biggest;
+}
+
+\spraying(acts){
+    var choice;
+    var stn;
+    var kouho=[];
+    
+    for(stn of acts){
+        if($stations[stn.stext].nexts.length == $stations[stn.stext].lines.length && $stations[stn.stext].midway!=true){//角の駅かを判定
+            kouho.push(stn.stext);//角ならkouhoに追加
+        }
+    }
+    if(kouho.length>0){
+        return {stext:searchCorner(shuffle(kouho))};
+    }else{
+        return acts[rnd(acts.length)];//ランダムを返す
+    }
+}
+
+\shuffle(stArray){//kouhoを受け取る
+    var newArray=[];
+    var choice;
+    var z;
+    while(true){
+        z=stArray.splice([rnd(stArray.length)],1);
+        newArray.push(z[0]);//ランダムな1駅を選び新たな配列の末尾に追加する
+        if(stArray.length==0){
+            break;
+        }
+    }
+    return newArray;//ランダムな順になった配列を返す
+}

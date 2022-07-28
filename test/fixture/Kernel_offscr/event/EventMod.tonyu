@@ -1,0 +1,97 @@
+extends null;
+native console;
+native Tonyu;
+native Promise;
+"field strict";
+var _eventHandlers;
+nowait \initEventMod() {
+   if (_eventHandlers) return;
+   //console.log("initEventMod" , getClassInfo().fullName);
+   _eventHandlers={};
+   on ("die",releaseEventMod);
+}
+nowait \releaseEventMod() {
+   for (var k,v in _eventHandlers) {
+       v.release();
+   }
+}
+nowait \parseEventArgs(a) {
+   var res={type:a[0], args:[]};
+   for (var i=1 ; i<a.length ; i++) {
+       res.args.push(a[i]);
+   }
+   return res;
+}
+nowait \findEventHandlerClass(type) {
+    return EventHandler;
+}
+nowait \registerEventHandler(type, obj) {
+   // obj:{ attach, fire }
+   initEventMod();
+   if (typeof type=="function") {
+       obj=obj||new type{target:this};
+       type=obj.getClassInfo().fullName;
+   } else {
+       if (!obj) {
+           var cl=findEventHandlerClass(type); //$Boot.eventTypes[type] || EventHandler;
+           obj=new cl{target:this};
+       }
+       //obj.target=this;
+       //print("regEvt", type, getClassInfo().fullName, obj.id);
+   }
+   return _eventHandlers[type]=obj;
+}
+
+nowait \getEventHandler(type) {
+   initEventMod();
+   if (typeof type=="function") {
+       type=type.meta.fullName;
+   }
+   var res=_eventHandlers[type];
+   return res;
+}
+nowait \getOrRegisterEventHandler(type) {
+   var res=getEventHandler(type) || registerEventHandler(type);
+   return res;
+}
+
+nowait \on() {
+    var a=parseEventArgs(arguments);
+    var h=getOrRegisterEventHandler(a.type);
+    //print("on", a.type, getClassInfo().fullName, h.id);
+    return h.addListener.apply(h,a.args);
+}
+
+nowait \fireEvent(type, arg) {
+    if (!_eventHandlers) return;
+    var h=getEventHandler(type);
+    if (h) h.fire([arg]);
+}
+nowait \sendEvent(type, arg) {
+    fireEvent(type,arg);
+}
+
+\waitEvent() {
+    if (_thread) {
+        var args=new ArgParser(arguments);
+        var act=args.shift(EventMod) || this;
+        args.trimUndefs();
+        _thread.waitEvent(act, args.toArray());
+    }
+}
+
+\waitFor(f) {
+     if (_thread) {
+        return __await f;
+    }
+    return f;
+}
+
+\runPromise(f) {
+    let pr=new Promise(f);
+    if (!_thread) {
+        return pr;
+    } else {
+        return waitFor(pr);
+    }
+}

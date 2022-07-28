@@ -1,0 +1,8 @@
+extends Actor;
+let x,y;
+x=y=100;
+while(x<200) {
+    x++;
+    print( x);
+    update();
+}

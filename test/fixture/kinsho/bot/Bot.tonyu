@@ -1,0 +1,4 @@
+
+\play(ctx, s:State):Action {
+    throw new Error("Abstract: メソッドplayが実装されていません");    
+}

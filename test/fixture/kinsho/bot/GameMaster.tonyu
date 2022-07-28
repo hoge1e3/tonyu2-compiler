@@ -1,0 +1,44 @@
+
+var state;
+var context:Context;
+/*\addPlayerIndex() {
+    var idx=0;
+    for (var p of context.players) {
+        p.index=idx;
+        idx++;
+    }
+}*/
+\onAppear() {
+   // addPlayerIndex();
+    //state=initial;
+}
+//var interval=30;
+\step() {
+    if (gameover()) throw new Error("Game is over");
+    var action=getBot(state.player).play(context, state);
+    state=state.next(context, action);
+    if (!state) throw new Error("state is null!");
+    return action;
+}
+\getBot(p:Number) {
+    if (context.bots && context.bots[p]) return context.bots[p];
+    throw new Error("Bot not found: "+p);
+}
+\gameover() {
+    return state.gameover(context);
+}
+\run() {
+    while(!gameover()) {
+        step();
+        print(state+"");
+    }
+}
+/*while(!state.gameover()) {
+    var action=state.player.bot.play(context, state);
+    state=state.next(context, action);
+    if (!state) throw new Error("state is null!");
+    print(state+"");
+    if (interval) updateEx(interval);
+}*/
+//print(state);
+
