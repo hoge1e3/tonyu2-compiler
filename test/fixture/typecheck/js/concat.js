@@ -14,6 +14,7 @@ Tonyu.klass.define({
         
         _this.print(Number);
         _this.print(Number);
+        console.log(_this.s.length);
       },
       fiber$main :function* _trc_A_f_main(_thread) {
         "use strict";
@@ -24,6 +25,7 @@ Tonyu.klass.define({
         
         _this.print(Number);
         _this.print(Number);
+        console.log(_this.s.length);
         
       },
       test :function _trc_A_test() {

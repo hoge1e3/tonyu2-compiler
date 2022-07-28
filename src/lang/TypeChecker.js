@@ -73,7 +73,7 @@ function checkTypeDecl(klass, env) {
         forin(node) {
             this.visit(node.set);
             const a = annotation(node.set);
-            if (a.resolvedType && (0, CompilerTypes_1.isArrayType)(a.resolvedType) &&
+            if (a.resolvedType && CompilerTypes_1.isArrayType(a.resolvedType) &&
                 node.isVar && node.isVar.text !== "var") {
                 if (node.vars.length == 1) {
                     const sa = annotation(node.vars[0]);
@@ -165,17 +165,17 @@ function checkExpr(klass, env) {
             //var a=annotation(node);
             this.visit(node.left);
             this.visit(node.op);
-            if ((0, NodeTypes_1.isMember)(node.op)) {
+            if (NodeTypes_1.isMember(node.op)) {
                 //var m=a.memberAccess;
                 const a = annotation(node.left);
                 var vtype = a.resolvedType; // visitExpr(m.target);
                 const name = node.op.name.text;
-                if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
+                if (vtype && CompilerTypes_1.isMeta(vtype)) {
                     const field = cu.getField(vtype, name);
                     const method = cu.getMethod(vtype, name);
                     const prop = cu.getProperty(vtype, name);
                     if (!field && !method && !prop) {
-                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.op.name.pos);
+                        throw TError_1.default(R_1.default("memberNotFoundInClass", vtype.shortName, name), srcFile, node.op.name.pos);
                     }
                     //console.log("GETF",vtype,m.name,f);
                     // fail if f is not set when strict check
@@ -192,30 +192,35 @@ function checkExpr(klass, env) {
                         annotation(node, { resolvedType: prop.setter.paramTypes[0] });
                     }
                 }
-                if (vtype && (0, CompilerTypes_1.isNativeClass)(vtype)) {
+                if (vtype && CompilerTypes_1.isNativeClass(vtype)) {
                     if (vtype.class.prototype[name]) {
+                        // Maybe function
                         //OK (as any)
                     }
+                    else if (vtype.sampleValue != null && vtype.sampleValue[name] !== undefined) {
+                        // Maybe attribute (like str.length)
+                        //OK (as any) 
+                    }
                     else {
-                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.class.name, name), srcFile, node.op.name.pos);
+                        throw TError_1.default(R_1.default("memberNotFoundInClass", vtype.class.name, name), srcFile, node.op.name.pos);
                     }
                 }
             }
-            else if ((0, NodeTypes_1.isCall)(node.op)) {
+            else if (NodeTypes_1.isCall(node.op)) {
                 const leftA = annotation(node.left);
                 //console.log("OPCALL1", leftA);
                 if (leftA && leftA.resolvedType) {
                     const leftT = leftA.resolvedType;
-                    if (!(0, CompilerTypes_1.isMethodType)(leftT)) {
-                        throw (0, TError_1.default)((0, R_1.default)("cannotCallNonFunctionType"), srcFile, node.op.pos);
+                    if (!CompilerTypes_1.isMethodType(leftT)) {
+                        throw TError_1.default(R_1.default("cannotCallNonFunctionType"), srcFile, node.op.pos);
                     }
                     //console.log("OPCALL", leftT);
                     annotation(node, { resolvedType: leftT.method.returnType });
                 }
             }
-            else if ((0, NodeTypes_1.isArrayElem)(node.op)) {
+            else if (NodeTypes_1.isArrayElem(node.op)) {
                 const leftA = annotation(node.left);
-                if (leftA && leftA.resolvedType && (0, CompilerTypes_1.isArrayType)(leftA.resolvedType)) {
+                if (leftA && leftA.resolvedType && CompilerTypes_1.isArrayType(leftA.resolvedType)) {
                     const rt = leftA.resolvedType.element;
                     annotation(node, { resolvedType: rt });
                 }
@@ -281,13 +286,13 @@ function checkExpr(klass, env) {
         if (a.otherFiberCall) {
             const o = a.otherFiberCall;
             const ta = annotation(o.T);
-            if (ta.resolvedType && (0, CompilerTypes_1.isMethodType)(ta.resolvedType) && !ta.resolvedType.method.nowait) {
+            if (ta.resolvedType && CompilerTypes_1.isMethodType(ta.resolvedType) && !ta.resolvedType.method.nowait) {
                 //o.fiberCallRequired_lazy();
                 o.fiberType = ta.resolvedType;
             }
         }
     }
-    const ctx = (0, context_1.context)();
+    const ctx = context_1.context();
     typeAnnotationVisitor.def = visitSub;
     typeAnnotationVisitor.visit(klass.node);
     function visitExpr(node) {

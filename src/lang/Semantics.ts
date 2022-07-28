@@ -28,7 +28,7 @@ var annotation3=cu.annotation;
 var getMethod2=cu.getMethod;
 var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
-var JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1,Date:1};
+var JSNATIVES={Array:["a"], String:"a", Boolean:true, Number:1, Object:{},RegExp:/a/,Error:new Error("a"),Date:new Date()};
 function visitSub(node: TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
@@ -359,7 +359,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		var decls=klass.decls;// Do not inherit parents' natives
 		if (!isTonyu1(env.options)) {
 			for (let i in JSNATIVES) {
-				s[i]=new SI.NATIVE("native::"+i, {class:root[i]});
+				s[i]=new SI.NATIVE("native::"+i, {class:root[i], sampleValue:JSNATIVES[i]});
 			}
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases

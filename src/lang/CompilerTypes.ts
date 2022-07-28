@@ -116,7 +116,7 @@ export type FuncInfo={// also includes Method
 	nowait: boolean,
 
 };
-export type NativeClass={class: Constructor};
+export type NativeClass={class: Constructor, sampleValue?:any};
 export type MethodType={method: FuncInfo};
 export type ArrayType={element:AnnotatedType};
 export type NamedType=NativeClass|C_Meta;

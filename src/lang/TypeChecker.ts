@@ -167,7 +167,11 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				}
 				if (vtype && isNativeClass(vtype)) {
 					if (vtype.class.prototype[name]) {
+						// Maybe function
 						//OK (as any)
+					} else if (vtype.sampleValue!=null && vtype.sampleValue[name]!==undefined) {
+						// Maybe attribute (like str.length)
+						//OK (as any) 
 					} else {
 						throw TError( R("memberNotFoundInClass",vtype.class.name, name) , srcFile, node.op.name.pos);
 					}

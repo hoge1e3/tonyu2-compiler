@@ -36,7 +36,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"man":{"nowait":false}},"fields":{"console":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"man":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"console":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Main',
@@ -49,7 +49,6 @@ Tonyu.klass.define({
       main :function _trc_Main_main() {
         "use strict";
         var _this=this;
-        var _it_0;
         
         _this.s=new Set;
         _this.s.add(5);
@@ -76,7 +75,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        var _it_0;
         
         _this.s=new Set;
         _this.s.add(5);
@@ -90,7 +88,6 @@ Tonyu.klass.define({
           
           s("awawawa!");
         }))));
-        
         console.log("aw=",_this.aw);
         Tonyu.globals.$restart=(function anonymous_400() {
           
@@ -104,7 +101,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"s":{},"k":{},"aw":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"s":{},"k":{},"aw":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Chara',
@@ -137,7 +134,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         _this.y=(yield* __superClass.prototype.fiber$man.apply( _this, [_thread]));
-        
         _this.x=100;
         _this.y=200;
         _this.fillStyle="yellow";
@@ -147,7 +143,6 @@ Tonyu.klass.define({
           _this.x+=5;
           console.log(_this.x,_this.y,"zen　kaku");
           (yield* _this.fiber$update(_thread));
-          
           
         }
         
@@ -208,18 +203,16 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$man(_thread));
-        
         if (! _this.test) {
           return _this;
         }
         (yield* _this.fiber$man(_thread));
         
-        
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"a":{"nowait":true},"move":{"nowait":false},"man":{"nowait":false},"men":{"nowait":false}},"fields":{"y":{},"x":{},"fillStyle":{},"radius":{},"test":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"a":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}},"move":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"man":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"men":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"y":{},"x":{},"fillStyle":{},"radius":{},"test":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Field',
@@ -258,7 +251,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{"print":{},"loadPage":{},"BodyActor":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"print":{},"loadPage":{},"BodyActor":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Preya',
@@ -299,15 +292,12 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$man(_thread));
-        
         _this.x=0;
         while (_this.x<120) {
           yield null;
           (yield* _this.fiber$move(_thread));
-          
           console.log(_this.x);
           (yield* _this.fiber$update(_thread));
-          
           
         }
         for (_this.x=0; _this.x<3 ; _this.x++) {
@@ -315,13 +305,11 @@ Tonyu.klass.define({
           {
             console.log("x=",_this.x);
             (yield* _this.fiber$update(_thread));
-            
           }
         }
         _this.x=1+2*3+4>0?50-6-7:8%9+10;
         console.log(_this.x);
         (yield* _this.fiber$men(_thread));
-        
         console.log("Men end");
         
       },
@@ -338,14 +326,13 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         
         _this.y=(yield* __superClass.prototype.fiber$man.apply( _this, [_thread]));
-        
         console.log("Preya::Man",_this.y);
         
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false},"man":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"man":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
 });
 
 //# sourceMappingURL=concat.js.map
