@@ -132,10 +132,10 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 	}
 	var typeAnnotationVisitor=new Visitor({
 		number: function (node:Token) {
-			annotation(node,{resolvedType:{class:Number}});
+			annotation(node,{resolvedType:{class:Number, sampleValue: 1}});
 		},
 		literal: function (node:Token) {
-			annotation(node,{resolvedType:{class:String}});
+			annotation(node,{resolvedType:{class:String, sampleValue:"a"}});
 		},
 		postfix:function (node:Postfix) {
 			//var a=annotation(node);

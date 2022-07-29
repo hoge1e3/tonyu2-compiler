@@ -142,6 +142,9 @@ Tonyu.klass.define({
         _this.n = 3;
         
         _this.a.n=10;
+        _this.s = "a";
+        
+        _this.print(_this.s.length);
         _this.r = _this.getA().test();
         
         _this.print(_this.r);
@@ -176,6 +179,9 @@ Tonyu.klass.define({
         _this.n = 3;
         
         _this.a.n=10;
+        _this.s = "a";
+        
+        (yield* _this.fiber$print(_thread, _this.s.length));
         _this.r=yield* _this.getA().fiber$test(_thread);
         
         (yield* _this.fiber$print(_thread, _this.r));
@@ -225,7 +231,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"print":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"getA":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"r":{"vtype":"user.A"},"alist":{"vtype":{"element":"user.A"}}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"print":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"getA":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"s":{"vtype":"String"},"r":{"vtype":"user.A"},"alist":{"vtype":{"element":"user.A"}}}}
 });
 
 //# sourceMappingURL=concat.js.map

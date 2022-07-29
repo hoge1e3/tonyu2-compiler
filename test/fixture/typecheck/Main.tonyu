@@ -22,6 +22,9 @@ print (__typeof a.e);
 //a.hoge;
 var n=3;
 a.n=10;
+let s="a";
+print(s.length);
+
 
 var r=getA().test();
 print(r);
