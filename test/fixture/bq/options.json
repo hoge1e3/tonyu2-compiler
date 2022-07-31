@@ -1,0 +1,8 @@
+{
+    "compiler":{
+        "dependingProjects": [{"dir":"../updatable/"}],
+        "outputFile": "js/concat.js","namespace":"user",
+        "typeCheck":"true"
+    },
+    "run":{}
+}

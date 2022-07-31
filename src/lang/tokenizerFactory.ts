@@ -1,3 +1,4 @@
+import { is } from "../runtime/TonyuRuntime";
 import { ALL, Parser, State, StringParser, StrLikeResult, StrStateSrc } from "./parser";
 
 //import Parser from "./parser";
@@ -7,7 +8,9 @@ export type Tokenizer={
 	extension: string,
 	reserved: ReservedList,
 };
+export const BQ="backquote";
 export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedList, caseInsensitive:boolean}):Tokenizer {
+	const BQH = "backquoteHead"; 
 	/*function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
@@ -124,6 +127,61 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			return e;
 		}
 	}
+	function tokenizeBQInner(stp:Step) {
+		const res=[];
+		let curl=0;
+		while(true) {
+			let e=stp.next();
+			if (!e) break;
+			if (e.text==="{") {
+				curl++;
+			} else if (e.text==="}") {
+				curl--;
+				break;
+			} else if (e.type===BQH) {
+				tokenizeBQ(e, stp);
+			}
+			res.push(e);
+		}
+		return res;
+	}
+	function tokenizeBQ(bqt:any, stp: Step) {
+		let state=stp.state;
+		let str=(state.src as StrStateSrc).str;
+		let pos=state.pos;
+		let opos=pos;
+		const subs=[];
+		bqt.subs=subs;
+		bqt.type=BQ;
+		while(pos<str.length) {
+			if(str[pos]==="`") {
+				if (pos-opos>0) {
+					subs.push({text: str.substring(opos,pos),pos:opos, len:pos-opos});
+				}
+				pos++;
+				let ns=state.clone();
+				ns.pos=pos;
+				stp.state=ns;
+				bqt.len=pos-bqt.pos;
+				bqt.text=str.substring(bqt.pos, bqt.pos+bqt.len);
+				break;
+			} else if(str[pos]==="\\") {
+				pos+=2;
+			} else if(str.substring(pos,pos+2)==="${") {
+				if (pos-opos>0) {
+					subs.push({text: str.substring(opos,pos),pos:opos, len:pos-opos});
+				}
+				pos+=2;
+				let ns=state.clone();
+				ns.pos=pos;
+				stp.state=ns;
+				subs.push(  tokenizeBQInner(stp) );
+				pos=opos=stp.state.pos;
+			} else {
+				pos++;
+			}
+		}
+	}	
 	const all=sp.create((st:State)=>{
 		/*var mode=REG;
 		var res=[];
@@ -140,11 +198,13 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		while(true) {
 			let e=stp.next();
 			if (!e) break;
+			if (e.type===BQH) {
+				tokenizeBQ(e, stp);
+			}
 			res.push(e);
 		}
 		st=stp.state;
 		st=space.parse(st);
-		//console.log(st.src.maxPos+"=="+st.src.str.length)
 		const src=st.src as StrStateSrc;
 		st=st.clone();
 		if (st.pos===src.str.length) {
@@ -154,6 +214,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		}
 		//st.success=st.src.maxPos==src.str.length;
 		st.result[0]=res;
+		console.dir(res,{depth:null});
 		return st;
 	}).setName("tokens:all");
 	// Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
@@ -196,7 +257,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	dtk(REG|DIV, "number", num,DIV );
 	dtk(REG,  "regex" ,regex,DIV );
 	dtk(REG|DIV,  "literal" ,literal,DIV );
-	//dtk(REG|DIV, "backquoteHead", "`", DIV);
+	dtk(REG|DIV, BQH, "`", DIV);
 
 	dtk(REG|DIV,SAMENAME ,"++",DIV );
 	dtk(REG|DIV,SAMENAME ,"--",DIV );
@@ -287,3 +348,4 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	}
 	return {parse:parse, extension:"js",reserved:reserved};
 };
+
