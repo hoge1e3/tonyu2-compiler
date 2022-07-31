@@ -13,6 +13,7 @@ const R_1 = __importDefault(require("../lib/R"));
 const ExpressionParser2_1 = require("./ExpressionParser2");
 const Grammar_1 = __importDefault(require("./Grammar"));
 const parser_1 = require("./parser");
+const tokenizerFactory_1 = require("./tokenizerFactory");
 module.exports = function PF({ TT }) {
     //var p:any=Parser;
     var $ = {};
@@ -85,6 +86,7 @@ module.exports = function PF({ TT }) {
     var objlit_l = G("objlit").firstTokens("{");
     var objlitArg = g("objlitArg").ands(objlit_l).ret("obj");
     var objOrFuncArg = g("objOrFuncArg").ors(objlitArg, funcExprArg);
+    const backquoteLiteral = g("backquoteLiteral").ands(tk(tokenizerFactory_1.BQH), tk(tokenizerFactory_1.BQX).or(explz).rep0(), tk(tokenizerFactory_1.BQT)).ret(null, "body");
     function genCallBody(argList, oof) {
         var res = [];
         if (argList && !argList.args) {
@@ -131,6 +133,7 @@ module.exports = function PF({ TT }) {
     e.element(reservedConst);
     e.element(regex);
     e.element(literal);
+    e.element(backquoteLiteral);
     e.element(parenExpr);
     e.element(newExpr);
     e.element(superExpr);

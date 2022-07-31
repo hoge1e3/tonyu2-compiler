@@ -10,7 +10,7 @@ import R from "../lib/R";
 import {ExpressionParser} from "./ExpressionParser2";
 import Grammar from "./Grammar";
 import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
-import { Tokenizer } from "./tokenizerFactory";
+import { BQH, BQT, BQX, Tokenizer } from "./tokenizerFactory";
 import { L } from "./ObjectMatcher";
 
 
@@ -86,6 +86,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var objlit_l=G("objlit").firstTokens("{");
 	var objlitArg=g("objlitArg").ands(objlit_l).ret("obj");
 	var objOrFuncArg=g("objOrFuncArg").ors(objlitArg, funcExprArg);
+	const backquoteLiteral=g("backquoteLiteral").ands(tk(BQH),tk(BQX).or(explz).rep0(),tk(BQT)).ret(null,"body");
 	function genCallBody(argList, oof) {
 		var res=[];
 		if (argList && !argList.args) {
@@ -134,6 +135,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	e.element(reservedConst);
 	e.element(regex);
 	e.element(literal);
+	e.element(backquoteLiteral);
 	e.element(parenExpr);
 	e.element(newExpr);
 	e.element(superExpr);
