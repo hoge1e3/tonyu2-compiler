@@ -112,9 +112,20 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		if (!a) return b;
 		return a.or(b);
 	}
-
-	var all=sp.create((st:State)=>{
-		var mode=REG;
+	class Step {
+		mode=REG;
+		constructor(public state:State) {
+		}
+		next() {
+			this.state=parsers[this.mode].parse(this.state);
+			if (!this.state.success) return null;
+			const e=this.state.result[0];
+			this.mode=posts[e.type];
+			return e;
+		}
+	}
+	const all=sp.create((st:State)=>{
+		/*var mode=REG;
 		var res=[];
 		while (true) {
 			st=parsers[mode].parse(st);
@@ -123,7 +134,15 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			mode=posts[e.type];
 			//console.log("Token",e, mode);
 			res.push(e);
+		}*/
+		let res=[];
+		const stp=new Step(st);
+		while(true) {
+			let e=stp.next();
+			if (!e) break;
+			res.push(e);
 		}
+		st=stp.state;
 		st=space.parse(st);
 		//console.log(st.src.maxPos+"=="+st.src.str.length)
 		const src=st.src as StrStateSrc;
@@ -177,6 +196,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	dtk(REG|DIV, "number", num,DIV );
 	dtk(REG,  "regex" ,regex,DIV );
 	dtk(REG|DIV,  "literal" ,literal,DIV );
+	//dtk(REG|DIV, "backquoteHead", "`", DIV);
 
 	dtk(REG|DIV,SAMENAME ,"++",DIV );
 	dtk(REG|DIV,SAMENAME ,"--",DIV );

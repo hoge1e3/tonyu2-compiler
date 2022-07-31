@@ -120,18 +120,40 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
             return b;
         return a.or(b);
     }
-    var all = sp.create((st) => {
-        var mode = REG;
-        var res = [];
+    class Step {
+        constructor(state) {
+            this.state = state;
+            this.mode = REG;
+        }
+        next() {
+            this.state = parsers[this.mode].parse(this.state);
+            if (!this.state.success)
+                return null;
+            const e = this.state.result[0];
+            this.mode = posts[e.type];
+            return e;
+        }
+    }
+    const all = sp.create((st) => {
+        /*var mode=REG;
+        var res=[];
         while (true) {
-            st = parsers[mode].parse(st);
-            if (!st.success)
-                break;
-            var e = st.result[0];
-            mode = posts[e.type];
+            st=parsers[mode].parse(st);
+            if (!st.success) break;
+            var e=st.result[0];
+            mode=posts[e.type];
             //console.log("Token",e, mode);
             res.push(e);
+        }*/
+        let res = [];
+        const stp = new Step(st);
+        while (true) {
+            let e = stp.next();
+            if (!e)
+                break;
+            res.push(e);
         }
+        st = stp.state;
         st = space.parse(st);
         //console.log(st.src.maxPos+"=="+st.src.str.length)
         const src = st.src;
@@ -190,6 +212,7 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
     dtk(REG | DIV, "number", num, DIV);
     dtk(REG, "regex", regex, DIV);
     dtk(REG | DIV, "literal", literal, DIV);
+    //dtk(REG|DIV, "backquoteHead", "`", DIV);
     dtk(REG | DIV, SAMENAME, "++", DIV);
     dtk(REG | DIV, SAMENAME, "--", DIV);
     dtk(REG | DIV, SAMENAME, "!==", REG);
