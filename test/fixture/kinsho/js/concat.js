@@ -95,7 +95,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"player":{"vtype":"Number"},"players":{},"debug":{"vtype":"Boolean"},"bots":{"vtype":{"element":"user.Bot"}}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"player":{"vtype":"Number"},"players":{"vtype":{"element":"Number"}},"debug":{"vtype":"Boolean"},"bots":{"vtype":{"element":"user.Bot"}}}}
 });
 Tonyu.klass.define({
   fullName: 'user.CornerMCTSBot',
