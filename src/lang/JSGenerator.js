@@ -160,6 +160,12 @@ function genJS(klass, env, genOptions) {
         literal: function (node) {
             buf.printf("%s", node.text);
         },
+        backquoteLiteral(node) {
+            buf.printf("[%j].join('')", [",", node.body]);
+        },
+        backquoteText(node) {
+            buf.printf("%l", node.text);
+        },
         paramDecl: function (node) {
             buf.printf("%v", node.name);
         },

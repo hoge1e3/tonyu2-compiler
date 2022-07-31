@@ -1,6 +1,6 @@
-x=5;
-s=`test 
- ${x+`hoge ${x}`} 
-
- ${x+\{return 3;}}
+native console;
+let x=2+10;
+let s=`test 
+ ${x}
 desuka? `;
+console.log(s);

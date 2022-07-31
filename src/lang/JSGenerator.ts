@@ -9,7 +9,7 @@ import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
 import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass } from "./CompilerTypes";
-import { ArgList, Arylit, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
+import { ArgList, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { DeclsInDefinition } from "../runtime/RuntimeTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
@@ -148,6 +148,12 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		},
 		literal: function (node:Token) {
 			buf.printf("%s",node.text);
+		},
+		backquoteLiteral(node:BackquoteLiteral) {
+			buf.printf("[%j].join('')",[",",node.body]);
+		},
+		backquoteText(node:BackquoteText) {
+			buf.printf("%l",node.text);
 		},
 		paramDecl: function (node:ParamDecl) {
 			buf.printf("%v",node.name);

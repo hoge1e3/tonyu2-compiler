@@ -1,7 +1,7 @@
 import * as cu from "./compiler";
 import R from "../lib/R";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr, isArrayElem, Forin } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr, isArrayElem, Forin, BackquoteLiteral } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
@@ -135,6 +135,9 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 			annotation(node,{resolvedType:{class:Number, sampleValue: 1}});
 		},
 		literal: function (node:Token) {
+			annotation(node,{resolvedType:{class:String, sampleValue:"a"}});
+		},
+		backquoteLiteral(node: BackquoteLiteral) {
 			annotation(node,{resolvedType:{class:String, sampleValue:"a"}});
 		},
 		postfix:function (node:Postfix) {

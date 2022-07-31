@@ -161,6 +161,9 @@ function checkExpr(klass, env) {
         literal: function (node) {
             annotation(node, { resolvedType: { class: String, sampleValue: "a" } });
         },
+        backquoteLiteral(node) {
+            annotation(node, { resolvedType: { class: String, sampleValue: "a" } });
+        },
         postfix: function (node) {
             //var a=annotation(node);
             this.visit(node.left);

@@ -439,4 +439,17 @@ export type Program=NodeBase&{
 export function isProgram(n:TNode):n is Program {
    return n && n.type==="program";
 }
-export type TNode=ArrayElem|ArgList|Member|ParenExpr|VarAccess|FuncExprArg|ObjlitArg|Call|Scall|NewExpr|SuperExpr|Exprstmt|Compound|Return|If|Forin|NormalFor|For|While|Do|Case|Default|Switch|Break|Continue|Finally|Catch|Try|Throw|TypeExpr|TypeDecl|VarDecl|VarsDecl|ParamDecl|ParamDecls|SetterDecl|FuncDeclHead|FuncDecl|NativeDecl|IfWait|Empty|FuncExprHead|FuncExpr|JsonElem|Objlit|Arylit|Extends|Includes|Program|Expression;
+export type BackquoteText=Token&{
+  type:"backquoteText",
+};
+export function isBackquoteText(n:TNode):n is BackquoteText {
+  return n && n.type==="backquoteText";
+};
+export type BackquoteLiteral=NodeBase&{
+  type:"backquoteLiteral",
+  body:(BackquoteText|Expr)[]
+};
+export function isBackquoteLiteral(n:TNode):n is BackquoteLiteral {
+  return n && n.type==="backquoteLiteral";
+}
+export type TNode=ArrayElem|ArgList|Member|ParenExpr|VarAccess|FuncExprArg|ObjlitArg|Call|Scall|NewExpr|SuperExpr|Exprstmt|Compound|Return|If|Forin|NormalFor|For|While|Do|Case|Default|Switch|Break|Continue|Finally|Catch|Try|Throw|TypeExpr|TypeDecl|VarDecl|VarsDecl|ParamDecl|ParamDecls|SetterDecl|FuncDeclHead|FuncDecl|NativeDecl|IfWait|Empty|FuncExprHead|FuncExpr|JsonElem|Objlit|Arylit|Extends|Includes|Program|Expression|BackquoteLiteral;
