@@ -1,4 +1,6 @@
 x=5;
 s=`test 
  ${x+`hoge ${x}`} 
+
+ ${x+\{return 3;}}
 desuka? `;

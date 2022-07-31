@@ -8,15 +8,15 @@ export type Tokenizer={
 	extension: string,
 	reserved: ReservedList,
 };
-export const BQ="backquote";
+export const BQH = "backquoteHead", BQT="backquoteTail", BQX="backquoteText"; 
 export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedList, caseInsensitive:boolean}):Tokenizer {
-	const BQH = "backquoteHead"; 
 	/*function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
 		for (var c in tbl) {
 			tbl[c].profile();//(c+" of "+tbl[name);
 		}
 	}*/
+	const BQ="backquote";
 	//const spcs={};for(i=0;i<=0xffff;i++) if (String.fromCharCode(i).match(/\s/)) spcs[i]=1;
 	const spcs={
 		9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 32: 1, 160: 1, 5760: 1,
@@ -129,7 +129,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	}
 	function tokenizeBQInner(stp:Step) {
 		const res=[];
-		let curl=0;
+		let curl=1;
 		while(true) {
 			let e=stp.next();
 			if (!e) break;
@@ -137,7 +137,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 				curl++;
 			} else if (e.text==="}") {
 				curl--;
-				break;
+				if (curl<=0) break;
 			} else if (e.type===BQH) {
 				tokenizeBQ(e, stp);
 			}
@@ -153,11 +153,14 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		const subs=[];
 		bqt.subs=subs;
 		bqt.type=BQ;
+		const pushBQX=()=>{
+			if (pos-opos>0) {
+				subs.push({type:BQX, text: str.substring(opos,pos),pos:opos, len:pos-opos});
+			}
+		};
 		while(pos<str.length) {
 			if(str[pos]==="`") {
-				if (pos-opos>0) {
-					subs.push({text: str.substring(opos,pos),pos:opos, len:pos-opos});
-				}
+				pushBQX();
 				pos++;
 				let ns=state.clone();
 				ns.pos=pos;
@@ -168,9 +171,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			} else if(str[pos]==="\\") {
 				pos+=2;
 			} else if(str.substring(pos,pos+2)==="${") {
-				if (pos-opos>0) {
-					subs.push({text: str.substring(opos,pos),pos:opos, len:pos-opos});
-				}
+				pushBQX();
 				pos+=2;
 				let ns=state.clone();
 				ns.pos=pos;
@@ -182,6 +183,28 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			}
 		}
 	}	
+	function flattenBQ(tokens:any[]):any[] {
+		const res=[];
+		const isAry=(a)=>a && typeof a.map==="function";
+		for (let token of tokens) {
+			if (token.type===BQ) {
+				res.push({type:BQH, text:"`", pos:token.pos});
+				for (let sub of token.subs){
+					if (isAry(sub)) {
+						for (let e of flattenBQ(sub)) {
+							res.push(e);
+						}
+					} else {
+						res.push(sub);
+					}
+				}
+				res.push({type:BQT, text:"`", pos:token.pos+token.len-1});
+			} else {
+				res.push(token);
+			}
+		}
+		return res;
+	}
 	const all=sp.create((st:State)=>{
 		/*var mode=REG;
 		var res=[];
@@ -213,8 +236,8 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			st.error=st.src.maxErrors.errors.join(" or ");
 		}
 		//st.success=st.src.maxPos==src.str.length;
-		st.result[0]=res;
-		console.dir(res,{depth:null});
+		st.result[0]=flattenBQ(res);
+		//console.dir(st.result[0],{depth:null});
 		return st;
 	}).setName("tokens:all");
 	// Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
