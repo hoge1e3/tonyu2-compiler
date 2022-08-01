@@ -4,46 +4,60 @@ import { TonyuMethod } from "./RuntimeTypes";
 import R from "../lib/R";
 
 //const R=require("../lib/R");
-interface ThreadGroup {
+interface ThreadGroup {// See Kernel/thread/ThreadGroupMod.tonyu
+	setThreadGroup(g:ThreadGroup):void;
     isDeadThreadGroup(): boolean;
+	killThreadGroup():void;
     objectPoolAge: any;
 }
-type Frame={
+type TerminateStatus=undefined|"killed"|"exception"|"success";
+type TerminateEvent=
+	{status: "killed"}|
+	{status: "success", value:any}|
+	{status: "exception", exception:Error};
+type TerminateHandler=(st:TerminateEvent)=>void;
+class KilledError extends Error {
+	isKilled:true
+}
+//const SYM_Exception=Symbol("exception");
+/*type Frame={
     prev?:Frame, func:Function,
-};
+};*/
 //export= function TonyuThreadF(Tonyu) {
 	let idSeq=1;
 	//try {window.cnts=cnts;}catch(e){}
-	export class TonyuThread {
-        frame: Frame;
+	export class TonyuThread implements ThreadGroup {
+        //frame: Frame;
+		generator: Generator<any>;
         private _isDead: boolean;
-        cnt: number;
+        //cnt: number;
         private _isWaiting: boolean;
         fSuspended: boolean;
-        tryStack: any[];
+        //tryStack: any[];
         preemptionTime: number;
         onEndHandlers: any[];
-        onTerminateHandlers: any[];
+        onTerminateHandlers: TerminateHandler[];
         id: number;
         age: number;
-		_threadGroup: ThreadGroup;
-		termStatus: undefined|"killed"|"exception";
+		termStatus: TerminateStatus;
 		preempted=false;
         retVal: any;
         lastEvent: any[];
-        lastEx: any;
-        catchPC: any;
+        lastEx: Error;
+        //catchPC: any;
         handleEx: any;
+		_threadGroup: undefined|ThreadGroup;
+		objectPoolAge: any;
         tGrpObjectPoolAge: any;
-		constructor(public Tonyu:{currentThread:TonyuThread}) {
-			this.frame=null;
+		constructor(public Tonyu:{currentThread:TonyuThread, globals:{[key:string]:any}}) {
+			this.generator=null;
 			this._isDead=false;
 			//this._isAlive=true;
-			this.cnt=0;
+			//this.cnt=0;
 			this._isWaiting=false;
 			this.fSuspended=false;
-			this.tryStack=[];
-			this.preemptionTime=60;
+			//this.tryStack=[];
+			this.preemptionTime=Tonyu.globals.$preemptionTime||5;
 			this.onEndHandlers=[];
 			this.onTerminateHandlers=[];
 			this.id=idSeq++;
@@ -54,12 +68,18 @@ type Frame={
 			//return this.frame!=null && this._isAlive;
 		}
 		isDead() {
-			this._isDead=this._isDead || (this.frame==null) ||
+			this._isDead=this._isDead || (!!this.termStatus) ||
 			(this._threadGroup && (
 					this._threadGroup.objectPoolAge!=this.tGrpObjectPoolAge ||
 					this._threadGroup.isDeadThreadGroup()
 			));
 			return this._isDead;
+		}
+		isDeadThreadGroup(): boolean {
+			return this.isDead();
+		}
+		killThreadGroup(): void {
+			this.kill();
 		}
 		setThreadGroup(g:ThreadGroup) {// g:TonyuThread
 			this._threadGroup=g;
@@ -71,13 +91,13 @@ type Frame={
 		}
 		suspend() {
 			this.fSuspended=true;
-			this.cnt=0;
+			//this.cnt=0;
 		}
-		enter(frameFunc: Function) {
+		/*enter(frameFunc: Function) {
 			//var n=frameFunc.name;
 			//cnts.enterC[n]=(cnts.enterC[n]||0)+1;
 			this.frame={prev:this.frame, func:frameFunc};
-		}
+		}*/
 		apply(obj:any, methodName:string, args:any[]) {
 			if (!args) args=[];
 		    let method: TonyuMethod;
@@ -96,7 +116,8 @@ type Frame={
 				}
 			}
 			args=[this].concat(args);
-			var pc=0;
+			this.generator=method.apply(obj, args);
+			/*var pc=0;
 			return this.enter(function (th) {
 				switch (pc){
 				case 0:
@@ -108,7 +129,7 @@ type Frame={
 					args[0].exit();
 					pc=2;break;
 				}
-			});
+			});*/
 		}
 		notifyEnd(r) {
 			this.onEndHandlers.forEach(function (e) {
@@ -116,10 +137,8 @@ type Frame={
 			});
 			this.notifyTermination({status:"success",value:r});
 		}
-		notifyTermination(tst) {
-			this.onTerminateHandlers.forEach(function (e) {
-				e(tst);
-			});
+		notifyTermination(tst:TerminateEvent) {
+			this.onTerminateHandlers.forEach((e)=>e(tst));
 		}
 		on(type,f) {
 			if (type==="end"||type==="success") this.onEndHandlers.push(f);
@@ -129,15 +148,23 @@ type Frame={
 			}
 		}
 		promise() {
-			var fb=this;
-			return new Promise(function (succ,err) {
-				fb.on("terminate",function (st) {
+			switch(this.termStatus) {
+				case "success":
+					return Promise.resolve(this.retVal);
+				case "exception":
+					return Promise.reject(this.lastEx);
+				case "killed":
+					return Promise.reject(new KilledError(this.termStatus));
+				default:
+			}
+			return new Promise((succ,err)=>{
+				this.on("terminate",(st:TerminateEvent)=>{
 					if (st.status==="success") {
 						succ(st.value);
 					} else if (st.status==="exception"){
 						err(st.exception);
 					} else {
-						err(new Error(st.status));
+						err(new KilledError(st.status));
 					}
 				});
 			});
@@ -149,7 +176,7 @@ type Frame={
 		fail(err) {
 			return this.promise().then(e=>e, err);
 		}
-		gotoCatch(e) {
+		/*gotoCatch(e) {
 			var fb=this;
 			if (fb.tryStack.length==0) {
 				fb.termStatus="exception";
@@ -187,7 +214,7 @@ type Frame={
 		exitTry() {
 			var fb=this;
 			fb.tryStack.pop();
-		}
+		}*/
 		waitEvent(obj:any, eventSpec:any[]) { // eventSpec=[EventType, arg1, arg2....]
 			const fb=this;
 			fb.suspend();
@@ -199,7 +226,7 @@ type Frame={
 				fb.steps();
 			});
 		}
-		runAsync(f:Function) {
+		/*runAsync(f:Function) {
 			var fb=this;
 			var succ=function () {
 				fb.retVal=arguments;
@@ -220,17 +247,20 @@ type Frame={
 			setTimeout(function () {
 				f(succ,err);
 			},0);
-		}
+		}*/
 		waitFor(j:any):Promise<any> {
 			var fb=this;
 			fb._isWaiting=true;
 			fb.suspend();
-			if (j instanceof TonyuThread) j=j.promise();
-			return Promise.resolve(j).then(function (r) {
+			let p=j;
+			if (p instanceof TonyuThread) p=p.promise();
+			return Promise.resolve(p).then(function (r) {
 				fb.retVal=r;
+				fb.lastEx=null;
 				fb.stepsLoop();
 			}).then(e=>e,function (e) {
-				fb.gotoCatch(fb.wrapError(e));
+				e=fb.wrapError(e);
+				fb.lastEx=e;
 				fb.stepsLoop();
 			});
 		}
@@ -249,9 +279,34 @@ type Frame={
 			if (fb.isDead()) return;
 			const sv=this.Tonyu.currentThread;
 			this.Tonyu.currentThread=fb;
-			fb.cnt=fb.preemptionTime;
+			const lim=performance.now()+fb.preemptionTime;
 			fb.preempted=false;
 			fb.fSuspended=false;
+			let awaited=null;
+			try {
+				while (performance.now()<lim && !this.fSuspended) {
+					const n=this.generator.next();
+					if (n.value) {
+						awaited=n.value;
+						break;
+					}
+					if (n.done) {
+						this.termStatus="success";
+						this.notifyEnd(this.retVal);
+						break;
+					}	
+				}
+				fb.preempted= (!awaited) && (!this.fSuspended) && this.isAlive();
+			} catch (e){
+				return this.exception(e);
+			} finally {
+				this.Tonyu.currentThread=sv;
+				if (awaited) {
+					//console.log("AWAIT!", awaited);
+					return this.waitFor(awaited);
+				}
+			}
+			/*
 			while (fb.cnt>0 && fb.frame) {
 				try {
 					//while (new Date().getTime()<lim) {
@@ -262,8 +317,15 @@ type Frame={
 				} catch(e) {
 					fb.gotoCatch(e);
 				}
-			}
-			this.Tonyu.currentThread=sv;
+			}*/
+			
+		}
+		exception(e:Error) {
+			this.termStatus="exception";
+			this.lastEx=e;
+			this.kill();
+			if (this.handleEx) this.handleEx(e);
+			else this.notifyTermination({status:"exception",exception:e});
 		}
 		stepsLoop() {
 			var fb=this;
@@ -278,14 +340,20 @@ type Frame={
 			var fb=this;
 			//fb._isAlive=false;
 			fb._isDead=true;
-			fb.frame=null;
+			//fb.frame=null;
 			if (!fb.termStatus) {
 				fb.termStatus="killed";
 				fb.notifyTermination({status:"killed"});
 			}
 		}
-		clearFrame() {
+		/*clearFrame() {
 			this.frame=null;
 			this.tryStack=[];
+		}*/
+		*await(p:any) {
+			this.lastEx=null;
+			yield p;
+			if (this.lastEx) throw this.lastEx;
+			return this.retVal;
 		}
 	}

@@ -10,7 +10,8 @@ import R from "../lib/R";
 import {ExpressionParser} from "./ExpressionParser2";
 import Grammar from "./Grammar";
 import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
-import { Tokenizer } from "./tokenizerFactory";
+import { BQH, BQT, BQX, Tokenizer } from "./tokenizerFactory";
+import { L } from "./ObjectMatcher";
 
 
 export= function PF({TT}:{TT:Tokenizer}) {
@@ -85,6 +86,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var objlit_l=G("objlit").firstTokens("{");
 	var objlitArg=g("objlitArg").ands(objlit_l).ret("obj");
 	var objOrFuncArg=g("objOrFuncArg").ors(objlitArg, funcExprArg);
+	const backquoteLiteral=g("backquoteLiteral").ands(tk(BQH),tk(BQX).or(explz).rep0(),tk(BQT)).ret(null,"body");
 	function genCallBody(argList, oof) {
 		var res=[];
 		if (argList && !argList.args) {
@@ -133,6 +135,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	e.element(reservedConst);
 	e.element(regex);
 	e.element(literal);
+	e.element(backquoteLiteral);
 	e.element(parenExpr);
 	e.element(newExpr);
 	e.element(superExpr);
@@ -235,7 +238,8 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	/*var trailFor=tk(";").and(expr.opt()).and(tk(";")).and(expr.opt()).ret(function (s, cond, s2, next) {
 		return {cond: cond, next:next  };
 	});*/
-	var forin=g("forin").ands(tk("var").opt()/*.firstTokens(["var","symbol"])*/, symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
+	const declPrefix=tk("var").or(tk("let"));
+	var forin=g("forin").ands( declPrefix.opt(), symbol.sep1(tk(","),true), tk("in").or(tk("of")), expr).ret(
 										"isVar", "vars","inof", "set" );
 	var normalFor=g("normalFor").ands(stmt_l, expr.opt() , tk(";") , expr.opt()).ret(
 									"init", "cond",     null, "next");
@@ -246,7 +250,6 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var infor=normalFor.or(forin);
 	var fors=g("for").ands(tk("for"),tk("("), infor , tk(")"),"stmt" ).ret(
 								null,null,    "inFor", null   ,"loop");
-	//var fors=g("for").ands(tk("for"),tk("("), tk("var").opt() , infor , tk(")"),"stmt" ).ret(null,null,"isVar", "inFor",null, "loop");
 	var whiles=g("while").ands(tk("while"), tk("("), expr, tk(")"), "stmt").ret(null,null,"cond",null,"loop");
 	var dos=g("do").ands(tk("do"), "stmt" , tk("while"), tk("("), expr, tk(")"), tk(";")).ret(null,"loop",null,null,"cond",null,null);
 	var cases=g("case").ands(tk("case"),expr,tk(":"), stmtList ).ret(null, "value", null,"stmts");
@@ -259,10 +262,28 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var catches=g("catches").ors("catch","finally");
 	var trys=g("try").ands(tk("try"),"stmt",catches.rep1() ).ret(null, "stmt","catches");
 	var throwSt=g("throw").ands(tk("throw"),expr,tk(";")).ret(null,"ex");
-	var typeExpr=g("typeExpr").ands(symbol).ret("name");
+	const namedTypeExpr=g("namedTypeExpr").ands(symbol).ret("name");
+	const tExp=ExpressionParser(TokensParser.context);
+	tExp.mkPostfix((left, op)=>{
+		if (op.type==="arrayTypePostfix") {
+			//console.log("ARRAYTYPE",left,op);
+			return {type:"arrayTypeExpr", element:left};
+		}
+		if (op.type==="optionalTypePostfix") {
+			return left;//TODO
+		}
+		console.log(left,op);
+		throw new Error("Invalid type op type");
+	});
+	const arrayTypePostfix=g("arrayTypePostfix").ands(tk("["),tk("]")).ret();
+	const optionalTypePostfix=g("optionalTypePostfix").ands(tk("?")).ret();
+	tExp.postfix(0, arrayTypePostfix);
+	tExp.postfix(0, optionalTypePostfix);
+	tExp.element(namedTypeExpr);
+	const typeExpr=tExp.build();
 	var typeDecl=g("typeDecl").ands(tk(":"),typeExpr).ret(null,"vtype");
 	var varDecl=g("varDecl").ands(symbol, typeDecl.opt(), tk("=").and(expr).retN(1).opt() ).ret("name","typeDecl","value");
-	var varsDecl= g("varsDecl").ands(tk("var"), varDecl.sep1(tk(","),true), tk(";") ).ret(null ,"decls");
+	var varsDecl= g("varsDecl").ands(declPrefix, varDecl.sep1(tk(","),true), tk(";") ).ret("declPrefix" ,"decls");
 	var paramDecl= g("paramDecl").ands(symbol,typeDecl.opt() ).ret("name","typeDecl");
 	var paramDecls=g("paramDecls").ands(tk("("), comLastOpt(paramDecl), tk(")")  ).ret(null, "params");
 	var setterDecl= g("setterDecl").ands(tk("="), paramDecl).ret(null,"value");

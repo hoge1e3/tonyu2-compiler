@@ -1,5 +1,6 @@
 {
     "compiler":{
+        "typeCheck": true,
         "dependingProjects": [],
         "outputFile": "js/concat.js","namespace":"user"
     },

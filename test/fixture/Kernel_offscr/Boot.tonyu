@@ -1,0 +1,314 @@
+extends Actor;
+
+
+native Tonyu;
+native Math;
+native JSON;
+native console;
+native performance;
+native FS;
+native R;
+native parent;
+native window;
+native SplashScreen;
+
+// old browser support
+if (typeof performance==="undefined") {
+    window.performance = {};
+}
+if (!performance.now) {
+    performance.now = function now() {
+        return Date.now();
+    };
+}
+
+Tonyu.resetLoopCheck(10000);
+$Boot=this;
+setScheduler(new Scheduler);
+initGlobals();
+//initEvents();
+initLayers();
+initPeripherals();
+loadPlugins();
+if ($customLoading) {
+    var tt=Tonyu.thread();
+    tt.apply(this,"loadAssets",[true]);
+    tt.steps();
+} else {
+    loadAssets();
+}
+createMainObject();
+progress();
+mainLoop();
+
+\new(param) {
+    extend(param);
+    initSymbol();
+    _th=Tonyu.thread();
+    _th.apply(this,"main");
+    _th.stepsLoop();
+    on ("die") \{
+        if (_th) _th.kill();
+    };
+}
+\initSymbol() {
+    $Symbol={
+        subActors:"__SUBACTOR"
+    };
+}
+\setScheduler(s) {
+    _scheduler=$Scheduler=s;
+}
+\moveToScheduler(a: Actor, oldS: Scheduler, newS: Scheduler) {
+    a._scheduler=newS;
+    oldS.findByThreadGroup(a).forEach \(th) {
+        if (th.scheduled===newS) return;
+        oldS.unschedule(th);
+        //th.scheduled=null;
+        newS.addToNext(th);
+        newS.checkDuplicate();
+    };
+}
+\timeStop(except) {
+    var oldS=_scheduler;
+    setScheduler(new Scheduler);
+    var newS=_scheduler;
+    oldS.doTimeStop();
+    var res={
+        release: \(a) {
+            if (!a) return res.releaseAll();
+            a._scheduler=newS;
+            moveToScheduler(a, oldS, newS);
+            /*oldS.findByThreadGroup(a).forEach \(th) {
+                if (th.scheduled===newS) return;
+                th.scheduled=null;
+                newS.addToNext(th);
+                newS.checkDuplicate();
+            };*/
+        },
+        releaseAll: \{
+            var a=$Screen.all();
+            for (var e in a) {
+                res.release(e);
+            }
+        },
+    };
+    if (except) res.release(except);
+    return res;
+}
+\update() {
+    waitFor(Tonyu.timeout(50));
+}
+\initGlobals() {
+    var opt=$currentProject.getOptions();
+    if (opt.run && opt.run.globals) {
+        var g=opt.run.globals;
+        for (var name in g) {
+            Tonyu.setGlobal(name, g[name]);
+        }
+    }
+    $fixProductOrder=true;
+}
+let debugCnt, autoReload, mainClass, pageStack;
+\initPeripherals() {
+    $Math=Math;
+    $JSON=JSON;
+    
+    $printColor=null;
+    $printSize=20;
+    $consolePrintY=465;
+    initFPSParams();
+    $mouseX=$mouseX||0;
+    $mouseY=$mouseY||0;
+    debugCnt=50;
+    $printLimit=500;
+    if ($debugger) {
+        autoReload=$debugger.startWithAutoReload;
+        $debugger.on("classChanged") \{
+            getMainClass();// Should be reload because old class(before compile) are not same
+            if (typeof autoReload==="function") {
+                return autoReload{mainClass};
+            }
+            if (autoReload===true && mainClass) {
+                loadPage(mainClass);
+            }
+        };
+    }
+    pageStack=[];
+}
+\initLayers() {
+    $screenWidth=465;
+    $screenHeight=465;
+}
+\debug() {
+    if (!debugCnt) return;
+    debugCnt--;
+    var a=Array.prototype.slice.call(arguments);
+    a.unshift(debugCnt);
+    a.unshift("DEBUG");
+    console.log.apply(console,a);
+}
+\loadPlugins() {
+    
+}
+\loadImages() {
+}
+\loadSounds() {
+}
+\loadAssets(para) {
+    if (para) progress();
+}
+\getIDE() {
+    try {
+        return (parent.Tonyu.globals.$currentProject.ide);
+    }catch(e) {
+        return null;
+    }
+}
+\getMainClass(){
+    var o=$currentProject.getOptions();
+    var mainClassName=o.run.mainClass;
+    progress("MainClass= "+mainClassName);
+    mainClass=Tonyu.getClass(mainClassName);
+    if (!mainClass) {
+        throw new Error( mainClassName+" というクラスはありません");
+    }
+}
+\createMainObject() {
+    getMainClass();
+    new mainClass();
+}
+\loadPage(page,arg,options) {
+    switch (typeof arg) {
+        case "function":
+        options={onLoad:arg};
+        arg=undefined;
+        break;
+        case "boolean":
+        options={push:arg};
+        arg=undefined;
+        break;
+    }
+    options=options||{};
+    var push=(options.push);
+    var pass=(options.pass||[]).concat($excludeFromAll.toArray());
+    var res;
+    var oldS=_scheduler, newS;
+    if (!page) {
+        var saved=pageStack.pop();
+        if (!saved) {
+            throw new Error(R("noPushedPages"));
+        }
+        newS=saved.scheduler;
+        setScheduler(newS);
+        for (var pa of saved.pass) {
+            moveToScheduler(pa, oldS, newS);
+        }
+    } else if (push) {
+        var saved={
+            scheduler: oldS,
+            sprites:$Screen.saveAndClear(pass),
+            t2World: $t2World,
+            pass,
+        };
+        newS=new Scheduler;
+        setScheduler(newS);
+        for (var pa of pass) {
+            moveToScheduler(pa, oldS, newS);
+        }
+        pageStack.push(saved);
+        res=new page(arg);
+    } else {
+        res=new page(arg);
+    }
+    if (typeof options.onLoad==="function") options.onLoad{page:res};
+}
+\hide() {
+}
+\schedule(obj,method,args) {
+    if (!method) throw new Error("指定されたメソッドは定義されていません:"+method);
+    args=args||[];
+    var s=obj._scheduler||_scheduler;
+    var th=s.newThread(obj, method, args);
+    obj.setThreadGroup(this);
+    th.setThreadGroup(obj);
+    return th;
+}
+\progress(m) {
+    if (typeof SplashScreen=="undefined") return;
+    if (m) {
+        console.log.apply(console,arguments);
+        SplashScreen.progress(m);
+    } else SplashScreen.hide();
+}
+\progressNoLog(m) {
+    if (typeof SplashScreen=="undefined") return;
+    if (m) {
+        SplashScreen.progress(m);
+    } else SplashScreen.hide();
+}
+
+\mainLoop() {
+    $frameCount=0;
+    $drawnFrameCount=0;
+    while (true) {
+        loopTimer();
+        $drawnFrameCount++;
+    }
+}
+\loopTimer() {
+    moveFrame();
+    afterDraw{drawn:false};
+    waitFrame(); // FPS制御
+}
+
+nowait \drawFrame() {
+    
+}
+let moveTime;
+nowait \moveFrame() {
+    var s=now();
+    $_printCount=0;
+    Tonyu.resetLoopCheck();
+    //debug("MoveFrame",1);
+    var sc=_scheduler.stepsAll();
+    //debug("MoveFrame",2);
+    //debug("MoveFrame",3);
+    if ($sound )$sound.resetSEFrame();
+    //console.log("running");
+    //debug("MoveFrame",4);
+    //$screenWidth=$Screen.width;
+    //$screenHeight=$Screen.height;
+    moveTime=now()-s;
+    $frameCount++;//=fps_rpsCnt;
+}
+nowait \afterDraw(e) {// should call (after draw, e.drawn==true) or (move and frame skip, e.drawn==false)
+    //debug("AfterDraw",1);
+    //debug("AfterDraw",2);
+    sendEvent("afterDraw",e);
+    //debug("AfterDraw",3);
+}
+nowait \initFPSParams() {
+    // フレームレートの設定
+   
+}
+nowait \now() {
+    return performance.now();
+}
+
+\waitFrame() {
+    waitFor(Tonyu.timeout(0));
+    
+}
+
+
+// Tonyu1の$System.setFrameRate() //
+nowait \setFrameRate(fps, maxFrameSkip) {
+    
+}
+
+let economyMode;
+\setEconomyMode(options) {
+    // options:: {manualDraw}
+    economyMode=options;
+}

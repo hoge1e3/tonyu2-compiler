@@ -129,6 +129,7 @@ export = class Builder {
                 options: this.getOptions(),
                 aliases:{},
                 classes: Tonyu.classMetas as C_MetaMap,
+                unresolvedVars: 0,
                 //amdPaths:[],
             };
         }
@@ -152,8 +153,8 @@ export = class Builder {
 		var env=this.getEnv();
         env.options=this.getOptions();
 		for (let k of this.getMyClasses()) {
-            console.log("RMMeta", k);
-			delete env.classes[k];
+            console.log("RMMeta", k.fullName);
+			delete env.classes[k.fullName];
 		}
         const myNsp=this.getNamespace();
         Tonyu.klass.removeMetaAll(myNsp);
@@ -161,7 +162,7 @@ export = class Builder {
 	getMyClasses() {
 		var env=this.getEnv();
 		var ns=this.getNamespace();
-		const res=[];
+		const res:C_Meta[]=[];
 		for (var kn in env.classes) {
 			var k=env.classes[kn];
 			if (k.namespace==ns) {
@@ -309,12 +310,19 @@ export = class Builder {
 		});
 		if (env.options.compiler.typeCheck) {
 			console.log("Type check");
-			for (let n_1 in compilingClasses) {
-				checkTypeDecl(compilingClasses[n_1], env);
-			}
-			for (let n_2 in compilingClasses) {
-				checkExpr(compilingClasses[n_2], env);
-			}
+            let prevU:number|null=null;
+            while(true) {
+                env.unresolvedVars=0;
+                for (let n_1 in compilingClasses) {
+                    checkTypeDecl(compilingClasses[n_1], env);
+                }
+                for (let n_2 in compilingClasses) {
+                    checkExpr(compilingClasses[n_2], env);
+                }
+                if (env.unresolvedVars<=0) break;
+                if (typeof prevU==="number" && env.unresolvedVars>=prevU) break;    
+                prevU=env.unresolvedVars;
+            } 
 		}
 		await this.showProgress("genJS");
 		//throw "test break";
@@ -346,87 +354,142 @@ export = class Builder {
 	/*setAMDPaths(paths: string[]) {
 		this.getEnv().amdPaths=paths;
 	}*/
-    renameClassName (o:string ,n:string) {// o: key of aliases
-        return this.fullCompile().then(()=>{
-            const EXT=".tonyu";
-            const env=this.getEnv();
-            const changed=[];
-            let renamingFile: SFile;
-            var cls=env.classes;/*ENVC*/
-            for (var cln in cls) {/*ENVC*/
-                var klass=cls[cln];/*ENVC*/
-                var f=klass.src ? klass.src.tonyu : null;
-                var a=klass.annotation;
-                var changes=[];
-                if (a && f && f.exists()) {
-                    if (klass.node) {// not exist when loaded from compiledProject
-                        if (klass.node.ext) {
-                            const spcl=klass.node.ext.superclassName;// {pos, len, text}
-                            console.log("SPCl",spcl);
-                            if (spcl.text===o) {
-                                changes.push({pos:spcl.pos,len:spcl.len});
-                            }
-                        }
-                        if (klass.node.incl) {
-                            const incl=klass.node.incl.includeClassNames;// [{pos, len, text}]
-                            console.log("incl",incl);
-                            for (let e of incl) {
-                                if (e.text===o) {
-                                    changes.push({pos:e.pos,len:e.len});
-                                }
-                            }
+    async renameClassName (o:string ,n:string) {// o: key of aliases
+        await this.fullCompile();
+        const EXT=".tonyu";
+        const env=this.getEnv();
+        const changed:SFile[]=[];
+        let renamingFile: SFile;
+        const cls=env.classes;/*ENVC*/
+        for (let cln in cls) {/*ENVC*/
+            const klass=cls[cln];/*ENVC*/
+            const f:SFile =klass.src ? klass.src.tonyu : null;
+            const a=klass.annotation;
+            let changes:{pos:number,len:number}[]=[];
+            if (a && f && f.exists()) {
+                if (klass.node) {// not exist when loaded from compiledProject
+                    if (klass.node.ext) {
+                        const spcl=klass.node.ext.superclassName;// {pos, len, text}
+                        console.log("SPCl",spcl);
+                        if (spcl.text===o) {
+                            changes.push({pos:spcl.pos,len:spcl.len});
                         }
                     }
-                    //console.log("klass.node",klass.node.ext, klass.node.incl );
-                    if (f.truncExt(EXT)===o) {
-                        renamingFile=f;
-                    }
-                    console.log("Check", cln);
-                    for (var id in a) {
-                        try {
-                            var an=a[id];
-                            var si=an.scopeInfo;
-                            if (si && si.type=="class") {
-                                //console.log("si.type==class",an,si);
-                                if (si.name==o) {
-                                    var pos=an.node.pos;
-                                    var len=an.node.len;
-                                    var sub=f.text().substring(pos,pos+len);
-                                    if (sub==o) {
-                                        changes.push({pos:pos,len:len});
-                                        console.log(f.path(), pos, len, f.text().substring(pos-5,pos+len+5) ,"->",n);
-                                    }
-                                }
+                    if (klass.node.incl) {
+                        const incl=klass.node.incl.includeClassNames;// [{pos, len, text}]
+                        console.log("incl",incl);
+                        for (let e of incl) {
+                            if (e.text===o) {
+                                changes.push({pos:e.pos,len:e.len});
                             }
-                        } catch(e) {
-                            console.log(e);
                         }
                     }
-                    changes=changes.sort(function (a,b) {return b.pos-a.pos;});
-                    console.log(f.path(),changes);
-                    var src=f.text();
-                    var ssrc=src;
-                    for (let ch of changes) {
-                        src=src.substring(0,ch.pos)+n+src.substring(ch.pos+ch.len);
-                    }
-                    if (ssrc!=src && !f.isReadOnly()) {
-                        console.log("Refact:",f.path(),src);
-                        f.text(src);
-                        changed.push(f);
-                    }
-                } else {
-                    console.log("No Check", cln);
                 }
+                //console.log("klass.node",klass.node.ext, klass.node.incl );
+                if (f.truncExt(EXT)===o) {
+                    renamingFile=f;
+                }
+                console.log("Check", cln);
+                for (let id in a) {
+                    try {
+                        var an=a[id];
+                        var si=an.scopeInfo;
+                        if (si && si.type=="class") {
+                            //console.log("si.type==class",an,si);
+                            if (si.name==o) {
+                                var pos=an.node.pos;
+                                var len=an.node.len;
+                                var sub=f.text().substring(pos,pos+len);
+                                if (sub==o) {
+                                    changes.push({pos:pos,len:len});
+                                    console.log(f.path(), pos, len, f.text().substring(pos-5,pos+len+5) ,"->",n);
+                                }
+                            }
+                        }
+                    } catch(e) {
+                        console.log(e);
+                    }
+                }
+                changes=changes.sort(function (a,b) {return b.pos-a.pos;});
+                console.log(f.path(),changes);
+                var src=f.text();
+                var ssrc=src;
+                for (let ch of changes) {
+                    src=src.substring(0,ch.pos)+n+src.substring(ch.pos+ch.len);
+                }
+                if (ssrc!=src && !f.isReadOnly()) {
+                    console.log("Refact:",f.path(),src);
+                    f.text(src);
+                    changed.push(f);
+                }
+            } else {
+                console.log("No Check", cln);
+            }
 
-            }
-            if (renamingFile) {
-                const renamedFile=renamingFile.sibling(n+EXT);
-                renamingFile.moveTo(renamedFile);
-                changed.push(renamingFile);
-                changed.push(renamedFile);
-            }
-            return changed;
-        });
+        }
+        if (renamingFile) {
+            const renamedFile=renamingFile.sibling(n+EXT);
+            renamingFile.moveTo(renamedFile);
+            changed.push(renamingFile);
+            changed.push(renamedFile);
+        }
+        return changed;
     }
+    serializeAnnotatedNodes() {
+        const cls=this.getMyClasses();
+        let idseq=1;
+        let map=new Map<any,number>();
+        let objs:{[key:number]:any}={};
+        //let rootSrc={};
+        //for (let cl of cls) {rootSrc[cl.fullName]={node:cl.node, annotation:cl.annotation};}
+        let root=traverse(cls);
+        if (root.REF!==1) {
+            throw new Error(root.REF);
+        }
+        return objs;
+        //console.log(JSON.stringify(objs));
 
+        function refobj(id:number) {
+            return {REF:id};
+        }
+        function isArray(a:any) {
+            return a && typeof a.slice==="function" && 
+            typeof a.map==="function" && typeof a.length==="number" ;
+        }
+        function isNativeSI(a:any) {
+            return a.type==="native" && a.value;
+        }
+        function isSFile(path:any) {
+            return path && typeof (path.isSFile)=="function" && path.isSFile();
+        }
+        function traverse(a:any) {
+            if (a && typeof a==="object") {
+                if (map.has(a)) {
+                    return refobj(map.get(a));
+                }
+                let id=idseq++;
+                map.set(a, id);
+                let res:any;
+                if (isSFile(a)) {
+                    res={isSFile:true, path:a.path()};
+                } else if (isArray(a)) {
+                    res=a.map(traverse);
+                } else {
+                    res={};
+                    let nsi=isNativeSI(a);
+                    for (let k of Object.keys(a)) {
+                        if (nsi && k==="value") continue;
+                        if (k==="toString") continue;
+                        res[k]=traverse(a[k]);
+                    }
+                }
+                objs[id]=res;
+                return refobj(id);
+            } else if (typeof a==="function") {
+                return {FUNC:a.name};
+            } else {
+                return a;
+            }
+        }
+    }
 };

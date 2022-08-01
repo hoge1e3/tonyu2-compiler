@@ -1,0 +1,18 @@
+extends TObject;
+includes SchedulerMod, EventMod, MathMod, FileMod, ThreadGroupMod;
+native console;
+
+\new (options) {
+    initSchedulerMod();
+    initEventMod();
+    if (typeof options=="object") extend(options);
+}
+
+nowait \print() {
+    console.log.apply(console,arguments);
+}
+
+\loadPage(){// was nowait, why?
+    $Boot.loadPage.apply($Boot,arguments);
+    update();// I want this!
+}

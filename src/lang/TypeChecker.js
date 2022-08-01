@@ -70,34 +70,57 @@ function checkTypeDecl(klass, env) {
         return annotation3(klass.annotation, node, aobj);
     }
     var typeDeclVisitor = new Visitor_1.Visitor({
-        varDecl: function (node) {
+        forin(node) {
+            this.visit(node.set);
+            const a = annotation(node.set);
+            if (a.resolvedType && (0, CompilerTypes_1.isArrayType)(a.resolvedType) &&
+                node.isVar && node.isVar.text !== "var") {
+                if (node.vars.length == 1) {
+                    const sa = annotation(node.vars[0]);
+                    sa.scopeInfo.resolvedType = a.resolvedType.element;
+                }
+                else if (node.vars.length == 2) {
+                    const sa = annotation(node.vars[1]);
+                    sa.scopeInfo.resolvedType = a.resolvedType.element;
+                    const si = annotation(node.vars[0]);
+                    si.scopeInfo.resolvedType = { class: Number };
+                }
+            }
+            else {
+                this.visit(node.vars);
+            }
+        },
+        varDecl(node) {
             //console.log("TCV","varDecl",node);
             if (node.value)
                 this.visit(node.value);
+            let rt;
+            if (node.value) {
+                const a = annotation(node.value);
+                if (a.resolvedType) {
+                    rt = a.resolvedType;
+                    //console.log("Inferred",rt);
+                }
+            }
             if (node.name && node.typeDecl) {
-                var va = annotation(node.typeDecl.vtype);
-                //console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
-                const rt = va.resolvedType;
-                if (rt) {
-                    const a = annotation(node);
-                    const si = a.scopeInfo; // for local
-                    const info = a.fieldInfo; // for field
-                    if (si) {
-                        //console.log("set var type",node.name+"", va.resolvedType );
-                        si.resolvedType = va.resolvedType;
-                    }
-                    else if (info) {
-                        //console.log("set fld type",node.name+"", va.resolvedType );
-                        info.resolvedType = va.resolvedType;
+                const va = annotation(node.typeDecl.vtype);
+                rt = va.resolvedType;
+            }
+            if (rt) {
+                const a = annotation(node);
+                const si = a.scopeInfo;
+                if (si) {
+                    si.resolvedType = rt;
+                    if (si.type === cu.ScopeTypes.FIELD) {
+                        si.info.resolvedType = rt;
                     }
                 }
-                /*} else if (a.declaringClass) {
-                    //console.log("set fld type",a.declaringClass,a.declaringClass.decls.fields[node.name+""],node.name+"", node.typeDecl.vtype+"");
-                    a.declaringClass.decls.fields[node.name+""].vtype=node.typeDecl.vtype;
-                }*/
+            }
+            else {
+                env.unresolvedVars++;
             }
         },
-        paramDecl: function (node) {
+        paramDecl(node) {
             if (node.name && node.typeDecl) {
                 //console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
                 var va = annotation(node.typeDecl.vtype);
@@ -109,7 +132,7 @@ function checkTypeDecl(klass, env) {
                 }
             }
         },
-        funcDecl: function (node) {
+        funcDecl(node) {
             //console.log("Visit funcDecl",node);
             var head = node.head;
             /*const finfo=annotation(node).funcInfo;
@@ -133,10 +156,13 @@ function checkExpr(klass, env) {
     }
     var typeAnnotationVisitor = new Visitor_1.Visitor({
         number: function (node) {
-            annotation(node, { resolvedType: { class: Number } });
+            annotation(node, { resolvedType: { class: Number, sampleValue: 1 } });
         },
         literal: function (node) {
-            annotation(node, { resolvedType: { class: String } });
+            annotation(node, { resolvedType: { class: String, sampleValue: "a" } });
+        },
+        backquoteLiteral(node) {
+            annotation(node, { resolvedType: { class: String, sampleValue: "a" } });
         },
         postfix: function (node) {
             //var a=annotation(node);
@@ -150,7 +176,8 @@ function checkExpr(klass, env) {
                 if (vtype && (0, CompilerTypes_1.isMeta)(vtype)) {
                     const field = cu.getField(vtype, name);
                     const method = cu.getMethod(vtype, name);
-                    if (!field && !method) {
+                    const prop = cu.getProperty(vtype, name);
+                    if (!field && !method && !prop) {
                         throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.shortName, name), srcFile, node.op.name.pos);
                     }
                     //console.log("GETF",vtype,m.name,f);
@@ -160,6 +187,25 @@ function checkExpr(klass, env) {
                     }
                     else if (method) {
                         annotation(node, { resolvedType: { method } });
+                    }
+                    else if (prop && prop.getter) {
+                        annotation(node, { resolvedType: prop.getter.returnType });
+                    }
+                    else if (prop && prop.setter && prop.setter.paramTypes) {
+                        annotation(node, { resolvedType: prop.setter.paramTypes[0] });
+                    }
+                }
+                if (vtype && (0, CompilerTypes_1.isNativeClass)(vtype)) {
+                    if (vtype.class.prototype[name]) {
+                        // Maybe function
+                        //OK (as any)
+                    }
+                    else if (vtype.sampleValue != null && vtype.sampleValue[name] !== undefined) {
+                        // Maybe attribute (like str.length)
+                        //OK (as any) 
+                    }
+                    else {
+                        throw (0, TError_1.default)((0, R_1.default)("memberNotFoundInClass", vtype.class.name, name), srcFile, node.op.name.pos);
                     }
                 }
             }
@@ -174,6 +220,20 @@ function checkExpr(klass, env) {
                     //console.log("OPCALL", leftT);
                     annotation(node, { resolvedType: leftT.method.returnType });
                 }
+            }
+            else if ((0, NodeTypes_1.isArrayElem)(node.op)) {
+                const leftA = annotation(node.left);
+                if (leftA && leftA.resolvedType && (0, CompilerTypes_1.isArrayType)(leftA.resolvedType)) {
+                    const rt = leftA.resolvedType.element;
+                    annotation(node, { resolvedType: rt });
+                }
+            }
+        },
+        newExpr: function (node) {
+            const a = annotation(node.klass);
+            if (a.scopeInfo && a.scopeInfo.type === cu.ScopeTypes.CLASS) {
+                const rt = a.scopeInfo.info;
+                annotation(node, { resolvedType: rt });
             }
         },
         varAccess: function (node) {
@@ -204,7 +264,12 @@ function checkExpr(klass, env) {
                     annotation(node, { resolvedType: { method: si.info } });
                 }
                 else if (si.type === ScopeTypes.PROP) {
-                    //TODO
+                    if (si.getter) {
+                        annotation(node, { resolvedType: si.getter.returnType });
+                    }
+                    else if (si.setter && si.setter.paramTypes) {
+                        annotation(node, { resolvedType: si.setter.paramTypes[0] });
+                    }
                 }
             }
         },
@@ -225,7 +290,7 @@ function checkExpr(klass, env) {
             const o = a.otherFiberCall;
             const ta = annotation(o.T);
             if (ta.resolvedType && (0, CompilerTypes_1.isMethodType)(ta.resolvedType) && !ta.resolvedType.method.nowait) {
-                o.fiberCallRequired_lazy();
+                //o.fiberCallRequired_lazy();
                 o.fiberType = ta.resolvedType;
             }
         }

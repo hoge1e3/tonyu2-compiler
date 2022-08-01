@@ -1,0 +1,11 @@
+native console;
+\print(x){console.log(x);}
+\a() {
+    let aa=10;
+    \b() {
+        print(aa);
+    }
+    b();
+}
+aa=50;
+a();

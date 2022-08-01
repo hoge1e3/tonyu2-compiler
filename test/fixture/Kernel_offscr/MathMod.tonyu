@@ -1,0 +1,122 @@
+extends null;
+native Math;
+native parseFloat;
+"field strict";
+nowait \sin(d) {
+    if (d%90==0) {
+        d=amod(d,360);
+        return [0,1,0,-1][floor(d/90)];
+    }
+    return Math.sin(rad(d));
+}
+nowait \cos(d) {
+    if (d%90==0) {
+        d=amod(d,360);
+        return [1,0,-1,0][floor(d/90)];
+    }
+    return Math.cos(rad(d));
+}
+nowait \rad(d) {
+    return d/180*Math.PI;
+}
+nowait \deg(d) {
+    return d/Math.PI*180;
+}
+
+nowait \abs(v) {
+    return Math.abs(v);
+}
+nowait \sgn(v,base) {
+    base=base||0;
+    return (v>base?1:v<-base?-1:0);
+}
+nowait \atan2(y,x) {
+    return deg(Math.atan2(y,x));
+}
+nowait \atanxy(x,y) {
+    return atan2(y,x);
+}
+
+nowait \floor(x) {
+    return Math.floor(x);
+}
+nowait \angleDiff(a,b) {
+    var c;
+    a=floor(a);
+    b=floor(b);
+    if (a>=b) {
+        c=(a-b) % 360;
+        if (c>=180) c-=360;
+    } else {
+        c=-((b-a) % 360);
+        if (c<-180) c+=360;
+    }
+    return c;
+}
+nowait \sqrt(t) {
+    return Math.sqrt(t);
+}
+nowait \dist(dx,dy,dz) {
+    /*if (typeof dx=="object") {
+        var t=dx;
+        dx=t.x-this.x;dy=t.y-this.y;// TODO move to QueryMOD
+    }*/
+    dz=dz||0;
+    return sqrt(dx*dx+dy*dy+dz*dz);
+}
+nowait \trunc(f) {
+    if(f>=0) return Math.floor(f);
+    else return Math.ceil(f);
+}
+nowait \ceil(f){
+    return Math.ceil(f);
+}
+nowait \rndFloat(r,m) {
+    if (typeof r!=="number") r=0;
+    if (typeof m!=="number") m=1;
+    if (r<m) {
+        return rnd()*(m-r)+r;
+    } else {
+        return rnd()*(r-m)+m;
+    }
+}
+
+nowait \rnd(r,m) {
+    var res;
+    if ($random is Random) res=$random.next01();
+    else res=Math.random();
+    if (typeof r=="number") {
+        if (typeof m=="number") {
+            if (r<m) {
+                return Math.floor(res*(m-r)+r);
+            } else {
+                return Math.floor(res*(r-m)+m);
+            }
+        } else {
+            return Math.floor(res*(r>0?r:0));
+        }
+    }
+    return res;
+}
+nowait randomize(s) {
+    $random=new Random(s);
+}
+nowait \parseFloat(s) {
+    return parseFloat(s);
+}
+nowait \clamp(v,min,max) {
+    if (min>max) return clamp(v,max,min);
+    return v<min?min:v>max?max:v;
+}
+nowait \clamped(v,min,max) {
+    return clamp(v,min,max)-v;
+}
+nowait \min() {
+    return Math.min.apply(Math,arguments);
+}
+nowait \max() {
+    return Math.max.apply(Math,arguments);
+}
+nowait \amod(v,d) {
+    return (v % d + d) % d;
+}

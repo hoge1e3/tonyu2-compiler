@@ -1,4 +1,4 @@
-import { Constructor, FieldInfo, Meta, MetaMap, MethodInfo } from "../runtime/RuntimeTypes";
+import { Constructor, FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
 import { IndentBuffer } from "./IndentBuffer";
 import { Catch, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes";
@@ -17,6 +17,7 @@ export type BuilderContext={
 }*/
 export type Aliases={[key:string]:string};//shortName->fullName
 export type BuilderEnv={
+	unresolvedVars: number,
 	options: ProjectOptions,
 	classes: C_MetaMap,
 	aliases: Aliases,
@@ -30,6 +31,7 @@ export type BuilderContextDef={
 };
 export type CompilerOptions={
 	typeCheck?: boolean,
+	//typeInference?: boolean,
 	defaultSuperClass?: string,
 	field_strict?: boolean,
 	external_waitable?: boolean,
@@ -59,7 +61,7 @@ export type Locals={
 };
 export type C_FieldInfo=FieldInfo & {
 	node?:TNode,
-	pos?:number,
+	//pos?:number,
 	resolvedType?: AnnotatedType,
 };
 export type C_Decls={
@@ -106,16 +108,25 @@ export type FuncInfo={// also includes Method
 	locals?: Locals,
 	params?: ParamDecl[],
 	scope?: ScopeMap,
-	fiberCallRequired?:boolean,
+	//fiberCallRequired?:boolean,
 	useArgs?:boolean,
-	useTry?:boolean,
+	//useTry?:boolean,
+	paramTypes?: AnnotatedType[],
 	returnType?: AnnotatedType,
 	nowait: boolean,
 
 };
-export type NativeClass={class: Constructor};
+export type NativeClass={class: Constructor, sampleValue?:any};
 export type MethodType={method: FuncInfo};
-export type AnnotatedType=NativeClass|C_Meta|MethodType;
+export type ArrayType={element:AnnotatedType};
+export type NamedType=NativeClass|C_Meta;
+export type AnnotatedType=NamedType|MethodType|ArrayType;
+export function isArrayType(klass: AnnotatedType): klass is ArrayType {
+	return (klass as any).element;
+}
+export function isNativeClass(klass: AnnotatedType): klass is NativeClass {
+	return (klass as any).class;
+}
 export function isMeta(klass: AnnotatedType): klass is C_Meta {
 	return (klass as any).decls;
 }
@@ -124,9 +135,8 @@ export function isMethodType(klass: AnnotatedType): klass is MethodType {
 }
 export type Annotation={
 	scopeInfo?: ScopeInfo,
-	fieldInfo?: C_FieldInfo,
+	//fieldInfo?: C_FieldInfo,
 	funcInfo?: FuncInfo,
-	//info?: C_FieldInfo|FuncInfo,
 	declaringFunc?: FuncInfo,
 	resolvedType?: AnnotatedType,
 	fiberCall?: {N:Token, A:Expression[]}&(
@@ -137,20 +147,20 @@ export type Annotation={
 	),
 	// Target Object Name Arguments Leftvalue oPerator
 	//  O.N(A)  T=O.N
-	otherFiberCall?: {fiberType?:MethodType, T:Expression, O:Expression, N:Token, A:Expression[], fiberCallRequired_lazy:()=>void}&(
-		{type:"noRetOther"}|{type:"varDecl"}|
-		{type:"retOther",L:Expression, P:Token}//LPO.N(A)  P:(=)(+=)(-=)...
+	otherFiberCall?: {fiberType?:MethodType, T:Expression, O:Expression, N:Token, A:Expression[], /*fiberCallRequired_lazy:()=>void*/}&(
+		/*{type:"noRetOther"}*/|{type:"varDecl"}
+		/*{type:"retOther",L:Expression, P:Token}*/ //LPO.N(A)  P:(=)(+=)(-=)...
 	),// fiberCallRequired_lazy is called when typechecker detects that T is a Tonyu-method
 	myMethodCall?: {name:string, args:TNode[], scopeInfo: ScopeInfo},
 	othersMethodCall?: {target:TNode, name:string, args:TNode[]},
 	memberAccess?: {target:TNode, name:string},
-	iterName?: string,
+	//iterName?: string,
 	varInMain?: boolean,
 	declaringClass?: C_Meta,
 	noBind?: boolean,
-	fiberCallRequired?: boolean,
+	//fiberCallRequired?: boolean,
 	hasJump?: boolean,
-	hasReturn?: boolean,
+	//hasReturn?: boolean,
 };
 export type TraceIndex={
 

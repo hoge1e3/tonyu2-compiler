@@ -1,0 +1,47 @@
+native setTimeout;
+native console;
+native Promise;
+"field strict";
+
+\test() {
+    __await new Promise \(s,e) {
+        setTimeout(\{
+            s(100);   
+        },500);
+    };
+    return 5;
+}
+let a=[1,5,3];
+for (let e of a) {
+    let nofld=e+1;
+    console.log(nofld);
+}
+
+console.log("START");
+for (let i=test();i<10;i++) {
+    console.log(i);
+}
+test2();
+\test2() {
+    //console.log("START2",i );
+    for (let i=test();i<10;i++) {
+        console.log(i);
+    }
+    let v=50;
+    for (let k,v of this) {
+        if (typeof v==="function") continue;
+        console.log(k,v);
+
+    }
+    console.log("after v=",v);
+}
+\test3() {
+    for (var i of [1,2,3]) {
+        var x=i;
+    }
+    console.log(x);
+}
+/*let $x=3;
+for (let $y=3;$y<3; $y++) {
+
+}*/

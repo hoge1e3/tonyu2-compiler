@@ -1,27 +1,44 @@
 native console;
 "external waitable";
-var a:A= new A();
+let a = new A();
 
-/*print (__typeof a);
+print (__typeof a);
 print (__typeof a.x);
-print (__typeof a.s);*/
+print (__typeof a.s);
 print (__typeof a.test);
 print (__typeof a.test());
 print (__typeof getA);
 print (__typeof getA());
+print (__typeof a.e);
 
 \print(x) {
 	console.log(x);
 }
 \getA():A {
+	let b:A;
+	//b.hoge;
 	return a;
 }
-//a.x();
+//a.hoge;
 var n=3;
 a.n=10;
+let s="a";
+print(s.length);
+
 
 var r=getA().test();
 print(r);
+
+let alist:A[]=[];
+print(__typeof alist);
+print(__typeof alist[0]);
+alist.push(a);
+alist[0].test();
+for (let i,e of alist) {
+	print (i, e.test());
+	print(__typeof i, __typeof e);
+}
+
 //a.n();
 //a.hoge();
 

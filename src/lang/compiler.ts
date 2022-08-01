@@ -1,14 +1,22 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
-import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, NativeClass } from "./CompilerTypes";
-import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
+import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, NativeClass } from "./CompilerTypes";
+import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/RuntimeTypes";
+import { Token } from "./parser";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
 	//const TError=require("TError");
 	const root=require("../lib/root");*/
 	type valueOf<T>=T[keyof T];
+	const NONBLOCKSCOPE_DECLPREFIX="var";
+	export function isBlockScopeDeclprefix(t:Token){
+		return t && t.text!==NONBLOCKSCOPE_DECLPREFIX;
+	}
+	export function isNonBlockScopeDeclprefix(t:Token){
+		return t && t.text===NONBLOCKSCOPE_DECLPREFIX;
+	}
 	export const ScopeTypes={
 			FIELD:"field", METHOD:"method", NATIVE:"native",//B
 			LOCAL:"local", THVAR:"threadvar",PROP:"property",
@@ -18,7 +26,7 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 	export namespace ScopeInfos{
 		export class LOCAL {
 			type=ScopeTypes.LOCAL;
-			constructor(public declaringFunc:FuncInfo){}
+			constructor(public declaringFunc:FuncInfo, public isBlockScope:boolean){}
 		}
 		export class PARAM {
 			type=ScopeTypes.PARAM;
@@ -30,7 +38,9 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		}
 		export class PROP {
 			type=ScopeTypes.PROP;
-			constructor(public klass:string, public name:string , public info:FuncInfo){}
+			public getter?:FuncInfo;
+			public setter?:FuncInfo;
+			constructor(public klass:string, public name:string){}
 		}
 		export class METHOD{
 			type=ScopeTypes.METHOD;
@@ -98,6 +108,15 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 		}
 		return res;
 	}
+	export function packAnnotation(aobjs) {
+		if (!aobjs) return;
+		function isEmptyAnnotation(a) {
+			return a && typeof a==="object" && Object.keys(a).length===1 && Object.keys(a)[0]==="node";
+		}
+		for (let k of Object.keys(aobjs)) {
+			if (isEmptyAnnotation(aobjs[k])) delete aobjs[k];
+		}
+	}
 	//cu.extend=extend;
 	/*function extend(res,aobj) {
 		for (let i in aobj) res[i]=aobj[i];
@@ -109,6 +128,65 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 	}
 	//cu.getSource=getSource;
 	//cu.getField=getField;
+	/*export function klass2name(t: AnnotatedType) {
+		if (isMethodType(t)) {
+			return `${t.method.klass.fullName}.${t.method.name}()`;
+		} else if (isMeta(t)) {
+			return t.fullName;
+		} else if (isNativeClass(t)) {
+			return t.class.name;
+		} else {
+			return `${klass2name(t.element)}[]`;
+		}
+	}*/
+	export function resolvedType2Digest(t: AnnotatedType):TypeDigest {
+		if (isMethodType(t)) {
+			return `${t.method.klass.fullName}.${t.method.name}()`;
+		} else if (isMeta(t)) {
+			return t.fullName;
+		} else if (isNativeClass(t)) {
+			return t.class.name;
+		} else {
+			return {element: resolvedType2Digest(t.element)};
+		}
+	}
+	export function digestDecls(klass: C_Meta):DeclsInDefinition {
+		//console.log("DIGEST", klass.decls.methods);
+		var res={methods:{},fields:{}} as DeclsInDefinition;
+		for (let i in klass.decls.methods) {
+			const mi=klass.decls.methods[i];
+			res.methods[i]={
+				nowait:!!mi.nowait,
+				isMain:!!mi.isMain,
+			};
+			if(mi.paramTypes || mi.returnType) {
+				res.methods[i].vtype={
+					params: mi.paramTypes ? mi.paramTypes.map(
+						(t)=>t?resolvedType2Digest(t):null): null,
+					returnValue: mi.returnType ? resolvedType2Digest(mi.returnType): null,
+				};	
+			}
+		}
+		for (let i in klass.decls.fields) {
+			const src=klass.decls.fields[i];
+			const dst={
+				vtype:src.resolvedType ? resolvedType2Digest(src.resolvedType) : src.vtype
+			};
+			res.fields[i]=dst;
+		}
+		return res;
+	}
+	export function typeDigest2ResolvedType(d:TypeDigest):AnnotatedType|undefined {
+		if (typeof d==="string") {
+			if (Tonyu.classMetas[d]) {
+				return Tonyu.classMetas[d] as C_Meta;
+			} else if (root[d]) {
+				return {class: root[d]};
+			}	
+		} else {
+			return {element: typeDigest2ResolvedType(d.element)};
+		}
+	}
 	export function getField(klass: C_Meta, name: string){
 		if (klass instanceof Function) return null;
 		let res:C_FieldInfo=null;
@@ -118,16 +196,9 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			res=k.decls.fields[name];
 		}
 		if (res && res.vtype && !res.resolvedType) {
-			res.resolvedType=className2ResolvedType(res.vtype);
+			res.resolvedType=typeDigest2ResolvedType(res.vtype);
 		}
 		return res;
-	};
-	export function className2ResolvedType(name:string):AnnotatedType|undefined {
-		if (Tonyu.classMetas[name]) {
-			return Tonyu.classMetas[name] as C_Meta;
-		} else if (root[name]) {
-			return {class: root[name]};
-		}
 	}
 	export function getMethod(klass: C_Meta,name:string) {//B
 		let res:FuncInfo=null;
@@ -136,6 +207,12 @@ import { Meta, ShimMeta } from "../runtime/RuntimeTypes";
 			res=k.decls.methods[name];
 		}
 		return res;
+	}
+	export function getProperty(klass: C_Meta,name:string):{setter?: FuncInfo, getter?: FuncInfo} {
+		const getter=getMethod(klass, Tonyu.klass.property.methodFor("get", name));
+		const setter=getMethod(klass, Tonyu.klass.property.methodFor("set", name));
+		if (!getter && !setter) return null;
+		return {getter,setter};
 	}
 	//cu.getMethod=getMethod2;
 	// includes klass itself

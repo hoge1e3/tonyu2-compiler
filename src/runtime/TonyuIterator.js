@@ -1,4 +1,6 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IT2 = exports.IT = void 0;
 //define(["Klass"], function (Klass) {
 //var Klass=require("../lib/Klass");
 const SYMIT = typeof Symbol !== "undefined" && Symbol.iterator;
@@ -75,7 +77,7 @@ class NativeIteratorWrapper {
         return true;
     }
 }
-module.exports = function IT(set, arity) {
+function IT(set, arity) {
     if (set && typeof set.tonyuIterator === "function") {
         // TODO: the prototype of class having tonyuIterator will iterate infinitively
         return set.tonyuIterator(arity);
@@ -103,7 +105,21 @@ module.exports = function IT(set, arity) {
         console.log(set);
         throw new Error(set + " is not iterable");
     }
-};
+}
+exports.IT = IT;
+function IT2(set, arity) {
+    const it = IT(set, arity);
+    return function* () {
+        while (it.next()) {
+            const yielded = [];
+            for (let i = 0; i < arity; i++) {
+                yielded[i] = it[i];
+            }
+            yield yielded;
+        }
+    }();
+}
+exports.IT2 = IT2;
 //	module.exports=IT;
 //   Tonyu.iterator=IT;
 //	return IT;

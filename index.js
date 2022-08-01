@@ -65,10 +65,26 @@ builder.fullCompile(opt).then(async function (s) {
     if (run||daemon) {
         let Tonyu=root.Tonyu;
         Tonyu.onRuntimeError=e=>console.error(e);
+        Tonyu.globals.$builder=builder;
+        Tonyu.globals.$currentProject=prj;
         let th=Tonyu.thread();
-        let mainObj=new Tonyu.classes[prj.getNamespace()].Main();
+        const popt=prj.getOptions();
+        let MainClass;
+        if (popt && popt.run && popt.run.bootClass) {
+            MainClass=Tonyu.getClass(popt.run.bootClass);
+        } else {
+            MainClass=Tonyu.getClass(`${prj.getNamespace()}.Main`);
+        }
+        let mainObj=new MainClass();
         th.apply(mainObj,"main");
-        th.steps();
+        function stepsLoop() {
+            th.steps();
+            if (th.preempted) {
+                console.log("PREEMPTED");
+                setTimeout(stepsLoop,0);
+            }    
+        }
+        stepsLoop();
         /*th.then(r=>console.log("Done",r),e=>{
             //sourceFiles.decodeTrace(e);
             console.error(e);

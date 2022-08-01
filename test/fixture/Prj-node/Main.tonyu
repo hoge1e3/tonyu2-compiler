@@ -2,6 +2,7 @@ extends Updatable;
 native console;
 native Tonyu;
 native Set;
+native Promise;
 s=new Set;
 s.add(5);s.add(10);
 console.log("listing elem");
@@ -14,9 +15,12 @@ for (k of s) {
 //Updatable();
 //a=50a0;
 //Tonyu.run("user.Hoge");
-console.log(__await "awawa");
+aw=waitFor( new Promise \(s){ s("awawawa!"); }) ;
+console.log("aw=", aw);
 
 $restart=\{
+    console.log(this);
     appear(new Preya);
 };
+console.log(this);
 $restart();

@@ -1,5 +1,5 @@
 import R from "../lib/R";
-import IT from "./TonyuIterator";
+import {IT,IT2} from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
@@ -409,13 +409,15 @@ function is(obj:any, klass:any) {
 	return false;
 }
 //setInterval(resetLoopCheck,16);
-const Tonyu={thread, /*threadGroup:threadGroup,*/
+const Tonyu={
+		thread, 
+		supports_await:true,
 		klass, bless, extend, messages: R,
 		globals, classes, classMetas, setGlobal, getGlobal, getClass,
 		timeout,
 		bindFunc, not_a_tonyu_object, is,
 		hasKey, invokeMethod, callFunc, checkNonNull,
-		iterator:IT, run, checkLoop, resetLoopCheck,
+		iterator:IT, iterator2:IT2, run, checkLoop, resetLoopCheck,
 		currentProject: null,
 		currentThread: null as TonyuThread,
 		runMode: false,
@@ -425,7 +427,8 @@ const Tonyu={thread, /*threadGroup:threadGroup,*/
 			throw e;
 		},
 		VERSION:1560828115159,//EMBED_VERSION
-		A, ID:Math.random()};
+		A, ID:Math.random()
+};
 //const TT=TonyuThreadF(Tonyu);
 if (root.Tonyu) {
 	console.error("Tonyu called twice!");

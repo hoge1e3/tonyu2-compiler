@@ -1,7 +1,9 @@
 native console;
 test=5;
-\x {
+\x:Number {
    console.log("get x",test*2);
    return test*2;
 }
-
+\x=val:Number {
+   console.log("Set x",val);
+}

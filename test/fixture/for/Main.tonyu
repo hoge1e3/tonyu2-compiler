@@ -1,0 +1,40 @@
+native setTimeout;
+native console;
+native Promise;
+
+\test() {
+    __await new Promise \(s,e) {
+        setTimeout(\{
+            s(100);   
+        },500);
+    };
+    return 5;
+}
+a=[1,5,3];
+for (e of a) {
+    console.log(e);
+}
+
+console.log("START");
+for (i=test();i<10;i++) {
+    console.log(i);
+}
+test2();
+\test2() {
+    console.log("START2");
+    for (var i=test();i<10;i++) {
+        console.log(i);
+    }
+    for (var k,v of this) {
+        if (typeof v==="function") continue;
+        console.log(k,v);
+
+    }
+
+}
+\test3() {
+    for (var i of [1,2,3]) {
+        var x=i;
+    }
+    console.log(x);
+}

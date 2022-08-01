@@ -1,0 +1,97 @@
+//$Screen.resize(200,600);
+let bots=[];
+/*
+var Cp;
+var expandThresh;
+var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
+var iteration;
+var player;*/
+\value(ctx:Context, player: Number, state:Board) {
+    if (state.gameover(ctx)) {
+        if (player===state.player) return 0;
+        else return 1;
+    }
+    return 0.5;
+    /*let foe=3-player;
+    let sc=0.5;
+    for (let x,y,p of state.mat) {
+        if (p==player+2) sc+=0.5;
+        if (p==foe+2) sc-=0.5;
+    }
+    return sc;*/
+}
+let logf=file("log.txt");
+//let its=[30,300,3000];
+let it1=rnd(100,6000),it2=rnd(100,6000);
+for (let i=0;i<1000;i++) {
+    match(it1,it2);   
+}
+\match() {
+    print("iters:" ,it1, it2);
+    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it1, timeout:2};
+    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it2, timeout:2};
+    let context=new Context{players:[1,2], bots};
+    let mat=new Matrix;
+/*let r=5;
+for (let i=0;i<r;i++) {
+    for (let j=0;j<r;j++) {
+        mat.set(j,i,0);
+    }
+}*/
+    let s=[
+    "2 2 2 2 2 2 2", 
+    "0 2 0 0 0 2 0", 
+    "2 2 2 2 2 2 2", 
+    "0 0 0 0 0 0 0", 
+    "1 1 1 1 1 1 1", 
+    "0 1 0 0 0 1 0", 
+    "1 1 1 1 1 1 1"]; 
+    s=[
+    "2 2 4 2 2", 
+    "2 2 2 2 2", 
+    "0 0 0 0 0", 
+    "1 1 1 1 1", 
+    "1 1 3 1 1"]; 
+
+    let player=1;
+/*s=[
+"2 2 4 2 2", 
+"0 1 0 0 2", 
+"2 0 0 1 2", 
+"1 1 0 1 0", 
+"0 0 3 1 1"];
+player=2;
+s=[
+"2 0 4 2 2", 
+"0 0 0 0 2", 
+"2 0 2 1 0", 
+"1 1 1 2 0",
+"0 0 3 0 1"];
+player=1;
+*/
+    for (let r,row of s) {
+        for (let c,col of row.split(" ")) {
+            mat.set(c,r,col-0);
+        }
+    }
+    let state=new Board{mat,player};
+    let g=new GameMaster{context, state};
+    print(g.state+"");
+    while (!g.gameover()) {
+        let a=g.step();
+        print(a.x, a.y, a.dx, a.dy);
+        print(g.state+"");
+        updateEx(1);
+    }
+    print(it1, it2);
+    print("loser is ",g.state.player);
+    logf.appendText(it1+","+it2+","+g.state.player+"\n");
+    if (g.state.player==1) {
+        it1+=rnd(100,200);
+        it2-=rnd(100,200);
+    } else {
+        it1-=rnd(100,200);
+        it2+=rnd(100,200);
+    }
+    it1=rnd(1000,4000);it2=rnd(1000,4000);
+}

@@ -1,0 +1,77 @@
+let length:Number,a,_undef;
+\new(asrc) {
+    if (!asrc) throw new Error("Use as: new ArgParser(arguments)");
+    length=0;
+    a=this;
+    for (var i=0; i<asrc.length;i++) push(asrc[i]);
+}
+\push(v) {
+    a[length++]=v;
+}
+\trimUndefs() {
+    while(length>0) {
+        if (a[length-1]!==_undef) break;
+        length--;
+        delete a[length];
+    }
+}
+\peek(i) {
+    return a[i||0];
+}
+\shift(type) {
+    if (typeof type=="number") {
+        var res=[];
+        for (var i=0;i<type; i++) res.push(shift());
+        return res;
+    } else if (typeof type=="string") {
+        if (a[0]==null) return _undef;  // typeof null==="object", but it is denied.
+        if (typeof a[0]===type) return shift();
+        return _undef;
+    } else if (type) {
+        if (a[0] is type) return shift();
+        return _undef;
+    }
+    var res=a[0];
+    for (var i=1 ; i<length ; i++ ){
+        a[i-1]=a[i];
+    }
+    length--;//3->2 012 -> 01
+    delete a[length]; // 2
+    return res;
+}
+\toArray() {
+    var res=[];
+    for (var i=0 ;i<a.length; i++) res.push(a[i]);
+    return res;
+}
+\parseOptions(spec) {
+    var speca=spec.split(",");
+    var res={};
+    if (length>speca.length) {
+        throw new Error("# of arguments("+length+
+        ") is more than spec("+speca.length+").");
+    }
+    while(length>1) {
+        var name=speca.shift();
+        res[name]=shift();
+    }
+    var opt=shift(),notOption;
+    if (typeof opt!=="object") {
+        notOption=true;
+    } else {
+        for (var k,v in opt) {
+            if (speca.indexOf(k)<0) {
+                notOption=true;
+                break;
+            }
+        }
+    }
+    if (notOption) {
+        res[speca.shift()]=opt;
+    } else {
+        for (var k,v in opt) {
+            res[k]=v;
+        }
+    }
+    return res;
+}

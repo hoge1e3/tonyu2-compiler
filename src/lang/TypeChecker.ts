@@ -1,11 +1,11 @@
 import * as cu from "./compiler";
 import R from "../lib/R";
 import {context} from "./context";
-import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember } from "./NodeTypes";
+import { FuncDecl, ParamDecl, Postfix, TNode, VarAccess, VarDecl, Exprstmt, isCall, isMember, NewExpr, isArrayElem, Forin, BackquoteLiteral } from "./NodeTypes";
 //import Grammar from "./Grammar";
 import { SUBELEMENTS, Token } from "./parser";
 import {Visitor} from "./Visitor";
-import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType } from "./CompilerTypes";
+import { AnnotatedType, Annotation, BuilderEnv, C_FieldInfo, C_Meta, FuncInfo, isArrayType, isMeta, isMethodType, isNativeClass } from "./CompilerTypes";
 import { ScopeInfo } from "./compiler";
 import TError from "../runtime/TError";
 
@@ -48,33 +48,55 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=new Visitor({
-		varDecl: function (node: VarDecl) {
-			//console.log("TCV","varDecl",node);
-			if (node.value) this.visit(node.value);
-			if (node.name && node.typeDecl) {
-				var va=annotation(node.typeDecl.vtype);
-				//console.log("var typeis",node.name+"", node.typeDecl.vtype, va.resolvedType);
-				const rt=va.resolvedType;
-				if (rt) {
-					const a=annotation(node);
-					const si=a.scopeInfo;// for local
-					const info=a.fieldInfo;// for field
-					if (si) {
-						//console.log("set var type",node.name+"", va.resolvedType );
-						si.resolvedType=va.resolvedType;
-					} else if (info) {
-						//console.log("set fld type",node.name+"", va.resolvedType );
-						info.resolvedType=va.resolvedType;
-					}
+		forin(node:Forin) {
+			this.visit(node.set);
+			const a=annotation(node.set);
+			if (a.resolvedType && isArrayType(a.resolvedType) &&
+				node.isVar && node.isVar.text!=="var") {
+				if (node.vars.length==1) {
+					const sa=annotation(node.vars[0]);
+					sa.scopeInfo.resolvedType=a.resolvedType.element;
+				} else if (node.vars.length==2) {
+					const sa=annotation(node.vars[1]);
+					sa.scopeInfo.resolvedType=a.resolvedType.element;
+
+					const si=annotation(node.vars[0]);
+					si.scopeInfo.resolvedType={class:Number};
 
 				}
-				/*} else if (a.declaringClass) {
-					//console.log("set fld type",a.declaringClass,a.declaringClass.decls.fields[node.name+""],node.name+"", node.typeDecl.vtype+"");
-					a.declaringClass.decls.fields[node.name+""].vtype=node.typeDecl.vtype;
-				}*/
+			} else {
+				this.visit(node.vars);
 			}
 		},
-		paramDecl: function (node: ParamDecl) {
+		varDecl(node: VarDecl) {
+			//console.log("TCV","varDecl",node);
+			if (node.value) this.visit(node.value);
+			let rt:AnnotatedType;
+			if (node.value) {
+				const a=annotation(node.value);
+				if (a.resolvedType) {
+					rt=a.resolvedType;
+					//console.log("Inferred",rt);
+				}
+			}
+			if (node.name && node.typeDecl) {
+				const va=annotation(node.typeDecl.vtype);
+				rt=va.resolvedType;
+			}
+			if (rt) {
+				const a=annotation(node);
+				const si=a.scopeInfo;
+				if (si) {
+					si.resolvedType=rt;
+					if (si.type===cu.ScopeTypes.FIELD) {
+						si.info.resolvedType=rt;
+					}
+				}
+			} else {
+				env.unresolvedVars++;
+			}
+		},
+		paramDecl(node: ParamDecl) {
 			if (node.name && node.typeDecl) {
 				//console.log("param typeis",node.name+"", node.typeDecl.vtype+"");
 				var va=annotation(node.typeDecl.vtype);
@@ -86,7 +108,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 				}
 			}
 		},
-		funcDecl: function (node: FuncDecl) {
+		funcDecl(node: FuncDecl) {
 			//console.log("Visit funcDecl",node);
 			var head=node.head;
 			/*const finfo=annotation(node).funcInfo;
@@ -110,10 +132,13 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 	}
 	var typeAnnotationVisitor=new Visitor({
 		number: function (node:Token) {
-			annotation(node,{resolvedType:{class:Number}});
+			annotation(node,{resolvedType:{class:Number, sampleValue: 1}});
 		},
 		literal: function (node:Token) {
-			annotation(node,{resolvedType:{class:String}});
+			annotation(node,{resolvedType:{class:String, sampleValue:"a"}});
+		},
+		backquoteLiteral(node: BackquoteLiteral) {
+			annotation(node,{resolvedType:{class:String, sampleValue:"a"}});
 		},
 		postfix:function (node:Postfix) {
 			//var a=annotation(node);
@@ -127,7 +152,8 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				if (vtype && isMeta(vtype)) {
 					const field=cu.getField(vtype,name);
 					const method=cu.getMethod(vtype,name);
-					if (!field && !method) {
+					const prop=cu.getProperty(vtype,name);
+					if (!field && !method && !prop) {
 						throw TError( R("memberNotFoundInClass",vtype.shortName, name) , srcFile, node.op.name.pos);
 					}
 					//console.log("GETF",vtype,m.name,f);
@@ -136,6 +162,21 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 						annotation(node,{resolvedType:field.resolvedType});
 					} else if (method) {
 						annotation(node,{resolvedType:{method}});
+					} else if (prop && prop.getter) {
+						annotation(node,{resolvedType:prop.getter.returnType});
+					} else if (prop && prop.setter && prop.setter.paramTypes) {
+						annotation(node,{resolvedType:prop.setter.paramTypes[0]});
+					}
+				}
+				if (vtype && isNativeClass(vtype)) {
+					if (vtype.class.prototype[name]) {
+						// Maybe function
+						//OK (as any)
+					} else if (vtype.sampleValue!=null && vtype.sampleValue[name]!==undefined) {
+						// Maybe attribute (like str.length)
+						//OK (as any) 
+					} else {
+						throw TError( R("memberNotFoundInClass",vtype.class.name, name) , srcFile, node.op.name.pos);
 					}
 				}
 			} else if (isCall(node.op)) {
@@ -149,6 +190,19 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 					//console.log("OPCALL", leftT);
 					annotation(node, {resolvedType: leftT.method.returnType});
 				}
+			} else if (isArrayElem(node.op)) {
+				const leftA=annotation(node.left);
+				if (leftA && leftA.resolvedType && isArrayType(leftA.resolvedType)) {
+					const rt=leftA.resolvedType.element;
+					annotation(node,{resolvedType:rt});
+				}
+			}
+		},
+		newExpr: function (node:NewExpr) {
+			const a=annotation(node.klass);
+			if (a.scopeInfo && a.scopeInfo.type===cu.ScopeTypes.CLASS) {
+				const rt:AnnotatedType=a.scopeInfo.info;
+				annotation(node, {resolvedType:rt});
 			}
 		},
 		varAccess: function (node: VarAccess) {
@@ -175,7 +229,11 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 				} else if (si.type===ScopeTypes.METHOD) {
 					annotation(node,{resolvedType:{method:si.info}});
 				} else if (si.type===ScopeTypes.PROP) {
-					//TODO
+					if (si.getter) {
+						annotation(node,{resolvedType:si.getter.returnType});
+					} else if (si.setter && si.setter.paramTypes) {
+						annotation(node,{resolvedType:si.setter.paramTypes[0]});
+					}
 				}
 			}
 		},
@@ -196,7 +254,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 			const o=a.otherFiberCall;
 			const ta=annotation(o.T);
 			if (ta.resolvedType && isMethodType(ta.resolvedType) && !ta.resolvedType.method.nowait) {
-				o.fiberCallRequired_lazy();
+				//o.fiberCallRequired_lazy();
 				o.fiberType=ta.resolvedType;
 			}
 		}

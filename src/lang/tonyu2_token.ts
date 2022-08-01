@@ -4,7 +4,7 @@ export= tokenizerFactory({
 	caseInsensitive: false,
 	reserved:{
 		"function":true, "var":true , "return":true, "typeof": true, "if":true,
-		"__typeof": true, "__await": true,
+		"__typeof": true, "__await": true, "let":true, "const":true,
 		"for":true,
 		"else": true,
 		"super": true,

@@ -15,7 +15,7 @@ while(x<120) {
 }
 for (x=0;x<3;x++) {
     //move();
-    console.log(x);
+    console.log("x=",x);
     update();
 }
 //a

@@ -1,0 +1,8 @@
+
+let list:A[]=[ new A ];
+print("typeofx",__typeof x);
+//list[0].test();
+
+\x:A {
+    return new A;
+}

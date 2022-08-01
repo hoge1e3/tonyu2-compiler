@@ -274,12 +274,20 @@ export type Throw=NodeBase&{
 export function isThrow(n:TNode):n is Throw {
    return n && n.type==="throw";
 }
-export type TypeExpr=NodeBase&{
-  type: "typeExpr";
+export type TypeExpr=NamedTypeExpr|ArrayTypeExpr;
+export type ArrayTypeExpr=NodeBase&{
+    type: "arrayTypeExpr",
+    element: TypeExpr;
+};
+export function isArrayTypeExpr(n:TNode):n is ArrayTypeExpr {
+  return n && n.type==="arrayTypeExpr";
+}
+export type NamedTypeExpr=NodeBase&{
+  type: "namedTypeExpr";
   name: Token
 };
-export function isTypeExpr(n:TNode):n is TypeExpr {
-   return n && n.type==="typeExpr";
+export function isNamedTypeExpr(n:TNode):n is NamedTypeExpr {
+   return n && n.type==="namedTypeExpr";
 }
 export type TypeDecl=NodeBase&{
   type: "typeDecl";
@@ -299,6 +307,7 @@ export function isVarDecl(n:TNode):n is VarDecl {
 }
 export type VarsDecl=NodeBase&{
   type: "varsDecl";
+  declPrefix: Token, // var const let
   decls: VarDecl[]
 };
 export function isVarsDecl(n:TNode):n is VarsDecl {
@@ -430,4 +439,17 @@ export type Program=NodeBase&{
 export function isProgram(n:TNode):n is Program {
    return n && n.type==="program";
 }
-export type TNode=ArrayElem|ArgList|Member|ParenExpr|VarAccess|FuncExprArg|ObjlitArg|Call|Scall|NewExpr|SuperExpr|Exprstmt|Compound|Return|If|Forin|NormalFor|For|While|Do|Case|Default|Switch|Break|Continue|Finally|Catch|Try|Throw|TypeExpr|TypeDecl|VarDecl|VarsDecl|ParamDecl|ParamDecls|SetterDecl|FuncDeclHead|FuncDecl|NativeDecl|IfWait|Empty|FuncExprHead|FuncExpr|JsonElem|Objlit|Arylit|Extends|Includes|Program|Expression;
+export type BackquoteText=Token&{
+  type:"backquoteText",
+};
+export function isBackquoteText(n:TNode):n is BackquoteText {
+  return n && n.type==="backquoteText";
+};
+export type BackquoteLiteral=NodeBase&{
+  type:"backquoteLiteral",
+  body:(BackquoteText|Expr)[]
+};
+export function isBackquoteLiteral(n:TNode):n is BackquoteLiteral {
+  return n && n.type==="backquoteLiteral";
+}
+export type TNode=ArrayElem|ArgList|Member|ParenExpr|VarAccess|FuncExprArg|ObjlitArg|Call|Scall|NewExpr|SuperExpr|Exprstmt|Compound|Return|If|Forin|NormalFor|For|While|Do|Case|Default|Switch|Break|Continue|Finally|Catch|Try|Throw|TypeExpr|TypeDecl|VarDecl|VarsDecl|ParamDecl|ParamDecls|SetterDecl|FuncDeclHead|FuncDecl|NativeDecl|IfWait|Empty|FuncExprHead|FuncExpr|JsonElem|Objlit|Arylit|Extends|Includes|Program|Expression|BackquoteLiteral;

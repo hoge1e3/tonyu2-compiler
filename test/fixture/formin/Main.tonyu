@@ -1,0 +1,8 @@
+native setTimeout;
+native console;
+native Promise;
+
+\test() {
+    let nonvar=3;
+    for (let nonvar=0;nonvar<10;nonvar++);
+}  

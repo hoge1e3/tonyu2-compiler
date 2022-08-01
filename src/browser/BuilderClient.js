@@ -4,6 +4,7 @@ const WS=require("../lib/WorkerServiceB");
 const {sourceFiles}=require("../lang/SourceFiles");
 const FileMap=require("../lib/FileMap");
 const NS2DepSpec=require("../project/NS2DepSpec");
+const { P } = require("../lang/ObjectMatcher");
 //const FS=(root.parent && root.parent.FS) || root.FS;
 const FS=root.FS;// TODO
 
@@ -153,6 +154,55 @@ class BuilderClient {
             }
             return changed;
         } catch(e) {
+            throw this.convertError(e);
+        }
+    }
+    async serializeAnnotatedNodes() {
+        try {
+            const REF="REF",FUNC="FUNC";
+            await this.init();
+            let objs=await this.w.run("compiler/serializeAnnotatedNodes",{});
+            root.temp1=objs;
+            console.log(objs);
+            const sfiles={};
+            for(let k of Object.keys(objs)) {
+                if (isSFile(objs[k])) {
+                    let n=this.convertFromWorkerPath(objs[k].path);
+                    objs[k]=FS.get(n);
+                    sfiles[k]=1;
+                }
+            }
+            for(let k of Object.keys(objs)) {
+                conv(objs[k]);
+            }
+            console.log(objs);
+            function conv(r) {
+                if (FS.isFile(r)) return;
+                if (r&&typeof r==="object") {
+                    for (let k of Object.keys(r)) {                        
+                        if (isRef(r[k])) {
+                            r[k]=objs[r[k][REF]];
+                        } else if (isFunc(r[k])) {
+                            let n=r[k][FUNC];
+                            if (root[n] && typeof root[n]==="function") {
+                                r[k]=root[n];
+                            }
+                        } else conv(r[k]);
+                    }
+                }  
+            }
+            function isFunc(r) {
+                return (r&& typeof r[FUNC]==="string");
+            }
+            function isSFile(o){
+                return o && o.isSFile && o.path;
+            }
+            function isRef(r) {
+                return (r&& typeof r[REF]==="number");
+            }
+            return objs[1];
+        } catch(e) {
+            console.error(e);
             throw this.convertError(e);
         }
     }

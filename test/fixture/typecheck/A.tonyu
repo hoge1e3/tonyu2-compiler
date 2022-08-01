@@ -1,20 +1,28 @@
 extends Updatable;
 native console;
 var x:Number;
-var s:String;
+let s:String;
 \test():A {
-	var i=0,s=0;
+	let i=0,s=0;
 	while(i<n) {
 		console.log(i);
 		update();
 		i++;
 		s+=i;
 	}
+	//i.test();
 	return this;
 }
-nowait \toste() {
-	console.log(3);
+
+nowait \toste(x:Number):A {
+	console.log(x);
 }
+print(__typeof e);
+\e=x:Number {
+	return 3;
+}
+print(__typeof e);
+console.log(s.length);
 //a
 /*\hoge(){
 	console.log("hoge");

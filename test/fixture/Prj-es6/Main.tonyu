@@ -1,0 +1,10 @@
+
+x=100;
+y=200;
+fillStyle="yellow";
+radius=16;
+while(x<300) {
+    x++;
+    if (getkey("e")==1) appude_to();
+    update();
+}

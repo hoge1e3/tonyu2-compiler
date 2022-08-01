@@ -1,3 +1,4 @@
+import { is } from "../runtime/TonyuRuntime";
 import { ALL, Parser, State, StringParser, StrLikeResult, StrStateSrc } from "./parser";
 
 //import Parser from "./parser";
@@ -7,6 +8,7 @@ export type Tokenizer={
 	extension: string,
 	reserved: ReservedList,
 };
+export const BQH = "backquoteHead", BQT="backquoteTail", BQX="backquoteText"; 
 export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedList, caseInsensitive:boolean}):Tokenizer {
 	/*function profileTbl(parser, name) {
 		var tbl=parser._first.tbl;
@@ -14,6 +16,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			tbl[c].profile();//(c+" of "+tbl[name);
 		}
 	}*/
+	const BQ="backquote";
 	//const spcs={};for(i=0;i<=0xffff;i++) if (String.fromCharCode(i).match(/\s/)) spcs[i]=1;
 	const spcs={
 		9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 32: 1, 160: 1, 5760: 1,
@@ -112,9 +115,98 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		if (!a) return b;
 		return a.or(b);
 	}
-
-	var all=sp.create((st:State)=>{
-		var mode=REG;
+	class Step {
+		mode=REG;
+		constructor(public state:State) {
+		}
+		next() {
+			this.state=parsers[this.mode].parse(this.state);
+			if (!this.state.success) return null;
+			const e=this.state.result[0];
+			this.mode=posts[e.type];
+			return e;
+		}
+	}
+	function tokenizeBQInner(stp:Step) {
+		const res=[];
+		let curl=1;
+		while(true) {
+			let e=stp.next();
+			if (!e) break;
+			if (e.text==="{") {
+				curl++;
+			} else if (e.text==="}") {
+				curl--;
+				if (curl<=0) break;
+			} else if (e.type===BQH) {
+				tokenizeBQ(e, stp);
+			}
+			res.push(e);
+		}
+		return res;
+	}
+	function tokenizeBQ(bqt:any, stp: Step) {
+		let state=stp.state;
+		let str=(state.src as StrStateSrc).str;
+		let pos=state.pos;
+		let opos=pos;
+		const subs=[];
+		bqt.subs=subs;
+		bqt.type=BQ;
+		const pushBQX=()=>{
+			if (pos-opos>0) {
+				subs.push({type:BQX, text: str.substring(opos,pos),pos:opos, len:pos-opos});
+			}
+		};
+		while(pos<str.length) {
+			if(str[pos]==="`") {
+				pushBQX();
+				pos++;
+				let ns=state.clone();
+				ns.pos=pos;
+				stp.state=ns;
+				bqt.len=pos-bqt.pos;
+				bqt.text=str.substring(bqt.pos, bqt.pos+bqt.len);
+				break;
+			} else if(str[pos]==="\\") {
+				pos+=2;
+			} else if(str.substring(pos,pos+2)==="${") {
+				pushBQX();
+				pos+=2;
+				let ns=state.clone();
+				ns.pos=pos;
+				stp.state=ns;
+				subs.push(  tokenizeBQInner(stp) );
+				pos=opos=stp.state.pos;
+			} else {
+				pos++;
+			}
+		}
+	}	
+	function flattenBQ(tokens:any[]):any[] {
+		const res=[];
+		const isAry=(a)=>a && typeof a.map==="function";
+		for (let token of tokens) {
+			if (token.type===BQ) {
+				res.push({type:BQH, text:"`", pos:token.pos});
+				for (let sub of token.subs){
+					if (isAry(sub)) {
+						for (let e of flattenBQ(sub)) {
+							res.push(e);
+						}
+					} else {
+						res.push(sub);
+					}
+				}
+				res.push({type:BQT, text:"`", pos:token.pos+token.len-1});
+			} else {
+				res.push(token);
+			}
+		}
+		return res;
+	}
+	const all=sp.create((st:State)=>{
+		/*var mode=REG;
 		var res=[];
 		while (true) {
 			st=parsers[mode].parse(st);
@@ -123,9 +215,19 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			mode=posts[e.type];
 			//console.log("Token",e, mode);
 			res.push(e);
+		}*/
+		let res=[];
+		const stp=new Step(st);
+		while(true) {
+			let e=stp.next();
+			if (!e) break;
+			if (e.type===BQH) {
+				tokenizeBQ(e, stp);
+			}
+			res.push(e);
 		}
+		st=stp.state;
 		st=space.parse(st);
-		//console.log(st.src.maxPos+"=="+st.src.str.length)
 		const src=st.src as StrStateSrc;
 		st=st.clone();
 		if (st.pos===src.str.length) {
@@ -134,7 +236,8 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			st.error=st.src.maxErrors.errors.join(" or ");
 		}
 		//st.success=st.src.maxPos==src.str.length;
-		st.result[0]=res;
+		st.result[0]=flattenBQ(res);
+		//console.dir(st.result[0],{depth:null});
 		return st;
 	}).setName("tokens:all");
 	// Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
@@ -177,6 +280,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	dtk(REG|DIV, "number", num,DIV );
 	dtk(REG,  "regex" ,regex,DIV );
 	dtk(REG|DIV,  "literal" ,literal,DIV );
+	dtk(REG|DIV, BQH, "`", DIV);
 
 	dtk(REG|DIV,SAMENAME ,"++",DIV );
 	dtk(REG|DIV,SAMENAME ,"--",DIV );
@@ -267,3 +371,4 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	}
 	return {parse:parse, extension:"js",reserved:reserved};
 };
+

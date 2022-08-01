@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 const R_1 = __importDefault(require("../lib/R"));
-const TonyuIterator_1 = __importDefault(require("./TonyuIterator"));
+const TonyuIterator_1 = require("./TonyuIterator");
 const TonyuThread_1 = require("./TonyuThread");
 const root_1 = __importDefault(require("../lib/root"));
 const assert_1 = __importDefault(require("../lib/assert"));
@@ -429,13 +429,15 @@ function is(obj, klass) {
     return false;
 }
 //setInterval(resetLoopCheck,16);
-const Tonyu = { thread,
+const Tonyu = {
+    thread,
+    supports_await: true,
     klass, bless, extend, messages: R_1.default,
     globals, classes, classMetas, setGlobal, getGlobal, getClass,
     timeout,
     bindFunc, not_a_tonyu_object, is,
     hasKey, invokeMethod, callFunc, checkNonNull,
-    iterator: TonyuIterator_1.default, run, checkLoop, resetLoopCheck,
+    iterator: TonyuIterator_1.IT, iterator2: TonyuIterator_1.IT2, run, checkLoop, resetLoopCheck,
     currentProject: null,
     currentThread: null,
     runMode: false,
@@ -446,7 +448,8 @@ const Tonyu = { thread,
         throw e;
     },
     VERSION: 1560828115159,
-    A, ID: Math.random() };
+    A, ID: Math.random()
+};
 //const TT=TonyuThreadF(Tonyu);
 if (root_1.default.Tonyu) {
     console.error("Tonyu called twice!");

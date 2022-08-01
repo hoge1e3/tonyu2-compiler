@@ -6,7 +6,7 @@
 	};
 	export function v(name:string, cond={}):Variable {
 		const res=function (cond2:any) {
-			const cond3={...cond};
+			const cond3=Object.assign({},cond);
 			Object.assign(cond3, cond2);
 			return v(name, cond3);
 		}

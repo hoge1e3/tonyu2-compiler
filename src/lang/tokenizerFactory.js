@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.tokenizerFactory = void 0;
+exports.tokenizerFactory = exports.BQX = exports.BQT = exports.BQH = void 0;
 const parser_1 = require("./parser");
+exports.BQH = "backquoteHead", exports.BQT = "backquoteTail", exports.BQX = "backquoteText";
 function tokenizerFactory({ reserved, caseInsensitive }) {
     /*function profileTbl(parser, name) {
         var tbl=parser._first.tbl;
@@ -9,6 +10,7 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
             tbl[c].profile();//(c+" of "+tbl[name);
         }
     }*/
+    const BQ = "backquote";
     //const spcs={};for(i=0;i<=0xffff;i++) if (String.fromCharCode(i).match(/\s/)) spcs[i]=1;
     const spcs = {
         9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 32: 1, 160: 1, 5760: 1,
@@ -120,20 +122,131 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
             return b;
         return a.or(b);
     }
-    var all = sp.create((st) => {
-        var mode = REG;
-        var res = [];
+    class Step {
+        constructor(state) {
+            this.state = state;
+            this.mode = REG;
+        }
+        next() {
+            this.state = parsers[this.mode].parse(this.state);
+            if (!this.state.success)
+                return null;
+            const e = this.state.result[0];
+            this.mode = posts[e.type];
+            return e;
+        }
+    }
+    function tokenizeBQInner(stp) {
+        const res = [];
+        let curl = 1;
         while (true) {
-            st = parsers[mode].parse(st);
-            if (!st.success)
+            let e = stp.next();
+            if (!e)
                 break;
-            var e = st.result[0];
-            mode = posts[e.type];
-            //console.log("Token",e, mode);
+            if (e.text === "{") {
+                curl++;
+            }
+            else if (e.text === "}") {
+                curl--;
+                if (curl <= 0)
+                    break;
+            }
+            else if (e.type === exports.BQH) {
+                tokenizeBQ(e, stp);
+            }
             res.push(e);
         }
+        return res;
+    }
+    function tokenizeBQ(bqt, stp) {
+        let state = stp.state;
+        let str = state.src.str;
+        let pos = state.pos;
+        let opos = pos;
+        const subs = [];
+        bqt.subs = subs;
+        bqt.type = BQ;
+        const pushBQX = () => {
+            if (pos - opos > 0) {
+                subs.push({ type: exports.BQX, text: str.substring(opos, pos), pos: opos, len: pos - opos });
+            }
+        };
+        while (pos < str.length) {
+            if (str[pos] === "`") {
+                pushBQX();
+                pos++;
+                let ns = state.clone();
+                ns.pos = pos;
+                stp.state = ns;
+                bqt.len = pos - bqt.pos;
+                bqt.text = str.substring(bqt.pos, bqt.pos + bqt.len);
+                break;
+            }
+            else if (str[pos] === "\\") {
+                pos += 2;
+            }
+            else if (str.substring(pos, pos + 2) === "${") {
+                pushBQX();
+                pos += 2;
+                let ns = state.clone();
+                ns.pos = pos;
+                stp.state = ns;
+                subs.push(tokenizeBQInner(stp));
+                pos = opos = stp.state.pos;
+            }
+            else {
+                pos++;
+            }
+        }
+    }
+    function flattenBQ(tokens) {
+        const res = [];
+        const isAry = (a) => a && typeof a.map === "function";
+        for (let token of tokens) {
+            if (token.type === BQ) {
+                res.push({ type: exports.BQH, text: "`", pos: token.pos });
+                for (let sub of token.subs) {
+                    if (isAry(sub)) {
+                        for (let e of flattenBQ(sub)) {
+                            res.push(e);
+                        }
+                    }
+                    else {
+                        res.push(sub);
+                    }
+                }
+                res.push({ type: exports.BQT, text: "`", pos: token.pos + token.len - 1 });
+            }
+            else {
+                res.push(token);
+            }
+        }
+        return res;
+    }
+    const all = sp.create((st) => {
+        /*var mode=REG;
+        var res=[];
+        while (true) {
+            st=parsers[mode].parse(st);
+            if (!st.success) break;
+            var e=st.result[0];
+            mode=posts[e.type];
+            //console.log("Token",e, mode);
+            res.push(e);
+        }*/
+        let res = [];
+        const stp = new Step(st);
+        while (true) {
+            let e = stp.next();
+            if (!e)
+                break;
+            if (e.type === exports.BQH) {
+                tokenizeBQ(e, stp);
+            }
+            res.push(e);
+        }
+        st = stp.state;
         st = space.parse(st);
-        //console.log(st.src.maxPos+"=="+st.src.str.length)
         const src = st.src;
         st = st.clone();
         if (st.pos === src.str.length) {
@@ -143,7 +256,8 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
             st.error = st.src.maxErrors.errors.join(" or ");
         }
         //st.success=st.src.maxPos==src.str.length;
-        st.result[0] = res;
+        st.result[0] = flattenBQ(res);
+        //console.dir(st.result[0],{depth:null});
         return st;
     }).setName("tokens:all");
     // Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
@@ -190,6 +304,7 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
     dtk(REG | DIV, "number", num, DIV);
     dtk(REG, "regex", regex, DIV);
     dtk(REG | DIV, "literal", literal, DIV);
+    dtk(REG | DIV, exports.BQH, "`", DIV);
     dtk(REG | DIV, SAMENAME, "++", DIV);
     dtk(REG | DIV, SAMENAME, "--", DIV);
     dtk(REG | DIV, SAMENAME, "!==", REG);

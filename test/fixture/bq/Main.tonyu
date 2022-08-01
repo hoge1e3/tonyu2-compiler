@@ -1,0 +1,6 @@
+native console;
+let x=2+10;
+let s=`test 
+ ${x}
+desuka? `;
+console.log(s);

@@ -6,5 +6,6 @@ call .\node_modules\.bin\browserify src\browser\BuilderClient4Sys.js -s TonyuBui
 rem call browserify src\browser\BuilderClientTest.js --no-detect-globals -o test\fixture\BuilderClientTest.js
 rem call browserify src\browser\Debugger.js --no-detect-globals -o test\fixture\Debugger.js
 call .\node_modules\.bin\browserify src\runtime\TonyuRuntime.js --no-detect-globals -o test\fixture\TonyuRuntime.js
+call .\node_modules\.bin\browserify src\browser\tonyu2_token.js -s tonyu2_token --no-detect-globals -o test\fixture\tonyu2_token.js
 pause
 goto start

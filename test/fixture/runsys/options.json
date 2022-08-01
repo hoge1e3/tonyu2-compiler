@@ -1,0 +1,7 @@
+{
+    "compiler":{
+        "dependingProjects": [{"dir":"../Kernel/"}],
+        "outputFile": "js/concat.js","namespace":"user"
+    },
+    "run":{"mainClass":"user.Main","bootClass":"kernel.Boot"}
+}

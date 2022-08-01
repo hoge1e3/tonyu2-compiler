@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\bin\\Dropbox\\workspace\\tonyu2-compiler\\test\\fixture\\runsys\\Main.tonyu"],"names":[],"mappings":";;;;;;;;;;;SAAC,OAAC,CAAC,OAAC,CAAC;SACJ,OAAM,OAAC,CAAC;;WACJ,OAAC;WACD,YAAM;;;;;;;;;SAHV,OAAC,CAAC,OAAC,CAAC;SACJ,OAAM,OAAC,CAAC;;WACJ,OAAC;WACD,YAAM","sourcesContent":["x=y=100;\r\nwhile(x<200) {\r\n    x++;\r\n    update();\r\n}"]}

@@ -4,13 +4,13 @@ native Tonyu;
 
 \waitFor(f) {
     if (_thread) {
-        var r=_thread.waitFor(f);
-        return r;
+        return __await f;
     }
     return f;
 }
 \update(t) {
     waitFor(new Promise(\(s) {
+        Tonyu.resetLoopCheck();
         setTimeout(s,t||50);
     }));
 }

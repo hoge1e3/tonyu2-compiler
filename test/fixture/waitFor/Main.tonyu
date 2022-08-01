@@ -1,0 +1,15 @@
+native setTimeout;
+native console;
+native Promise;
+
+try {
+    //a.b.c;
+    r=__await new Promise \(s,e) {
+        setTimeout(\{
+            e(100);   
+        },500);
+    };
+    console.log(r);
+} catch (e){
+    console.error("ERA-",e);
+}

@@ -1,7 +1,15 @@
 native console;
 
+\foo(s:Number):String {
+    return s+"";
+}
+\y:Number {
+    return 3;
+}
 console.log("Parent");
-p=new Parent;
+let p=new Parent;
+console.log(__typeof p.x);
+console.log(__typeof y);
 p.test=5;
 //p.x=10;
 console.log(p.x);
