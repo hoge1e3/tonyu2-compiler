@@ -5,6 +5,7 @@ var expandThresh;
 var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
 var iteration;
 var player;
+let timeout, timeouted;
 //var rootNode={};
 /*Node={
     parent?: Node,
@@ -94,6 +95,7 @@ let expcount:Number;
     player=s.player;
     nanc(expandThresh);
     expand(ctx,rootNode);
+    timeouted=0;
     for (var i=0;i<iteration;i++) {
         while(true) {
             var leaf=selection(ctx, rootNode);
@@ -105,7 +107,7 @@ let expcount:Number;
         var endState=rollout(ctx, leaf);
         var v=value(ctx, s.player, endState);
         backup(leaf, v);
-        if (expcount>=300) break;
+        //if (expcount>=300) break;
     }
     //print ("RN",rootNode);
     var ma=-1,mqc=0;
@@ -120,48 +122,9 @@ let expcount:Number;
     var acts=s.actionsEvents(ctx);
     //print (acts.length , rootNode.subnodes.length, ma);
     if (!acts[ma]) throw new Error("Action not found "+ma);
-    print("EXP",expcount);
+    print("EXP",expcount, "T/O", timeouted);
     return acts[ma];
 }
-/*\play(ctx:Context, s:State):Action {
-    var rootNode={
-        parent: null, 
-        state: s,
-        q:new Rational(0,0), 
-        n:expandThresh+1, 
-        subnodes: null,
-    };
-    player=s.player;
-    nanc(expandThresh);
-    expand(ctx,rootNode);
-    for (var i=0;i<iteration;i++) {
-        while(true) {
-            var leaf=selection(ctx, rootNode);
-            if (n(leaf)<expandThresh) break;
-            if (leaf.subnodes && leaf.subnodes.length==0) break;
-            expand(ctx, leaf);
-        }
-        // print("leaf", leaf);
-        var endState=rollout(ctx, leaf);
-        var v=value(ctx, s.player, endState);
-        backup(leaf, v);
-    }
-    //print ("RN",rootNode);
-    var ma=-1,mqc=0;
-    for (var a=0;a<rootNode.subnodes.length;a++) {
-        var qc=q(rootNode,a);
-        //print("QC", a,qc);
-        if (ma<0 || qc>=mqc) {
-            mqc=qc;
-            ma=a;
-        }
-    }
-    var acts=s.actionsEvents(ctx);
-    //print (acts.length , rootNode.subnodes.length, ma);
-    if (!acts[ma]) throw new Error("Action not found "+ma);
-    return acts[ma];
-}
-*/
 \backup(node, value:Number) {
     while(node) {
         node.q=node.q.inc(value);
@@ -175,7 +138,7 @@ let expcount:Number;
     while (!state.gameover(ctx)) {
         var a=playRandom(ctx, state);
         state=state.next(ctx, a);
-        if (new Date().getTime()-t>1) break;
+        if (new Date().getTime()-t>timeout) {timeouted++;break;}
     }
     return state;
 }

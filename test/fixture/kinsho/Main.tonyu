@@ -28,8 +28,8 @@ for (let i=0;i<1000;i++) {
 }
 \match() {
     print("iters:" ,it1, it2);
-    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it1, timeout:2};
-    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it2, timeout:2};
+    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it1, timeout:10};
+    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it2, timeout:10};
     let context=new Context{players:[1,2], bots};
     let mat=new Matrix;
 /*let r=5;
