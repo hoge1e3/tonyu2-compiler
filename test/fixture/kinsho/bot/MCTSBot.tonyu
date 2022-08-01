@@ -3,9 +3,9 @@ extends Bot;
 var Cp;
 var expandThresh;
 var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
-var iteration;
+//var iteration;
 var player;
-let timeout, timeouted;
+let totalTime, timeout, timeouted, iterated;
 //var rootNode={};
 /*Node={
     parent?: Node,
@@ -96,7 +96,10 @@ let expcount:Number;
     nanc(expandThresh);
     expand(ctx,rootNode);
     timeouted=0;
-    for (var i=0;i<iteration;i++) {
+    iterated=0;
+    let endTime=$Boot.now()+totalTime;
+    while ($Boot.now()<endTime) {
+        iterated++;
         while(true) {
             var leaf=selection(ctx, rootNode);
             if (n(leaf)<expandThresh) break;
@@ -122,7 +125,7 @@ let expcount:Number;
     var acts=s.actionsEvents(ctx);
     //print (acts.length , rootNode.subnodes.length, ma);
     if (!acts[ma]) throw new Error("Action not found "+ma);
-    print("EXP",expcount, "T/O", timeouted);
+    print("ITER", iterated, "EXP",expcount, "T/O", timeouted);
     return acts[ma];
 }
 \backup(node, value:Number) {
@@ -134,11 +137,11 @@ let expcount:Number;
 
 \rollout(ctx, node) {
     var state=getState(ctx, node);
-    var t=new Date().getTime();
+    var t=$Boot.now();
     while (!state.gameover(ctx)) {
         var a=playRandom(ctx, state);
         state=state.next(ctx, a);
-        if (new Date().getTime()-t>timeout) {timeouted++;break;}
+        if ($Boot.now()-t>timeout && state.player===player) {timeouted++;break;}
     }
     return state;
 }

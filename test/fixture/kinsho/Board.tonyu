@@ -27,8 +27,9 @@ let player:Number;
             let dy=(p==1||p==3)?-1:1;
             for (let dx=-1;dx<=1;dx++) {
                 let g=mat.get(x+dx,y+dy);
+                if (g>=3) g-=2;
                 //print(p, x+dx,y+dy, g, g!=null, g!=p , g!=p+2);
-                if (g!=null && g!=p && g!=p+2) {
+                if (g!=null && g!=p) {
                     //print("Push!");
                     res.push{x,y,dx,dy};
                 }

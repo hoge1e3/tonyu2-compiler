@@ -964,13 +964,11 @@ Tonyu.klass.define({
         
         
         
-        
       },
       fiber$main :function* _trc_MCTSBot_f_main(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
-        
         
         
         
@@ -992,7 +990,7 @@ Tonyu.klass.define({
           throw new Error(node.state+" already expanded");
           
         }
-        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_656(a) {
+        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_679(a) {
           
           return {parent: node,state: node.state.next(ctx,a),q: new Tonyu.classes.user.Rational(0,0),n: 0,a: _this.str(a),subnodes: null};
         }));
@@ -1012,7 +1010,7 @@ Tonyu.klass.define({
           throw new Error(node.state+" already expanded");
           
         }
-        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_656(a) {
+        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_679(a) {
           
           return {parent: node,state: node.state.next(ctx,a),q: new Tonyu.classes.user.Rational(0,0),n: 0,a: _this.str(a),subnodes: null};
         }));
@@ -1247,7 +1245,6 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         var rootNode;
-        var i;
         var leaf;
         var endState;
         var v;
@@ -1264,29 +1261,31 @@ Tonyu.klass.define({
         _this.nanc(_this.expandThresh);
         _this.expand(ctx,rootNode);
         _this.timeouted=0;
-        for (i = 0;
-         i<_this.iteration ; i++) {
-          {
-            while (true) {
-              leaf = _this.selection(ctx,rootNode);
-              
-              if (_this.n(leaf)<_this.expandThresh) {
-                break;
-                
-              }
-              if (leaf.subnodes&&leaf.subnodes.length==0) {
-                break;
-                
-              }
-              _this.expand(ctx,leaf);
+        _this.iterated=0;
+        let endTime = Tonyu.globals.$Boot.now()+_this.totalTime;
+        
+        while (Tonyu.globals.$Boot.now()<endTime) {
+          _this.iterated++;
+          while (true) {
+            leaf = _this.selection(ctx,rootNode);
+            
+            if (_this.n(leaf)<_this.expandThresh) {
+              break;
               
             }
-            endState = _this.rollout(ctx,leaf);
+            if (leaf.subnodes&&leaf.subnodes.length==0) {
+              break;
+              
+            }
+            _this.expand(ctx,leaf);
             
-            v = _this.value(ctx,s.player,endState);
-            
-            _this.backup(leaf,v);
           }
+          endState = _this.rollout(ctx,leaf);
+          
+          v = _this.value(ctx,s.player,endState);
+          
+          _this.backup(leaf,v);
+          
         }
         ma = - 1;
         mqc = 0;
@@ -1309,7 +1308,7 @@ Tonyu.klass.define({
           throw new Error("Action not found "+ma);
           
         }
-        _this.print("EXP",_this.expcount,"T/O",_this.timeouted);
+        _this.print("ITER",_this.iterated,"EXP",_this.expcount,"T/O",_this.timeouted);
         return acts[ma];
       },
       fiber$play :function* _trc_MCTSBot_f_play(_thread,ctx,s) {
@@ -1317,7 +1316,6 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var rootNode;
-        var i;
         var leaf;
         var endState;
         var v;
@@ -1334,29 +1332,31 @@ Tonyu.klass.define({
         (yield* _this.fiber$nanc(_thread, _this.expandThresh));
         (yield* _this.fiber$expand(_thread, ctx, rootNode));
         _this.timeouted=0;
-        for (i = 0;
-         i<_this.iteration ; i++) {
-          {
-            while (true) {
-              leaf=yield* _this.fiber$selection(_thread, ctx, rootNode);
-              
-              if (_this.n(leaf)<_this.expandThresh) {
-                break;
-                
-              }
-              if (leaf.subnodes&&leaf.subnodes.length==0) {
-                break;
-                
-              }
-              (yield* _this.fiber$expand(_thread, ctx, leaf));
+        _this.iterated=0;
+        let endTime = Tonyu.globals.$Boot.now()+_this.totalTime;
+        
+        while (Tonyu.globals.$Boot.now()<endTime) {
+          _this.iterated++;
+          while (true) {
+            leaf=yield* _this.fiber$selection(_thread, ctx, rootNode);
+            
+            if (_this.n(leaf)<_this.expandThresh) {
+              break;
               
             }
-            endState=yield* _this.fiber$rollout(_thread, ctx, leaf);
+            if (leaf.subnodes&&leaf.subnodes.length==0) {
+              break;
+              
+            }
+            (yield* _this.fiber$expand(_thread, ctx, leaf));
             
-            v = _this.value(ctx,s.player,endState);
-            
-            (yield* _this.fiber$backup(_thread, leaf, v));
           }
+          endState=yield* _this.fiber$rollout(_thread, ctx, leaf);
+          
+          v = _this.value(ctx,s.player,endState);
+          
+          (yield* _this.fiber$backup(_thread, leaf, v));
+          
         }
         ma = - 1;
         mqc = 0;
@@ -1379,7 +1379,7 @@ Tonyu.klass.define({
           throw new Error("Action not found "+ma);
           
         }
-        _this.print("EXP",_this.expcount,"T/O",_this.timeouted);
+        _this.print("ITER",_this.iterated,"EXP",_this.expcount,"T/O",_this.timeouted);
         return acts[ma];
         
       },
@@ -1414,13 +1414,13 @@ Tonyu.klass.define({
         
         state = _this.getState(ctx,node);
         
-        t = new Date().getTime();
+        t = Tonyu.globals.$Boot.now();
         
         while (! state.gameover(ctx)) {
           a = _this.playRandom(ctx,state);
           
           state=state.next(ctx,a);
-          if (new Date().getTime()-t>_this.timeout) {
+          if (Tonyu.globals.$Boot.now()-t>_this.timeout&&state.player===_this.player) {
             _this.timeouted++;
             break;
             
@@ -1440,13 +1440,13 @@ Tonyu.klass.define({
         
         state=yield* _this.fiber$getState(_thread, ctx, node);
         
-        t = new Date().getTime();
+        t = Tonyu.globals.$Boot.now();
         
         while (! state.gameover(ctx)) {
           a=yield* _this.fiber$playRandom(_thread, ctx, state);
           
           state=state.next(ctx,a);
-          if (new Date().getTime()-t>_this.timeout) {
+          if (Tonyu.globals.$Boot.now()-t>_this.timeout&&state.player===_this.player) {
             _this.timeouted++;
             break;
             
@@ -1580,7 +1580,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context",null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","user.State"],"returnValue":"user.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","user.State"],"returnValue":"user.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"timeouted":{},"expcount":{"vtype":"Number"}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context",null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","user.State"],"returnValue":"user.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","user.State"],"returnValue":"user.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"player":{},"totalTime":{},"timeout":{},"timeouted":{},"iterated":{},"expcount":{"vtype":"Number"}}}
 });
 Tonyu.klass.define({
   fullName: 'user.NStepBot',
@@ -2607,13 +2607,14 @@ Tonyu.klass.define({
         
         _this.logf = _this.file("log.txt");
         
-        _this.it1 = _this.rnd(100,6000);
-        _this.it2 = _this.rnd(100,6000);
+        _this.to1 = _this.rnd()*10+0.1;
+        _this.to2 = _this.rnd()*10+0.1;
+        
         
         for (let i = 0;
          i<1000 ; i++) {
           {
-            _this.match(_this.it1,_this.it2);
+            _this.match();
           }
         }
       },
@@ -2626,13 +2627,14 @@ Tonyu.klass.define({
         
         _this.logf=yield* _this.fiber$file(_thread, "log.txt");
         
-        _this.it1 = _this.rnd(100,6000);
-        _this.it2 = _this.rnd(100,6000);
+        _this.to1 = _this.rnd()*10+0.1;
+        _this.to2 = _this.rnd()*10+0.1;
+        
         
         for (let i = 0;
          i<1000 ; i++) {
           {
-            (yield* _this.fiber$match(_thread, _this.it1, _this.it2));
+            (yield* _this.fiber$match(_thread));
           }
         }
         
@@ -2641,7 +2643,9 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
-        if (state.gameover(ctx)) {
+        let acts = state.actionsEvents(ctx);
+        
+        if (acts.length===0) {
           if (player===state.player) {
             return 0;
           } else {
@@ -2649,14 +2653,22 @@ Tonyu.klass.define({
           }
           
         }
-        return 0.5;
+        if (player===state.player) {
+          return 0.5+acts.length/_this.komas/3;
+          
+        } else {
+          return 0.5-acts.length/_this.komas/3;
+          
+        }
       },
       fiber$value :function* _trc_Main_f_value(_thread,ctx,player,state) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        if (state.gameover(ctx)) {
+        let acts = state.actionsEvents(ctx);
+        
+        if (acts.length===0) {
           if (player===state.player) {
             return 0;
           } else {
@@ -2664,16 +2676,22 @@ Tonyu.klass.define({
           }
           
         }
-        return 0.5;
+        if (player===state.player) {
+          return 0.5+acts.length/_this.komas/3;
+          
+        } else {
+          return 0.5-acts.length/_this.komas/3;
+          
+        }
         
       },
       match :function _trc_Main_match() {
         "use strict";
         var _this=this;
         
-        _this.print("iters:",_this.it1,_this.it2);
-        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),iteration: _this.it1,timeout: 10});
-        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),iteration: _this.it2,timeout: 10});
+        _this.print("timeouts:",_this.to1,_this.to2);
+        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to1});
+        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to2});
         let context = new Tonyu.classes.user.Context({players: [1,2],bots: _this.bots});
         
         let mat = new Tonyu.classes.kernel.Matrix;
@@ -2683,13 +2701,18 @@ Tonyu.klass.define({
         s=["2 2 4 2 2","2 2 2 2 2","0 0 0 0 0","1 1 1 1 1","1 1 3 1 1"];
         let player = 1;
         
+        _this.komas=0;
         for (let [r, row] of Tonyu.iterator2(s,2)) {
           for (let [c, col] of Tonyu.iterator2(row.split(" "),2)) {
+            if (col!="0") {
+              _this.komas++;
+            }
             mat.set(c,r,col-0);
             
           }
           
         }
+        _this.print("komas",_this.komas);
         let state = new Tonyu.classes.user.Board({mat: mat,player: player});
         
         let g = new Tonyu.classes.user.GameMaster({context: context,state: state});
@@ -2700,32 +2723,24 @@ Tonyu.klass.define({
           
           _this.print(a.x,a.y,a.dx,a.dy);
           _this.print(g.state+"");
+          _this.print(_this.value(context,g.state.player,g.state));
           _this.updateEx(1);
           
         }
-        _this.print(_this.it1,_this.it2);
+        _this.print(_this.to1,_this.to2);
         _this.print("loser is ",g.state.player);
-        _this.logf.appendText(_this.it1+","+_this.it2+","+g.state.player+"\n");
-        if (g.state.player==1) {
-          _this.it1+=_this.rnd(100,200);
-          _this.it2-=_this.rnd(100,200);
-          
-        } else {
-          _this.it1-=_this.rnd(100,200);
-          _this.it2+=_this.rnd(100,200);
-          
-        }
-        _this.it1=_this.rnd(1000,4000);
-        _this.it2=_this.rnd(1000,4000);
+        _this.logf.appendText(_this.to1+","+_this.to2+","+g.state.player+"\n");
+        _this.to1=_this.rnd()*10+0.1;
+        _this.to2=_this.rnd()*10+0.1;
       },
       fiber$match :function* _trc_Main_f_match(_thread) {
         "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        _this.print("iters:",_this.it1,_this.it2);
-        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),iteration: _this.it1,timeout: 10});
-        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),iteration: _this.it2,timeout: 10});
+        _this.print("timeouts:",_this.to1,_this.to2);
+        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to1});
+        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to2});
         let context = new Tonyu.classes.user.Context({players: [1,2],bots: _this.bots});
         
         let mat = new Tonyu.classes.kernel.Matrix;
@@ -2735,13 +2750,18 @@ Tonyu.klass.define({
         s=["2 2 4 2 2","2 2 2 2 2","0 0 0 0 0","1 1 1 1 1","1 1 3 1 1"];
         let player = 1;
         
+        _this.komas=0;
         for (let [r, row] of Tonyu.iterator2(s,2)) {
           for (let [c, col] of Tonyu.iterator2(row.split(" "),2)) {
+            if (col!="0") {
+              _this.komas++;
+            }
             mat.set(c,r,col-0);
             
           }
           
         }
+        _this.print("komas",_this.komas);
         let state = new Tonyu.classes.user.Board({mat: mat,player: player});
         
         let g = new Tonyu.classes.user.GameMaster({context: context,state: state});
@@ -2752,29 +2772,21 @@ Tonyu.klass.define({
           
           _this.print(a.x,a.y,a.dx,a.dy);
           _this.print(g.state+"");
+          _this.print(_this.value(context,g.state.player,g.state));
           (yield* _this.fiber$updateEx(_thread, 1));
           
         }
-        _this.print(_this.it1,_this.it2);
+        _this.print(_this.to1,_this.to2);
         _this.print("loser is ",g.state.player);
-        _this.logf.appendText(_this.it1+","+_this.it2+","+g.state.player+"\n");
-        if (g.state.player==1) {
-          _this.it1+=_this.rnd(100,200);
-          _this.it2-=_this.rnd(100,200);
-          
-        } else {
-          _this.it1-=_this.rnd(100,200);
-          _this.it2+=_this.rnd(100,200);
-          
-        }
-        _this.it1=_this.rnd(1000,4000);
-        _this.it2=_this.rnd(1000,4000);
+        _this.logf.appendText(_this.to1+","+_this.to2+","+g.state.player+"\n");
+        _this.to1=_this.rnd()*10+0.1;
+        _this.to2=_this.rnd()*10+0.1;
         
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","Number","user.Board"],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"bots":{},"logf":{},"it1":{},"it2":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","Number","user.Board"],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"bots":{},"logf":{},"to1":{},"to2":{},"komas":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Board',
@@ -2847,7 +2859,10 @@ Tonyu.klass.define({
               {
                 let g = _this.mat.get(x+dx,y+dy);
                 
-                if (g!=null&&g!=p&&g!=p+2) {
+                if (g>=3) {
+                  g-=2;
+                }
+                if (g!=null&&g!=p) {
                   res.push({x: x,y: y,dx: dx,dy: dy});
                   
                 }
@@ -2883,7 +2898,10 @@ Tonyu.klass.define({
               {
                 let g = _this.mat.get(x+dx,y+dy);
                 
-                if (g!=null&&g!=p&&g!=p+2) {
+                if (g>=3) {
+                  g-=2;
+                }
+                if (g!=null&&g!=p) {
                   res.push({x: x,y: y,dx: dx,dy: dy});
                   
                 }

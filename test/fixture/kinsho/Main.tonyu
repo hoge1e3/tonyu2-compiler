@@ -7,29 +7,38 @@ var value; // (ctx, player, state)=>number (playerにとってのstateの評価�
 var iteration;
 var player;*/
 \value(ctx:Context, player: Number, state:Board) {
-    if (state.gameover(ctx)) {
+    let acts=state.actionsEvents(ctx);
+    if (acts.length===0) {
         if (player===state.player) return 0;
         else return 1;
     }
-    return 0.5;
+    if (player===state.player) {
+        return 0.5+acts.length/komas/3;
+    } else {
+        return 0.5-acts.length/komas/3;
+    }
     /*let foe=3-player;
     let sc=0.5;
     for (let x,y,p of state.mat) {
-        if (p==player+2) sc+=0.5;
-        if (p==foe+2) sc-=0.5;
+        if (p==player+2 || p==player) sc+=1/komas;
+        if (p==foe+2 || p==foe ) sc-=1/komas;
     }
+    if (sc!==sc) throw new Error("sc nan!");
     return sc;*/
 }
 let logf=file("log.txt");
 //let its=[30,300,3000];
-let it1=rnd(100,6000),it2=rnd(100,6000);
+//let it1=rnd(100,6000),it2=rnd(100,6000);
+let to1=rnd()*10+0.1, to2=rnd()*10+0.1;
+let komas;
 for (let i=0;i<1000;i++) {
-    match(it1,it2);   
+    match();   
 }
 \match() {
-    print("iters:" ,it1, it2);
-    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it1, timeout:10};
-    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, iteration:it2, timeout:10};
+    //print("iters:" ,it1, it2);
+    print("timeouts:", to1, to2);
+    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: 3000, timeout:to1};
+    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: 3000, timeout:to2};
     let context=new Context{players:[1,2], bots};
     let mat=new Matrix;
 /*let r=5;
@@ -69,11 +78,14 @@ s=[
 "0 0 3 0 1"];
 player=1;
 */
+    komas=0;
     for (let r,row of s) {
         for (let c,col of row.split(" ")) {
+            if (col!="0") komas++;
             mat.set(c,r,col-0);
         }
     }
+    print("komas", komas);
     let state=new Board{mat,player};
     let g=new GameMaster{context, state};
     print(g.state+"");
@@ -81,10 +93,14 @@ player=1;
         let a=g.step();
         print(a.x, a.y, a.dx, a.dy);
         print(g.state+"");
+        print(value(context, g.state.player, g.state ));
         updateEx(1);
     }
-    print(it1, it2);
+    //print(it1, it2);
+    print(to1, to2);
     print("loser is ",g.state.player);
+    logf.appendText(to1+","+to2+","+g.state.player+"\n");
+    /*
     logf.appendText(it1+","+it2+","+g.state.player+"\n");
     if (g.state.player==1) {
         it1+=rnd(100,200);
@@ -93,5 +109,6 @@ player=1;
         it1-=rnd(100,200);
         it2+=rnd(100,200);
     }
-    it1=rnd(1000,4000);it2=rnd(1000,4000);
+    it1=rnd(1000,4000);it2=rnd(1000,4000);*/
+    to1=rnd()*10+0.1; to2=rnd()*10+0.1;
 }
