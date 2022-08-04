@@ -1,6 +1,6 @@
 "use strict";
 const tokenizerFactory_1 = require("./tokenizerFactory");
-module.exports = (0, tokenizerFactory_1.tokenizerFactory)({
+module.exports = tokenizerFactory_1.tokenizerFactory({
     caseInsensitive: true,
     reserved: {
         'while': true,

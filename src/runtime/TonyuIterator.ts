@@ -86,11 +86,20 @@
 			return true;
 		}
 	}
+	function isArray(obj) {
+		return obj && 
+		 typeof (obj.slice)==="function" &&
+		 typeof (obj.forEach)==="function" &&
+		 typeof (obj.length)==="number";
+	}
+	function isObj(obj) {
+		return obj && typeof obj==="object";
+	}
 	export function IT(set:any, arity:number):ITonyuIterator {
 		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);
-		} else if (set instanceof Array) {
+		} else if (isArray(set)) {
 			if (arity==1) {
 				return new ArrayValueIterator(set);
 			} else {
@@ -98,7 +107,7 @@
 			}
 		} else if (set && typeof set[SYMIT]==="function") {
 			return new NativeIteratorWrapper(set[SYMIT]());
-		} else if (set instanceof Object){
+		} else if (isObj(set)){
 			if (arity==1) {
 				return new ObjectKeyIterator(set);
 			} else {
