@@ -14377,12 +14377,21 @@ class NativeIteratorWrapper {
         return true;
     }
 }
+function isArray(obj) {
+    return obj &&
+        typeof (obj.slice) === "function" &&
+        typeof (obj.forEach) === "function" &&
+        typeof (obj.length) === "number";
+}
+function isObj(obj) {
+    return obj && typeof obj === "object";
+}
 function IT(set, arity) {
     if (set && typeof set.tonyuIterator === "function") {
         // TODO: the prototype of class having tonyuIterator will iterate infinitively
         return set.tonyuIterator(arity);
     }
-    else if (set instanceof Array) {
+    else if (isArray(set)) {
         if (arity == 1) {
             return new ArrayValueIterator(set);
         }
@@ -14393,7 +14402,7 @@ function IT(set, arity) {
     else if (set && typeof set[SYMIT] === "function") {
         return new NativeIteratorWrapper(set[SYMIT]());
     }
-    else if (set instanceof Object) {
+    else if (isObj(set)) {
         if (arity == 1) {
             return new ObjectKeyIterator(set);
         }
@@ -14436,6 +14445,7 @@ const TonyuThread_1 = require("./TonyuThread");
 const root_1 = __importDefault(require("../lib/root"));
 const assert_1 = __importDefault(require("../lib/assert"));
 const RuntimeTypes_1 = require("./RuntimeTypes");
+const TError_1 = __importDefault(require("./TError"));
 // old browser support
 if (!root_1.default.performance) {
     root_1.default.performance = {};
@@ -14874,7 +14884,7 @@ const Tonyu = {
             root_1.default.alert("Error: " + e);
         console.log(e.stack);
         throw e;
-    },
+    }, TError: TError_1.default,
     VERSION: 1560828115159,
     A, ID: Math.random()
 };
@@ -14886,7 +14896,7 @@ if (root_1.default.Tonyu) {
 root_1.default.Tonyu = Tonyu;
 module.exports = Tonyu;
 
-},{"../lib/R":28,"../lib/assert":31,"../lib/root":32,"./RuntimeTypes":36,"./TonyuIterator":38,"./TonyuThread":40}],40:[function(require,module,exports){
+},{"../lib/R":28,"../lib/assert":31,"../lib/root":32,"./RuntimeTypes":36,"./TError":37,"./TonyuIterator":38,"./TonyuThread":40}],40:[function(require,module,exports){
 "use strict";
 //	var Klass=require("../lib/Klass");
 var __importDefault = (this && this.__importDefault) || function (mod) {

@@ -337,6 +337,73 @@ exports.isTonyuClass = isTonyuClass;
 
 },{}],5:[function(require,module,exports){
 "use strict";
+function TError(message, src, pos, len = 0) {
+    let rc;
+    const extend = (dst, src) => { for (var k in src)
+        dst[k] = src[k]; return dst; };
+    if (typeof src == "string") {
+        rc = TError.calcRowCol(src, pos);
+        message += " at " + (rc.row) + ":" + (rc.col);
+        return extend(new Error(message), {
+            isTError: true,
+            src: {
+                path: function () { return "/"; },
+                name: function () { return "unknown"; },
+                text: function () { return src; }
+            },
+            pos, row: rc.row, col: rc.col, len,
+            raise: function () {
+                throw this;
+            }
+        });
+    }
+    let klass = null;
+    if (src && src.src) {
+        klass = src;
+        src = klass.src.tonyu;
+    }
+    if (typeof src.name !== "function" || typeof src.text !== "function") {
+        throw new Error("src=" + src + " should be file object");
+    }
+    const s = src.text();
+    rc = TError.calcRowCol(s, pos);
+    message += " at " + src.name() + ":" + rc.row + ":" + rc.col;
+    return extend(new Error(message), {
+        isTError: true,
+        src, pos, row: rc.row, col: rc.col, len, klass,
+        raise: function () {
+            throw this;
+        }
+    });
+}
+;
+TError.calcRowCol = function (text, pos) {
+    const lines = text.split("\n");
+    let pp = 0, row, col;
+    /*
+aaa\n
+bb\n
+cc!cc
+pp = 4  7   11
+row=2  pp=11  pos=9
+lines[row].length=4
+    */
+    col = 0;
+    for (row = 0; row < lines.length; row++) {
+        const ppp = pp;
+        pp += lines[row].length + 1;
+        if (pp > pos) {
+            col = pos - ppp;
+            break;
+        }
+    }
+    return { row: row + 1, col: col + 1 };
+};
+module.exports = TError;
+//module.exports=TError;
+
+},{}],6:[function(require,module,exports){
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IT2 = exports.IT = void 0;
 //define(["Klass"], function (Klass) {
@@ -415,12 +482,21 @@ class NativeIteratorWrapper {
         return true;
     }
 }
+function isArray(obj) {
+    return obj &&
+        typeof (obj.slice) === "function" &&
+        typeof (obj.forEach) === "function" &&
+        typeof (obj.length) === "number";
+}
+function isObj(obj) {
+    return obj && typeof obj === "object";
+}
 function IT(set, arity) {
     if (set && typeof set.tonyuIterator === "function") {
         // TODO: the prototype of class having tonyuIterator will iterate infinitively
         return set.tonyuIterator(arity);
     }
-    else if (set instanceof Array) {
+    else if (isArray(set)) {
         if (arity == 1) {
             return new ArrayValueIterator(set);
         }
@@ -431,7 +507,7 @@ function IT(set, arity) {
     else if (set && typeof set[SYMIT] === "function") {
         return new NativeIteratorWrapper(set[SYMIT]());
     }
-    else if (set instanceof Object) {
+    else if (isObj(set)) {
         if (arity == 1) {
             return new ObjectKeyIterator(set);
         }
@@ -463,7 +539,7 @@ exports.IT2 = IT2;
 //	return IT;
 //});
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -474,6 +550,7 @@ const TonyuThread_1 = require("./TonyuThread");
 const root_1 = __importDefault(require("../lib/root"));
 const assert_1 = __importDefault(require("../lib/assert"));
 const RuntimeTypes_1 = require("./RuntimeTypes");
+const TError_1 = __importDefault(require("./TError"));
 // old browser support
 if (!root_1.default.performance) {
     root_1.default.performance = {};
@@ -912,7 +989,7 @@ const Tonyu = {
             root_1.default.alert("Error: " + e);
         console.log(e.stack);
         throw e;
-    },
+    }, TError: TError_1.default,
     VERSION: 1560828115159,
     A, ID: Math.random()
 };
@@ -924,7 +1001,7 @@ if (root_1.default.Tonyu) {
 root_1.default.Tonyu = Tonyu;
 module.exports = Tonyu;
 
-},{"../lib/R":1,"../lib/assert":2,"../lib/root":3,"./RuntimeTypes":4,"./TonyuIterator":5,"./TonyuThread":7}],7:[function(require,module,exports){
+},{"../lib/R":1,"../lib/assert":2,"../lib/root":3,"./RuntimeTypes":4,"./TError":5,"./TonyuIterator":6,"./TonyuThread":8}],8:[function(require,module,exports){
 "use strict";
 //	var Klass=require("../lib/Klass");
 var __importDefault = (this && this.__importDefault) || function (mod) {
@@ -1268,4 +1345,4 @@ class TonyuThread {
 }
 exports.TonyuThread = TonyuThread;
 
-},{"../lib/R":1}]},{},[6]);
+},{"../lib/R":1}]},{},[7]);

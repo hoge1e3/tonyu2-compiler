@@ -4,7 +4,7 @@ import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
 import assert from "../lib/assert";
 import { ClassDefinition, ClassDefinitionContext, ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
-
+import TError from "./TError";
 
 // old browser support
 if (!root.performance) {
@@ -425,7 +425,7 @@ const Tonyu={
 			if (root.alert) root.alert("Error: "+e);
 			console.log(e.stack);
 			throw e;
-		},
+		},TError,
 		VERSION:1560828115159,//EMBED_VERSION
 		A, ID:Math.random()
 };
