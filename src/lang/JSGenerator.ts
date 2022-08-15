@@ -139,12 +139,16 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	}
 	
 	var THNode={type:"THNode"};//G
+	function optV(node:TNode|undefined) {
+		if (node) return node;
+		return {type:"dummy"};
+	}
 	const v=buf.visitor=new Visitor({//G
 		THNode: function (node:Token) {
 			buf.printf(TH);
 		},
 		dummy: function (node:TNode) {
-			buf.printf("",node);
+			buf.printf("");
 		},
 		literal: function (node:Token) {
 			buf.printf("%s",node.text);
@@ -489,7 +493,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 								"%v%n" +
 							"%}}"										,
 							/*enterV({noLastPos:true},*/ inFor.init,
-							inFor.cond, inFor.next,
+							optV(inFor.cond), optV(inFor.next),
 							node.loop
 						);
 				} else {
@@ -501,9 +505,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 								"%v;%n" +
 							"%}}",
 							inFor.init ,
-							inFor.cond,
+							optV(inFor.cond),
 								node.loop,
-								inFor.next
+								optV(inFor.next)
 						);
 				}
 		

@@ -150,12 +150,17 @@ function genJS(klass, env, genOptions) {
         }
     }
     var THNode = { type: "THNode" }; //G
+    function optV(node) {
+        if (node)
+            return node;
+        return { type: "dummy" };
+    }
     const v = buf.visitor = new Visitor_1.Visitor({
         THNode: function (node) {
             buf.printf(TH);
         },
         dummy: function (node) {
-            buf.printf("", node);
+            buf.printf("");
         },
         literal: function (node) {
             buf.printf("%s", node.text);
@@ -497,7 +502,7 @@ function genJS(klass, env, genOptions) {
                         checkLoopCode() +
                         "%v%n" +
                         "%}}", 
-                    /*enterV({noLastPos:true},*/ inFor.init, inFor.cond, inFor.next, node.loop);
+                    /*enterV({noLastPos:true},*/ inFor.init, optV(inFor.cond), optV(inFor.next), node.loop);
                 }
                 else {
                     buf.printf("%v%n" +
@@ -505,7 +510,7 @@ function genJS(klass, env, genOptions) {
                         checkLoopCode() +
                         "%v%n" +
                         "%v;%n" +
-                        "%}}", inFor.init, inFor.cond, node.loop, inFor.next);
+                        "%}}", inFor.init, optV(inFor.cond), node.loop, optV(inFor.next));
                 }
             }
             function loopVarsF(isVar, vars) {
