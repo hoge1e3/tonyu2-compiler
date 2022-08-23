@@ -139,6 +139,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 		},
 		backquoteLiteral(node: BackquoteLiteral) {
 			annotation(node,{resolvedType:{class:String, sampleValue:"a"}});
+			this.visit(node.body);
 		},
 		postfix:function (node:Postfix) {
 			//var a=annotation(node);

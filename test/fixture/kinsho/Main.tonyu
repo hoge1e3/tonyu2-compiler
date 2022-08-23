@@ -30,15 +30,17 @@ let logf=file("log.txt");
 //let its=[30,300,3000];
 //let it1=rnd(100,6000),it2=rnd(100,6000);
 let to1=rnd()*10+0.1, to2=rnd()*10+0.1;
+let tt1=rnd(1000,5000), tt2=rnd(1000,5000) ;
 let komas;
 for (let i=0;i<1000;i++) {
     match();   
 }
 \match() {
     //print("iters:" ,it1, it2);
+    print("totaltimes:", tt1, tt2);
     print("timeouts:", to1, to2);
-    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: 3000, timeout:to1};
-    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: 3000, timeout:to2};
+    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: tt1, timeout:to1};
+    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: tt2, timeout:to2};
     let context=new Context{players:[1,2], bots};
     let mat=new Matrix;
 /*let r=5;
@@ -97,9 +99,9 @@ player=1;
         updateEx(1);
     }
     //print(it1, it2);
-    print(to1, to2);
+    print(tt1, to1, tt2, to2);
     print("loser is ",g.state.player);
-    logf.appendText(to1+","+to2+","+g.state.player+"\n");
+    logf.appendText(tt1+","+to1+","+tt2+","+to2+","+g.state.player+"\n");
     /*
     logf.appendText(it1+","+it2+","+g.state.player+"\n");
     if (g.state.player==1) {
@@ -110,5 +112,6 @@ player=1;
         it2+=rnd(100,200);
     }
     it1=rnd(1000,4000);it2=rnd(1000,4000);*/
+    tt1=rnd(1000,5000); tt2=rnd(1000,5000) ;
     to1=rnd()*10+0.1; to2=rnd()*10+0.1;
 }

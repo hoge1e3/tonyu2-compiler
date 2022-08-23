@@ -1,7 +1,7 @@
 import pandas
 import matplotlib.pyplot as  plt
 
-df=pandas.read_table("log.txt",sep=",",header=None)
+df=pandas.read_table("logold.txt",sep=",",header=None)
 
 lose_2=df[df[2]==2]
 lose_1=df[df[2]==1]

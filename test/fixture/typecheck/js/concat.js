@@ -142,9 +142,9 @@ Tonyu.klass.define({
         _this.n = 3;
         
         _this.a.n=10;
-        _this.s = "a";
+        _this.s = ['a= ',_this.a.n,'  '].join('');
         
-        _this.print(_this.s.length);
+        _this.print(_this.s,_this.s.length);
         _this.r = _this.getA().test();
         
         _this.print(_this.r);
@@ -179,9 +179,9 @@ Tonyu.klass.define({
         _this.n = 3;
         
         _this.a.n=10;
-        _this.s = "a";
+        _this.s = ['a= ',_this.a.n,'  '].join('');
         
-        (yield* _this.fiber$print(_thread, _this.s.length));
+        (yield* _this.fiber$print(_thread, _this.s, _this.s.length));
         _this.r=yield* _this.getA().fiber$test(_thread);
         
         (yield* _this.fiber$print(_thread, _this.r));

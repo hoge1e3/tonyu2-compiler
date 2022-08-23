@@ -2610,6 +2610,9 @@ Tonyu.klass.define({
         _this.to1 = _this.rnd()*10+0.1;
         _this.to2 = _this.rnd()*10+0.1;
         
+        _this.tt1 = _this.rnd(1000,5000);
+        _this.tt2 = _this.rnd(1000,5000);
+        
         
         for (let i = 0;
          i<1000 ; i++) {
@@ -2629,6 +2632,9 @@ Tonyu.klass.define({
         
         _this.to1 = _this.rnd()*10+0.1;
         _this.to2 = _this.rnd()*10+0.1;
+        
+        _this.tt1 = _this.rnd(1000,5000);
+        _this.tt2 = _this.rnd(1000,5000);
         
         
         for (let i = 0;
@@ -2689,9 +2695,10 @@ Tonyu.klass.define({
         "use strict";
         var _this=this;
         
+        _this.print("totaltimes:",_this.tt1,_this.tt2);
         _this.print("timeouts:",_this.to1,_this.to2);
-        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to1});
-        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to2});
+        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: _this.tt1,timeout: _this.to1});
+        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: _this.tt2,timeout: _this.to2});
         let context = new Tonyu.classes.user.Context({players: [1,2],bots: _this.bots});
         
         let mat = new Tonyu.classes.kernel.Matrix;
@@ -2727,9 +2734,11 @@ Tonyu.klass.define({
           _this.updateEx(1);
           
         }
-        _this.print(_this.to1,_this.to2);
+        _this.print(_this.tt1,_this.to1,_this.tt2,_this.to2);
         _this.print("loser is ",g.state.player);
-        _this.logf.appendText(_this.to1+","+_this.to2+","+g.state.player+"\n");
+        _this.logf.appendText(_this.tt1+","+_this.to1+","+_this.tt2+","+_this.to2+","+g.state.player+"\n");
+        _this.tt1=_this.rnd(1000,5000);
+        _this.tt2=_this.rnd(1000,5000);
         _this.to1=_this.rnd()*10+0.1;
         _this.to2=_this.rnd()*10+0.1;
       },
@@ -2738,9 +2747,10 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
+        _this.print("totaltimes:",_this.tt1,_this.tt2);
         _this.print("timeouts:",_this.to1,_this.to2);
-        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to1});
-        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: 3000,timeout: _this.to2});
+        _this.bots[1]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: _this.tt1,timeout: _this.to1});
+        _this.bots[2]=new Tonyu.classes.user.MCTSBot({Cp: 1,expandThresh: 3,value: Tonyu.bindFunc(_this,_this.value),totalTime: _this.tt2,timeout: _this.to2});
         let context = new Tonyu.classes.user.Context({players: [1,2],bots: _this.bots});
         
         let mat = new Tonyu.classes.kernel.Matrix;
@@ -2776,9 +2786,11 @@ Tonyu.klass.define({
           (yield* _this.fiber$updateEx(_thread, 1));
           
         }
-        _this.print(_this.to1,_this.to2);
+        _this.print(_this.tt1,_this.to1,_this.tt2,_this.to2);
         _this.print("loser is ",g.state.player);
-        _this.logf.appendText(_this.to1+","+_this.to2+","+g.state.player+"\n");
+        _this.logf.appendText(_this.tt1+","+_this.to1+","+_this.tt2+","+_this.to2+","+g.state.player+"\n");
+        _this.tt1=_this.rnd(1000,5000);
+        _this.tt2=_this.rnd(1000,5000);
         _this.to1=_this.rnd()*10+0.1;
         _this.to2=_this.rnd()*10+0.1;
         
@@ -2786,7 +2798,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","Number","user.Board"],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"bots":{},"logf":{},"to1":{},"to2":{},"komas":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context","Number","user.Board"],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"bots":{},"logf":{},"to1":{},"to2":{},"tt1":{},"tt2":{},"komas":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Board',
