@@ -165,7 +165,9 @@ class BuilderClient {
             root.temp1=objs;
             console.log(objs);
             const sfiles={};
+            const pre=new Preemption();
             for(let k of Object.keys(objs)) {
+                pre.should() && await pre.wait();
                 if (isSFile(objs[k])) {
                     let n=this.convertFromWorkerPath(objs[k].path);
                     objs[k]=FS.get(n);
@@ -173,9 +175,10 @@ class BuilderClient {
                 }
             }
             for(let k of Object.keys(objs)) {
+                pre.should() && await pre.wait();
                 conv(objs[k]);
             }
-            console.log(objs);
+            //console.log(objs);
             function conv(r) {
                 if (FS.isFile(r)) return;
                 if (r&&typeof r==="object") {
@@ -227,6 +230,20 @@ class BuilderClient {
 
                 //if (root.Tonyu.globals.$restart) root.Tonyu.globals.$restart();
             }
+        });
+    }
+}
+class Preemption {
+    constructor(duration) {
+        this.lastChecked=performance.now();
+        this.duration=duration || 10;
+    }
+    should() {
+        return (performance.now()-this.lastChecked)>=this.duration;
+    }
+    wait() {
+        return new Promise(s=>setTimeout(s,0)).then(()=>{
+            this.lastChecked=performance.now();
         });
     }
 }
