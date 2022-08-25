@@ -1,0 +1,15 @@
+native Tonyu;
+$Screen.resize(400,600);
+\ancestors(k) {
+    var p=k.prototype;
+    while (p) {
+        if (p.getClassInfo) {
+            var ci=p.getClassInfo();
+            print(ci.isShim,ci.fullName||ci.extenderFullName);
+        }
+        p=p.__proto__;
+        update();
+    }
+    
+}
+ancestors(A);

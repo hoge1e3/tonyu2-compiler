@@ -1,0 +1,14 @@
+extends SPC;
+includes SHI;
+\hoge() {
+    print("SBC::hoge");
+    var y;
+    y=super.hoge(5);
+    print(y);
+    return y;
+}
+
+print(this instanceof SpriteMod, this is SpriteMod,this is BaseActor);
+print("START");
+r=hoge(10);
+print ("END",r);

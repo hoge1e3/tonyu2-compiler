@@ -1,0 +1,7 @@
+
+\hoge(x) {
+    print("SPC::hoge");
+    
+    updateEx(30);
+    return x*2;
+}

@@ -1,0 +1,12 @@
+
+\hoge(x) {
+    print("SHI::hoge");
+    
+    for (i=0;i<3;i++) {
+        print(x+i);
+        updateEx(10);
+    }
+    var r;
+    r=super.hoge(x+1);
+    return r;
+}

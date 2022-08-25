@@ -724,7 +724,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					(t=OM.match(node,noRetSuperFiberCallTmpl)) &&
 					t.S.name) {
 				const m=getSuperMethod(t.S.name.text);
-				if (!m) throw new Error(R("undefinedSuperMethod",t.S.name.text));
+				if (!m) {
+					throw TError( R("undefinedSuperMethod",t.S.name.text) , srcFile, node.pos);
+					//throw new Error(R("undefinedSuperMethod",t.S.name.text));
+				}
 				if (!m.nowait) {
 					t.type="noRetSuper";
 					t.superclass=klass.superclass;
@@ -738,7 +741,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 					throw new Error(R("Class {1} has no superclass",klass.shortName));
 				}
 				m=getSuperMethod(t.S.name.text);
-				if (!m) throw new Error(R("undefinedSuperMethod",t.S.name.text));
+				if (!m) {
+					throw TError( R("undefinedSuperMethod",t.S.name.text) , srcFile, node.pos);
+					//throw new Error(R("undefinedSuperMethod",t.S.name.text));
+				}
 				if (!m.nowait) {
 					t.type="retSuper";
 					t.superclass=klass.superclass;
