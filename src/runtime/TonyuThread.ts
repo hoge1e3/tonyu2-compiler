@@ -223,7 +223,7 @@ class KilledError extends Error {
 				fb.lastEvent=args;
 				fb.retVal=args[0];
 				h.remove();
-				fb.steps();
+				fb.stepsLoop();
 			});
 		}
 		/*runAsync(f:Function) {
