@@ -14,14 +14,28 @@ var context:Context;
 }
 //var interval=30;
 \step() {
-    if (gameover()) throw new Error("Game is over");
-    var action=getBot(state.player).play(context, state);
-    state=state.next(context, action);
-    if (!state) throw new Error("state is null!");
-    return action;
+     if (gameover()) throw new Error("Game is over");
+    if (state.nextIsEvent(context)) {
+        let events=state.actionsEvents(context);
+        let rate=rnd(),ratesum=0,selevent;
+        for (let event of events) {
+            if (typeof event.prob!=="number") throw new Error("prob is not set");
+            ratesum+=event.prob;
+            if (rate<ratesum) {selevent=event;break;}
+        }
+        if (!selevent) throw new Error("Event is not selected");
+        state=state.next(context,selevent);
+        if (!state) throw new Error("state is null!");
+        return selevent;
+    } else {
+        let action=getBot(state.player).play(context, state);
+        state=state.next(context, action);
+        if (!state) throw new Error("state is null!");
+        return action;
+    }
 }
 \getBot(p:Player) {
-    if (p.bot) return p.bot;
+    //if (p.bot) return p.bot;
     if (context.bots && context.bots[p]) return context.bots[p];
     throw new Error("Bot not found: "+p);
 }
