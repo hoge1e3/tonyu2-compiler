@@ -28,6 +28,10 @@ var prevPlayer;
     }
     return clicked(gameConfig,b);
 }
+
+\nextIsEvent(gameConfig,b){
+    return diceNum==null;
+}
 \clone() {
     return new Board{
         owner: Object.assign({}, owner), 
@@ -287,8 +291,19 @@ function enemyHasStation(turn){
 \actionsEvents(ctx:GameConfig) {
     var res=[];
     if (ctx.limTurn && (ctx.limTurn)-0 === turnCount) return res;
+
+    if(diceNum==null){//ダイスが振られていない場合
+        res=[
+            {num:2,prob:4/12},
+            {num:3,prob:3/12},
+            {num:4,prob:3/12},
+            {num:5,prob:2/12}
+        ];
+        return res;
+    }
+
     for (var stationPlace of $stationPlace) {
-        if(!owner[stationPlace.name]){
+        if(!owner[stationPlace.name] && namelengthComparison(stationPlace.name,diceNum)){
             res.push({stext:stationPlace.name});
         }
     }
@@ -304,4 +319,20 @@ function enemyHasStation(turn){
         }
     }
     return taken;
+}
+
+function namelengthComparison(sn,d){
+    if(d == 5){
+        if(sn == 1 || sn >= 5){
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        if(sn == d){
+            return true;
+        }else{
+            return false;
+        }
+    }
 }
