@@ -1,0 +1,3 @@
+$Screen.setBGColor("Black");
+
+print("GameSet");

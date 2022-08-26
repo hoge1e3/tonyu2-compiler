@@ -1,0 +1,39 @@
+extends TObject;
+includes EventMod;
+native console;
+\print(p) {
+    var cp=$consolePanel;
+    console.log.apply(console,arguments);
+    cp.print.apply(cp, arguments);
+}
+//一度作成したStateオブジェクトの変数の内容を書き換えないようにしてください．
+// nextメソッドでは，新しく作成したStateオブジェクトを返してください．
+
+var player:Player;//この盤面の次にプレイするプレイヤー
+// prevState, prevActionはなし．違う動作で同じStateに至る場合もあるので．
+
+\next(ctx:Context, a:Action):State {
+    //a:Action|Event
+    throw new Error("Abstract: メソッドnextが実装されていません");    
+}
+
+\actionsEvents(ctx:Context) {
+    //: Action[] | Event[] 
+    // Action:プレイヤーがとる行動
+    // Event :ランダムに起きる事象（サイコロなど）
+    // Eventオブジェクトにはフィールドprob(確率を表す0..1の数値)を含め，
+    // Event配列のprobの合計値が1になるようにしてください
+    // ActionとEventを混ぜて返すことはできません．
+    // 常に同じ順序で同じものを返してください
+    throw new Error("Abstract: メソッドactionsEventsが実装されていません");    
+}
+\gameover(ctx:Context) {
+    return actionsEvents(ctx).length==0;
+    //throw new Error("Abstract: メソッドgameoverが実装されていません");    
+}
+\id(ctx) {
+    throw new Error("Abstract: メソッドidが実装されていません");    
+}
+\playerIndex(ctx, p) {
+    return ctx.players.indexOf(p);    
+}

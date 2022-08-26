@@ -4,4 +4,6 @@ test/fixture/kinsho/files/log.txt
 test/fixture/kinsho/files/logold.txt
 test/fixture/kinsho/files/log_iter.txt
 test/fixture/quiz
-test/fixture/oserosen
+test/fixture/oserosen/files
+test/fixture/oserosen/static/路線範囲.pdf
+test/fixture/oserosen/static/kintetsu_map.pdf

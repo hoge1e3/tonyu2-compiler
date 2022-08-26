@@ -1,0 +1,3 @@
+$loopCount=1;
+
+loadPage(AutoMCTS);

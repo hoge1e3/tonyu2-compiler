@@ -1,0 +1,56 @@
+
+f=file("00_log.txt");//途中からの場合は事前にここのファイル名を書き換える
+player=2;
+co = 0;
+
+for(var line of f.lines()){
+    if(co>4){
+        break;
+    }
+    line2 = line.split("\t");
+    if(line2[0]){
+        if(player < line2[1]){
+            player = line2[1];
+        }
+    }
+    co++;
+}
+    
+
+$gameConfig.player = player;
+$nowReplay = true;
+nowloading = new Label{x:0, y:70,align:"left",fillStyle:"Black",template:"盤面を再現しています。しばらくお待ちください"};
+$replaySet = new Label{x:0, y:90,align:"left",fillStyle:"Black",template:"$logsを取りました"};
+
+for(var line of f.lines()){
+    while(true){
+        if(getkey("enter") == 1){
+            break;
+        }
+    }
+    log=line.split("\t");
+    if(log[0]){
+        logStationName = log[0];
+        $logs = log[0];
+        $turn = log[1]-0;
+        b = findButton(logStationName);
+        $main.clicked(b);
+        
+        while(!$main.nextPlayPrepared){
+            update();
+        }
+    }
+}
+
+
+
+nowloading.die();
+update();
+$gameConfig.replay = false;
+$nowReplay = false;
+fireEvent("replayEnd");
+
+function findButton(logStationName){
+    if (!$name2Button[logStationName]) throw new Error(logStationName+" not found");
+    return $name2Button[logStationName];
+}

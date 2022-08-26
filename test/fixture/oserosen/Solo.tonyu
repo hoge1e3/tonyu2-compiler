@@ -1,0 +1,21 @@
+new Button{top:20,left:400,width:50,height:30,text:"戻る",onClick:back};
+new Button{top:150,left:170,width:150,height:60,text:"先手番",onClick:first};
+new Button{top:300,left:170,width:150,height:60,text:"後手番",onClick:last};
+
+function back(){
+    loadPage(SelectBot);
+}
+
+function first(){
+    $gameConfig.player = 2;
+    $gameConfig.players = [1,$selectBot.botPlayers[0]];
+    $gameConfig.replay = false;
+    loadPage(SemiAuto);
+}
+
+function lats(){
+    $gameConfig.player = 2;
+    $gameConfig.players = [$selectBot.botPlayers[0],2];
+    $gameConfig.replay = false;
+    loadPage(SemiAuto);
+}

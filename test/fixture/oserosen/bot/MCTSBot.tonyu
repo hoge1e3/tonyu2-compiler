@@ -1,0 +1,211 @@
+extends Bot;
+//https://blog.brainpad.co.jp/entry/2018/04/05/163000
+var Cp;
+var expandThresh;
+var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
+var iteration;
+var player;
+//var rootNode={};
+/*Node={
+    parent?: Node,
+    state:State,
+    q: Rational
+    n: number,
+    subnodes: Node[]?
+}*/
+\expand(ctx:Context, node) {
+    /*var sk=s.id();
+    if (nodes[sk]) throw new Error(sk+" already found");*/
+    if (node.n<expandThresh) throw new Error(node.n+"<"+expandThresh);
+    if (node.subnodes) throw new Error(node.state+" already expanded");
+    node.subnodes=node.state.actionsEvents(ctx).map \(a) {
+        return {
+            parent: node, 
+            state: node.state.next(ctx,a),
+            q:new Rational(0,0), 
+            n:0, 
+            a:str(a),
+            subnodes: null,
+        };
+    };
+    return node;
+}
+\str(s) {
+    var r=s+"";
+    if (r=="[object Object]") return s;
+    return r;
+}
+\c(node, a:Number) {
+    var nsa=n(node,a);
+    var _n=n(node);
+    if (nsa==0 || _n==0) return 1000000-rnd();
+    return nanc( Cp*sqrt(2*$Math.log(_n))/nsa );
+}
+\q(node, a:Number) {
+    if (a==null) {
+        return node.q.value;
+    } else {
+        if (!node.subnodes) throw new Error(n.state+"Not expanded");
+        return node.subnodes[a].q.value;
+    }
+}
+\n(node, a:Number) {
+    if (a==null) {
+        return nanc( node.n );
+    } else {
+        if (!node.subnodes) throw new Error(n.state+"Not expanded");
+        return nanc( node.subnodes[a].n );
+    }
+}
+\selection(ctx:Context, node) {
+    // return leaf node
+    if (!node.subnodes) throw new Error(n.state+"Not expanded");
+    while (true) {
+        var acts=node.subnodes;
+        var sgn=(node.state.player===player?1:-1);
+        node.n+=1;
+        if (!acts || acts.length==0) break;
+        var ma=-1,mqc=0,test;
+        for (var a=0;a<acts.length;a++) {
+            var qc=q(node,a)*sgn+c(node,a);
+            acts[a].test="q="+q(node,a)*sgn+" c="+c(node,a);
+            if (ma<0 || qc>=mqc) {
+                mqc=qc;
+                ma=a;
+            }
+        }
+        //acts[ma].qc=test;
+        //acts[ma].n+=1;
+        node=acts[ma];
+    }
+    return node;
+}
+\play(ctx:Context, s:State):Action {
+    expcount=0;
+    var rootNode={
+        parent: null, 
+        state: s,
+        q:new Rational(0,0), 
+        n:expandThresh+1, 
+        subnodes: null,
+    };
+    player=s.player;
+    nanc(expandThresh);
+    expand(ctx,rootNode);
+    for (var i=0;i<iteration;i++) {
+        while(true) {
+            var leaf=selection(ctx, rootNode);
+            if (n(leaf)<expandThresh) break;
+            if (leaf.subnodes && leaf.subnodes.length==0) break;
+            expand(ctx, leaf);
+        }
+        // print("leaf", leaf);
+        var endState=rollout(ctx, leaf);
+        var v=value(ctx, s.player, endState);
+        backup(leaf, v);
+        if (expcount>=300) break;
+    }
+    //print ("RN",rootNode);
+    var ma=-1,mqc=0;
+    for (var a=0;a<rootNode.subnodes.length;a++) {
+        var qc=q(rootNode,a);
+        //print("QC", a,qc);
+        if (ma<0 || qc>=mqc) {
+            mqc=qc;
+            ma=a;
+        }
+    }
+    var acts=s.actionsEvents(ctx);
+    //print (acts.length , rootNode.subnodes.length, ma);
+    if (!acts[ma]) throw new Error("Action not found "+ma);
+    print("EXP",expcount);
+    return acts[ma];
+}
+/*\play(ctx:Context, s:State):Action {
+    var rootNode={
+        parent: null, 
+        state: s,
+        q:new Rational(0,0), 
+        n:expandThresh+1, 
+        subnodes: null,
+    };
+    player=s.player;
+    nanc(expandThresh);
+    expand(ctx,rootNode);
+    for (var i=0;i<iteration;i++) {
+        while(true) {
+            var leaf=selection(ctx, rootNode);
+            if (n(leaf)<expandThresh) break;
+            if (leaf.subnodes && leaf.subnodes.length==0) break;
+            expand(ctx, leaf);
+        }
+        // print("leaf", leaf);
+        var endState=rollout(ctx, leaf);
+        var v=value(ctx, s.player, endState);
+        backup(leaf, v);
+    }
+    //print ("RN",rootNode);
+    var ma=-1,mqc=0;
+    for (var a=0;a<rootNode.subnodes.length;a++) {
+        var qc=q(rootNode,a);
+        //print("QC", a,qc);
+        if (ma<0 || qc>=mqc) {
+            mqc=qc;
+            ma=a;
+        }
+    }
+    var acts=s.actionsEvents(ctx);
+    //print (acts.length , rootNode.subnodes.length, ma);
+    if (!acts[ma]) throw new Error("Action not found "+ma);
+    return acts[ma];
+}
+*/
+\backup(node, value:Number) {
+    while(node) {
+        node.q=node.q.inc(value);
+        node=node.parent;
+    }
+}
+
+\rollout(ctx, node) {
+    var state=getState(ctx, node);
+    var t=new Date().getTime();
+    while (!state.gameover(ctx)) {
+        var a=playRandom(ctx, state);
+        state=state.next(ctx, a);
+        if (new Date().getTime()-t>1) break;
+    }
+    return state;
+}
+
+\getState(ctx, node){
+    if (node.state) return node.state;
+    var p=node.parent;
+    var idx=p.subnodes.indexOf(node);
+    if (idx<0) throw new Error("Index not found");
+    var act=p.subnodes[idx];
+    if (!act) throw new Error("Action not found "+idx);
+    node.state=getState(ctx, p).next(ctx, act);
+    return node.state;
+}
+
+\playRandom(ctx:Context, s:State):Action {
+    if (!ctx) throw new Error("CTX is null");
+    var acts=s.actionsEvents(ctx);
+    var a=acts[rnd(acts.length)];
+    return a;
+}
+\nanc(v) {
+    if (typeof v!=="number") throw new Error("null");
+    if (v!==v) throw new Error("Nan");
+    return v;
+}
+/*\hasNode(s:State) {
+    var sk=s.id();
+    return nodes[sk];
+}
+\getNode(s:State) {
+    var sk=s.id();
+    if (!nodes[sk]) throw new Error(sk+" not found");
+    return nodes[sk];
+}*/

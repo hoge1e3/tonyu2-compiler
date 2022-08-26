@@ -1,0 +1,79 @@
+extends TObject;
+native console;
+"field strict";
+var path:Path;
+var from:Node,lineName:Node,owner:Number;
+//fromは最初の駅(ボタンを押した駅)
+var current;
+var prevNode;
+var board;
+var allPaths=[];
+path.add(current);
+while(true) {
+    if (from.name != current.name && board.owner[current.name] && board.owner[current.name].owner === owner) {
+        report([path]);
+        break;
+    }
+    
+    if(isTransferStation(current.name) && !(board.owner[current.name])){
+        report([]);
+        break;
+    }
+    
+    //x=current.x;
+    //y=current.y;
+    var neighbors=[];
+    for (var neighbor of current.allConnected(lineName,prevNode)) {
+        if (path.contains(neighbor)) continue;
+        neighbors.push(neighbor);
+    }
+    
+    if (neighbors.length==0) {//nextsが１つしかない場合
+        //path.die();
+        report([]);
+        break;
+    } else if (neighbors.length==1) {//nextsが２つの場合
+        prevNode = current.name;
+        current=neighbors[0];
+        path.add(current);
+    } else {//nextsが３つ以上の場合
+        var count=neighbors.length;
+        for (var neighbor of neighbors) {
+            var s=new Searcher{current:neighbor,from ,lineName, owner, path:path.clone(),prevNode:current.name,board,};
+            report(s.allPaths);
+            /*var allPaths=[];
+            s.on("result") \(paths) {
+                allPaths=allPaths.concat(paths);
+                count--;
+                if (count==0) {
+                    report(allPaths);
+                }
+            };*/
+        }
+        
+        //path.die();
+        //alpha=128;
+        break;
+    }
+    //update();
+    //updateEx(5);
+}
+//console.log("SRC", allPaths);
+function report(paths) {
+    allPaths=allPaths.concat(paths);
+    //fireEvent("result",paths);
+    //die();
+}
+
+function isTransferStation(stationName){
+    if(stationName.indexOf("point") > -1){//pointオブジェクトなら
+        return false;
+    }else if($stations[stationName].midway==false){//中間駅ではない
+        return true;
+    }else if(!($stations[stationName].midway==true) && $stations[stationName].lines.length > 1){
+        return true;//midwayがtureではない　かつ　linesが１つより多い場合
+    }else{
+        return false;
+    }
+}
+

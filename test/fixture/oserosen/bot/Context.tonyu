@@ -1,0 +1,3 @@
+var player:number;
+var players; // Player[]
+var debug:boolean;
