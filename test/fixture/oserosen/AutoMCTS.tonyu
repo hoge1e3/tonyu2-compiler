@@ -117,7 +117,7 @@ while (true) {
     while(!g.gameover()) {
         var pp=g.state.player;
         var a=g.step();
-        print(pp, a.stext, g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
+        print(pp, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
         //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
         //ここでログを取る
         var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2)};//通常プレイ時のログ取得
