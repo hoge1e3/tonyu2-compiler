@@ -163,7 +163,7 @@ class BuilderClient {
             await this.init();
             let objs=await this.w.run("compiler/serializeAnnotatedNodes",{});
             root.temp1=objs;
-            console.log(objs);
+            //console.log(objs);
             const sfiles={};
             const pre=new Preemption();
             for(let k of Object.keys(objs)) {
