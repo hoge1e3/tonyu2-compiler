@@ -320,6 +320,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	dtk(REG|DIV,SAMENAME ,"^",REG );
 	dtk(REG|DIV,SAMENAME ,"+",REG );
 	dtk(REG|DIV,SAMENAME ,"-",REG );
+	dtk(REG|DIV, SAMENAME ,"...",REG );
 	dtk(REG|DIV, SAMENAME ,".",REG );
 	dtk(REG|DIV,SAMENAME ,"?",REG );
 
@@ -361,6 +362,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	function parse(str:string) {
 		var res=sp.parse(all, str);
 		if (res.success) {
+			console.log("Token", res.result[0]);
 		} else {
 			console.log ("Stopped with ",res.src.maxErrors);
 			const maxPos=res.src.maxErrors.pos;

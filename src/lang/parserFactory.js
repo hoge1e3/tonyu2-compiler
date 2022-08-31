@@ -76,8 +76,9 @@ module.exports = function PF({ TT }) {
     }
     var e = (0, ExpressionParser2_1.ExpressionParser)(parser_1.TokensParser.context);
     var explz = e.lazy(); //.firstTokens(ALL);
+    const dottableExpr = explz.or(tk("...").and(explz).ret((_, e) => ({ type: "dotExpr", expr: e })));
     var arrayElem = g("arrayElem").ands(tk("["), explz, tk("]")).ret(null, "subscript");
-    var argList = g("argList").ands(tk("("), comLastOpt(explz), tk(")")).ret(null, "args");
+    var argList = g("argList").ands(tk("("), comLastOpt(dottableExpr), tk(")")).ret(null, "args");
     var member = g("member").ands(tk("."), symresv).ret(null, "name");
     var parenExpr = g("parenExpr").ands(tk("("), explz, tk(")")).ret(null, "expr");
     var varAccess = g("varAccess").ands(symbol).ret("name");
@@ -278,7 +279,7 @@ module.exports = function PF({ TT }) {
     var typeDecl = g("typeDecl").ands(tk(":"), typeExpr).ret(null, "vtype");
     var varDecl = g("varDecl").ands(symbol, typeDecl.opt(), tk("=").and(expr).retN(1).opt()).ret("name", "typeDecl", "value");
     var varsDecl = g("varsDecl").ands(declPrefix, varDecl.sep1(tk(","), true), tk(";")).ret("declPrefix", "decls");
-    var paramDecl = g("paramDecl").ands(symbol, typeDecl.opt()).ret("name", "typeDecl");
+    var paramDecl = g("paramDecl").ands(tk("...").opt(), symbol, typeDecl.opt()).ret("dot", "name", "typeDecl");
     var paramDecls = g("paramDecls").ands(tk("("), comLastOpt(paramDecl), tk(")")).ret(null, "params");
     var setterDecl = g("setterDecl").ands(tk("="), paramDecl).ret(null, "value");
     g("funcDeclHead").ands(tk("nowait").opt(), tk("function").or(tk("fiber")).or(tk("tk_constructor")).or(tk("\\")).opt(), symbol.or(tk("new")), setterDecl.opt(), paramDecls.opt(), typeDecl.opt() // if opt this it is getter
@@ -294,7 +295,7 @@ module.exports = function PF({ TT }) {
     var funcExpr = g("funcExpr").ands("funcExprHead", "compound").ret("head", "body");
     var jsonElem = g("jsonElem").ands(symbol.or(literal), tk(":").or(tk("=")).and(expr).retN(1).opt()).ret("key", "value");
     var objlit = g("objlit").ands(tk("{"), comLastOpt(jsonElem), tk("}")).ret(null, "elems");
-    var arylit = g("arylit").ands(tk("["), comLastOpt(expr), tk("]")).ret(null, "elems");
+    var arylit = g("arylit").ands(tk("["), comLastOpt(dottableExpr), tk("]")).ret(null, "elems");
     var ext = g("extends").ands(tk("extends"), symbol.or(tk("null")), tk(";")).
         ret(null, "superclassName");
     var incl = g("includes").ands(tk("includes"), symbol.sep1(tk(","), true), tk(";")).

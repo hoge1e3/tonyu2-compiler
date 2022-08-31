@@ -11,8 +11,8 @@ print (__typeof getA);
 print (__typeof getA());
 print (__typeof a.e);
 
-\print(x) {
-	console.log(x);
+\print(...x) {
+	console.log(...x);
 }
 \getA():A {
 	let b:A;
@@ -38,7 +38,12 @@ for (let i,e of alist) {
 	print (i, e.test());
 	print(__typeof i, __typeof e);
 }
-
+func("hoge",3);
+\func(...a) {
+	a.push("fuga");
+	print("FUNC", ...a);
+}
+//3456789012345678901
 //a.n();
 //a.hoge();
 
