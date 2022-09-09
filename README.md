@@ -1,5 +1,5 @@
 # tonyu2-compiler
-Compiler part of [Tonyu2](https://github.com/hoge1e3/Tonyu2) , language for a game engine.
+Compiler of Tonyu2 language, used in [Tonyu System 2](https://github.com/hoge1e3/Tonyu2), a game engine.
 
 # Command line usage
 
