@@ -171,8 +171,11 @@ function genJS(klass, env, genOptions) {
         backquoteText(node) {
             buf.printf("%l", node.text);
         },
+        dotExpr(node) {
+            buf.printf("...%v", node.expr);
+        },
         paramDecl: function (node) {
-            buf.printf("%v", node.name);
+            buf.printf("%s%v", node.dot ? "..." : "", node.name);
         },
         paramDecls: function (node) {
             buf.printf("(%j)", [", ", node.params]);
@@ -778,7 +781,7 @@ function genJS(klass, env, genOptions) {
         var opt = true;
         //waitStmts=stmts;
         printf("%s%s :function* %s(%j) {%{" +
-            USE_STRICT +
+            //USE_STRICT+
             "var %s=%s;%n" +
             "%svar %s=%s;%n" +
             "%f%n" +
@@ -799,7 +802,7 @@ function genJS(klass, env, genOptions) {
             console.log("MYSTERY", func.params);
         }
         printf("%s :function %s(%j) {%{" +
-            USE_STRICT +
+            //USE_STRICT+
             "var %s=%s;%n" +
             "%f%n" +
             "%f" +

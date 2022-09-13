@@ -58,7 +58,7 @@ export function isArrayElem(n:TNode):n is ArrayElem {
 }
 export type ArgList=NodeBase&{
   type: "argList";
-  args: Expression[]
+  args: DottableExpression[]
 };
 export function isArgList(n:TNode):n is ArgList {
    return n && n.type==="argList";
@@ -315,9 +315,15 @@ export function isVarsDecl(n:TNode):n is VarsDecl {
 }
 export type ParamDecl=NodeBase&{
   type: "paramDecl";
+  dot: Token|null,
   name: Token,
   typeDecl: TypeDecl|null
 };
+export type DotExpr=NodeBase&{
+  type:"dotExpr",
+  expr: Expr,
+};
+export type DottableExpression=DotExpr|Expression;
 export function isParamDecl(n:TNode):n is ParamDecl {
    return n && n.type==="paramDecl";
 }
@@ -411,7 +417,7 @@ export function isObjlit(n:TNode):n is Objlit {
 }
 export type Arylit=NodeBase&{
   type: "arylit";
-  elems: Expr[]
+  elems: DottableExpression[]
 };
 export function isArylit(n:TNode):n is Arylit {
    return n && n.type==="arylit";

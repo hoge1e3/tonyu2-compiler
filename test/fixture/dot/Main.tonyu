@@ -1,0 +1,5 @@
+native console;
+\f(...a) {
+    console.log("A",...a);
+}
+f("hoge",3);

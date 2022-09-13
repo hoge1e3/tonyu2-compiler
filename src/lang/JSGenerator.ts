@@ -9,7 +9,7 @@ import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
 import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass } from "./CompilerTypes";
-import { ArgList, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
+import { ArgList, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { DeclsInDefinition } from "../runtime/RuntimeTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
@@ -159,8 +159,11 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		backquoteText(node:BackquoteText) {
 			buf.printf("%l",node.text);
 		},
+		dotExpr(node:DotExpr) {
+			buf.printf("...%v",node.expr);
+		},
 		paramDecl: function (node:ParamDecl) {
-			buf.printf("%v",node.name);
+			buf.printf("%s%v",node.dot?"...":"", node.name);
 		},
 		paramDecls: function (node:ParamDecls) {
 			buf.printf("(%j)",[", ",node.params]);
@@ -769,7 +772,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		//waitStmts=stmts;
 		printf(
 			"%s%s :function* %s(%j) {%{"+
-				USE_STRICT+
+				//USE_STRICT+
 				"var %s=%s;%n"+
 				"%svar %s=%s;%n"+
 				"%f%n"+
@@ -796,7 +799,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			console.log("MYSTERY",func.params);
 		}
 		printf("%s :function %s(%j) {%{"+
-					USE_STRICT+
+					//USE_STRICT+
 					"var %s=%s;%n"+
 					"%f%n" +
 					"%f" +

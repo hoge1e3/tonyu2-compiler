@@ -1,0 +1,1 @@
+{"version":3,"sources":["C:\\bin\\Dropbox\\workspace\\tonyu2-compiler\\test\\fixture\\dot\\Main.tonyu"],"names":[],"mappings":";;;;;;;;;;SAIC;;;;;;SAAA;;;kCAHM;;;SACF,OAAO,CAAC,GAAG,QAAQ;;mDADjB;;;;SACF,OAAO,CAAC,GAAG,QAAQ","sourcesContent":["native console;\r\n\\f(...a) {\r\n    console.log(\"A\",...a);\r\n}\r\nf(\"hoge\",3);"]}
