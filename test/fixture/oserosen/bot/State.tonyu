@@ -4,7 +4,7 @@ native console;
 \print(p) {
     var cp=$consolePanel;
     console.log.apply(console,arguments);
-    cp.print.apply(cp, arguments);
+    //cp.print.apply(cp, arguments);
 }
 //一度作成したStateオブジェクトの変数の内容を書き換えないようにしてください．
 // nextメソッドでは，新しく作成したStateオブジェクトを返してください．

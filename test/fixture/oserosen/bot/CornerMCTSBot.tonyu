@@ -22,11 +22,14 @@ var expcount=0;
     if (node.n<expandThresh) throw new Error(node.n+"<"+expandThresh);
     if (node.subnodes) throw new Error("already expanded");
     expcount++;
-    node.actions=getState(ctx, node).actionsEvents(ctx);
+    var s:Board = getState(ctx, node);
+    node.actions=s.actionsEvents(ctx);
     var hasCorner=node.actions.some(isCorner);
     node.subnodes=node.actions.map \(a) {
         var q,n;
-        if (!hasCorner) {//角の駅がない場合，全部0にする
+        if(s.diceNum==null){
+            q=new Rational(0,0); n=0;
+        }else if (!hasCorner) {//角の駅がない場合，全部0にする
             q=new Rational(0,0); n=0;
         } else if (isCorner(a)) {//角の駅なら，得点up&まだ辿っていない
             q=new Rational(5,0); n=0;

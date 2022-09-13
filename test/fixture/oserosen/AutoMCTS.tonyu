@@ -112,7 +112,6 @@ var stname;
 while (true) {
     print("Game Start!");
     var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
-
     var g=new GameMaster{state: board, context:$gameConfig};
     while(!g.gameover()) {
         var pp=g.state.player;
@@ -129,7 +128,7 @@ while (true) {
     }*/
     print("This game is finished!"+"\nFirstPlayer's station:"+g.state.value($gameConfig, 1));
     $firstPlayer=false;
-    if(takenCount(1) > 145){
+    if(takenCount(1) > $stationPlace.length/2){
         $firstPlayer=true;
         new CreateFile{taken:g.state.value($gameConfig, 1)};
     }
@@ -150,17 +149,6 @@ while (true) {
         }
     }
     return taken;
-}
-
-\notTakenStations(){
-    var taken_s;
-    for(taken_s of board.owner){
-        var index=nts.indexOf(taken_s);
-        if(index>-1){
-            nts.splice(index,1);
-        }
-    }
-    return nts;
 }
 
 \searchCorner(stationArray){//取られていない角の駅の配列を受け取る

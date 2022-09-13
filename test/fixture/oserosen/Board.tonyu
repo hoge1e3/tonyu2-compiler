@@ -17,6 +17,7 @@ var attack;
 //var lost;
 var attackChance;
 var prevPlayer;
+var notTaken;           //new Boardされた時に渡される、取られていない全ての駅の名前のリスト
 //var message1 = "塗り替える駅を選んでください";
 //var message2 = "塗り替えられる駅が存在しませんでした";
 
@@ -40,6 +41,7 @@ var prevPlayer;
     };
 }
 function clicked(gameConfig,b){
+    //print(NotTaken);
     if (!gameConfig.debug && !diceNum) {
         throw new Error("サイコロが振られていません");
     }
@@ -272,7 +274,14 @@ function setNextTurn(gameConfig,nb) {
     }
 } 
 
-
+\NotTaken(num){//num文字の駅が1つでも未取得ならばtrueを返す
+    for(var s of $stationPlace){
+        if(!owner[s.name] && namelengthComparison(s,num)){//ownerにsが無かったら(未取得)
+            return true;
+        }
+    }
+    return false;
+}
 
 function enemyHasStation(turn){
     var enemyStation = false;
@@ -293,14 +302,22 @@ function enemyHasStation(turn){
 \actionsEvents(ctx:GameConfig) {
     var res=[];
     if (ctx.limTurn && (ctx.limTurn)-0 === turnCount) return res;
-
     if(diceNum==null){//ダイスが振られていない場合
-        res=[
-            {num:2,prob:4/12},
-            {num:3,prob:3/12},
-            {num:4,prob:3/12},
-            {num:5,prob:2/12}
-        ];
+        if(NotTaken(2)){//2で取れる駅が無い場合
+            res.push({num:2,prob:3/12});
+        }
+        if(NotTaken(3)){
+            res.push({num:3,prob:3/12});
+        }
+        if(NotTaken(4)){
+            res.push({num:4,prob:3/12});
+        }
+        if(NotTaken(5)){
+            res.push({num:5,prob:3/12});
+        }
+        for(var r of res){
+            r.prob=1/res.length;
+        }
         return res;
     }
 
@@ -338,3 +355,4 @@ function namelengthComparison(sn,d){
         }
     }
 }
+
