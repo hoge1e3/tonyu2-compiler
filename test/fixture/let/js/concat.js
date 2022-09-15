@@ -6,7 +6,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Main_main() {
-        "use strict";
         var _this=this;
         
         "field strict";
@@ -26,10 +25,17 @@ Tonyu.klass.define({
             console.log(i);
           }
         }
+        switch (_this.a[0]) {
+        case 1:
+          let j = _this.a[0]*2;
+          
+          console.log("j=",j);
+          break;
+          
+        }
         _this.test2();
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
-        "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
@@ -50,11 +56,18 @@ Tonyu.klass.define({
             console.log(i);
           }
         }
+        switch (_this.a[0]) {
+        case 1:
+          let j = _this.a[0]*2;
+          
+          console.log("j=",j);
+          break;
+          
+        }
         (yield* _this.fiber$test2(_thread));
         
       },
       test :function _trc_Main_test() {
-        "use strict";
         var _this=this;
         
         new Promise((function anonymous_108(s,e) {
@@ -67,7 +80,6 @@ Tonyu.klass.define({
         return 5;
       },
       fiber$test :function* _trc_Main_f_test(_thread) {
-        "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
@@ -82,7 +94,6 @@ Tonyu.klass.define({
         
       },
       test2 :function _trc_Main_test2() {
-        "use strict";
         var _this=this;
         
         for (let i = _this.test();
@@ -105,7 +116,6 @@ Tonyu.klass.define({
         console.log("after v=",v);
       },
       fiber$test2 :function* _trc_Main_f_test2(_thread) {
-        "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
@@ -130,7 +140,6 @@ Tonyu.klass.define({
         
       },
       test3 :function _trc_Main_test3() {
-        "use strict";
         var _this=this;
         var i;
         var x;
@@ -143,7 +152,6 @@ Tonyu.klass.define({
         console.log(x);
       },
       fiber$test3 :function* _trc_Main_f_test3(_thread) {
-        "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var i;
@@ -160,7 +168,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test2":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test3":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test2":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test3":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{},"j":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

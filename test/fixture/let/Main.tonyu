@@ -21,6 +21,12 @@ console.log("START");
 for (let i=test();i<10;i++) {
     console.log(i);
 }
+switch (a[0]) {
+    case 1:
+    let j=a[0]*2;
+    console.log("j=",j);
+    break;
+}
 test2();
 \test2() {
     //console.log("START2",i );
