@@ -85,10 +85,11 @@ for(var stations,z in $stations){//,zはTonyuの仕様の関係で何か渡さ�
     }
 }
 
-/botParameter(name,iter){
-    if(name == mcts){
+\botParameter(name,iter){
+    var bot;
+    if(name == "mcts"){
         bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:Number(iter), timeout:2};
-    }else if(name == cmcts){
+    }else if(name == "cmcts"){
         bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:Number(iter), timeout:2};
     }
     return bot;
