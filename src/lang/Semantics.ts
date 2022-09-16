@@ -12,7 +12,7 @@ import * as cu from "./compiler";
 import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { AnnotatedType, Annotation, ArrayType, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType } from "./CompilerTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler";
@@ -575,8 +575,21 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		},
 		"switch": function (node:Switch) {
 			var t=this;
-			ctx.enter({brkable:true}, function () {
-				t.def!(node);
+			if ((node as any).isToken) return ;
+			ctx.enter({inBlockScope:true}, ()=>{
+				const ns=newScope(ctx.scope);
+				let stmts:StmtList=[];
+				//console.log("node.cases",node);
+				for (let c of node.cases) {
+					stmts=[...stmts, ...c.stmts];
+				}
+				if (node.defs) {
+					stmts=[...stmts, ...node.defs.stmts];
+				}
+				collectBlockScopedVardecl(stmts,ns);
+				ctx.enter({scope:ns,brkable:true}, function () {
+					t.def!(node);
+				});
 			});
 		},
 		"while": function (node:While) {
