@@ -24,7 +24,9 @@ var expcount=0;
     expcount++;
     var s:Board = getState(ctx, node);
     node.actions=s.actionsEvents(ctx);
-    var hasCorner=node.actions.some(isCorner);
+    if(s.diceNum !=null){
+        var hasCorner=node.actions.some(isCorner);
+    }
     node.subnodes=node.actions.map \(a) {
         var q,n;
         if(s.diceNum==null){
