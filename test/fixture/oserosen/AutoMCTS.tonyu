@@ -2,7 +2,13 @@ native $;
 native location;
 native process;
 
-print(process.argv);
+/* node index.js test\fixture\oserosen\ -r mcts 100 cmcts 1000 */
+
+var player1 = {name:process.argv[4],iteration:process.argv[5]};
+var player2 = {name:process.argv[6],iteration:process.argv[7]};
+print(player1);
+print(player2);
+
 "field strict";
 $gameConfig={
     debug=true,
@@ -79,16 +85,23 @@ for(var stations,z in $stations){//,zはTonyuの仕様の関係で何か渡さ�
     }
 }
 
+/botParameter(name,iter){
+    if(name == mcts){
+        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:Number(iter), timeout:2};
+    }else if(name == cmcts){
+        bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:Number(iter), timeout:2};
+    }
+    return bot;
+}
 
-
-
+/*
 var mcts100=new MCTSBot{value,Cp:10, expandThresh:3, iteration:100, timeout:1};
 var mcts600_1=new MCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:1};
 var mcts300_2=new MCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:2};
 var cmcts100=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:100, timeout:1};
 var cmcts600_1=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:600, timeout:1};
 var cmcts300=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:2};
-
+*/
 \value(ctx, p, s:Board):Number {
     return s.value(ctx,p);
 }
@@ -101,7 +114,7 @@ print("Game Start (Auto)", $Boot.newLimit);
 $Boot.newLimit=null;//10000000;
 
 //$gameConfig.bots={"1":$selectBot.botPlayers[0]/*mcts10*/, "2":$selectBot.botPlayers[1]};
-$gameConfig.bots={"1":mcts100, "2":mcts300_2};
+$gameConfig.bots={"1":botParameter(player1.name,player1.iteration), "2":botParameter(player2.name,player2.iteration)};
 var stnames=Object.keys($name2Node);
 //var takenStations;
 var allStations=$stationPlace.length;

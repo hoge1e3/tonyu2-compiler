@@ -276,7 +276,7 @@ function setNextTurn(gameConfig,nb) {
 
 \NotTaken(num){//num文字の駅が1つでも未取得ならばtrueを返す
     for(var s of $stationPlace){
-        if(!owner[s.name] && namelengthComparison(s,num)){//ownerにsが無かったら(未取得)
+        if(!owner[s.name] && namelengthComparison(s.name.length,num)){//ownerにsが無かったら(未取得)
             return true;
         }
     }
