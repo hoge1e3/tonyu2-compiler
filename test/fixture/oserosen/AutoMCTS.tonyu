@@ -2,12 +2,16 @@ native $;
 native location;
 native process;
 
-/* node index.js test\fixture\oserosen\ -r mcts 100 cmcts 1000 */
-
+/* node index.js test\fixture\oserosen\ -r mcts 100 cmcts 1000 1000 */
+if(!process.argv[8]){
+    throw new Error("ゲーム実行回数が入力されていません！");
+}
 var player1 = {name:process.argv[4],iteration:process.argv[5]};
 var player2 = {name:process.argv[6],iteration:process.argv[7]};
 print(player1);
 print(player2);
+
+$loopCount=1;
 
 "field strict";
 $gameConfig={
@@ -125,7 +129,7 @@ var allStations=$stationPlace.length;
 var kouho=[];
 var stname;
 
-while (true) {
+while ($loopCount && $loopCount<Number(process.argv[8])+1) {
     print("Game Start!");
     var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
     var g=new GameMaster{state: board, context:$gameConfig};
@@ -148,11 +152,7 @@ while (true) {
         $firstPlayer=true;
         new CreateFile{taken:g.state.value($gameConfig, 1)};
     }
-    if($loopCount && $loopCount<500){//戦わせる回数
-        new CreateFile{count:$loopCount};//記録用
-        $loopCount++;
-        //loadPage(AutoMCTS);
-    }
+    $loopCount++;
 }
 
 

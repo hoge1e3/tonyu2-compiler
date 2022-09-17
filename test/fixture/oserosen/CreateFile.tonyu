@@ -1,15 +1,15 @@
-//textName = "../files/MCTS(10_600_2)_MCTS(1.4_600_2)_Kintetsu/"+String($loopCount)+"_log.txt";
-textName = "freelog_0.txt";
-f=file(textName);//freelog.txt
+textName = "../files/test_Kintetsu/"+String($loopCount)+"_log.txt";
+//textName = "freelog_0.txt";
+f=file(textName);
 
 if(logStationName){
     f.appendText(logStationName+"\t"+logOwner+"\t"+rsta+"\t"+bsta+"\n");
-}else{
+}/*else{
     if($firstPlayer){
         f.appendText(taken+"win");
     }
     //f.appendText(count+"ゲーム目\n");
-}
+}*/
 
 /*
 if(attackedStation){
