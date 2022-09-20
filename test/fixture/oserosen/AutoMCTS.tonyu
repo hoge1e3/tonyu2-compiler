@@ -11,6 +11,8 @@ var player2 = {name:process.argv[6],iteration:process.argv[7]};
 print(player1);
 print(player2);
 
+$folderName1 = player1;//フォルダ生成用
+$folderName2 = player2;//フォルダ生成用
 $loopCount=1;
 
 "field strict";
