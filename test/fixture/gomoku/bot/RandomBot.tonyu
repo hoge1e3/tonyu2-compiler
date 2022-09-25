@@ -1,0 +1,9 @@
+extends Bot;
+
+\play(ctx:Context, s:State):Action {
+    if (!ctx) throw new Error("CTX is null");
+    var acts=s.actionsEvents(ctx);
+    // todo: Event
+    var a=acts[rnd(acts.length)];
+    return a;
+}
