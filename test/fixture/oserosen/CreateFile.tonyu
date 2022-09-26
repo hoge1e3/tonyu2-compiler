@@ -1,4 +1,4 @@
-folder = $folderName1.name+String($folderName1.iteration)+"_"+$folderName2.name+String($folderName2.iteration);
+folder = $folderName1.name+String($folderName1.iteration)+"_"+String($folderName1.timeout)+"_"+$folderName2.name+String($folderName2.iteration)+"_"+String($folderName2.timeout);
 textName = "../files/"+folder+"/"+String($loopCount)+"_log.txt";
 //textName = "freelog_0.txt";
 f=file(textName);
