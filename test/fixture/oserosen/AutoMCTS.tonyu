@@ -2,7 +2,7 @@ native $;
 native location;
 native process;
 
-/* node index.js test\fixture\oserosen\ -r mcts 100 2 cmcts 1000 2 1000 */
+/* node index.js test\fixture\oserosen\ -r mcts 100 2 cmcts 1000 2 1000 true*/
 if(!process.argv[10]){
     throw new Error("ゲーム実行回数が入力されていません！");
 }
@@ -20,7 +20,7 @@ $gameConfig={
     debug=true,
     player = 2,
     players = [1,2],
-    replay = false,
+    replay = process.argv[11],
 };
 $kintetsu=true;
 //---Main
@@ -46,7 +46,6 @@ if($kintetsu==true){
 }else{
     diceArray=[2,2,2,2,2,2,3,3,3,4,4,5];//ダイスの出目用の配列
 }
-
 
 
 $boardPrepared = false;//全ての駅のボタンとノードの配置が完了したらtrue
@@ -131,32 +130,47 @@ var allStations=$stationPlace.length;
 var kouho=[];
 var stname;
 
-while ($loopCount && $loopCount<Number(process.argv[10])+1) {
-    print("Game Start!");
+if($gameConfig.replay=="true"){//リプレイtrueの時
+    var replay = new ReplayWinPer;
+    update();
+    var replayStation = replay.replayActions;
     var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
     var g=new GameMaster{state: board, context:$gameConfig};
-    while(!g.gameover()) {
+    for(var rep of replayStation){
         var pp=g.state.player;
-        var a=g.step();
-        print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
-        //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
-        //ここでログを取る
-        var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2)};//通常プレイ時のログ取得
+        var a=g.replayStep(rep);
+        print(g.state);
         update();
     }
+    print("replay Complete");
+    print(g.state.value($gameConfig, 1),g.state.value($gameConfig, 2));
+}else{
+    while ($loopCount && $loopCount<Number(process.argv[10])+1) {
+        print("Game Start!");
+        var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
+        var g=new GameMaster{state: board, context:$gameConfig};
+        while(!g.gameover()) {
+            var pp=g.state.player;
+            var a=g.step();
+            print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
+            //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
+            //ここでログを取る
+            var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2)};//通常プレイ時のログ取得
+            update();
+        }
 
-    /*if (location.href.match(/localhost/) || location.href.match(/\/sotu\//)) {
-        $.post("data.php") {filename:log.textName, content:file(log.textName).text()};
-    }*/
-    print("This game is finished!"+"\nFirstPlayer's station:"+g.state.value($gameConfig, 1));
-    $firstPlayer=false;
-    if(takenCount(1) > $stationPlace.length/2){
-        $firstPlayer=true;
-        new CreateFile{taken:g.state.value($gameConfig, 1)};
+        /*if (location.href.match(/localhost/) || location.href.match(/\/sotu\//)) {
+            $.post("data.php") {filename:log.textName, content:file(log.textName).text()};
+        }*/
+        print("This game is finished!"+"\nFirstPlayer's station:"+g.state.value($gameConfig, 1));
+        $firstPlayer=false;
+        if(takenCount(1) > $stationPlace.length/2){
+            $firstPlayer=true;
+            new CreateFile{taken:g.state.value($gameConfig, 1)};
+        }
+        $loopCount++;
     }
-    $loopCount++;
 }
-
 
 \takenCount(turn){
     var taken=0;

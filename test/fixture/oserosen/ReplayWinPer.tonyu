@@ -1,0 +1,9 @@
+f=file("replay.txt");//途中からの場合は事前にここのファイル名を書き換える
+var replayActions=[];
+for(var line of f.lines()){
+    var line2 = line.split("\t");
+    var data = {station:line2[0],player:line2[1]};
+    replayActions.push(data);
+}
+
+print(replayActions);

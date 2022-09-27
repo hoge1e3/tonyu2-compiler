@@ -34,6 +34,12 @@ var context:Context;
         return action;
     }
 }
+\replayStep(rep){
+    let action={stext:rep.station};
+    state=state.next(context, action);
+    if (!state) throw new Error("state is null!");
+    return action;
+}
 \getBot(p:Player) {
     //if (p.bot) return p.bot;
     if (context.bots && context.bots[p]) return context.bots[p];
