@@ -12,3 +12,4 @@ test/fixture/gobblet/files/log.txt
 test/fixture/gomoku/files/log.txt
 test/fixture/gobblet/js
 test/fixture/tictactoe/js
+test/fixture/tictactoe/files/log.txt
