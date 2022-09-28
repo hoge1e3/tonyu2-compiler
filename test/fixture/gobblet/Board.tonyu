@@ -1,0 +1,138 @@
+extends State;
+
+let mat:Matrix; // List of 0 あき(なし) 1,2,3 PL1小中大 4,5,6 PL2小中大   
+let player:Number;
+let having:Number[];// もちごま
+let lastPut:Number[];//最後に置いたターン
+let cnt:Number;//ターン
+\next(ctx:Context, a):State {
+    //a:Action|Event
+    let nm=cloneMat();
+    let nh=having.slice();
+    let nl=lastPut.slice();
+    if (a.type==="put") {
+        let s=nh.splice(a.index,1);
+        nm.get(a.x, a.y).push(s[0]);
+        nl[player]=cnt;    
+    } else {
+        let s=nm.get(a.sx, a.sy).pop();
+        nm.get(a.dx, a.dy).push(s);
+    }
+    let foe=3-player;
+    return new Board{mat:nm, having:nh, player:foe, cnt:cnt+1, lastPut:nl};
+}
+\cloneMat() {
+    let nm=mat.clone();
+    for (let x,y,p in nm) {
+        nm.set(x,y,p.slice());
+    }
+    return nm;
+}
+
+\actionsEvents(ctx:Context) {
+    //: Action[] | Event[] 
+    // Action:プレイヤーがとる行動
+    // Event :ランダムに起きる事象（サイコロなど）
+    // Eventオブジェクトにはフィールドprob(確率を表す0..1の数値)を含め，
+    // Event配列のprobの合計値が1になるようにしてください
+    // ActionとEventを混ぜて返すことはできません．
+    // 常に同じ順序で同じものを返してください
+    let res=[];
+    let kings=0;
+    for (let i=0;i<having.length;i++) {
+        let p=having[i];
+        let pl=(p>3?2:1);
+        if (pl!==player) continue;
+        for (let y=0;y<3;y++) {
+            for (let x=0;x<3;x++) {
+                if (!overwriteable(x,y,p)) continue;
+                res.push{type:"put",index:i,x,y};
+            }
+        }
+    }
+    //特別ルール：2回連続で動かしてはいけない．
+    if (lastPut[player]<cnt-2) return res;
+    for (let sx,sy,p of mat) {
+        p=getTop(sx,sy);
+        if (p===0) continue;
+        let pl=getPlayer(p);
+        if (pl!==player) continue;
+        for (let dy=0;dy<3;dy++) {
+            for (let dx=0;dx<3;dx++) {
+                if (sx==dx&&sy==dy) continue;
+                if (!overwriteable(dx,dy,p)) continue;
+                res.push{type:"move",sx,sy,dx,dy};
+            }
+        }
+    }
+    return res;
+}
+\getTop(x,y) {
+    let r=mat.get(x,y);
+    if (!r) throw new Error(`(${x},${y})`);
+    return r[r.length-1]||0;
+}
+\getPlayer(p) {
+    return (p>3?2:1);
+}
+\getSize(p){
+    return (p-1)%3;
+}
+
+\overwriteable(x,y,c) {
+    let g=getTop(x,y);
+    if (g==0) return true;
+    let sizec=getSize(c);
+    let sizeg=getSize(g);
+    return (sizec>sizeg);
+}
+\gameover(ctx:Context) {
+    for (let x,y,p of mat) {
+        p=getTop(x,y);
+        if (p===0) continue;
+        let pl=getPlayer(p);
+        if (checkCon(x,y,pl)) return pl;
+    }
+    return actionsEvents(ctx).length==0;
+    //throw new Error("Abstract: メソッドgameoverが実装されていません");    
+}
+\checkCon(x,y,pl) {
+    for (let vy=-1;vy<=1;vy++) {
+        for (let vx=-1;vx<=1;vx++) {
+            if (vx==0&&vy==0)continue;
+            if (checkConDir(x,y,vx,vy,pl)) return pl;
+        }        
+    }
+    return false;
+}
+\checkConDir(x,y,vx,vy,pl) {
+    //print("chkcond",x,y,vx,vy,pl);
+    for (let i=0;i<2;i++) {
+        x+=vx;
+        y+=vy;
+        if (x<0) return false;
+        if (y<0) return false;
+        if (x>=3) return false;
+        if (y>=3) return false;
+        let p=getTop(x,y);
+        if (p===0) return false;
+        //print ("ch",x,y,getPlayer((x,y)));
+        if (getPlayer(p)!=pl) return false;
+    }
+    return pl;
+}
+
+\toString() {
+    let buf="",py=0;
+    for (let x,y,p of mat) {
+        if (y!=py) buf+="\n";
+        py=y;
+        if (!p.map) throw new Error(`Not ary ${x},${y}`);
+        let pp=(p.length==0 ? "-": p[p.length-1]);
+        if (pp==null) throw new Error("Why undef? p.length="+p.length);
+        buf+=pp+" ";
+    }
+    buf+="\nHaving: "+having;
+    buf+="\n"+"Player "+player;
+    return buf;
+}

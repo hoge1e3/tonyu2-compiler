@@ -1,0 +1,23 @@
+extends Bot;
+//1手だけ先読み
+var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
+\play(ctx, s:State):Action {
+    if (!ctx) throw new Error("CTX is null");
+    var acts=s.actionsEvents(ctx);
+    var player=s.player;
+    // todo: Event
+    var maxv=-100, besta;
+    //print("from "+s);
+    var acvs=acts.map \(a:Action) {
+        var ns=s.next(ctx, a);
+        var v=value(ctx, player, ns);
+        return {value:v, action:a};        
+    };
+    acvs.sort \{return rnd()-0.5;};
+    acvs.sort \(a,b){return b.value-a.value;};
+    if (!acvs[0].action) {
+        print(acvs);
+        throw new Error("Action is null!");
+    }
+    return acvs[0].action;
+}

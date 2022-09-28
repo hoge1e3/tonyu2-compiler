@@ -1,0 +1,17 @@
+extends TObject;
+var q,n;
+\new(q,n) {
+    this.q=q;
+    this.n=n;
+}
+\inc(qby:Number) {
+    return new Rational(q+qby,n+1);
+}
+\value {
+    if (n==0) return 0;
+    return nanc(q/n);
+}
+\nanc(v) {
+    if (v!==v) throw new Error(q+" / "+n);
+    return v;
+}

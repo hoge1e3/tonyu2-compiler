@@ -1,0 +1,6 @@
+
+
+/*\id() {
+    throw new Error("Abstract Action.idが実装されていません");
+}*/
+// actionsEvents が常に同じものを返すと期待して，番号で管理

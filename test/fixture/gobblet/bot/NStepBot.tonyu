@@ -1,0 +1,37 @@
+extends Bot;
+//n手先読み
+var n:Number;
+var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
+\play(ctx, s:State):Action {
+    var a=playN(ctx,s,n);
+    if (!a[0]) {
+        throw new Error("Action is null 2! "+n);
+    }
+    return a[0];
+}
+\playN(ctx, s:State, n:Number)/*Action[]*/ {
+    if (n<=0) return [];
+    if (!ctx) throw new Error("CTX is null");
+    var acts=s.actionsEvents(ctx);
+    if (acts.length==0) return [];
+    var player=s.player;
+    // todo: Event
+    var maxv=-100, besta;
+    //print("from "+s);
+    var acvs=acts.map \(a:Action) {
+        var ns=s.next(ctx, a);
+        var sa=playN(ctx,ns,n-1);
+        for (var ae of sa) {
+            ns=ns.next(ctx,ae);
+        }
+        var v=value(ctx, player, ns);
+        return {value:v, actions:[a].concat(sa)};        
+    };
+    acvs.sort \{return rnd()-0.5;};
+    acvs.sort \(a,b){return b.value-a.value;};
+    /*if (!acvs[0].actions[0]) {
+        print(acvs);
+        throw new Error("Action is null!");
+    }*/
+    return acvs[0].actions;
+}

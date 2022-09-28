@@ -5,6 +5,7 @@ const FS=require("./src/lib/FS");
 const root=require("./src/lib/root");
 const {sourceFiles}=require("./src/lang/SourceFiles");
 const compiledProject=require("./src/project/CompiledProject");
+const NS2DepSpec=require("./src/project/NS2DepSpec");
 const prjPath=process.argv[2];
 const run=process.argv.indexOf("-r")>=0;
 const daemon=process.argv.indexOf("-d")>=0;
@@ -26,6 +27,20 @@ const prjDir=(()=>{
 })();
 F.addType("compilable",({dir})=>{
     return F.createDirBasedCore({dir}).include(langMod);
+});
+/*const ns2depspec=new NS2DepSpec([
+    {namespace:"kernel", dir: "test/fixure/Kernel_offscr/"},
+]);*/
+F.addDependencyResolver((prj,spec)=>{
+    if (spec && spec.namespace==="kernel") {
+        return compiledProject.create({
+            dir:FS.get(process.cwd()).rel("test/fixture/Kernel_offscr/")
+        });
+    }
+    /*const s=(ns2depspec.has(spec.namespace));
+    if (s) {
+        return F.fromDependencySpec(prj, s);
+    }*/
 });
 const prj=F.create("compilable",{dir:prjDir});  //F.createDirBasedCore({dir:prjDir}).include(langMod);
 const builder=new Builder(prj);

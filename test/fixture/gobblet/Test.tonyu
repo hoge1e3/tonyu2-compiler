@@ -1,0 +1,20 @@
+let mat=new Matrix;
+let r=3;
+for (let i=0;i<r;i++) {
+    for (let j=0;j<r;j++) {
+        mat.set(j,i,[]);
+    }
+}
+mat.set(0,0,[3,5]);
+mat.set(1,0,[5]);
+mat.set(2,0,[6]);
+let player=1;
+let state=new Board{mat,player,having:[1,1,2,2,3,3,4,4,5,5,6,6],cnt:0,
+    lastPut:[0,0,0]
+};
+
+/*print(state.getPlayer(state.getTop(0,0)));
+print(state.getPlayer(state.getTop(1,0)));
+print(state.getPlayer(state.getTop(2,0)));*/
+print(state.gameover());
+print(state);
