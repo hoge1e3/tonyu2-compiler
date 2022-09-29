@@ -6,6 +6,7 @@ var value; // (ctx, player, state)=>number (playerにとってのstateの評価�
 var iteration;
 var player;
 let timeout;
+let lastRootNode, lastActions;
 //var rootNode={};
 /*Node={
     parent?: Node,
@@ -83,6 +84,7 @@ let timeout;
 }
 \play(ctx:Context, s:State):Action {
     let expcount=0;
+    lastRootNode=null;
     var rootNode={
         parent: null, 
         state: s,
@@ -120,6 +122,8 @@ let timeout;
     //print (acts.length , rootNode.subnodes.length, ma);
     if (!acts[ma]) throw new Error("Action not found "+ma);
     print("EXP",expcount);
+    lastRootNode=rootNode;
+    lastActions=acts;
     return acts[ma];
 }
 /*\play(ctx:Context, s:State):Action {

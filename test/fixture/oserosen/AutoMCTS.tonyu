@@ -144,6 +144,23 @@ if($gameConfig.replay=="true"){//リプレイtrueの時
     }
     print("replay Complete");
     print(g.state.value($gameConfig, 1),g.state.value($gameConfig, 2));
+    print(g.state.nextIsEvent($gameConfig));//true
+    g.step();//サイコロ振る
+    print(g.state);
+    print(g.state.nextIsEvent($gameConfig));//false
+    let lastBot=$gameConfig.bots[g.state.player];//考えさせるBot
+    g.step();//lastBotに1ターンだけ考えさせる
+    print(g.state);
+    print(g.state.nextIsEvent($gameConfig));//true
+    //考えさせたBotの頭の中を見る．
+    let lastNode=lastBot.lastRootNode;
+    let lastActions=lastBot.lastActions;
+    if (lastNode && lastActions) {
+        for (let a=0;a<lastNode.subnodes.length;a++) {
+            let qc=lastBot.q(lastNode,a);
+            print(lastActions[a], qc);
+        }
+    }
 }else{
     while ($loopCount && $loopCount<Number(process.argv[10])+1) {
         print("Game Start!");
