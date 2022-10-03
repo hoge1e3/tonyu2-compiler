@@ -172,7 +172,7 @@ if($gameConfig.replay=="true"){//リプレイtrueの時
             print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
             //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
             //ここでログを取る
-            var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2)};//通常プレイ時のログ取得
+            var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2),dice:d};//通常プレイ時のログ取得
             update();
         }
 
