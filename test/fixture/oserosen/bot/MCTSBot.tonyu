@@ -7,6 +7,7 @@ var iteration;
 var player;
 let timeout;
 let lastRootNode, lastActions;
+let expcount=0;
 //var rootNode={};
 /*Node={
     parent?: Node,
@@ -30,6 +31,7 @@ let lastRootNode, lastActions;
             subnodes: null,
         };
     };
+    expcount++;
     return node;
 }
 \str(s) {
@@ -83,7 +85,7 @@ let lastRootNode, lastActions;
     return node;
 }
 \play(ctx:Context, s:State):Action {
-    let expcount=0;
+    expcount=0;
     lastRootNode=null;
     var rootNode={
         parent: null, 
@@ -106,7 +108,7 @@ let lastRootNode, lastActions;
         var endState=rollout(ctx, leaf, timeout);
         var v=value(ctx, s.player, endState);
         backup(leaf, v);
-        if (expcount>=300) break;
+        //if (expcount>=300) break;
     }
     //print ("RN",rootNode);
     var ma=-1,mqc=0;
