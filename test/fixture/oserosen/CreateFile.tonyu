@@ -4,13 +4,10 @@ textName = "../files/"+folder+"/"+String($loopCount)+"_log.txt";
 f=file(textName);
 
 if(logStationName){
-    f.appendText(logStationName+"\t"+logOwner+"\t"+rsta+"\t"+bsta+"\t"+dice+"\n");
-}/*else{
-    if($firstPlayer){
-        f.appendText(taken+"win");
-    }
-    //f.appendText(count+"ゲーム目\n");
-}*/
+    f.appendText(logStationName+"\t"+logOwner+"\t"+rsta+"\t"+bsta+"\n");
+}else{
+    f.appendText("dice"+"\t"+dice+"\n");
+}
 
 /*
 if(attackedStation){
