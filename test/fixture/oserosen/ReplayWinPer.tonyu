@@ -2,7 +2,10 @@ f=file("replay.txt");//途中からの場合は事前にここのファイル名
 var replayActions=[];
 for(var line of f.lines()){
     var line2 = line.split("\t");
-    var data = {station:line2[0],player:line2[1]};
+    if(line2[0]=="dice"){
+        var data = {text:"dice",value:line2[1]};
+    }
+    var data = {text:line2[0],value:line2[1]};
     replayActions.push(data);
 }
 

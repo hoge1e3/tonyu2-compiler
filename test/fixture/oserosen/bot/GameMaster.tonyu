@@ -35,7 +35,12 @@ var context:Context;
     }
 }
 \replayStep(rep){
-    let action={stext:rep.station};
+    print(rep);
+    if(rep.text=="dice"){
+        let action={num:rep.value};
+    }else{
+        let action={stext:rep.text};
+    }
     state=state.next(context, action);
     if (!state) throw new Error("state is null!");
     return action;
