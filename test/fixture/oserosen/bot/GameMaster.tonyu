@@ -36,10 +36,11 @@ var context:Context;
 }
 \replayStep(rep){
     print(rep);
+    let action;
     if(rep.text=="dice"){
-        let action={num:rep.value};
+        action={num:Number(rep.value)};
     }else{
-        let action={stext:rep.text};
+        action={stext:rep.text};
     }
     state=state.next(context, action);
     if (!state) throw new Error("state is null!");

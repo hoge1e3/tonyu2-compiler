@@ -4,8 +4,9 @@ for(var line of f.lines()){
     var line2 = line.split("\t");
     if(line2[0]=="dice"){
         var data = {text:"dice",value:line2[1]};
+    }else{
+        var data = {text:line2[0],value:line2[1]};
     }
-    var data = {text:line2[0],value:line2[1]};
     replayActions.push(data);
 }
 

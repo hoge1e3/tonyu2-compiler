@@ -150,8 +150,8 @@ if($gameConfig.replay=="true"){//リプレイtrueの時
     print(g.state.nextIsEvent($gameConfig));//false
     let lastBot=$gameConfig.bots[g.state.player];//考えさせるBot
     g.step();//lastBotに1ターンだけ考えさせる
-    print(g.state);
-    print(g.state.nextIsEvent($gameConfig));//true
+    //print(g.state);
+    //print(g.state.nextIsEvent($gameConfig));//true
     //考えさせたBotの頭の中を見る．
     let lastNode=lastBot.lastRootNode;
     let lastActions=lastBot.lastActions;
