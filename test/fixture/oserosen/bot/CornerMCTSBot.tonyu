@@ -6,6 +6,8 @@ var value; // (ctx, player, state)=>number (playerにとってのstateの評価�
 var iteration;
 var player;
 var timeout;
+let lastRootNode, lastActions;
+
 "field strict";
 //var rootNode={};
 /*Node={
@@ -123,7 +125,7 @@ var expcount=0;
         var endState=rollout(ctx, leaf, timeout);
         var v=value(ctx, s.player, endState);
         backup(leaf, v);
-        if (expcount>=300) break;
+        //if (expcount>=300) break;
     }
     //print ("RN",rootNode);
     var ma=-1,mqc=0;
@@ -139,6 +141,8 @@ var expcount=0;
     //print (acts.length , rootNode.subnodes.length, ma);
     if (!acts[ma]) throw new Error("Action not found "+ma);
     print("EXP",expcount);
+    lastRootNode=rootNode;
+    lastActions=acts;
     return acts[ma];
 }
 \backup(node, value:Number) {

@@ -143,9 +143,9 @@ if($gameConfig.replay=="true"){//リプレイtrueの時
         update();
     }
     print("replay Complete");
-    print(g.state.value($gameConfig, 1),g.state.value($gameConfig, 2));
+    /*print(g.state.value($gameConfig, 1),g.state.value($gameConfig, 2));
     print(g.state.nextIsEvent($gameConfig));//true
-    g.step();//サイコロ振る
+    g.step();//サイコロ振る*/
     print(g.state);
     print(g.state.nextIsEvent($gameConfig));//false
     let lastBot=$gameConfig.bots[g.state.player];//考えさせるBot

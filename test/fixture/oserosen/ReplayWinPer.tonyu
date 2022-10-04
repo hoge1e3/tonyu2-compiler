@@ -2,6 +2,7 @@ f=file("replay.txt");//途中からの場合は事前にここのファイル名
 var replayActions=[];
 for(var line of f.lines()){
     var line2 = line.split("\t");
+    if (line2.length<2) continue;
     if(line2[0]=="dice"){
         var data = {text:"dice",value:line2[1]};
     }else{
