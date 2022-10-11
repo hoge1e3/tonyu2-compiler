@@ -7,6 +7,7 @@ var iteration;
 var player;
 let timeout;
 let lastRootNode, lastActions;
+let timeoutCount=0;
 let expcount=0;
 //var rootNode={};
 /*Node={
@@ -87,6 +88,7 @@ let expcount=0;
 \play(ctx:Context, s:State):Action {
     expcount=0;
     lastRootNode=null;
+    timeoutCount=0;
     var rootNode={
         parent: null, 
         state: s,
@@ -108,7 +110,7 @@ let expcount=0;
         var endState=rollout(ctx, leaf, timeout);
         var v=value(ctx, s.player, endState);
         backup(leaf, v);
-        //if (expcount>=300) break;
+        //if (expcount>=3000) break;
     }
     //print ("RN",rootNode);
     var ma=-1,mqc=0;
@@ -123,12 +125,11 @@ let expcount=0;
     var acts=s.actionsEvents(ctx);
     //print (acts.length , rootNode.subnodes.length, ma);
     if (!acts[ma]) throw new Error("Action not found "+ma);
-    print("EXP",expcount);
+    print("EXP",expcount," TO",timeoutCount);
     lastRootNode=rootNode;
     lastActions=acts;
     return acts[ma];
 }
-
 \backup(node, value:Number) {
     while(node) {
         node.q=node.q.inc(value);
@@ -136,13 +137,13 @@ let expcount=0;
     }
 }
 
-\rollout(ctx, node,timeout) {
+\rollout(ctx, node, timeout) {
     var state=getState(ctx, node);
     var t=new Date().getTime();
     while (!state.gameover(ctx)) {
         var a=playRandom(ctx, state);
         state=state.next(ctx, a);
-        if (new Date().getTime()-t>timeout) break;
+        if (new Date().getTime()-t>timeout) {timeoutCount++;break;}
     }
     return state;
 }
@@ -169,3 +170,12 @@ let expcount=0;
     if (v!==v) throw new Error("Nan");
     return v;
 }
+/*\hasNode(s:State) {
+    var sk=s.id();
+    return nodes[sk];
+}
+\getNode(s:State) {
+    var sk=s.id();
+    if (!nodes[sk]) throw new Error(sk+" not found");
+    return nodes[sk];
+}*/
