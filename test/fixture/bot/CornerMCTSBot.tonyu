@@ -1,0 +1,247 @@
+extends Bot;
+//https://blog.brainpad.co.jp/entry/2018/04/05/163000
+var Cp;
+var expandThresh;
+var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
+var iteration;
+var player;
+var timeout;
+let lastRootNode, lastActions;
+
+"field strict";
+//var rootNode={};
+/*Node={
+    parent?: Node,
+    state:State,
+    q: Rational
+    n: number,
+    actions: Node[]?
+}*/
+var expcount=0;
+\expand(ctx:Context, node) {
+    /*var sk=s.id();
+    if (nodes[sk]) throw new Error(sk+" already found");*/
+    if (node.n<expandThresh) throw new Error(node.n+"<"+expandThresh);
+    if (node.subnodes) throw new Error("already expanded");
+    expcount++;
+    var s:Board = getState(ctx, node);
+    node.actions=s.actionsEvents(ctx);
+    if(s.diceNum !=null){
+        var hasCorner=node.actions.some(isCorner);
+    }
+    node.subnodes=node.actions.map \(a) {
+        var q,n;
+        if(s.diceNum==null){
+            q=new Rational(0,0); n=0;
+        }else if (!hasCorner) {//角の駅がない場合，全部0にする
+            q=new Rational(0,0); n=0;
+        } else if (isCorner(a)) {//角の駅なら，得点up&まだ辿っていない
+            q=new Rational(5,0); n=0;
+        } else {
+            q=new Rational(0,0); n=1;//角じゃない駅は「すでにたどった扱い」にすると，辿りにくくなるかも
+        }
+        //q=new Rational(0,0); n=0;
+        return {
+            parent: node, 
+            //state: node.state.next(ctx,a),
+            q, 
+            n, 
+            //a:str(a),
+            //actions: null,
+        };
+    };
+    return node;
+}
+\str(s) {
+    var r=s+"";
+    if (r=="[object Object]") return s;
+    return r;
+}
+\c(node, a:Number) {
+    var nsa=n(node,a);
+    var _n=n(node);
+    if (nsa==0 || _n==0) return 1000000-rnd();
+    return nanc( Cp*sqrt(2*$Math.log(_n))/nsa );
+}
+\q(node, a:Number) {
+    if (a==null) {
+        return node.q.value;
+    } else {
+        if (!node.subnodes) throw new Error("Not expanded");
+        return node.subnodes[a].q.value;
+    }
+}
+\n(node, a:Number) {
+    if (a==null) {
+        return nanc( node.n );
+    } else {
+        if (!node.subnodes) throw new Error("Not expanded");
+        return nanc( node.subnodes[a].n );
+    }
+}
+\selection(ctx:Context, node) {
+    // return leaf node
+    if (!node.subnodes) throw new Error("Not expanded");
+    while (true) {
+        var subs=node.subnodes;
+        node.n+=1;
+        if (!subs || subs.length==0) break;
+        var sgn=(getState(ctx, node).player===player?1:-1);
+        var ma=-1,mqc=0,test;
+        for (var a=0;a<subs.length;a++) {
+            var qc=q(node,a)*sgn+c(node,a);
+            subs[a].test="q="+q(node,a)*sgn+" c="+c(node,a);
+            if (ma<0 || qc>=mqc) {
+                mqc=qc;
+                ma=a;
+            }
+        }
+        //acts[ma].qc=test;
+        //acts[ma].n+=1;
+        node=subs[ma];
+    }
+    return node;
+}
+\play(ctx:Context, s:State):Action {
+    expcount=0;
+    var rootNode={
+        parent: null, 
+        state: s,
+        q:new Rational(0,0), 
+        n:expandThresh+1, 
+        actions: null,
+    };
+    player=s.player;
+    nanc(expandThresh);
+    expand(ctx,rootNode);
+    for (var i=0;i<iteration;i++) {
+        while(true) {
+            var leaf=selection(ctx, rootNode);
+            if (n(leaf)<expandThresh) break;
+            if (leaf.subnodes && leaf.subnodes.length==0) break;
+            expand(ctx, leaf);
+        }
+        // print("leaf", leaf);
+        var endState=rollout(ctx, leaf, timeout);
+        var v=value(ctx, s.player, endState);
+        backup(leaf, v);
+        //if (expcount>=300) break;
+    }
+    //print ("RN",rootNode);
+    var ma=-1,mqc=0;
+    for (var a=0;a<rootNode.subnodes.length;a++) {
+        var qc=q(rootNode,a);
+        //print("QC", a,qc);
+        if (ma<0 || qc>=mqc) {
+            mqc=qc;
+            ma=a;
+        }
+    }
+    var acts=s.actionsEvents(ctx);
+    //print (acts.length , rootNode.subnodes.length, ma);
+    if (!acts[ma]) throw new Error("Action not found "+ma);
+    print("EXP",expcount);
+    lastRootNode=rootNode;
+    lastActions=acts;
+    return acts[ma];
+}
+\backup(node, value:Number) {
+    while(node) {
+        node.q=node.q.inc(value);
+        node=node.parent;
+    }
+}
+\getState(ctx, node){
+    if (node.state) return node.state;
+    var p=node.parent;
+    var idx=p.subnodes.indexOf(node);
+    if (idx<0) throw new Error("Index not found");
+    var act=p.actions[idx];
+    if (!act) throw new Error("Action not found "+idx);
+    node.state=getState(ctx, p).next(ctx, act);
+    return node.state;
+}
+
+\rollout(ctx, node, timeout) {
+    var state=getState(ctx, node);
+    var t=new Date().getTime();
+    while (!state.gameover(ctx)) {
+        var a=playRandom(ctx, state);
+        state=state.next(ctx, a);
+        if (new Date().getTime()-t>timeout) break;
+    }
+    return state;
+}
+
+\isCorner(a){
+    if($stations[a.stext].nexts.length == $stations[a.stext].lines.length){//角の駅かを判定
+        return true;//角ならtrue
+    }else{
+        return false;
+    }
+}
+
+\playRandom(ctx:Context, s:State):Action {
+    //ここを角を取る処理に変える
+    if (!ctx) throw new Error("CTX is null");
+    var acts=s.actionsEvents(ctx);
+    var a=acts[rnd(acts.length)];
+    //var a=spraying(acts);
+    return a;
+}
+\nanc(v) {
+    if (typeof v!=="number") throw new Error("null");
+    if (v!==v) throw new Error("Nan");
+    return v;
+}
+/*\hasNode(s:State) {
+    var sk=s.id();
+    return nodes[sk];
+}
+\getNode(s:State) {
+    var sk=s.id();
+    if (!nodes[sk]) throw new Error(sk+" not found");
+    return nodes[sk];
+}*/
+/*
+\searchCorner(stationArray){//取られていない角の駅の配列を受け取る
+    var biggest=stationArray[0];
+    for(var i=1;i<stationArray.length;i++){
+        if($stations[biggest].nexts.length < $stations[stationArray[i]].nexts.length){
+        //隣接駅数が多ければそちらを最大の角とする
+            biggest=stationArray[i];
+        }
+    }
+    return biggest;
+}
+
+\spraying(acts){
+    var choice;
+    var stn;
+    var kouho=[];
+    
+    for(stn of acts){
+        if($stations[stn.stext].nexts.length == $stations[stn.stext].lines.length){//角の駅かを判定
+            kouho.push(stn.stext);//角ならkouhoに追加
+        }
+    }
+    if(kouho.length>0){
+        return {stext:searchCorner(shuffle(kouho))};
+    }else{
+        return acts[rnd(acts.length)];//ランダムを返す
+    }
+}
+
+\shuffle(stArray){//kouhoを受け取る
+    var newArray=[];
+    var choice;
+    var z;
+    while(true){
+        z=stArray.splice([rnd(stArray.length)],1);
+        newArray.push(z[0]);//ランダムな1駅を選び新たな配列の末尾に追加する
+        if(stArray.length==0){
+            break;
+        }
+    }
+    return newArray;//ランダムな順になった配列を返す
+}*/
