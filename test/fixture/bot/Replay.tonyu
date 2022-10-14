@@ -1,0 +1,33 @@
+
+let logFle;
+let state: State;
+let context: Context;
+let lines: String[];
+\new(params) {
+    super(params);
+    logFile=file(logFile);
+    lines=logFile.lines();
+}
+\step():Boolean {
+    let pat=/Action:(.*)/;
+    while (true) {
+        let r=lines.shift();
+        if (!r) return false;
+        let m=pat.exec(r);
+        if (!m) continue;
+        let a=$JSON.parse(m[1]);
+        state=state.next(context, a);
+        return true;
+    }
+}
+\dump(bot){
+    bot.play(context, state);
+    let lastNode=bot.lastRootNode;
+    let lastActions=bot.lastActions;
+    if (lastNode && lastActions) {
+        for (let a=0;a<lastNode.subnodes.length;a++) {
+            let qc=bot.q(lastNode,a);
+            print(lastActions[a], qc);
+        }
+    }
+}

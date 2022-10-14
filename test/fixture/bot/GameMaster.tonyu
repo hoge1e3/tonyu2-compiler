@@ -1,6 +1,7 @@
 
 var state;
 var context:Context;
+let logger;
 /*\addPlayerIndex() {
     var idx=0;
     for (var p of context.players) {
@@ -24,27 +25,22 @@ var context:Context;
             if (rate<ratesum) {selevent=event;break;}
         }
         if (!selevent) throw new Error("Event is not selected");
+        if (logger) logger.action(selevent);
         state=state.next(context,selevent);
         if (!state) throw new Error("state is null!");
         return selevent;
     } else {
-        let action=getBot(state.player).play(context, state);
+        let bot=getBot(state.player);
+        let action=bot.play(context, state);
+        if (logger) {
+            logger.add("Player: "+state.player);
+            logger.botStatus(bot);
+            logger.action(action);
+        }
         state=state.next(context, action);
         if (!state) throw new Error("state is null!");
         return action;
     }
-}
-\replayStep(rep){
-    print(rep);
-    let action;
-    if(rep.text=="dice"){
-        action={num:Number(rep.value)};
-    }else{
-        action={stext:rep.text};
-    }
-    state=state.next(context, action);
-    if (!state) throw new Error("state is null!");
-    return action;
 }
 \getBot(p:Player) {
     //if (p.bot) return p.bot;

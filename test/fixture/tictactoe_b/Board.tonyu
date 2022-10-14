@@ -1,0 +1,62 @@
+extends State;
+
+let mat:Matrix; // 0 あき  1 白 2 黒
+let player:Number;
+\next(ctx:Context, a):State {
+    //a:Action|Event
+    let nm=mat.clone();
+    nm.set(a.x,a.y,player);
+    let foe=3-player;
+    return new Board{mat:nm, player:foe};
+}
+
+\actionsEvents(ctx:Context) {
+    //: Action[] | Event[] 
+    // Action:プレイヤーがとる行動
+    // Event :ランダムに起きる事象（サイコロなど）
+    // Eventオブジェクトにはフィールドprob(確率を表す0..1の数値)を含め，
+    // Event配列のprobの合計値が1になるようにしてください
+    // ActionとEventを混ぜて返すことはできません．
+    // 常に同じ順序で同じものを返してください
+    let res=[];
+    let kings=0;
+    for (let x,y,p of mat) {
+        if (p===0) res.push{x,y};
+    }
+    return res;
+}
+\gameover(ctx:Context) {
+    for (let x,y,p of mat) {
+        if (p!==0 && checkCon(x,y,p)) return p;
+    }
+    return actionsEvents(ctx).length==0;
+    //throw new Error("Abstract: メソッドgameoverが実装されていません");    
+}
+\checkCon(x,y,p) {
+    for (let vy=-1;vy<=1;vy++) {
+        for (let vx=-1;vx<=1;vx++) {
+            if (vx==0&&vy==0)continue;
+            if (checkConDir(x,y,vx,vy,p)) return p;
+        }        
+    }
+    return false;
+}
+\checkConDir(x,y,vx,vy,p) {
+    for (let i=0;i<3;i++) {
+        if (mat.get(x,y)!=p) return false;
+        x+=vx;
+        y+=vy;
+    }
+    return p;
+}
+
+\toString() {
+    let buf="",py=0;
+    for (let x,y,p of mat) {
+        if (y!=py) buf+="\n";
+        py=y;
+        buf+=p+" ";
+    }
+    buf+="\n"+"Player "+player;
+    return buf;
+}

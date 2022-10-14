@@ -1,0 +1,93 @@
+native process;
+//$Screen.resize(200,600);
+let bots=[];
+\value(ctx:Context, player: Number, state:Board) {
+    /*let acts=state.actionsEvents(ctx);
+    if (acts.length===0) {
+        if (player===state.player) return 0;
+        else return 1;
+    }*/
+    let win=state.gameover(ctx);
+    if (!win || win===true ) {
+        return 0.5;
+    } else if (player===win) {
+        return 1;
+    } else {
+        return 0;
+    }
+    
+}
+let logf=file("log.txt");
+let its=[30,300,3000];
+let it1=10000,it2=15000;//rnd(2000,6000),it2=rnd(2000,6000);
+let to1=rnd()*10+2.1, to2=rnd()*10+2.1;
+let tt1=rnd(1000,5000), tt2=rnd(1000,5000) ;
+let komas;
+if (process.argv[4]) {
+    replay(process.argv[4]);
+    return;
+}
+for (let i=0;i<100;i++) {
+    match();   
+}
+
+\replay(fn) {
+    let bot=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: tt1, timeout:to1, iteration:100000};
+    let context=new Context{players:[1,2], bots};
+    let state=initialState(context);
+    let re=new Replay{logFile:process.argv[4], state, context};
+    for (let i=0;i<3;i++) re.step();
+    print(re.state);
+    re.dump(bot);
+}
+\initialState(context) {
+    let mat=new Matrix;
+    let r=3;
+    for (let i=0;i<r;i++) {
+        for (let j=0;j<r;j++) {
+            mat.set(j,i,0);
+        }
+    }
+    let player=1;
+    let state=new Board{mat,player};
+    return state;
+}
+\match() {
+    print("iters:" ,it1, it2);
+    //print("totaltimes:", tt1, tt2);
+    //print("timeouts:", to1, to2);
+    bots[1]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: tt1, timeout:to1, iteration:it1};
+    bots[2]=new MCTSBot{Cp:1,expandThresh: 3, value, totalTime: tt2, timeout:to2, iteration:it2};
+    let context=new Context{players:[1,2], bots};
+    let state=initialState(context);
+    let logger=new Logger();
+    let g=new GameMaster{context, state, logger};
+    print(g.state+"");
+    let winner=0;
+    while (!(winner=g.gameover())) {
+        let a=g.step();
+        print(a.x, a.y, a.dx, a.dy);
+        print(g.state+"");
+        print(value(context, g.state.player, g.state ));
+        logf.appendText(g.state+"\n");
+        updateEx(1);
+    }
+    //print(it1, it2);
+    //print(tt1, to1, tt2, to2);
+    print("winner is ",winner);
+    logger.add("Winner: "+winner);
+    logf.appendText("winner is "+winner+"\n");
+    //logf.appendText(tt1+","+to1+","+tt2+","+to2+","+winner+"\n");
+    /*
+    logf.appendText(it1+","+it2+","+g.state.player+"\n");
+    if (g.state.player==1) {
+        it1+=rnd(100,200);
+        it2-=rnd(100,200);
+    } else {
+        it1-=rnd(100,200);
+        it2+=rnd(100,200);
+    }
+    it1=rnd(1000,4000);it2=rnd(1000,4000);*/
+    //tt1=rnd(1000,5000); tt2=rnd(1000,5000) ;
+    //to1=rnd()*10+0.1; to2=rnd()*10+0.1;
+}

@@ -37,3 +37,7 @@ var player:Player;//この盤面の次にプレイするプレイヤー
 \playerIndex(ctx, p) {
     return ctx.players.indexOf(p);    
 }
+\nextIsEvent(ctx:Context) {
+    // この状態の次にイベントが発生する（サイコロを振るなど）場合はtrue
+    return false;
+}

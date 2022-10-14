@@ -1,0 +1,29 @@
+native process;
+let logFile;
+\new(params) {
+    super(params);
+    let argvs=[...process.argv];
+    argvs.shift();
+    argvs.shift();
+    logFile=logFile|| ( formatDate(new Date())+argvs.join("_") ).replace(/[\s\/\\\:\?\*\<\>\|]/g,"_")+".txt";
+    print("logFileName",logFile);
+    logFile=file(logFile);
+}
+\formatDate(d) {
+    let p=\(n){return ((10000+n)+"").substring(3,5);}; 
+    return (1900+d.getYear())+"/"+ p(d.getMonth()+1) +"/"+p(d.getDate())+" "+
+    p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+}
+\add(line) {
+    logFile.appendText(formatDate(new Date())+": "+line+"\n");
+}
+\action(act) {
+    act=$JSON.stringify(act);
+    add("Action: "+act);
+}
+\botStatus(bot) {
+    add(`Bot: ITER=${bot.iterated} EXP=${bot.expcount} T/O=${bot.timeoutCount}`);
+}
+\argv() {
+    add("argv: "+process.argv.join(" "));
+}

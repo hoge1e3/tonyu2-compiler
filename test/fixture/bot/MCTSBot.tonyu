@@ -9,6 +9,7 @@ let timeout;
 let lastRootNode, lastActions;
 let timeoutCount=0;
 let expcount=0;
+let iterated=0;
 //var rootNode={};
 /*Node={
     parent?: Node,
@@ -17,17 +18,23 @@ let expcount=0;
     n: number,
     subnodes: Node[]?
 }*/
+\initNodeVal(s,a) {
+    return {q:new Rational(0,0), n:0};
+}
 \expand(ctx:Context, node) {
     /*var sk=s.id();
     if (nodes[sk]) throw new Error(sk+" already found");*/
     if (node.n<expandThresh) throw new Error(node.n+"<"+expandThresh);
     if (node.subnodes) throw new Error(node.state+" already expanded");
-    node.subnodes=node.state.actionsEvents(ctx).map \(a) {
+    let s:State = getState(ctx, node);
+    node.actions=s.actionsEvents(ctx);
+    node.subnodes=node.actions.map \(a) {
+        let r=initNodeVal(s, a);
         return {
             parent: node, 
             state: node.state.next(ctx,a),
-            q:new Rational(0,0), 
-            n:0, 
+            q:r.q, 
+            n:r.n, 
             a:str(a),
             subnodes: null,
         };
@@ -99,6 +106,7 @@ let expcount=0;
     player=s.player;
     nanc(expandThresh);
     expand(ctx,rootNode);
+    iterated=0;
     for (var i=0;i<iteration;i++) {
         while(true) {
             var leaf=selection(ctx, rootNode);
@@ -106,6 +114,7 @@ let expcount=0;
             if (leaf.subnodes && leaf.subnodes.length==0) break;
             expand(ctx, leaf);
         }
+        iterated++;
         // print("leaf", leaf);
         var endState=rollout(ctx, leaf, timeout);
         var v=value(ctx, s.player, endState);
