@@ -18,8 +18,8 @@ let iterated=0;
     n: number,
     subnodes: Node[]?
 }*/
-\initNodeVal(s,a) {
-    return {q:new Rational(0,0), n:0};
+\initNodeValues(state,actions) {
+    return actions.map\{return {q:new Rational(0,0), n:0};};
 }
 \expand(ctx:Context, node) {
     /*var sk=s.id();
@@ -28,8 +28,9 @@ let iterated=0;
     if (node.subnodes) throw new Error(node.state+" already expanded");
     let s:State = getState(ctx, node);
     node.actions=s.actionsEvents(ctx);
-    node.subnodes=node.actions.map \(a) {
-        let r=initNodeVal(s, a);
+    let vals=initNodeValues(s,node.actions);
+    node.subnodes=vals.map \(r, i) {
+        let a=node.actions[i];
         return {
             parent: node, 
             state: node.state.next(ctx,a),

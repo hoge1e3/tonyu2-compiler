@@ -330,14 +330,16 @@ Tonyu.klass.define({
         
         argvs.shift();
         argvs.shift();
-        _this.logFile=_this.logFile||(_this.formatDate(new Date())+argvs.join("_")).replace(/[\/\\\:\?\*\<\>\|]/g,"_")+".txt";
+        argvs.shift();
+        argvs.shift();
+        _this.logFile=_this.logFile||(_this.formatDate(new Date())+argvs.join("_")).replace(/[\s\/\\\:\?\*\<\>\|]/g,"_")+".txt";
         _this.print("logFileName",_this.logFile);
         _this.logFile=_this.file(_this.logFile);
       },
       formatDate :function _trc_Logger_formatDate(d) {
         var _this=this;
         
-        let p = (function anonymous_344(n) {
+        let p = (function anonymous_386(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -348,7 +350,7 @@ Tonyu.klass.define({
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        let p = (function anonymous_344(n) {
+        let p = (function anonymous_386(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -455,16 +457,22 @@ Tonyu.klass.define({
         
         
       },
-      initNodeVal :function _trc_MCTSBot_initNodeVal(s,a) {
+      initNodeValues :function _trc_MCTSBot_initNodeValues(state,actions) {
         var _this=this;
         
-        return {q: new Tonyu.classes.bot.Rational(0,0),n: 0};
+        return actions.map((function anonymous_479() {
+          
+          return {q: new Tonyu.classes.bot.Rational(0,0),n: 0};
+        }));
       },
-      fiber$initNodeVal :function* _trc_MCTSBot_f_initNodeVal(_thread,s,a) {
+      fiber$initNodeValues :function* _trc_MCTSBot_f_initNodeValues(_thread,state,actions) {
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        return {q: new Tonyu.classes.bot.Rational(0,0),n: 0};
+        return actions.map((function anonymous_479() {
+          
+          return {q: new Tonyu.classes.bot.Rational(0,0),n: 0};
+        }));
         
       },
       expand :function _trc_MCTSBot_expand(ctx,node) {
@@ -481,9 +489,11 @@ Tonyu.klass.define({
         let s = _this.getState(ctx,node);
         
         node.actions=s.actionsEvents(ctx);
-        node.subnodes=node.actions.map((function anonymous_859(a) {
+        let vals = _this.initNodeValues(s,node.actions);
+        
+        node.subnodes=vals.map((function anonymous_932(r,i) {
           
-          let r = _this.initNodeVal(s,a);
+          let a = node.actions[i];
           
           return {parent: node,state: node.state.next(ctx,a),q: r.q,n: r.n,a: _this.str(a),subnodes: null};
         }));
@@ -505,9 +515,11 @@ Tonyu.klass.define({
         let s=yield* _this.fiber$getState(_thread, ctx, node);
         
         node.actions=s.actionsEvents(ctx);
-        node.subnodes=node.actions.map((function anonymous_859(a) {
+        let vals=yield* _this.fiber$initNodeValues(_thread, s, node.actions);
+        
+        node.subnodes=vals.map((function anonymous_932(r,i) {
           
-          let r = _this.initNodeVal(s,a);
+          let a = node.actions[i];
           
           return {parent: node,state: node.state.next(ctx,a),q: r.q,n: r.n,a: _this.str(a),subnodes: null};
         }));
@@ -1063,7 +1075,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeVal":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.RandomBot',
@@ -1283,14 +1295,21 @@ Tonyu.klass.define({
         let lastActions = bot.lastActions;
         
         if (lastNode&&lastActions) {
+          let sn = [];
+          
           for (let a = 0;
            a<lastNode.subnodes.length ; a++) {
             {
               let qc = bot.q(lastNode,a);
               
-              _this.print(lastActions[a],qc);
+              sn.push({action: lastActions[a],qc: qc});
             }
           }
+          sn.sort((function anonymous_806(a,b) {
+            
+            return b.qc-a.qc;
+          }));
+          _this.print(sn);
           
         }
       },
@@ -1304,14 +1323,21 @@ Tonyu.klass.define({
         let lastActions = bot.lastActions;
         
         if (lastNode&&lastActions) {
+          let sn = [];
+          
           for (let a = 0;
            a<lastNode.subnodes.length ; a++) {
             {
               let qc = bot.q(lastNode,a);
               
-              _this.print(lastActions[a],qc);
+              sn.push({action: lastActions[a],qc: qc});
             }
           }
+          sn.sort((function anonymous_806(a,b) {
+            
+            return b.qc-a.qc;
+          }));
+          _this.print(sn);
           
         }
         

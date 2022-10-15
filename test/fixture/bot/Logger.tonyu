@@ -5,6 +5,8 @@ let logFile;
     let argvs=[...process.argv];
     argvs.shift();
     argvs.shift();
+    argvs.shift();
+    argvs.shift();
     logFile=logFile|| ( formatDate(new Date())+argvs.join("_") ).replace(/[\s\/\\\:\?\*\<\>\|]/g,"_")+".txt";
     print("logFileName",logFile);
     logFile=file(logFile);
