@@ -1,0 +1,209 @@
+native $;
+native location;
+native process;
+//                                           4    5   6  7     8    9  10    11             12
+// node index.js test\fixture\oserosen_b\ -r mcts 100 2  cmcts 1000 2  1234  replayFile.txt 10
+if(!process.argv[10]){
+    throw new Error("ゲーム実行回数が入力されていません！");
+}
+var player1 = {name:process.argv[4],iteration:process.argv[5],timeout:process.argv[6]};
+var player2 = {name:process.argv[7],iteration:process.argv[8],timeout:process.argv[9]};
+print(player1);
+print(player2);
+
+$folderName1 = player1;//フォルダ生成用
+$folderName2 = player2;//フォルダ生成用
+$loopCount=1;
+
+"field strict";
+$gameConfig={
+    debug=true,
+    player = 2,
+    players = [1,2],
+    replay = {file=process.argv[11], turn=process.argv[12]-0},
+};
+$kintetsu=true;
+//---Main
+//$Screen.setBGColor("white");
+$main=this;
+
+var searching;
+
+if($kintetsu==true){
+    new KLines;
+    update();
+}else{
+    new Lines;//路線と駅のデータ
+    update();
+}
+
+new StationPlace;//各駅の座標のデータ
+update();
+//new MapScroll{x:0,y:0,scale:1};
+var diceArray=[];
+if($kintetsu==true){
+    diceArray=[2,2,2,2,3,3,3,4,4,4,5,5];
+}else{
+    diceArray=[2,2,2,2,2,2,3,3,3,4,4,5];//ダイスの出目用の配列
+}
+
+
+$boardPrepared = false;//全ての駅のボタンとノードの配置が完了したらtrue
+var ready = true;//探索中はfalse
+$searchPrepared = true;//検索ボタンが押されたらfalse
+$hotSpring = false;//温泉駅が選択されたらtrue
+
+
+
+//new Label{x:0, y:10,align:"left",fillStyle:"Red", template:"描画範囲:bキー 拡大:aキー 標準:cキー 広域:dキー"};
+//new Label{x:430,y:20,fillStyle:"Black",template:"$loopCount"};
+
+//var loading = new Label{x:50, y:450,fillStyle:"Black", template:"駅生成中..."};
+
+$name2Button={};
+
+var sta;
+for(var i=0;i<$stationPlace.length;i++){//駅名を表示する
+    sta = new SButton{left:$stationPlace[i].x,top:$stationPlace[i].y,width:40,height:30,text:$stationPlace[i].name.replace(/\(.*/,""),stext:$stationPlace[i].name,
+    fillStyle:"white",layer=$mainLayer};
+    
+    $name2Button[$stationPlace[i].name]=sta;
+    if(i%10==0){
+        update();
+    }
+}
+
+$Boot.newLimit=null;
+update();
+$name2Node={};
+var stationPlace;
+var nts=[];
+for (stationPlace of $stationPlace) {
+    $name2Node[stationPlace.name]=new Node{name:stationPlace.name, x:stationPlace.x, y:stationPlace.y, owner:0};
+    nts.push(stationPlace.name);
+}
+update();
+
+for(var stations,z in $stations){//,zはTonyuの仕様の関係で何か渡さなければいけない為
+    if(stations.indexOf("point") > -1){
+        $name2Node[stations]=new Node{name:stations,x:0,y:0};
+    }
+}
+
+\botParameter(player){
+    var bot;
+    if(player.name == "mcts"){
+        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+    }else if(player.name == "cmcts"){
+        bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+    }else{
+        throw new Error("bot:",bot);
+    }
+    return bot;
+}
+
+/*
+var mcts100=new MCTSBot{value,Cp:10, expandThresh:3, iteration:100, timeout:1};
+var mcts600_1=new MCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:1};
+var mcts300_2=new MCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:2};
+var cmcts100=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:100, timeout:1};
+var cmcts600_1=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:600, timeout:1};
+var cmcts300=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:2};
+*/
+\value(ctx, p, s:Board):Number {
+    return s.value(ctx,p);
+}
+
+
+//loading.die();
+$boardPrepared = true;//全ての駅のボタンとNodeの配置完了
+print("Game Start (Auto)", $Boot.newLimit);
+
+$Boot.newLimit=null;//10000000;
+
+//$gameConfig.bots={"1":$selectBot.botPlayers[0]/*mcts10*/, "2":$selectBot.botPlayers[1]};
+$gameConfig.bots={"1":botParameter(player1), "2":botParameter(player2)};
+var stnames=Object.keys($name2Node);
+//var takenStations;
+var allStations=$stationPlace.length;
+
+var kouho=[];
+var stname;
+
+if($gameConfig.replay.file){//リプレイtrueの時
+    //let logger=new Logger;
+    update();
+    var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
+    let replay = new Replay{state: board, context:$gameConfig, logFile: $gameConfig.replay.file };
+    for (let i=0;i<$gameConfig.replay.turn;i++) {
+        replay.step();
+    }
+    let bot=$gameConfig.bots[replay.state.player];
+    replay.dump(bot);
+    return;
+}else{
+    while ($loopCount && $loopCount<Number(process.argv[10])+1) {
+        print("Game Start!");
+        let logger=new Logger;
+        var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
+        var g=new GameMaster{state: board, context:$gameConfig, logger};
+        new CreateFile{dice:board.diceNum};
+        while(!g.gameover()) {
+            var pp=g.state.player;
+            var a=g.step();
+            print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
+            //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
+            //ここでログを取る
+            if(a.stext){
+                var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2)};//通常プレイ時のログ取得
+            }else{
+                var log = new CreateFile{dice:a.num};
+            }
+            update();
+        }
+
+        /*if (location.href.match(/localhost/) || location.href.match(/\/sotu\//)) {
+            $.post("data.php") {filename:log.textName, content:file(log.textName).text()};
+        }*/
+        print("This game is finished!"+"\nFirstPlayer's station:"+g.state.value($gameConfig, 1));
+        logger.add(`Result: ${g.state.value($gameConfig, 1)} ${g.state.value($gameConfig, 2)}`);
+        $firstPlayer=false;
+        if(takenCount(1) > $stationPlace.length/2){
+            $firstPlayer=true;
+            new CreateFile{taken:g.state.value($gameConfig, 1)};
+        }
+        $loopCount++;
+    }
+}
+
+\takenCount(turn){
+    var taken=0;
+    var sn;
+    for(sn of board.owner){
+        if(board.owner[sn].owner==turn){
+            taken++;
+        }
+    }
+    return taken;
+}
+
+\searchCorner(stationArray){//取られていない角の駅の配列を受け取る
+    var biggest=stationArray[0];
+    for(var i=1;i<stationArray.length;i++){
+        if($stations[biggest].nexts.length < $stations[stationArray[i]].nexts.length){
+        /*隣接駅数が多ければそちらを最大の角とする*/
+            biggest=stationArray[i];
+        }
+    }
+    return biggest;
+}
+
+
+
+\colorCount() {
+    // dummy
+}
+\dice(){
+    // dummy(debug mode)
+    return rnd(4)+2;
+}

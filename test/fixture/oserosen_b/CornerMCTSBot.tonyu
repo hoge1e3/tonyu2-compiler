@@ -1,0 +1,25 @@
+extends MCTSBot;
+
+\initNodeValues(s,actions) {
+    let hasCorner;
+    if(s.diceNum !=null){
+        hasCorner=actions.some(isCorner);
+    }
+    if (!hasCorner) return super.initNodeValues(s,actions);
+    return actions.map \(a){
+        let q,n;
+        if (isCorner(a)) {//角の駅なら，得点up&まだ辿っていない
+            q=new Rational(5,0); n=0;
+        } else {
+            q=new Rational(0,0); n=1;//角じゃない駅は「すでにたどった扱い」にすると，辿りにくくなるかも
+        }
+        return {q,n};
+    };
+}
+\isCorner(a){
+    if($stations[a.stext].nexts.length == $stations[a.stext].lines.length){//角の駅かを判定
+        return true;//角ならtrue
+    }else{
+        return false;
+    }
+}

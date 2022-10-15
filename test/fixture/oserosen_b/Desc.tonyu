@@ -1,0 +1,29 @@
+new Label{x:10,y:10,align:"left",text:"このゲームは鉄道路線図を盤面としたリバーシです。"};
+new Label{x:10,y:30,align:"left",text:"画面左上に文字数を指定する文が表示されるため、"};
+new Label{x:10,y:50,align:"left",text:"文の条件に合う駅を選んで駅のボタンを選択してください。"};
+new Label{x:10,y:70,align:"left",text:"条件を満たさない駅は選ぶことができません。"};
+
+new Label{x:10,y:110,align:"left",text:"次へのボタンを押すと、"};
+new Label{x:10,y:130,align:"left",text:"・何人でプレイするか"};
+new Label{x:10,y:150,align:"left",text:"・何ターンプレイするか"};
+new Label{x:10,y:170,align:"left",text:"などを選択する画面に移ります。"};
+
+new Label{x:10,y:210,align:"left",text:"ターン数というボタンを選び半角で数字を入力すると、"};
+new Label{x:10,y:230,align:"left",text:"指定したターン到達後にゲームが終了します。"};
+new Label{x:10,y:250,align:"left",text:"ターン数を入力すると左下に入力されたターン数が表示されます。"};
+new Label{x:10,y:270,align:"left",text:"ターン選択をしなくてもゲームは可能です。"};
+
+new Label{x:10,y:310,align:"left",text:"リプレイボタンはブラウザ版では使用できません。"};
+
+new Label{x:10,y:350,align:"left",text:"ゲーム開始後、矢印キーで画面のスクロールが可能です。"};
+new Label{x:10,y:370,align:"left",text:"検索ボタンでは、駅名検索を選択し駅名を入力することで"};
+new Label{x:10,y:390,align:"left",text:"入力した駅に視点が移動します。"};
+
+
+
+new Button{top:430,left:$screenHeight/2-50,text:"次へ",width:100,height:30,onClick:next};
+
+
+function next(){
+    loadPage(Start);
+}

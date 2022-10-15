@@ -1,0 +1,66 @@
+extends TObject;
+//native console;
+
+function allConnected(lineName,prevNode){
+    //console.log(prevNode);
+    var list=[];
+    var list3=[];
+    for(var n of $stations[name].nexts){//nameで受け取った駅のnextsをlistに格納する
+        if (!$name2Node[n]) throw new Error(n+" is not found");
+        list.push($name2Node[n]);
+    }
+    if(!prevNode){
+        for(var n of list){
+            if(n.isLineOf(lineName)){
+                list3.push(n);
+            }
+        }
+        return list3;    
+    }
+    var list2=[];
+    for(var n of list){
+        if(isConnected(n,lineName,prevNode)){
+            list2.push(n);
+        }
+    }
+    return list2;
+    /*全てのNodeを調査して、
+    調査した中にisConnectedに渡した駅のnextsに含まれるものがあればそれを返す*/
+}
+
+function isConnected(n,lineName,prevNode){
+    if(name.indexOf("point") > -1){
+        //pointオブジェクトの探索時、意図しない方向への探索を防ぐ処理
+        num1 = $stations[name].nexts.indexOf(n.name);
+        num2 = $stations[name].nexts.indexOf(prevNode);
+        if((num1 == 1 && num2 == 2) || (num1 == 2 && num2 == 1)){
+            return false;
+        }
+    }
+    if($stations[name].nexts.indexOf(n.name) > -1 && n.isLineOf(lineName)){
+        return true;
+    }
+    if(!(lineName) && $stations[name].nexts.indexOf(n.name) > -1){
+        return true;
+    }
+}
+
+function isLineOf(lineName){//駅名がlineNameかを判定する関数
+    var station=$stations[name];//駅名から駅情報を取り出す
+    if(!(station)){
+        throw new Error(name+"is not found");
+    }
+    var line = station.lines;//↑のstationの中のlinesの情報をlineに格納
+    if(line.indexOf(lineName) > -1){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+scaleX=0.7;
+alpha=0;
+
+
+
+
