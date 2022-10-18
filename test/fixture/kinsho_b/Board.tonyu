@@ -1,0 +1,57 @@
+extends State;
+
+let mat:Matrix; // 0 あき  1 P1の金　2 P2の金  3 P1の王　4 P2の玉
+let player:Number;
+\next(ctx:Context, a):State {
+    //a:Action|Event
+    let nm=mat.clone();
+    let p=mat.get(a.x,a.y);
+    nm.set(a.x,a.y,0);
+    nm.set(a.x+a.dx, a.y+a.dy, p);
+    let foe=3-player;
+    return new Board{mat:nm, player:foe};
+}
+
+\actionsEvents(ctx:Context) {
+    //: Action[] | Event[] 
+    // Action:プレイヤーがとる行動
+    // Event :ランダムに起きる事象（サイコロなど）
+    // Eventオブジェクトにはフィールドprob(確率を表す0..1の数値)を含め，
+    // Event配列のprobの合計値が1になるようにしてください
+    // ActionとEventを混ぜて返すことはできません．
+    // 常に同じ順序で同じものを返してください
+    let res=[];
+    let kings=0;
+    for (let x,y,p of mat) {
+        if (p===player || p===player+2) {
+            let dy=(p==1||p==3)?-1:1;
+            for (let dx=-1;dx<=1;dx++) {
+                let g=mat.get(x+dx,y+dy);
+                let gt=(g>=3 ? g-2: g);
+                let pt=(p>=3 ? p-2: p);
+                //print(p, x+dx,y+dy, g, g!=null, g!=p , g!=p+2);
+                if (g!=null && gt!=pt) {
+                    //print("Push!");
+                    res.push{x,y,dx,dy};
+                }
+            }
+        }
+        if (p==3||p==4) kings++; 
+    }
+    if (kings<2) return [];
+    return res;
+}
+\gameover(ctx:Context) {
+    return actionsEvents(ctx).length==0;
+    //throw new Error("Abstract: メソッドgameoverが実装されていません");    
+}
+\toString() {
+    let buf="",py=0;
+    for (let x,y,p of mat) {
+        if (y!=py) buf+="\n";
+        py=y;
+        buf+=p+" ";
+    }
+    buf+="\n"+"Player "+player;
+    return buf;
+}

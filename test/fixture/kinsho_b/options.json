@@ -1,0 +1,5 @@
+{"compiler":{"namespace":"user","defaultSuperClass":"kernel.Actor","dependingProjects":[
+    {"namespace":"kernel"},
+    {"dir":"../bot/"}
+],
+    "noLoopCheck":true,"field_strict":true,"typeCheck":true},"run":{"mainClass":"user.Main","bootClass":"kernel.Boot","globals":{"$defaultFPS":60,"$imageSmoothingDisabled":true,"$soundLoadAndDecode":false}},"plugins":{},"kernelEditable":false,"language":"tonyu","version":1658553334869}

@@ -1,7 +1,9 @@
 native process;
 let logFile;
+let actCnt;
 \new(params) {
     super(params);
+    actCnt=1;
     let argvs=[...process.argv];
     argvs.shift();
     argvs.shift();
@@ -21,10 +23,29 @@ let logFile;
 }
 \action(act) {
     act=$JSON.stringify(act);
-    add("Action: "+act);
+    add(`[${actCnt}]Action: ${act}`);
+    actCnt++;
 }
 \botStatus(bot) {
     add(`Bot: ITER=${bot.iterated} EXP=${bot.expcount} T/O=${bot.timeoutCount}`);
+    let lastNode=bot.lastRootNode;
+    let lastActions=bot.lastActions;
+    if (lastNode && lastActions) {
+        let sn=[];
+        for (let a=0;a<lastNode.subnodes.length;a++) {
+            let qc=bot.q(lastNode,a);
+            sn.push{action:lastActions[a],qc};
+        }
+        sn.sort \(a,b) {
+            return b.qc-a.qc;
+        };
+        if (sn.length==0) return;
+        let qnmax=sn[0].qc;
+        let qns=sn.map\(e) {
+            return floor(e.qc*100/qnmax);
+        };
+        add("Qn: Max="+qnmax+" "+$JSON.stringify(qns));
+    }
 }
 \argv() {
     add("argv: "+process.argv.join(" "));

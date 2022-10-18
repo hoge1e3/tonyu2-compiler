@@ -1,0 +1,140 @@
+"field strict";
+native process;
+//$Screen.resize(200,600);
+
+
+//                                           4    5   6  7     8    9  10    11             12
+// node index.js test\fixture\kinsho_b\   -r mcts 100 2  mcts 1000 2  1234  replayFile.txt 10
+if(!process.argv[10]){
+    throw new Error("ゲーム実行回数が入力されていません！");
+}
+var player1 = {name:process.argv[4],iteration:process.argv[5],timeout:process.argv[6]};
+var player2 = {name:process.argv[7],iteration:process.argv[8],timeout:process.argv[9]};
+print(player1);
+print(player2);
+\botParameter(player){
+    var bot;
+    if(player.name == "mcts"){
+        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+    }else if(player.name == "cmcts"){
+        //bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+    }else{
+        throw new Error("bot:",bot);
+    }
+    return bot;
+}
+let bots=[0, botParameter(player1), botParameter(player2)];
+
+\value(ctx:Context, player: Number, state:Board) {
+    let acts=state.actionsEvents(ctx);
+    if (acts.length===0) {
+        if (player===state.player) return 0;
+        else return 1;
+    }
+    if (player===state.player) {
+        return 0.5+acts.length/komas/3;
+    } else {
+        return 0.5-acts.length/komas/3;
+    }
+    /*let foe=3-player;
+    let sc=0.5;
+    for (let x,y,p of state.mat) {
+        if (p==player+2 || p==player) sc+=1/komas;
+        if (p==foe+2 || p==foe ) sc-=1/komas;
+    }
+    if (sc!==sc) throw new Error("sc nan!");
+    return sc;*/
+}
+
+let komas;
+let replayFile=process.argv[11];
+if(replayFile){//リプレイtrueの時
+    update();
+    let context=new Context{players:[1,2], bots};
+    let state=initBoard();
+    let replay = new Replay{state, context, logFile: replayFile };
+    let turn=process.argv[12];
+    for (let i=0;i<turn;i++) {
+        replay.step();
+    }
+    print(replay.state+"");
+    let bot=bots[replay.state.player];
+    replay.dump(bot);
+} else {
+    for (let i=0;i<process.argv[10]-0 ;i++) {
+        match();   
+    }
+}
+\initBoard(context) {
+    let mat=new Matrix;
+/*let r=5;
+for (let i=0;i<r;i++) {
+    for (let j=0;j<r;j++) {
+        mat.set(j,i,0);
+    }
+}*/
+    let s=[
+    "2 2 2 2 2 2 2", 
+    "0 2 0 0 0 2 0", 
+    "2 2 2 2 2 2 2", 
+    "0 0 0 0 0 0 0", 
+    "1 1 1 1 1 1 1", 
+    "0 1 0 0 0 1 0", 
+    "1 1 1 1 1 1 1"]; 
+    s=[
+    "2 2 4 2 2", 
+    "2 2 2 2 2", 
+    "0 0 0 0 0", 
+    "1 1 1 1 1", 
+    "1 1 3 1 1"]; 
+
+    let player=1;
+/*s=[
+"2 2 4 2 2", 
+"0 1 0 0 2", 
+"2 0 0 1 2", 
+"1 1 0 1 0", 
+"0 0 3 1 1"];
+player=2;
+s=[
+"2 0 4 2 2", 
+"0 0 0 0 2", 
+"2 0 2 1 0", 
+"1 1 1 2 0",
+"0 0 3 0 1"];
+player=1;
+*/
+    komas=0;
+    for (let r,row of s) {
+        for (let c,col of row.split(" ")) {
+            if (col!="0") komas++;
+            mat.set(c,r,col-0);
+        }
+    }
+    print("komas", komas);
+    let state=new Board{mat,player};
+    return state;
+}
+\match() {
+    //print("iters:" ,it1, it2);
+    //print("totaltimes:", tt1, tt2);
+    //print("timeouts:", to1, to2);
+
+    let context=new Context{players:[1,2], bots};
+    let state=initBoard();
+    let logger=new Logger;
+    let g=new GameMaster{context, state, logger};
+    print(g.state+"");
+    while (!g.gameover()) {
+        let a=g.step();
+        print(a.x, a.y, a.dx, a.dy);
+        print(g.state+"");
+        print(value(context, g.state.player, g.state ));
+        updateEx(1);
+    }
+    logger.add("Result: loser="+g.state.player);
+    //print(it1, it2);
+    //print("loser is ",g.state.player);
+    
+    
+}
