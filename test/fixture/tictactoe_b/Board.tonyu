@@ -19,17 +19,21 @@ let player:Number;
     // ActionとEventを混ぜて返すことはできません．
     // 常に同じ順序で同じものを返してください
     let res=[];
+    if (checkWin(ctx)) return res;
     let kings=0;
     for (let x,y,p of mat) {
         if (p===0) res.push{x,y};
     }
     return res;
 }
-\gameover(ctx:Context) {
+\checkWin(ctx:Context) {
     for (let x,y,p of mat) {
         if (p!==0 && checkCon(x,y,p)) return p;
     }
-    return actionsEvents(ctx).length==0;
+    return false;
+}
+\gameover(ctx:Context) {
+    return checkWin(ctx) || actionsEvents(ctx).length==0;
     //throw new Error("Abstract: メソッドgameoverが実装されていません");    
 }
 \checkCon(x,y,p) {

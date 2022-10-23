@@ -21,3 +21,6 @@ test/fixture/oserosen_b/static/kintetsu_map.pdf
 test/fixture/oserosen_b/static/路線範囲.pdf
 test/fixture/kinsho_b/files
 test/fixture/kinsho_b/images/icon_thumbnail.png
+test/fixture/gobblet_b/files
+test/fixture/gobblet_b/js
+test/fixture/gobblet_b/images/icon_thumbnail.png

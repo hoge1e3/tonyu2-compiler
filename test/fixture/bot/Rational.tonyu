@@ -15,3 +15,6 @@ var q,n;
     if (v!==v) throw new Error(q+" / "+n);
     return v;
 }
+\toString(){
+    return q+"/"+n;
+}

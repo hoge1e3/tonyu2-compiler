@@ -111,8 +111,9 @@ let iterated=0;
     iterated=0;
     let stime=performance.now();
     for (var i=0;i<iteration;i++) {
+        let leaf;
         while(true) {
-            var leaf=selection(ctx, rootNode);
+            leaf=selection(ctx, rootNode);
             if (n(leaf)<expandThresh) break;
             if (leaf.subnodes && leaf.subnodes.length==0) break;
             expand(ctx, leaf);
@@ -126,6 +127,10 @@ let iterated=0;
         var endState=rollout(ctx, leaf, timeout);
         var v=value(ctx, s.player, endState);
         backup(leaf, v);
+        /*let leafS=getState(ctx, leaf);
+        if (leafS.gameover() && rootNode.subnodes.indexOf(leaf)>=0) {
+            print("GOV", v, leafS+"");
+        }*/
         //if (expcount>=3000) break;
     }
     //print ("RN",rootNode);

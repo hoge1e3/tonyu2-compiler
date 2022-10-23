@@ -55,6 +55,7 @@ if(replayFile){//リプレイtrueの時
     let replay = new Replay{state, context, logFile: replayFile };
     let turn=process.argv[12];
     for (let i=0;i<turn;i++) {
+        print(replay.state+"");
         replay.step();
     }
     print(replay.state+"");

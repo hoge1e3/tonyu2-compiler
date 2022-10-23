@@ -1,9 +1,8 @@
 native process;
 "field strict";
-//$Screen.resize(200,600);
 
 //                                              4    5   6  7     8    9  10    11             12
-// node index.js test\fixture\tictactoe_b\   -r mcts 100 2  mcts  1000 2  1234  replayFile.txt 10
+// node index.js test\fixture\gobblet_b\   -r mcts 100 2  mcts  1000 2  1234  replayFile.txt 10
 if(!process.argv[10]){
     throw new Error("ゲーム実行回数が入力されていません！");
 }
@@ -41,6 +40,7 @@ let bots=[0, botParameter(player1), botParameter(player2)];
     
 }
 
+
 let replayFile=process.argv[11];
 if(replayFile){//リプレイtrueの時
     update();
@@ -54,10 +54,31 @@ if(replayFile){//リプレイtrueの時
         print(replay.state+"");
     }
     let bot=bots[replay.state.player];
-    replay.dump(bot);
+    replay.dump(bot);//,context,replay.state, replay.state.player);
 } else {
     for (let i=0;i<process.argv[10]-0 ;i++) {
         match();   
+    }
+}
+\dump(bot,context,state,player) {
+    bot.play(context, state);
+    print (state+"");
+    let lastNode=bot.lastRootNode;
+    let lastActions=bot.lastActions;
+    if (lastNode && lastActions) {
+        let sns=[];
+        for (let a=0;a<lastNode.subnodes.length;a++) {
+            let qc=bot.q(lastNode,a);
+            let ns=state.next(context, lastActions[a]);
+            let sn=lastNode.subnodes[a];
+            //sn.push{action:lastActions[a],qc, q:sn.q+"", n:sn.n};
+            sns.push{action:lastActions[a],qc, q:sn.q+"", n:sn.n, ns:ns+" gov="+ns.gameover(),
+            value: value(context, player, ns)};
+        }
+        sns.sort \(a,b) {
+            return b.qc-a.qc;
+        };
+        print(sns);
     }
 }
 \initialState(context) {
@@ -65,17 +86,17 @@ if(replayFile){//リプレイtrueの時
     let r=3;
     for (let i=0;i<r;i++) {
         for (let j=0;j<r;j++) {
-            mat.set(j,i,0);
+            mat.set(j,i,[]);
         }
     }
     let player=1;
-    let state=new Board{mat,player};
+    let state=new Board{
+        mat,player,having:[1,1,2,2,3,3,4,4,5,5,6,6],cnt:0,
+        lastPut:[0,0,0]
+    };
     return state;
 }
 \match() {
-    //print("iters:" ,it1, it2);
-    //print("totaltimes:", tt1, tt2);
-    //print("timeouts:", to1, to2);
     
     let context=new Context{players:[1,2], bots};
     let state=initialState(context);
@@ -93,6 +114,6 @@ if(replayFile){//リプレイtrueの時
     }
     print("winner is ",winner);
     logger.add("Winner: "+winner);
-    updateEx(60);
+    //updateEx(60);
     
 }

@@ -813,7 +813,6 @@ Tonyu.klass.define({
         var _this=this;
         var rootNode;
         var i;
-        var leaf;
         var endState;
         var v;
         var ma;
@@ -836,9 +835,9 @@ Tonyu.klass.define({
         for (i = 0;
          i<_this.iteration ; i++) {
           {
+            let leaf;
             while (true) {
-              leaf = _this.selection(ctx,rootNode);
-              
+              leaf=_this.selection(ctx,rootNode);
               if (_this.n(leaf)<_this.expandThresh) {
                 break;
                 
@@ -894,7 +893,6 @@ Tonyu.klass.define({
         //var _arguments=Tonyu.A(arguments);
         var rootNode;
         var i;
-        var leaf;
         var endState;
         var v;
         var ma;
@@ -917,9 +915,9 @@ Tonyu.klass.define({
         for (i = 0;
          i<_this.iteration ; i++) {
           {
+            let leaf;
             while (true) {
-              leaf=yield* _this.fiber$selection(_thread, ctx, rootNode);
-              
+              leaf=(yield* _this.fiber$selection(_thread, ctx, rootNode));
               if (_this.n(leaf)<_this.expandThresh) {
                 break;
                 
@@ -1281,10 +1279,22 @@ Tonyu.klass.define({
         return v;
         
       },
+      toString :function _trc_Rational_toString() {
+        var _this=this;
+        
+        return _this.q+"/"+_this.n;
+      },
+      fiber$toString :function* _trc_Rational_f_toString(_thread) {
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        return _this.q+"/"+_this.n;
+        
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"inc":{"nowait":false,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}},"__getter__value":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"q":{},"n":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"inc":{"nowait":false,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}},"__getter__value":{"nowait":true,"isMain":false,"vtype":{"params":[],"returnValue":null}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"toString":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"q":{},"n":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.Replay',
@@ -1378,21 +1388,23 @@ Tonyu.klass.define({
         let lastActions = bot.lastActions;
         
         if (lastNode&&lastActions) {
-          let sn = [];
+          let sns = [];
           
           for (let a = 0;
            a<lastNode.subnodes.length ; a++) {
             {
               let qc = bot.q(lastNode,a);
               
-              sn.push({action: lastActions[a],qc: qc});
+              let sn = lastNode.subnodes[a];
+              
+              sns.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_806(a,b) {
+          sns.sort((function anonymous_874(a,b) {
             
             return b.qc-a.qc;
           }));
-          _this.print(sn);
+          _this.print(sns);
           
         }
       },
@@ -1406,21 +1418,23 @@ Tonyu.klass.define({
         let lastActions = bot.lastActions;
         
         if (lastNode&&lastActions) {
-          let sn = [];
+          let sns = [];
           
           for (let a = 0;
            a<lastNode.subnodes.length ; a++) {
             {
               let qc = bot.q(lastNode,a);
               
-              sn.push({action: lastActions[a],qc: qc});
+              let sn = lastNode.subnodes[a];
+              
+              sns.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_806(a,b) {
+          sns.sort((function anonymous_874(a,b) {
             
             return b.qc-a.qc;
           }));
-          _this.print(sn);
+          _this.print(sns);
           
         }
         

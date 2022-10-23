@@ -25,14 +25,15 @@ let lines: String[];
     let lastNode=bot.lastRootNode;
     let lastActions=bot.lastActions;
     if (lastNode && lastActions) {
-        let sn=[];
+        let sns=[];
         for (let a=0;a<lastNode.subnodes.length;a++) {
             let qc=bot.q(lastNode,a);
-            sn.push{action:lastActions[a],qc};
+            let sn=lastNode.subnodes[a];
+            sns.push{action:lastActions[a],qc};//, q:sn.q+"", n:sn.n};
         }
-        sn.sort \(a,b) {
+        sns.sort \(a,b) {
             return b.qc-a.qc;
         };
-        print(sn);
+        print(sns);
     }
 }
