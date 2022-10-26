@@ -83,7 +83,7 @@ function clicked(gameConfig,b){
     }*/
     
     
-    if(gameConfig.debug == true || gameConfig.replay == true || $main.namelengthComparison(b.text.length,diceNum)){
+    if(gameConfig.debug == true || gameConfig.replay == true || $main.namelengthComparison(b.text,diceNum)){
         nb.getStation = b.stext;//次のボードのgetStationに入れる駅の名前
         //var ns=new Scheduler();
         if(! nb.owner[b.stext]){//ownerに押された駅が無かったら
@@ -279,7 +279,7 @@ function setNextTurn(gameConfig,nb) {
 
 \NotTaken(num){//num文字の駅が1つでも未取得ならばtrueを返す
     for(var name of $validStationNames){
-        if(!owner[name] && namelengthComparison(name.length,num)){//ownerにsが無かったら(未取得)
+        if(!owner[name] && namelengthComparison(name,num)){//ownerにsが無かったら(未取得)
             return true;
         }
     }
@@ -325,7 +325,7 @@ function enemyHasStation(turn){
     }
 
     for (var name of $validStationNames) {
-        if(!owner[name] && namelengthComparison(name.length,diceNum)){
+        if(!owner[name] && namelengthComparison(name,diceNum)){
             res.push({stext:name});
         }
     }
@@ -344,6 +344,7 @@ function enemyHasStation(turn){
 }
 
 function namelengthComparison(sn,d){
+    sn=sn.replace(/\(.*/,"").length;
     if(d == 5){
         if(sn == 1 || sn >= 5){
             return true;
