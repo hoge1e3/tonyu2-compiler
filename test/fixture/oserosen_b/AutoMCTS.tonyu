@@ -29,7 +29,7 @@ $main=this;
 
 var searching;
 
-if($kintetsu==true){
+if($kintetsu){
     new KLines;
     update();
 }else{
@@ -48,7 +48,7 @@ new StationPlace;//各駅の座標のデータ
 update();
 //new MapScroll{x:0,y:0,scale:1};
 var diceArray=[];
-if($kintetsu==true){
+if($kintetsu){
     diceArray=[2,2,2,2,3,3,3,4,4,4,5,5];
 }else{
     diceArray=[2,2,2,2,2,2,3,3,3,4,4,5];//ダイスの出目用の配列
