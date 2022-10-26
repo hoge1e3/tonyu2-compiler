@@ -23,7 +23,7 @@ $gameConfig={
     players = [1,2],
     replay = {file=process.argv[12], turn=process.argv[13]-0},
 };
-$kintetsu=mapType.match(/^k/);
+$kintetsu=!!mapType.match(/^k/);
 
 $main=this;
 
