@@ -152,7 +152,7 @@ function clicked(gameConfig,b){
                             }
                                 
                         }*/
-            var tmp = lineStations($stations[b.stext].lines[0]);
+            //var tmp = lineStations($stations[b.stext].lines[0]);
             //print(nb.isComplete(tmp,turn),b.stext,turn);
             nb.selected = b.stext;
             $main.colorCount();
@@ -181,6 +181,7 @@ function clicked(gameConfig,b){
     //$rsta = residualStation();
 }
 
+// まだ使われていない
 // stationに隣接する接続駅を配列で返す．
 \nextSearchStops(station,  visited, ctx:GameConfig) {//station:ある駅 visited:探索済みリスト
     var stopStations=[];//結果のリスト
@@ -199,6 +200,7 @@ function clicked(gameConfig,b){
     return stopStations; 
 }
 
+//まだ使われていない
 function evaluateStation(stationName){//ある駅の評価値を返す
     var s=$stations[stationName];
     if (s.point) return s.point;
@@ -215,7 +217,7 @@ function evaluateStation(stationName){//ある駅の評価値を返す
 function evaluatBoard(){
     //まだ
 }
-
+//nextSearchStopsから呼ばれる．まだ使われていない
 function isStopStation(stationName){//ある駅についてその駅が探索打ち切り駅か判定する
     if(stationName.indexOf("point") > -1){//pointオブジェクトなら
         return false;
@@ -230,6 +232,7 @@ function isStopStation(stationName){//ある駅についてその駅が探索打
     }
 }
 
+//まだ使われていない
 function lineStations(lineName){//渡された路線に所属する駅をリストにして返す
     var lineStations=[];
     for(var station of $stations){
@@ -239,7 +242,7 @@ function lineStations(lineName){//渡された路線に所属する駅をリス�
     }
     return lineStations;
 }
-
+//まだ使われていない
 function isComplete(stationList,playerTurn){
     for(var s of stationList){
         if(!owner[s] || owner[s].owner!=playerTurn){
@@ -248,15 +251,15 @@ function isComplete(stationList,playerTurn){
     }
     return true;
 }
-
+//evaluateStationから呼ばれる．まだ使われていない．
 function linesAllStations(stationName){//ある駅に所属する路線の総駅数を返す
     var sum=0;
     var sLines=$stations[stationName].lines;
     for(var i=0;i<sLines.length;i++){
-        for (var station of $stationPlace) {
+        for (let name of $validStationNames) {
             //接続駅が選ばれた場合、同じ駅を重複して数えている
             //あえてこのままにするのも手かもしれない
-            if($stations[station.name].lines.indexOf(sLines[i])>-1){
+            if($stations[name].lines.indexOf(sLines[i])>-1){
                 sum+=1;
             }
         }
@@ -275,8 +278,8 @@ function setNextTurn(gameConfig,nb) {
 } 
 
 \NotTaken(num){//num文字の駅が1つでも未取得ならばtrueを返す
-    for(var s of $stationPlace){
-        if(!owner[s.name] && namelengthComparison(s.name.length,num)){//ownerにsが無かったら(未取得)
+    for(var name of $validStationNames){
+        if(!owner[name] && namelengthComparison(name.length,num)){//ownerにsが無かったら(未取得)
             return true;
         }
     }
@@ -321,9 +324,9 @@ function enemyHasStation(turn){
         return res;
     }
 
-    for (var stationPlace of $stationPlace) {
-        if(!owner[stationPlace.name] && namelengthComparison(stationPlace.name.length,diceNum)){
-            res.push({stext:stationPlace.name});
+    for (var name of $validStationNames) {
+        if(!owner[name] && namelengthComparison(name.length,diceNum)){
+            res.push({stext:name});
         }
     }
     //print(res[0].stext);

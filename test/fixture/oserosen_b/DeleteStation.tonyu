@@ -1,0 +1,48 @@
+var staKey;
+var notDelete={};
+
+for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
+    if($stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && 
+    checkPointStation(staKey) && (!notDelete[staKey])){
+        delsta=staKey;
+        reConnect(delsta);
+        delete $stations[delsta];
+        logDeleteStations(delsta);
+    }
+}
+
+\logDeleteStations(logDelete){
+    textName = "deleteStations.txt";
+    f=file(textName);//freelog.txt
+    f.appendText(logDelete+"\n");
+}
+
+\checkPointStation(staName){
+    var checksta = $stations[staName].nexts;
+    for(var i=0;i<checksta.length;i++){
+        if(checksta[i].indexOf("point")>-1){
+            return false;
+        }
+    }
+    return true;
+}
+
+\reConnect(staName){
+    var next_0 = $stations[staName].nexts[0];
+    var next_0_len = $stations[next_0].nexts.length;
+    notDelete[next_0]=true;
+    var next_1 = $stations[staName].nexts[1];
+    var next_1_len = $stations[next_1].nexts.length;
+    notDelete[next_1]=true;
+    
+    for(var i=0;i<next_0_len;i++){
+        if($stations[next_0].nexts[i]==staName){
+            $stations[next_0].nexts[i]=next_1;
+        }
+    }
+    for(var i=0;i<next_1_len;i++){
+        if($stations[next_1].nexts[i]==staName){
+            $stations[next_1].nexts[i]=next_0;
+        }
+    }
+}

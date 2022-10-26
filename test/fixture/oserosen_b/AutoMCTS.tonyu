@@ -1,30 +1,30 @@
 native $;
 native location;
 native process;
-//                                           4    5   6  7     8    9  10    11             12
-// node index.js test\fixture\oserosen_b\ -r mcts 100 2  cmcts 1000 2  1234  replayFile.txt 10
-if(!process.argv[10]){
+"field strict";
+//                                            4   5     6  7    8    9  10   11             12   13
+// node index.js test\fixture\oserosen_b\ -r  jr  mcts 100 2  cmcts 1000 2  1234  replayFile.txt 10
+let mapType=process.argv[4];
+var player1 = {name:process.argv[5],iteration:process.argv[6],timeout:process.argv[7]};
+var player2 = {name:process.argv[8],iteration:process.argv[9],timeout:process.argv[10]};
+let matchCount=process.argv[11];
+if(!matchCount){
     throw new Error("ゲーム実行回数が入力されていません！");
 }
-var player1 = {name:process.argv[4],iteration:process.argv[5],timeout:process.argv[6]};
-var player2 = {name:process.argv[7],iteration:process.argv[8],timeout:process.argv[9]};
+matchCount= Number(matchCount);
 print(player1);
 print(player2);
-
 $folderName1 = player1;//フォルダ生成用
 $folderName2 = player2;//フォルダ生成用
 $loopCount=1;
-
-"field strict";
 $gameConfig={
     debug=true,
     player = 2,
     players = [1,2],
-    replay = {file=process.argv[11], turn=process.argv[12]-0},
+    replay = {file=process.argv[12], turn=process.argv[13]-0},
 };
-$kintetsu=true;
-//---Main
-//$Screen.setBGColor("white");
+$kintetsu=mapType.match(/^k/);
+
 $main=this;
 
 var searching;
@@ -35,6 +35,13 @@ if($kintetsu==true){
 }else{
     new Lines;//路線と駅のデータ
     update();
+    new DeleteStation;
+    update();
+}
+$validStationNames=[];
+for (let staKey of Object.keys($stations)) {
+    if (staKey.match(/point/)) continue;
+    $validStationNames.push(staKey);
 }
 
 new StationPlace;//各駅の座標のデータ
@@ -55,12 +62,9 @@ $hotSpring = false;//温泉駅が選択されたらtrue
 
 
 
-//new Label{x:0, y:10,align:"left",fillStyle:"Red", template:"描画範囲:bキー 拡大:aキー 標準:cキー 広域:dキー"};
-//new Label{x:430,y:20,fillStyle:"Black",template:"$loopCount"};
-
-//var loading = new Label{x:50, y:450,fillStyle:"Black", template:"駅生成中..."};
 
 $name2Button={};
+
 
 var sta;
 for(var i=0;i<$stationPlace.length;i++){//駅名を表示する
@@ -68,9 +72,9 @@ for(var i=0;i<$stationPlace.length;i++){//駅名を表示する
     fillStyle:"white",layer=$mainLayer};
     
     $name2Button[$stationPlace[i].name]=sta;
-    if(i%10==0){
+    /*if(i%10==0){
         update();
-    }
+    }*/
 }
 
 $Boot.newLimit=null;
@@ -102,29 +106,18 @@ for(var stations,z in $stations){//,zはTonyuの仕様の関係で何か渡さ�
     return bot;
 }
 
-/*
-var mcts100=new MCTSBot{value,Cp:10, expandThresh:3, iteration:100, timeout:1};
-var mcts600_1=new MCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:1};
-var mcts300_2=new MCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:2};
-var cmcts100=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:100, timeout:1};
-var cmcts600_1=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:600, timeout:1};
-var cmcts300=new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:300, timeout:2};
-*/
 \value(ctx, p, s:Board):Number {
     return s.value(ctx,p);
 }
 
 
-//loading.die();
 $boardPrepared = true;//全ての駅のボタンとNodeの配置完了
 print("Game Start (Auto)", $Boot.newLimit);
 
 $Boot.newLimit=null;//10000000;
 
-//$gameConfig.bots={"1":$selectBot.botPlayers[0]/*mcts10*/, "2":$selectBot.botPlayers[1]};
 $gameConfig.bots={"1":botParameter(player1), "2":botParameter(player2)};
 var stnames=Object.keys($name2Node);
-//var takenStations;
 var allStations=$stationPlace.length;
 
 var kouho=[];
@@ -142,7 +135,7 @@ if($gameConfig.replay.file){//リプレイtrueの時
     replay.dump(bot);
     return;
 }else{
-    while ($loopCount && $loopCount<Number(process.argv[10])+1) {
+    while ($loopCount && $loopCount<matchCount) {
         print("Game Start!");
         let logger=new Logger;
         var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
