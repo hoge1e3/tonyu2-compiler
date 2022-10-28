@@ -16,6 +16,7 @@ if (typeof global!=="undefined" && global.require && global.require.name!=="requ
 export class SourceFile {
     url: any;
     text: any;
+    file: any;
     sourceMap: any;
     functions: any;
     parent: SourceFiles;
@@ -25,7 +26,12 @@ export class SourceFile {
             const params=text;
             sourceMap=params.sourceMap;
             //functions=params.functions;
-            text=params.text;
+            if (params.file) {
+                this.file=params.file;
+                text=this.file.text();
+            } else {
+                text=params.text;
+            }
             if (params.url) {
                 this.url=params.url;
             }
@@ -76,6 +82,9 @@ export class SourceFile {
                 require(uniqFile.path());
                 uniqFile.rm();
                 mapFile.rm();
+                resolve(void(0));
+            } else if (this.file && typeof require==="function") {
+                require(this.file.path());
                 resolve(void(0));
             } else if (root.importScripts && this.url){
                 root.importScripts(this.url);

@@ -39,7 +39,8 @@
                 const outJS=this.getOutputFile();
                 const map=outJS.sibling(outJS.name()+".map");
                 const sf=sourceFiles.add({
-                    text:outJS.text(),
+                    //text:outJS.text(),
+                    file: outJS,
                     sourceMap:map.exists() && map.text(),
                 });
                 await sf.exec();
