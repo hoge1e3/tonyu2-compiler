@@ -1,6 +1,10 @@
 extends Bot;
 //https://blog.brainpad.co.jp/entry/2018/04/05/163000
 native performance;
+native process;
+native v8;
+native require;
+//native os;
 var Cp;
 var expandThresh;
 var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
@@ -11,6 +15,7 @@ let lastRootNode, lastActions;
 let timeoutCount=0;
 let expcount=0;
 let iterated=0;
+let os;
 //var rootNode={};
 /*Node={
     parent?: Node,
@@ -94,7 +99,12 @@ let iterated=0;
     }
     return node;
 }
-\play(ctx:Context, s:State):Action {
+\play(ctx:Context, s:State):Action {    
+    if (!os && typeof require==="function") {
+        os=require("os");
+    }
+    //print(typeof os, typeof require);
+    let memlim=4.5*1000*1000*1000;
     expcount=0;
     lastRootNode=null;
     timeoutCount=0;
@@ -112,16 +122,31 @@ let iterated=0;
     let stime=performance.now();
     for (var i=0;i<iteration;i++) {
         let leaf;
+        let expRecur=0, pleaf;
+        let mem;
         while(true) {
             leaf=selection(ctx, rootNode);
             if (n(leaf)<expandThresh) break;
             if (leaf.subnodes && leaf.subnodes.length==0) break;
             expand(ctx, leaf);
+            expRecur++;
+            if (leaf===pleaf) {
+                throw new Error("WhY!!!");
+            }
+            pleaf=leaf;
+            if (os) {
+                mem=os.freemem();
+                if (mem<=memlim) break;
+            }
+            if (expRecur%10==0) {
+                print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" mem="+mem);
+            }
         }
         iterated++;
-        if (performance.now()-stime>10000) {
-            print("Progress: iter=", iterated, " exp=" ,expcount);
-            stime+=10000;
+        if (mem && mem<=memlim) break;
+        if (performance.now()-stime>5000) {
+            print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+mem);
+            stime+=5000;
         }
         // print("leaf", leaf);
         var endState=rollout(ctx, leaf, timeout);

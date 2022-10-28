@@ -1,7 +1,9 @@
 native $;
 native location;
 native process;
+native require;
 "field strict";
+
 //                                            4   5     6  7    8    9  10   11             12   13
 // node index.js test\fixture\oserosen_b\ -r  jr  mcts 100 2  cmcts 1000 2  1234  replayFile.txt 10
 let mapType=process.argv[4];
@@ -72,9 +74,7 @@ for(var i=0;i<$stationPlace.length;i++){//駅名を表示する
     fillStyle:"white",layer=$mainLayer};
     
     $name2Button[$stationPlace[i].name]=sta;
-    /*if(i%10==0){
-        update();
-    }*/
+    
 }
 
 $Boot.newLimit=null;
@@ -128,44 +128,49 @@ if($gameConfig.replay.file){//リプレイtrueの時
     update();
     var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
     let replay = new Replay{state: board, context:$gameConfig, logFile: $gameConfig.replay.file };
+    let replayedAll;
     for (let i=0;i<$gameConfig.replay.turn;i++) {
-        replay.step();
+        if (!replay.step()) {
+            replayedAll=true;
+            break;
+        }
     }
-    let bot=$gameConfig.bots[replay.state.player];
-    replay.dump(bot);
+    if (replayedAll) {
+        let logger=new Logger{logFile: $gameConfig.replay.file};
+        var g=new GameMaster{state: replay.state, context:$gameConfig, logger};
+        oneMatch(g);
+    } else {
+        let bot=$gameConfig.bots[replay.state.player];
+        replay.dump(bot);
+    }
     return;
 }else{
     while ($loopCount && $loopCount<matchCount) {
         print("Game Start!");
-        let logger=new Logger;
         var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:{}, gameConfig: $gameConfig};
+        let logger=new Logger;
         var g=new GameMaster{state: board, context:$gameConfig, logger};
-        new CreateFile{dice:board.diceNum};
-        while(!g.gameover()) {
-            var pp=g.state.player;
-            var a=g.step();
-            print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
-            //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
-            //ここでログを取る
-            if(a.stext){
-                var log = new CreateFile{logStationName:a.stext,logOwner:pp,rsta:g.state.value($gameConfig, 1),bsta:g.state.value($gameConfig, 2)};//通常プレイ時のログ取得
-            }else{
-                var log = new CreateFile{dice:a.num};
-            }
-            update();
-        }
-
-        /*if (location.href.match(/localhost/) || location.href.match(/\/sotu\//)) {
-            $.post("data.php") {filename:log.textName, content:file(log.textName).text()};
-        }*/
-        print("This game is finished!"+"\nFirstPlayer's station:"+g.state.value($gameConfig, 1));
-        logger.add(`Result: ${g.state.value($gameConfig, 1)} ${g.state.value($gameConfig, 2)}`);
-        $firstPlayer=false;
-        if(takenCount(1) > $stationPlace.length/2){
-            $firstPlayer=true;
-            new CreateFile{taken:g.state.value($gameConfig, 1)};
-        }
+        oneMatch(g);
         $loopCount++;
+    }
+}
+\oneMatch(g:GameMaster) {
+    while(!g.gameover()) {
+        var pp=g.state.player;
+        var a=g.step();
+        print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
+        //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
+        update();
+    }
+
+    print("This game is finished!"+"\nFirstPlayer's station:"+g.state.value($gameConfig, 1));
+    if (g.logger) {
+        g.logger.add(`Result: ${g.state.value($gameConfig, 1)} ${g.state.value($gameConfig, 2)}`);
+    }
+    $firstPlayer=false;
+    if(takenCount(1) > $stationPlace.length/2){
+        $firstPlayer=true;
+        //new CreateFile{taken:g.state.value($gameConfig, 1)};
     }
 }
 

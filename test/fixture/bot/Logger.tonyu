@@ -12,6 +12,16 @@ let actCnt;
     logFile=logFile|| ( formatDate(new Date())+argvs.join("_") ).replace(/[\s\/\\\:\?\*\<\>\|]/g,"_")+".txt";
     print("logFileName",logFile);
     logFile=file(logFile);
+    if (logFile.exists()) {
+        let lp=/\[(\d+)\]Action:/;
+        for (let line of logFile.lines()) {
+            let m=lp.exec(line);
+            if (m) {
+                actCnt=m[1]-(-1);
+            }
+        }
+        print("actCnt resumed :",actCnt);
+    }
 }
 \formatDate(d) {
     let p=\(n){return ((10000+n)+"").substring(3,5);}; 
