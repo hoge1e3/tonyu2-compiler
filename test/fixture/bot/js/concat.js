@@ -546,18 +546,18 @@ Tonyu.klass.define({
       initNodeValues :function _trc_MCTSBot_initNodeValues(state,actions) {
         var _this=this;
         
-        return actions.map((function anonymous_569() {
+        return actions.map((function anonymous_581() {
           
-          return {q: new Tonyu.classes.bot.Rational(0,0),n: 0};
+          return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
       },
       fiber$initNodeValues :function* _trc_MCTSBot_f_initNodeValues(_thread,state,actions) {
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        return actions.map((function anonymous_569() {
+        return actions.map((function anonymous_581() {
           
-          return {q: new Tonyu.classes.bot.Rational(0,0),n: 0};
+          return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
         
       },
@@ -577,7 +577,7 @@ Tonyu.klass.define({
         node.actions=s.actionsEvents(ctx);
         let vals = _this.initNodeValues(s,node.actions);
         
-        node.subnodes=vals.map((function anonymous_1022(r,i) {
+        node.subnodes=vals.map((function anonymous_1038(r,i) {
           
           let a = node.actions[i];
           
@@ -603,7 +603,7 @@ Tonyu.klass.define({
         node.actions=s.actionsEvents(ctx);
         let vals=yield* _this.fiber$initNodeValues(_thread, s, node.actions);
         
-        node.subnodes=vals.map((function anonymous_1022(r,i) {
+        node.subnodes=vals.map((function anonymous_1038(r,i) {
           
           let a = node.actions[i];
           
@@ -646,8 +646,8 @@ Tonyu.klass.define({
         
         _n = _this.n(node);
         
-        if (nsa==0||_n==0) {
-          return 1000000-_this.rnd();
+        if (nsa<1||_n<1) {
+          return 1000000+_n;
         }
         return _this.nanc(_this.Cp*_this.sqrt(2*Tonyu.globals.$Math.log(_n))/nsa);
       },
@@ -661,8 +661,8 @@ Tonyu.klass.define({
         
         _n=yield* _this.fiber$n(_thread, node);
         
-        if (nsa==0||_n==0) {
-          return 1000000-_this.rnd();
+        if (nsa<1||_n<1) {
+          return 1000000+_n;
         }
         return yield* _this.fiber$nanc(_thread, _this.Cp*_this.sqrt(2*Tonyu.globals.$Math.log(_n))/nsa);
         
@@ -911,6 +911,9 @@ Tonyu.klass.define({
             _this.backup(leaf,v);
           }
         }
+        if (typeof  gc==="function") {
+          gc();
+        }
         ma = - 1;
         mqc = 0;
         
@@ -1022,6 +1025,9 @@ Tonyu.klass.define({
             
             (yield* _this.fiber$backup(_thread, leaf, v));
           }
+        }
+        if (typeof  gc==="function") {
+          gc();
         }
         ma = - 1;
         mqc = 0;

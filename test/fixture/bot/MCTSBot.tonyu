@@ -4,6 +4,7 @@ native performance;
 native process;
 native v8;
 native require;
+native gc;
 //native os;
 var Cp;
 var expandThresh;
@@ -25,7 +26,7 @@ let os;
     subnodes: Node[]?
 }*/
 \initNodeValues(state,actions) {
-    return actions.map\{return {q:new Rational(0,0), n:0};};
+    return actions.map\{return {q:new Rational(0,0), n:rnd()};};
 }
 \expand(ctx:Context, node) {
     /*var sk=s.id();
@@ -57,7 +58,7 @@ let os;
 \c(node, a:Number) {
     var nsa=n(node,a);
     var _n=n(node);
-    if (nsa==0 || _n==0) return 1000000-rnd();
+    if (nsa<1 || _n<1) return 1000000+_n;
     return nanc( Cp*sqrt(2*$Math.log(_n))/nsa );
 }
 \q(node, a:Number) {
@@ -158,6 +159,7 @@ let os;
         }*/
         //if (expcount>=3000) break;
     }
+    if (typeof gc==="function") gc();
     //print ("RN",rootNode);
     var ma=-1,mqc=0;
     for (var a=0;a<rootNode.subnodes.length;a++) {
