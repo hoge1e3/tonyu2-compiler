@@ -842,7 +842,7 @@ Tonyu.klass.define({
           _this.os=require("os");
           
         }
-        let memlim = 4.5*1000*1000*1000;
+        let memlim = 1*1000*1000*1000;
         
         _this.expcount=0;
         _this.lastRootNode=null;
@@ -855,6 +855,16 @@ Tonyu.klass.define({
         _this.iterated=0;
         let stime = performance.now();
         
+        if (typeof  gc==="function") {
+          let mu = process.memoryUsage();
+          
+          gc();
+          let mu2 = process.memoryUsage();
+          
+          _this.print("GC : "+mu.heapUsed+"/"+mu.heapTotal+" -> "+mu2.heapUsed+"/"+mu2.heapTotal);
+          
+        }
+        let mu;
         for (i = 0;
          i<_this.iteration ; i++) {
           {
@@ -880,22 +890,19 @@ Tonyu.klass.define({
                 
               }
               pleaf=leaf;
-              if (_this.os) {
-                mem=_this.os.freemem();
-                if (mem<=memlim) {
-                  break;
-                  
-                }
+              mu=process.memoryUsage();
+              if (mu.heapUsed>memlim) {
+                break;
                 
               }
               if (expRecur%10==0) {
-                _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" mem="+mem);
+                _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" Heap "+mu.heapUsed+"/"+mu.heapTotal);
                 
               }
               
             }
             _this.iterated++;
-            if (mem&&mem<=memlim) {
+            if (mu&&mu.heapUsed>memlim) {
               break;
               
             }
@@ -910,9 +917,6 @@ Tonyu.klass.define({
             
             _this.backup(leaf,v);
           }
-        }
-        if (typeof  gc==="function") {
-          gc();
         }
         ma = - 1;
         mqc = 0;
@@ -957,7 +961,7 @@ Tonyu.klass.define({
           _this.os=require("os");
           
         }
-        let memlim = 4.5*1000*1000*1000;
+        let memlim = 1*1000*1000*1000;
         
         _this.expcount=0;
         _this.lastRootNode=null;
@@ -970,6 +974,16 @@ Tonyu.klass.define({
         _this.iterated=0;
         let stime = performance.now();
         
+        if (typeof  gc==="function") {
+          let mu = process.memoryUsage();
+          
+          gc();
+          let mu2 = process.memoryUsage();
+          
+          _this.print("GC : "+mu.heapUsed+"/"+mu.heapTotal+" -> "+mu2.heapUsed+"/"+mu2.heapTotal);
+          
+        }
+        let mu;
         for (i = 0;
          i<_this.iteration ; i++) {
           {
@@ -995,22 +1009,19 @@ Tonyu.klass.define({
                 
               }
               pleaf=leaf;
-              if (_this.os) {
-                mem=_this.os.freemem();
-                if (mem<=memlim) {
-                  break;
-                  
-                }
+              mu=process.memoryUsage();
+              if (mu.heapUsed>memlim) {
+                break;
                 
               }
               if (expRecur%10==0) {
-                _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" mem="+mem);
+                _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" Heap "+mu.heapUsed+"/"+mu.heapTotal);
                 
               }
               
             }
             _this.iterated++;
-            if (mem&&mem<=memlim) {
+            if (mu&&mu.heapUsed>memlim) {
               break;
               
             }
@@ -1025,9 +1036,6 @@ Tonyu.klass.define({
             
             (yield* _this.fiber$backup(_thread, leaf, v));
           }
-        }
-        if (typeof  gc==="function") {
-          gc();
         }
         ma = - 1;
         mqc = 0;

@@ -105,7 +105,7 @@ let os;
         os=require("os");
     }
     //print(typeof os, typeof require);
-    let memlim=4.5*1000*1000*1000;
+    let memlim=1*1000*1000*1000;
     expcount=0;
     lastRootNode=null;
     timeoutCount=0;
@@ -121,6 +121,13 @@ let os;
     expand(ctx,rootNode);
     iterated=0;
     let stime=performance.now();
+    if (typeof gc==="function") {
+        let mu=process.memoryUsage();
+        gc();
+        let mu2=process.memoryUsage();
+        print("GC : "+mu.heapUsed+"/"+mu.heapTotal+" -> "+mu2.heapUsed+"/"+mu2.heapTotal);
+    }
+    let mu;
     for (var i=0;i<iteration;i++) {
         let leaf;
         let expRecur=0, pleaf;
@@ -135,16 +142,20 @@ let os;
                 throw new Error("WhY!!!");
             }
             pleaf=leaf;
-            if (os) {
+            mu=process.memoryUsage();
+            /*if (os) {
                 mem=os.freemem();
-                if (mem<=memlim) break;
-            }
+                if (mem<=memlim) break;                
+            }*/
+            if (mu.heapUsed>memlim) break;
             if (expRecur%10==0) {
-                print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" mem="+mem);
+                print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+//" mem="+mem+
+                " Heap "+mu.heapUsed+"/"+mu.heapTotal);
             }
         }
         iterated++;
-        if (mem && mem<=memlim) break;
+        //if (mem && mem<=memlim) break;
+        if (mu && mu.heapUsed>memlim) break;
         if (performance.now()-stime>5000) {
             print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+mem);
             stime+=5000;
@@ -159,7 +170,6 @@ let os;
         }*/
         //if (expcount>=3000) break;
     }
-    if (typeof gc==="function") gc();
     //print ("RN",rootNode);
     var ma=-1,mqc=0;
     for (var a=0;a<rootNode.subnodes.length;a++) {
