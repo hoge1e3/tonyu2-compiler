@@ -88,7 +88,7 @@ let os;
         var ma=-1,mqc=0,test;
         for (var a=0;a<acts.length;a++) {
             var qc=q(node,a)*sgn+c(node,a);
-            acts[a].test="q="+q(node,a)*sgn+" c="+c(node,a);
+            //acts[a].test="q="+q(node,a)*sgn+" c="+c(node,a);
             if (ma<0 || qc>=mqc) {
                 mqc=qc;
                 ma=a;
