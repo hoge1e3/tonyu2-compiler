@@ -1,23 +1,21 @@
 var staKey;
 var notDelete={};
 
+//initLineSegments();
+
 for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
-    if($stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && 
-    checkPointStation(staKey) && (!notDelete[staKey])){
+    if(isSimpleStation(staKey) && (!notDelete[staKey])) {
         delsta=staKey;
         reConnect(delsta);
         delete $stations[delsta];
         logDeleteStations(delsta);
     }
 }
-
-\logDeleteStations(logDelete){
-    textName = "deleteStations.txt";
-    f=file(textName);//freelog.txt
-    f.appendText(logDelete+"\n");
+\isSimpleStation(staKey:String) {
+    // 接続駅ではない途中駅か
+    return $stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && notConnectedToPoint(staKey);
 }
-
-\checkPointStation(staName){
+\notConnectedToPoint(staName){
     var checksta = $stations[staName].nexts;
     for(var i=0;i<checksta.length;i++){
         if(checksta[i].indexOf("point")>-1){
@@ -26,6 +24,13 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     }
     return true;
 }
+
+\logDeleteStations(logDelete){
+    textName = "deleteStations.txt";
+    f=file(textName);//freelog.txt
+    f.appendText(logDelete+"\n");
+}
+
 
 \reConnect(staName){
     var next_0 = $stations[staName].nexts[0];
@@ -45,4 +50,38 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
             $stations[next_1].nexts[i]=next_0;
         }
     }
+}
+\initLineSegments() {
+    $lineSegments={};
+    for(let staKey of Object.keys($stations)){
+        if (!isSimpleStation(staKey)) continue;
+        let st=$stations[staKey];
+        for (let nxName of st.nexts) {
+            if (!isSimpleStation(nxName)) continue;
+            let els=$stations[nxName].lineSegment;
+            if (els) {
+                let mys=st.lineSegment;
+                if (mys && els!==mys) {
+                    //Merge
+                    for (let e of els) {
+                        $stations[e].lineSegment=mys;
+                        mys.push(e);
+                    }
+                } else {
+                    st.lineSegment=els;
+                    els.push(staKey);
+                }
+            }
+        }        
+        if (!st.lineSegment) {
+            $lineSegments[staKey]=st.lineSegment=[staKey];
+        }
+    }
+    for (let k of Object.keys($lineSegments)) {
+        if ($lineSegments[k].length==1) {
+            delete $stations[k].lineSegment;
+            delete $lineSegments[k];
+        }
+    }
+    print($lineSegments);
 }
