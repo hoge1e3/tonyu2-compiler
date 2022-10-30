@@ -2,7 +2,7 @@ var staKey;
 var notDelete={};
 
 //initLineSegments();
-
+//initLineDists();
 for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     if(isSimpleStation(staKey) && (!notDelete[staKey])) {
         delsta=staKey;
@@ -84,4 +84,51 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
         }
     }
     print($lineSegments);
+}
+\initLineDists() {
+    let lineDists={};// {[String]: {[String]:Number}}
+    \add(a,b,d) {
+        if (a>b) return add(b,a,d);
+        lineDists[a]=lineDists[a]||{};
+        let la=lineDists[a];
+        if (!la[b] || d<la[b]) {
+            la[b]=d;
+            return true;
+        }
+        return false;
+    }
+    \getAll(a:String) {// res: {[String]:Number}
+        let res=Object.assign({},lineDists[a]||{});
+        for (let b, dists in lineDists) {
+            if (dists[a]) res[b]=dists[a];
+        }
+        return res;
+    }
+    for(let staKey,st in $stations){
+        if (st.lines.length<2) continue;
+        for (let a of st.lines) {
+            for (let b of st.lines) {
+                if (a===b) continue;
+                add(a,b,1);
+            }
+        }
+    }
+    do {
+        let next=false;
+        for (let lineKeyA, la in lineDists) {
+            let distsAB=getAll(lineKeyA);
+            //print(lineKeyA, distsAB);
+            for (let lineKeyB, distAB in distsAB) {
+                let distsBC=getAll(lineKeyB);
+                for (let lineKeyC, distBC in distsBC) {
+                    if (lineKeyC===lineKeyA) continue;
+                    let distAC=distAB+distBC;
+                    if (add(lineKeyA,lineKeyC, distAC)) next=true;
+                }
+            }
+        }
+    } while(next);
+    $lineDists=lineDists;
+    print(lineDists);
+    return lineDists;
 }
