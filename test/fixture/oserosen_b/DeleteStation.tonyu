@@ -1,5 +1,11 @@
 var staKey;
 var notDelete={};
+var delsta;
+var delArea=["北海道"];
+
+for(var i=0;i<delArea.length;i++){
+    deleteArea(delArea[i]);
+}
 
 //initLineSegments();
 //initLineDists();
@@ -131,4 +137,17 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     $lineDists=lineDists;
     print(lineDists);
     return lineDists;
+}
+
+\deleteArea(areas){//このままだと接続駅も消えるので、１駅でも消す地方に紛れ込んでたらアウト(門司とか)
+    delLine=$areas[areas].lines;
+    for(var i=0;i<delLine.length;i++){
+        for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
+            if($stations[staKey].lines.indexOf(delLine[i])>-1){
+                delsta=staKey;
+                delete $stations[delsta];
+                logDeleteStations(delsta);
+            }
+        }
+    }
 }
