@@ -2,7 +2,7 @@ var staKey;
 var notDelete={};
 
 //initLineSegments();
-//initLineDists();
+initLineDists();
 for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     if(isSimpleStation(staKey) && (!notDelete[staKey])) {
         delsta=staKey;
@@ -93,6 +93,7 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
         let la=lineDists[a];
         if (!la[b] || d<la[b]) {
             la[b]=d;
+            //print(a,b,d);
             return true;
         }
         return false;
@@ -113,8 +114,10 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
             }
         }
     }
+    let step=1;
+    let next;
     do {
-        let next=false;
+        next=false;
         for (let lineKeyA, la in lineDists) {
             let distsAB=getAll(lineKeyA);
             //print(lineKeyA, distsAB);
