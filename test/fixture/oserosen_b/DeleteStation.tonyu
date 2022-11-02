@@ -1,18 +1,23 @@
 var staKey;
 var notDelete={};
 var delsta;
-var delArea=["北海道","孤立"];
+//var delArea=["北海道","孤立"];
+var delArea=["北海道","四国","九州"];
+var deleteLines={};
 
+/*地方削除用*/
 for(var i=0;i<delArea.length;i++){
+    for(var j=0;j<$areas[delArea[i]].lines.length;j++){
+        var keyLine=$areas[delArea[i]].lines[j];
+        deleteLines[keyLine]=1;
+    }
     deleteArea(delArea[i]);
 }
 
 initLineSegments();
 initLineDists();
-
-//print ( new Board().initSegments(Object.keys($stations).filter\(x){return !x.match(/point/);})+"" );
-
-/*for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
+/*中間駅間引き用
+for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     if(isSimpleStation(staKey) && (!notDelete[staKey])) {
         delsta=staKey;
         reConnect(delsta);
@@ -111,7 +116,6 @@ initLineDists();
         let la=lineDists[a];
         if (!la[b] || d<la[b]) {
             la[b]=d;
-            //print(a,b,d);
             return true;
         }
         return false;
@@ -132,6 +136,7 @@ initLineDists();
             }
         }
     }
+
     let step=1;
     let next;
     do {
@@ -169,18 +174,63 @@ initLineDists();
     return lineDists;
 }
 
-\deleteArea(areas){//このままだと接続駅も消えるので、１駅でも消す地方に紛れ込んでたらアウト(門司とか)
-    let delLine=$areas[areas].lines;
+\deleteArea(area){
+    delLine=$areas[area].lines;
+    var reserveStations=[];
     for(var i=0;i<delLine.length;i++){
         for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
             if($stations[staKey].lines.indexOf(delLine[i])>-1){
-                delsta=staKey;
-                delete $stations[delsta];
-                logDeleteStations(delsta);
+                if(isBorder(area,staKey)){
+                    modifyStation(area,staKey);
+                }else{
+                    reserveStations.push(staKey);
+                }
             }
         }
     }
-    for (let line of delLine) {
+    for(var i=0;i<reserveStations.length;i++){
+        delete $stations[reserveStations[i]];
+        logDeleteStations(reserveStations[i]);
+    }
+        for (let line of delLine) {
         delete $lines[line];
     }
+}
+
+\isBorder(area,station){//消す地方と消さない地方を結ぶ路線の駅か判定
+    var lines=$stations[station].lines;
+    for(var i=0;i<lines.length;i++){
+        if($areas[area].lines.indexOf(lines[i])<0){//所属路線に削除する地方の路線以外の路線が入っていたら
+            return true;
+        }
+    }
+    return false;
+}
+
+\modifyStation(area,station){//消す路線と消さない路線の接続駅の時に消す路線の情報だけ修正する
+    var lines=$stations[station].lines;
+    var nexts=$stations[station].nexts;
+    var tmp=[];
+    for(var i=0;i<lines.length;i++){
+        if($areas[area].lines.indexOf(lines[i])<0){
+            tmp.push(lines[i]);
+        }
+    }
+    $stations[station].lines=tmp;//削除済みの路線リストに書き換え
+    tmp=[];
+    for(var i=0;i<nexts.length;i++){
+        if(!shouldDelete(nexts[i],deleteLines)){
+            tmp.push(nexts[i]);
+        }
+    }
+    $stations[station].nexts=tmp;
+}
+
+\shouldDelete(station:String,deleteLines){
+    for(var deleteLine of Object.keys(deleteLines)){
+        if($stations[station].lines.indexOf(deleteLine)>-1){
+            return true;
+        }
+    }
+    return false;
 }
