@@ -360,3 +360,13 @@ function namelengthComparison(sn,d){
     }
 }
 
+function getTouchedLines() {
+    //だれかが1駅でも取得している路線の集合
+    let lines={};
+    for(let key, value in owner){
+        for (let line of $stations[key].lines) {
+            lines[line]=1;
+        }
+    }
+    return lines;
+}

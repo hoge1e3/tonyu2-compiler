@@ -1,22 +1,26 @@
 var staKey;
 var notDelete={};
 var delsta;
-var delArea=["北海道"];
+var delArea=["北海道","孤立"];
 
 for(var i=0;i<delArea.length;i++){
     deleteArea(delArea[i]);
 }
 
-//initLineSegments();
+initLineSegments();
 initLineDists();
-for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
+
+//print ( new Board().initSegments(Object.keys($stations).filter\(x){return !x.match(/point/);})+"" );
+
+/*for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     if(isSimpleStation(staKey) && (!notDelete[staKey])) {
         delsta=staKey;
         reConnect(delsta);
         delete $stations[delsta];
         logDeleteStations(delsta);
     }
-}
+}*/
+
 \isSimpleStation(staKey:String) {
     // 接続駅ではない途中駅か
     return $stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && notConnectedToPoint(staKey);
@@ -89,7 +93,15 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
             delete $lineSegments[k];
         }
     }
-    print($lineSegments);
+    for(let sg,stas in $lineSegments){
+        for (let sta of stas) {
+            $stations[sta].lineSegment=sg;
+        }
+    }
+    //print($lineSegments);
+    /*for (let k, sta in $stations) {
+        print(k, sta.lineSegment);
+    }*/
 }
 \initLineDists() {
     let lineDists={};// {[String]: {[String]:Number}}
@@ -124,7 +136,8 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     let next;
     do {
         next=false;
-        for (let lineKeyA, la in lineDists) {
+        print("Detect Line Dists");
+        for (let lineKeyA, la in $lines) {
             let distsAB=getAll(lineKeyA);
             //print(lineKeyA, distsAB);
             for (let lineKeyB, distAB in distsAB) {
@@ -138,12 +151,26 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
         }
     } while(next);
     $lineDists=lineDists;
-    print(lineDists);
+    let undefs={};
+    for (let a,_ of $lines) {
+        for (let b,_ of $lines) {
+            if (a>=b) continue;
+            if (!$lineDists[a] || !$lineDists[a][b]) {
+                print("Dist Undef", a, b);
+                undefs[a]=1;
+                undefs[b]=1;
+            }
+        }
+    }
+    for (let k,_ in undefs) {
+        print(k,$lineDists[k],getAll(k));
+    }
+    //print(lineDists);
     return lineDists;
 }
 
 \deleteArea(areas){//このままだと接続駅も消えるので、１駅でも消す地方に紛れ込んでたらアウト(門司とか)
-    delLine=$areas[areas].lines;
+    let delLine=$areas[areas].lines;
     for(var i=0;i<delLine.length;i++){
         for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
             if($stations[staKey].lines.indexOf(delLine[i])>-1){
@@ -152,5 +179,8 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
                 logDeleteStations(delsta);
             }
         }
+    }
+    for (let line of delLine) {
+        delete $lines[line];
     }
 }
