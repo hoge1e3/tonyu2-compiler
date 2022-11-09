@@ -10,12 +10,16 @@ let searchDist=2; // touchedな路線から距離searchDist以内の路線を探
         c2={};
         // c2=c1 & linesに属するもの
         for (let s,_ of c1) {
-            let lines=$stations[s].lines;
-            for (let ln of lines) {
-                if (c1[ln]) c2[s]=1;
+            if ($stations[s].lines.some \(line) {return lines[line];}) {
+                c2[s]=1;
             }
         }
+        /*if (Object.keys(c2).length==0) {
+            print(c1,c2,lines);
+           throw new Error(`Why only ${Object.keys(c2)}`);
+        }*/
     } else c2=c1;
+    //print(Object.keys(c2));
     return actions.map \(a){
         let q,n;
         if (c2[a.stext]) {//探索候補なら，まだ辿っていない
