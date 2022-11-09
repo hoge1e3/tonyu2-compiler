@@ -1,36 +1,55 @@
 var staKey;
 var notDelete={};
 var delsta;
-//var delArea=["北海道","孤立"];
-var delArea=["北海道","四国","九州"];
+var delArea=["北海道","四国","九州","孤立"];
 var deleteLines={};
 
-/*地方削除用*/
+
+/*削除する路線登録*/
 for(var i=0;i<delArea.length;i++){
     for(var j=0;j<$areas[delArea[i]].lines.length;j++){
         var keyLine=$areas[delArea[i]].lines[j];
-        deleteLines[keyLine]=1;
+        deleteLines[keyLine]=true;
     }
-    deleteArea(delArea[i]);
 }
-
+//print(deleteLines);
+deleteStations_ByLines(deleteLines);
+for (let l,_ of deleteLines) delete $lines[l];
 initLineSegments();
 initLineDists();
+countStations();
+
+\countStations() {
+    for(let sn,_ of $stations) {
+        if (sn.match(/point/)) continue;
+        for (let line of $stations[sn].lines) {
+            $lines[line].stationCount=$lines[line].stationCount||0;
+            $lines[line].stationCount++;
+        }
+    }
+    /*for (let line,v of $lines) {
+        print(line, v.stationCount);
+    }*/
+}
 /*中間駅間引き用
 for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
-    if(isSimpleStation(staKey) && (!notDelete[staKey])) {
+    if($stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && 
+    checkPointStation(staKey) && (!notDelete[staKey])){
         delsta=staKey;
         reConnect(delsta);
         delete $stations[delsta];
         logDeleteStations(delsta);
     }
-}*/
-
-\isSimpleStation(staKey:String) {
-    // 接続駅ではない途中駅か
-    return $stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && notConnectedToPoint(staKey);
 }
-\notConnectedToPoint(staName){
+
+
+\logDeleteStations(logDelete){
+    textName = "deleteStations.txt";
+    f=file(textName);//freelog.txt
+    f.appendText(logDelete+"\n");
+}
+
+\checkPointStation(staName){
     var checksta = $stations[staName].nexts;
     for(var i=0;i<checksta.length;i++){
         if(checksta[i].indexOf("point")>-1){
@@ -39,13 +58,6 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     }
     return true;
 }
-
-\logDeleteStations(logDelete){
-    textName = "deleteStations.txt";
-    f=file(textName);//freelog.txt
-    f.appendText(logDelete+"\n");
-}
-
 
 \reConnect(staName){
     var next_0 = $stations[staName].nexts[0];
@@ -65,6 +77,50 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
             $stations[next_1].nexts[i]=next_0;
         }
     }
+}*/
+
+\deleteStations_ByLines(deleteLines){
+    /*nextsの中でshouldDeleteのtrueの駅を探して消す*/
+    for(st of Object.keys($stations)){
+        $stations[st].nexts = $stations[st].nexts.filter(function(station) {
+            return !shouldDelete(station,deleteLines);
+        });
+        $stations[st].lines = $stations[st].lines.filter(function(line) {
+            return !deleteLines[line];
+        });
+    }
+    
+    for(st of Object.keys($stations)){
+        if(shouldDelete(st,deleteLines)){
+            delete $stations[st];
+        }
+    }
+}
+
+
+\shouldDelete(station:String,deleteLines){
+    for(var i=0;i<$stations[station].lines.length;i++){
+        if(!deleteLines[$stations[station].lines[i]]){
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+\isSimpleStation(staKey:String) {
+    // 接続駅ではない途中駅か
+    return $stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && notConnectedToPoint(staKey);
+}
+\notConnectedToPoint(staName){
+    var checksta = $stations[staName].nexts;
+    for(var i=0;i<checksta.length;i++){
+        if(checksta[i].indexOf("point")>-1){
+            return false;
+        }
+    }
+    return true;        
 }
 \initLineSegments() {
     $lineSegments={};
@@ -164,6 +220,7 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
                 print("Dist Undef", a, b);
                 undefs[a]=1;
                 undefs[b]=1;
+                throw new Error("Dist Undef");
             }
         }
     }
@@ -172,65 +229,4 @@ for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
     }
     //print(lineDists);
     return lineDists;
-}
-
-\deleteArea(area){
-    delLine=$areas[area].lines;
-    var reserveStations=[];
-    for(var i=0;i<delLine.length;i++){
-        for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
-            if($stations[staKey].lines.indexOf(delLine[i])>-1){
-                if(isBorder(area,staKey)){
-                    modifyStation(area,staKey);
-                }else{
-                    reserveStations.push(staKey);
-                }
-            }
-        }
-    }
-    for(var i=0;i<reserveStations.length;i++){
-        delete $stations[reserveStations[i]];
-        logDeleteStations(reserveStations[i]);
-    }
-        for (let line of delLine) {
-        delete $lines[line];
-    }
-}
-
-\isBorder(area,station){//消す地方と消さない地方を結ぶ路線の駅か判定
-    var lines=$stations[station].lines;
-    for(var i=0;i<lines.length;i++){
-        if($areas[area].lines.indexOf(lines[i])<0){//所属路線に削除する地方の路線以外の路線が入っていたら
-            return true;
-        }
-    }
-    return false;
-}
-
-\modifyStation(area,station){//消す路線と消さない路線の接続駅の時に消す路線の情報だけ修正する
-    var lines=$stations[station].lines;
-    var nexts=$stations[station].nexts;
-    var tmp=[];
-    for(var i=0;i<lines.length;i++){
-        if($areas[area].lines.indexOf(lines[i])<0){
-            tmp.push(lines[i]);
-        }
-    }
-    $stations[station].lines=tmp;//削除済みの路線リストに書き換え
-    tmp=[];
-    for(var i=0;i<nexts.length;i++){
-        if(!shouldDelete(nexts[i],deleteLines)){
-            tmp.push(nexts[i]);
-        }
-    }
-    $stations[station].nexts=tmp;
-}
-
-\shouldDelete(station:String,deleteLines){
-    for(var deleteLine of Object.keys(deleteLines)){
-        if($stations[station].lines.indexOf(deleteLine)>-1){
-            return true;
-        }
-    }
-    return false;
 }

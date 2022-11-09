@@ -157,11 +157,22 @@ if($gameConfig.replay.file){//リプレイtrueの時
         $loopCount++;
     }
 }
+\hashDiff(before,after) {
+    let res={};
+    for (let k,_ of after) {
+        if (before[k]!==after[k]) res[k]=`${before[k]}->${after[k]}`;
+    }
+    return res;
+}
 \oneMatch(g:GameMaster) {
+    let rests={};
     while(!g.gameover()) {
         var pp=g.state.player;
         var a=g.step();
         print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
+        let dif=hashDiff(rests, g.state.lineRest());
+        print(dif);
+        rests=g.state.lineRest();
         //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
         update();
     }

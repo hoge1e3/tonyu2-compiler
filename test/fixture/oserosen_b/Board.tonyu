@@ -181,6 +181,7 @@ function clicked(gameConfig,b){
     //$rsta = residualStation();
 }
 
+
 // まだ使われていない
 // stationに隣接する接続駅を配列で返す．
 \nextSearchStops(station,  visited, ctx:GameConfig) {//station:ある駅 visited:探索済みリスト
@@ -333,11 +334,30 @@ function enemyHasStation(turn){
     return res;
 }
 
+\lineRest() {
+    let count={};
+    for(let line,val of $lines) {
+        count[line]=val.stationCount;
+    }
+    for(let st,_ of owner){
+        for (let line of $stations[st].lines) {
+            count[line]--;
+        }
+    }
+    return count;
+}
 \value(ctx, p):Number {
-    var taken=0;
-    for(var st of owner){
+    let taken=5000;
+    // C駅数= complete路線の駅数
+    // 総駅 + (自分の取った駅数 - 敵の取った駅数)*0.1　+ (自分の取ったC駅数 - 敵の取ったC駅数)
+    let rests=lineRest();
+    
+    for(let st,_ of owner){
+        let comp=$stations[st].lines.some \(line) {return rests[line]===0;};
         if(owner[st].owner==p){
-            taken++;
+            taken+=comp?1:0.1;
+        } else {
+            taken-=comp?1:0.1;
         }
     }
     return taken;

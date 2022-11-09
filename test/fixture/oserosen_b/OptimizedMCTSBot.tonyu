@@ -40,6 +40,7 @@ function linesWithin(s:Board) {
     return res;
 }
 function lineDist(a,b) {
+    if (a==b) return 0;
     if (a>b) return lineDist(b,a);
     if (!$lineDists[a]) {
         print ($lineDists);
