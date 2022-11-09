@@ -362,6 +362,18 @@ function enemyHasStation(turn){
     }
     return taken;
 }
+\status(ctx) {
+    let taken=[0,0,0], comps=[0,0,0];
+    let rests=lineRest();
+    
+    for(let st,_ of owner){
+        let comp=$stations[st].lines.some \(line) {return rests[line]===0;};
+        taken[owner[st].owner]++ ;
+        if (comp) { comps[owner[st].owner]++ ; }
+    }
+    return `P1= ${taken[1]}(${comps[1]}) P2=${taken[2]}(${comps[2]})`;
+}
+
 
 function namelengthComparison(sn,d){
     sn=sn.replace(/\(.*/,"").length;

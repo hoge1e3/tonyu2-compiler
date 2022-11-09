@@ -174,6 +174,11 @@ if($gameConfig.replay.file){//リプレイtrueの時
         print(pp, g.state.diceNum, a.stext || a.num,  g.state.value($gameConfig, 1), g.state.value($gameConfig, 2));
         let dif=hashDiff(rests, g.state.lineRest());
         print(dif);
+        print(g.state.status());
+        if (g.logger) {
+            if (Object.keys(dif).length) g.logger.add($JSON.stringify(dif));
+            g.logger.add(g.state.status());
+        }
         rests=g.state.lineRest();
         //print(players.map\(p) {return value(context, p, g.state);}.join(" "));
         update();
