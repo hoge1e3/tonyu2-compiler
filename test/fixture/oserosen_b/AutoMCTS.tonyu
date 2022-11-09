@@ -35,6 +35,8 @@ var searching;
 if($kintetsu){
     new KLines;
     update();
+    new DeleteStation;
+    update();
 }else{
     new Lines;//路線と駅のデータ
     update();

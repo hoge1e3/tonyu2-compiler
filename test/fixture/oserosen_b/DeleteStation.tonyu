@@ -7,6 +7,7 @@ var deleteLines={};
 
 /*削除する路線登録*/
 for(var i=0;i<delArea.length;i++){
+    if (!$areas[delArea[i]]) continue;
     for(var j=0;j<$areas[delArea[i]].lines.length;j++){
         var keyLine=$areas[delArea[i]].lines[j];
         deleteLines[keyLine]=true;

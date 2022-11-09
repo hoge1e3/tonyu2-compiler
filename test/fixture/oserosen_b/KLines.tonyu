@@ -3,6 +3,7 @@
 
 lineColor:""
 */
+$areas={"孤立":{lines:["田原本線","八王子線"]}};
 
 $lines={
     "京都線":{lineColor:"#954A35"},
