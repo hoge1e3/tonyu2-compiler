@@ -102,7 +102,7 @@ for(var stations,z in $stations){//,zはTonyuの仕様の関係で何か渡さ�
     if(player.name == "mcts"){
         bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
     } else if(player.name == "omcts"){
-        bot = new OptimizedMCTSBot{value, searchDist:2, Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+        bot = new OptimizedMCTSBot{value, searchDist:2, Cp:10, expandThresh:2, iteration:Number(player.iteration), timeout:Number(player.timeout)};
     }else if(player.name == "cmcts"){
         bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
     }else{
