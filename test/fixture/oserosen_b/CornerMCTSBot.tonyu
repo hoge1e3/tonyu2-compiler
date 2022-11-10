@@ -1,6 +1,7 @@
 extends MCTSBot;
 
-\initNodeValues(s,actions) {
+\initNodeValues(ctx,s) {
+    let actions=state.actionsEvents(ctx);
     let hasCorner;
     if(s.diceNum !=null){
         hasCorner=actions.some(isCorner);

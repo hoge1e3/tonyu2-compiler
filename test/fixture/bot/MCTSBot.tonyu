@@ -25,7 +25,11 @@ let os;
     n: number,
     subnodes: Node[]?
 }*/
-\initNodeValues(state,actions) {
+\initNodeValues(ctx, state) {
+    let actions=state.actionsEvents(ctx);
+    if (state.nextIsEvent(ctx)) {
+        return actions.map\{return {q:new Rational(0,0), n:expandThresh};};
+    }
     return actions.map\{return {q:new Rational(0,0), n:rnd()};};
 }
 \expand(ctx:Context, node) {
@@ -34,8 +38,8 @@ let os;
     if (node.n<expandThresh) throw new Error(node.n+"<"+expandThresh);
     let s:State = getState(ctx, node);
     if (node.subnodes) throw new Error(s+" already expanded");
-    let actions=s.actionsEvents(ctx);//TODO
-    let vals=initNodeValues(s,actions);
+    //let actions=s.actionsEvents(ctx);//TODO
+    let vals=initNodeValues(ctx, s);
     node.subnodes=vals.map \(r, i) {
         //let a=node.actions[i];
         let res={

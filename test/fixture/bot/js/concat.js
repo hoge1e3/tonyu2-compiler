@@ -543,19 +543,37 @@ Tonyu.klass.define({
         
         
       },
-      initNodeValues :function _trc_MCTSBot_initNodeValues(state,actions) {
+      initNodeValues :function _trc_MCTSBot_initNodeValues(ctx,state) {
         var _this=this;
         
-        return actions.map((function anonymous_581() {
+        let actions = state.actionsEvents(ctx);
+        
+        if (state.nextIsEvent(ctx)) {
+          return actions.map((function anonymous_660() {
+            
+            return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
+          }));
+          
+        }
+        return actions.map((function anonymous_740() {
           
           return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
       },
-      fiber$initNodeValues :function* _trc_MCTSBot_f_initNodeValues(_thread,state,actions) {
+      fiber$initNodeValues :function* _trc_MCTSBot_f_initNodeValues(_thread,ctx,state) {
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        return actions.map((function anonymous_581() {
+        let actions = state.actionsEvents(ctx);
+        
+        if (state.nextIsEvent(ctx)) {
+          return actions.map((function anonymous_660() {
+            
+            return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
+          }));
+          
+        }
+        return actions.map((function anonymous_740() {
           
           return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
@@ -574,11 +592,9 @@ Tonyu.klass.define({
           throw new Error(s+" already expanded");
           
         }
-        let actions = s.actionsEvents(ctx);
+        let vals = _this.initNodeValues(ctx,s);
         
-        let vals = _this.initNodeValues(s,actions);
-        
-        node.subnodes=vals.map((function anonymous_1029(r,i) {
+        node.subnodes=vals.map((function anonymous_1187(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -604,11 +620,9 @@ Tonyu.klass.define({
           throw new Error(s+" already expanded");
           
         }
-        let actions = s.actionsEvents(ctx);
+        let vals=yield* _this.fiber$initNodeValues(_thread, ctx, s);
         
-        let vals=yield* _this.fiber$initNodeValues(_thread, s, actions);
-        
-        node.subnodes=vals.map((function anonymous_1029(r,i) {
+        node.subnodes=vals.map((function anonymous_1187(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
