@@ -32,18 +32,18 @@ let os;
     /*var sk=s.id();
     if (nodes[sk]) throw new Error(sk+" already found");*/
     if (node.n<expandThresh) throw new Error(node.n+"<"+expandThresh);
-    if (node.subnodes) throw new Error(node.state+" already expanded");
     let s:State = getState(ctx, node);
-    node.actions=s.actionsEvents(ctx);
-    let vals=initNodeValues(s,node.actions);
+    if (node.subnodes) throw new Error(s+" already expanded");
+    let actions=s.actionsEvents(ctx);//TODO
+    let vals=initNodeValues(s,actions);
     node.subnodes=vals.map \(r, i) {
-        let a=node.actions[i];
+        //let a=node.actions[i];
         return {
             parent: node, 
-            state: node.state.next(ctx,a),
+            //state: s.next(ctx,a),
             q:r.q, 
             n:r.n, 
-            a:str(a),
+            //a:str(a),
             subnodes: null,
         };
     };
@@ -65,7 +65,7 @@ let os;
     if (a==null) {
         return node.q.value;
     } else {
-        if (!node.subnodes) throw new Error(n.state+"Not expanded");
+        if (!node.subnodes) throw new Error("Not expanded");
         return node.subnodes[a].q.value;
     }
 }
@@ -73,16 +73,17 @@ let os;
     if (a==null) {
         return nanc( node.n );
     } else {
-        if (!node.subnodes) throw new Error(n.state+"Not expanded");
+        if (!node.subnodes) throw new Error("Not expanded");
         return nanc( node.subnodes[a].n );
     }
 }
 \selection(ctx:Context, node) {
     // return leaf node
-    if (!node.subnodes) throw new Error(n.state+"Not expanded");
+    if (!node.subnodes) throw new Error(getState(ctx,n)+"Not expanded");
     while (true) {
         var acts=node.subnodes;
-        var sgn=(node.state.player===player?1:-1);
+        let state=getState(ctx,node);
+        var sgn=(state.player===player?1:-1);
         node.n+=1;
         if (!acts || acts.length==0) break;
         var ma=-1,mqc=0,test;
@@ -211,14 +212,23 @@ let os;
 }
 
 \getState(ctx, node){
-    if (node.state) return node.state;
+    //if (node.state) return node.state;
     var p=node.parent;
+    if (!p) {
+        if (!node.state) throw new Error("Root not should have state");
+        return node.state;
+    }
     var idx=p.subnodes.indexOf(node);
     if (idx<0) throw new Error("Index not found");
-    var act=p.subnodes[idx];
-    if (!act) throw new Error("Action not found "+idx);
-    node.state=getState(ctx, p).next(ctx, act);
-    return node.state;
+    //var act=p.subnodes[idx];
+    //if (!act) throw new Error("Action not found "+idx);
+    //throw new Error("ERA-");
+    let ps=getState(ctx,p);
+    let acts=ps.actionsEvents(ctx);
+    let res=ps.next(ctx, acts[idx]);
+    return res;
+    //node.state=res;
+    //return node.state;
 }
 
 \playRandom(ctx:Context, s:State):Action {

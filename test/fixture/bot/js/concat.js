@@ -568,20 +568,19 @@ Tonyu.klass.define({
           throw new Error(node.n+"<"+_this.expandThresh);
           
         }
-        if (node.subnodes) {
-          throw new Error(node.state+" already expanded");
-          
-        }
         let s = _this.getState(ctx,node);
         
-        node.actions=s.actionsEvents(ctx);
-        let vals = _this.initNodeValues(s,node.actions);
+        if (node.subnodes) {
+          throw new Error(s+" already expanded");
+          
+        }
+        let actions = s.actionsEvents(ctx);
         
-        node.subnodes=vals.map((function anonymous_1038(r,i) {
+        let vals = _this.initNodeValues(s,actions);
+        
+        node.subnodes=vals.map((function anonymous_1029(r,i) {
           
-          let a = node.actions[i];
-          
-          return {parent: node,state: node.state.next(ctx,a),q: r.q,n: r.n,a: _this.str(a),subnodes: null};
+          return {parent: node,q: r.q,n: r.n,subnodes: null};
         }));
         _this.expcount++;
         return node;
@@ -594,20 +593,19 @@ Tonyu.klass.define({
           throw new Error(node.n+"<"+_this.expandThresh);
           
         }
-        if (node.subnodes) {
-          throw new Error(node.state+" already expanded");
-          
-        }
         let s=yield* _this.fiber$getState(_thread, ctx, node);
         
-        node.actions=s.actionsEvents(ctx);
-        let vals=yield* _this.fiber$initNodeValues(_thread, s, node.actions);
+        if (node.subnodes) {
+          throw new Error(s+" already expanded");
+          
+        }
+        let actions = s.actionsEvents(ctx);
         
-        node.subnodes=vals.map((function anonymous_1038(r,i) {
+        let vals=yield* _this.fiber$initNodeValues(_thread, s, actions);
+        
+        node.subnodes=vals.map((function anonymous_1029(r,i) {
           
-          let a = node.actions[i];
-          
-          return {parent: node,state: node.state.next(ctx,a),q: r.q,n: r.n,a: _this.str(a),subnodes: null};
+          return {parent: node,q: r.q,n: r.n,subnodes: null};
         }));
         _this.expcount++;
         return node;
@@ -676,7 +674,7 @@ Tonyu.klass.define({
           
         } else {
           if (! node.subnodes) {
-            throw new Error(Tonyu.bindFunc(_this,_this.n).state+"Not expanded");
+            throw new Error("Not expanded");
             
           }
           return node.subnodes[a].q.value;
@@ -692,7 +690,7 @@ Tonyu.klass.define({
           
         } else {
           if (! node.subnodes) {
-            throw new Error(Tonyu.bindFunc(_this,_this.n).state+"Not expanded");
+            throw new Error("Not expanded");
             
           }
           return node.subnodes[a].q.value;
@@ -708,7 +706,7 @@ Tonyu.klass.define({
           
         } else {
           if (! node.subnodes) {
-            throw new Error(Tonyu.bindFunc(_this,_this.n).state+"Not expanded");
+            throw new Error("Not expanded");
             
           }
           return _this.nanc(node.subnodes[a].n);
@@ -725,7 +723,7 @@ Tonyu.klass.define({
           
         } else {
           if (! node.subnodes) {
-            throw new Error(Tonyu.bindFunc(_this,_this.n).state+"Not expanded");
+            throw new Error("Not expanded");
             
           }
           return yield* _this.fiber$nanc(_thread, node.subnodes[a].n);
@@ -745,13 +743,15 @@ Tonyu.klass.define({
         var qc;
         
         if (! node.subnodes) {
-          throw new Error(Tonyu.bindFunc(_this,_this.n).state+"Not expanded");
+          throw new Error(_this.getState(ctx,Tonyu.bindFunc(_this,_this.n))+"Not expanded");
           
         }
         while (true) {
           acts = node.subnodes;
           
-          sgn = (node.state.player===_this.player?1:- 1);
+          let state = _this.getState(ctx,node);
+          
+          sgn = (state.player===_this.player?1:- 1);
           
           node.n+=1;
           if (! acts||acts.length==0) {
@@ -766,7 +766,6 @@ Tonyu.klass.define({
             {
               qc = _this.q(node,a)*sgn+_this.c(node,a);
               
-              acts[a].test="q="+_this.q(node,a)*sgn+" c="+_this.c(node,a);
               if (ma<0||qc>=mqc) {
                 mqc=qc;
                 ma=a;
@@ -791,13 +790,15 @@ Tonyu.klass.define({
         var qc;
         
         if (! node.subnodes) {
-          throw new Error(Tonyu.bindFunc(_this,_this.n).state+"Not expanded");
+          throw new Error(_this.getState(ctx,Tonyu.bindFunc(_this,_this.n))+"Not expanded");
           
         }
         while (true) {
           acts = node.subnodes;
           
-          sgn = (node.state.player===_this.player?1:- 1);
+          let state=yield* _this.fiber$getState(_thread, ctx, node);
+          
+          sgn = (state.player===_this.player?1:- 1);
           
           node.n+=1;
           if (! acts||acts.length==0) {
@@ -812,7 +813,6 @@ Tonyu.klass.define({
             {
               qc = _this.q(node,a)*sgn+_this.c(node,a);
               
-              acts[a].test="q="+_this.q(node,a)*sgn+" c="+_this.c(node,a);
               if (ma<0||qc>=mqc) {
                 mqc=qc;
                 ma=a;
@@ -824,6 +824,32 @@ Tonyu.klass.define({
           
         }
         return node;
+        
+      },
+      depth :function _trc_MCTSBot_depth(node) {
+        var _this=this;
+        
+        let res = 0;
+        
+        while (node) {
+          node=node.parent;
+          res++;
+          
+        }
+        return res;
+      },
+      fiber$depth :function* _trc_MCTSBot_f_depth(_thread,node) {
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let res = 0;
+        
+        while (node) {
+          node=node.parent;
+          res++;
+          
+        }
+        return res;
         
       },
       play :function _trc_MCTSBot_play(ctx,s) {
@@ -870,10 +896,17 @@ Tonyu.klass.define({
           {
             let leaf;
             let expRecur = 0;
-            let pleaf;
+            
             let mem;
             while (true) {
               leaf=_this.selection(ctx,rootNode);
+              mu=process.memoryUsage();
+              let memAvail = (mu.heapUsed<memlim);
+              
+              if (! memAvail) {
+                break;
+                
+              }
               if (_this.n(leaf)<_this.expandThresh) {
                 break;
                 
@@ -884,17 +917,6 @@ Tonyu.klass.define({
               }
               _this.expand(ctx,leaf);
               expRecur++;
-              if (leaf===pleaf) {
-                throw new Error("WhY!!!");
-                
-                
-              }
-              pleaf=leaf;
-              mu=process.memoryUsage();
-              if (mu.heapUsed>memlim) {
-                break;
-                
-              }
               if (expRecur%10==0) {
                 _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" Heap "+mu.heapUsed+"/"+mu.heapTotal);
                 
@@ -902,12 +924,8 @@ Tonyu.klass.define({
               
             }
             _this.iterated++;
-            if (mu&&mu.heapUsed>memlim) {
-              break;
-              
-            }
             if (performance.now()-stime>5000) {
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+mem);
+              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Depth= "+_this.depth(leaf));
               stime+=5000;
               
             }
@@ -989,10 +1007,17 @@ Tonyu.klass.define({
           {
             let leaf;
             let expRecur = 0;
-            let pleaf;
+            
             let mem;
             while (true) {
               leaf=(yield* _this.fiber$selection(_thread, ctx, rootNode));
+              mu=process.memoryUsage();
+              let memAvail = (mu.heapUsed<memlim);
+              
+              if (! memAvail) {
+                break;
+                
+              }
               if (_this.n(leaf)<_this.expandThresh) {
                 break;
                 
@@ -1003,17 +1028,6 @@ Tonyu.klass.define({
               }
               (yield* _this.fiber$expand(_thread, ctx, leaf));
               expRecur++;
-              if (leaf===pleaf) {
-                throw new Error("WhY!!!");
-                
-                
-              }
-              pleaf=leaf;
-              mu=process.memoryUsage();
-              if (mu.heapUsed>memlim) {
-                break;
-                
-              }
               if (expRecur%10==0) {
                 _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" Heap "+mu.heapUsed+"/"+mu.heapTotal);
                 
@@ -1021,12 +1035,8 @@ Tonyu.klass.define({
               
             }
             _this.iterated++;
-            if (mu&&mu.heapUsed>memlim) {
-              break;
-              
-            }
             if (performance.now()-stime>5000) {
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+mem);
+              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Depth= "+_this.depth(leaf));
               stime+=5000;
               
             }
@@ -1138,54 +1148,60 @@ Tonyu.klass.define({
         var _this=this;
         var p;
         var idx;
-        var act;
         
-        if (node.state) {
-          return node.state;
-        }
         p = node.parent;
         
+        if (! p) {
+          if (! node.state) {
+            throw new Error("Root not should have state");
+            
+          }
+          return node.state;
+          
+        }
         idx = p.subnodes.indexOf(node);
         
         if (idx<0) {
           throw new Error("Index not found");
           
         }
-        act = p.subnodes[idx];
+        let ps = _this.getState(ctx,p);
         
-        if (! act) {
-          throw new Error("Action not found "+idx);
-          
-        }
-        node.state=_this.getState(ctx,p).next(ctx,act);
-        return node.state;
+        let acts = ps.actionsEvents(ctx);
+        
+        let res = ps.next(ctx,acts[idx]);
+        
+        return res;
       },
       fiber$getState :function* _trc_MCTSBot_f_getState(_thread,ctx,node) {
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         var p;
         var idx;
-        var act;
         
-        if (node.state) {
-          return node.state;
-        }
         p = node.parent;
         
+        if (! p) {
+          if (! node.state) {
+            throw new Error("Root not should have state");
+            
+          }
+          return node.state;
+          
+        }
         idx = p.subnodes.indexOf(node);
         
         if (idx<0) {
           throw new Error("Index not found");
           
         }
-        act = p.subnodes[idx];
+        let ps=yield* _this.fiber$getState(_thread, ctx, p);
         
-        if (! act) {
-          throw new Error("Action not found "+idx);
-          
-        }
-        node.state=_this.getState(ctx,p).next(ctx,act);
-        return node.state;
+        let acts = ps.actionsEvents(ctx);
+        
+        let res = ps.next(ctx,acts[idx]);
+        
+        return res;
         
       },
       playRandom :function _trc_MCTSBot_playRandom(ctx,s) {
@@ -1251,7 +1267,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.RandomBot',
