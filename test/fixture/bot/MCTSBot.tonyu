@@ -100,6 +100,14 @@ let os;
     }
     return node;
 }
+\depth(node) {
+    let res=0;
+    while(node) {
+        node=node.parent;
+        res++;
+    }
+    return res;
+}
 \play(ctx:Context, s:State):Action {    
     if (!os && typeof require==="function") {
         os=require("os");
@@ -130,34 +138,30 @@ let os;
     let mu;
     for (var i=0;i<iteration;i++) {
         let leaf;
-        let expRecur=0, pleaf;
+        let expRecur=0;
         let mem;
         while(true) {
             leaf=selection(ctx, rootNode);
+            mu=process.memoryUsage();
+            let memAvail=(mu.heapUsed<memlim);
+            if (!memAvail) break;
             if (n(leaf)<expandThresh) break;
             if (leaf.subnodes && leaf.subnodes.length==0) break;
             expand(ctx, leaf);
             expRecur++;
-            if (leaf===pleaf) {
-                throw new Error("WhY!!!");
-            }
-            pleaf=leaf;
-            mu=process.memoryUsage();
-            /*if (os) {
-                mem=os.freemem();
-                if (mem<=memlim) break;                
-            }*/
-            if (mu.heapUsed>memlim) break;
+            
             if (expRecur%10==0) {
-                print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+//" mem="+mem+
+                print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+
                 " Heap "+mu.heapUsed+"/"+mu.heapTotal);
             }
         }
         iterated++;
         //if (mem && mem<=memlim) break;
-        if (mu && mu.heapUsed>memlim) break;
+        //if (mu && mu.heapUsed>memlim) break;
         if (performance.now()-stime>5000) {
-            print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+mem);
+            print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+(
+                mu&&mu.heapUsed+"/"+mu.heapTotal
+            )+" Depth= "+depth(leaf));
             stime+=5000;
         }
         // print("leaf", leaf);
