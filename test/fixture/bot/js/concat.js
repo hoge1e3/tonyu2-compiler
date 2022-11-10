@@ -580,7 +580,12 @@ Tonyu.klass.define({
         
         node.subnodes=vals.map((function anonymous_1029(r,i) {
           
-          return {parent: node,q: r.q,n: r.n,subnodes: null};
+          let res = {parent: node,q: r.q,n: r.n,subnodes: null};
+          
+          if (r.disabled) {
+            res.disabled=true;
+          }
+          return res;
         }));
         _this.expcount++;
         return node;
@@ -605,7 +610,12 @@ Tonyu.klass.define({
         
         node.subnodes=vals.map((function anonymous_1029(r,i) {
           
-          return {parent: node,q: r.q,n: r.n,subnodes: null};
+          let res = {parent: node,q: r.q,n: r.n,subnodes: null};
+          
+          if (r.disabled) {
+            res.disabled=true;
+          }
+          return res;
         }));
         _this.expcount++;
         return node;
@@ -764,6 +774,10 @@ Tonyu.klass.define({
           for (a = 0;
            a<acts.length ; a++) {
             {
+              if (acts[a].disabled) {
+                continue;
+                
+              }
               qc = _this.q(node,a)*sgn+_this.c(node,a);
               
               if (ma<0||qc>=mqc) {
@@ -811,6 +825,10 @@ Tonyu.klass.define({
           for (a = 0;
            a<acts.length ; a++) {
             {
+              if (acts[a].disabled) {
+                continue;
+                
+              }
               qc = _this.q(node,a)*sgn+_this.c(node,a);
               
               if (ma<0||qc>=mqc) {

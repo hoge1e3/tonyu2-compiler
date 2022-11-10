@@ -38,7 +38,7 @@ let os;
     let vals=initNodeValues(s,actions);
     node.subnodes=vals.map \(r, i) {
         //let a=node.actions[i];
-        return {
+        let res={
             parent: node, 
             //state: s.next(ctx,a),
             q:r.q, 
@@ -46,6 +46,8 @@ let os;
             //a:str(a),
             subnodes: null,
         };
+        if (r.disabled) res.disabled=true;
+        return res;
     };
     expcount++;
     return node;
@@ -88,6 +90,7 @@ let os;
         if (!acts || acts.length==0) break;
         var ma=-1,mqc=0,test;
         for (var a=0;a<acts.length;a++) {
+            if (acts[a].disabled)continue;
             var qc=q(node,a)*sgn+c(node,a);
             //acts[a].test="q="+q(node,a)*sgn+" c="+c(node,a);
             if (ma<0 || qc>=mqc) {

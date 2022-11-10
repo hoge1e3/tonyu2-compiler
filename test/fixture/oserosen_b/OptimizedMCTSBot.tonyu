@@ -22,12 +22,14 @@ let searchDist=timeout%10==0 ?2 :timeout%10; // touchedな路線から距離sear
     //print(Object.keys(c2));
     return actions.map \(a){
         let q,n;
-        if (c2[a.stext]) {//探索候補なら，まだ辿っていない
+        let disabled=!c2[a.stext];
+        q=new Rational(0,0); n=0;
+        /*if (c2[a.stext]) {//探索候補なら，まだ辿っていない
             q=new Rational(0,0); n=0;
         } else {
             q=new Rational(0,0); n=1;//探索候補じゃない駅は「すでにたどった扱い」にすると，辿りにくくなるかも
-        }
-        return {q,n};
+        }*/
+        return {q,n,disabled};
     };
 }
 function linesWithin(s:Board) {
