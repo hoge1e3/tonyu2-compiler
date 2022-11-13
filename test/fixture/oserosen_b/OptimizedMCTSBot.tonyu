@@ -19,11 +19,14 @@ let searchDist=timeout%10==0 ?2 :timeout%10; // touchedな路線から距離sear
             print(c1,c2,lines);
            throw new Error(`Why only ${Object.keys(c2)}`);
         }*/
+        if (Object.keys(c2)==0) c2=c1; 
     } else c2=c1;
     //print(Object.keys(c2));
-    return actions.map \(a){
+    let hasEnabled=false;
+    let res=actions.map \(a){
         let q,n;
         let disabled=!c2[a.stext];
+        if(!disabled) hasEnabled=true;
         q=new Rational(0,0); n=0;
         /*if (c2[a.stext]) {//探索候補なら，まだ辿っていない
             q=new Rational(0,0); n=0;
@@ -32,6 +35,12 @@ let searchDist=timeout%10==0 ?2 :timeout%10; // touchedな路線から距離sear
         }*/
         return {q,n,disabled};
     };
+    if (!hasEnabled) {
+        // 1or5文字の駅がすでにとっている路線の近くにないとこうなる．
+        print(c1, lines, c2, actions.map\(r){return r.stext;});
+        throw new Error("all disabled");
+    }
+    return res;
 }
 function linesWithin(s:Board) {
     let t=s.getTouchedLines();

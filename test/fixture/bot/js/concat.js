@@ -802,6 +802,10 @@ Tonyu.klass.define({
             }
           }
           node=acts[ma];
+          if (! node) {
+            throw new Error(['Node null ',ma].join(''));
+            
+          }
           
         }
         return node;
@@ -853,6 +857,10 @@ Tonyu.klass.define({
             }
           }
           node=acts[ma];
+          if (! node) {
+            throw new Error(['Node null ',ma].join(''));
+            
+          }
           
         }
         return node;
@@ -949,16 +957,12 @@ Tonyu.klass.define({
               }
               _this.expand(ctx,leaf);
               expRecur++;
-              if (expRecur%10==0) {
-                _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" Heap "+mu.heapUsed+"/"+mu.heapTotal);
-                
-              }
               
             }
             _this.iterated++;
-            if (performance.now()-stime>5000) {
+            if (performance.now()-stime>3000) {
               _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Depth= "+_this.depth(leaf));
-              stime+=5000;
+              stime+=3000;
               
             }
             endState = _this.rollout(ctx,leaf,_this.timeout);
@@ -1060,16 +1064,12 @@ Tonyu.klass.define({
               }
               (yield* _this.fiber$expand(_thread, ctx, leaf));
               expRecur++;
-              if (expRecur%10==0) {
-                _this.print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+" Heap "+mu.heapUsed+"/"+mu.heapTotal);
-                
-              }
               
             }
             _this.iterated++;
-            if (performance.now()-stime>5000) {
+            if (performance.now()-stime>3000) {
               _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Depth= "+_this.depth(leaf));
-              stime+=5000;
+              stime+=3000;
               
             }
             endState=yield* _this.fiber$rollout(_thread, ctx, leaf, _this.timeout);

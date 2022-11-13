@@ -102,9 +102,11 @@ let os;
                 ma=a;
             }
         }
+        //if (ma<0) break;
         //acts[ma].qc=test;
         //acts[ma].n+=1;
         node=acts[ma];
+        if(!node) throw new Error(`Node null ${ma}`);
     }
     return node;
 }
@@ -158,19 +160,19 @@ let os;
             expand(ctx, leaf);
             expRecur++;
             
-            if (expRecur%10==0) {
+            /*if (expRecur%10==0) {
                 print("exp: recur= "+expRecur+"  q="+leaf.q+"  n="+leaf.n+
                 " Heap "+mu.heapUsed+"/"+mu.heapTotal);
-            }
+            }*/
         }
         iterated++;
         //if (mem && mem<=memlim) break;
         //if (mu && mu.heapUsed>memlim) break;
-        if (performance.now()-stime>5000) {
+        if (performance.now()-stime>3000) {
             print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+(
                 mu&&mu.heapUsed+"/"+mu.heapTotal
             )+" Depth= "+depth(leaf));
-            stime+=5000;
+            stime+=3000;
         }
         // print("leaf", leaf);
         var endState=rollout(ctx, leaf, timeout);
