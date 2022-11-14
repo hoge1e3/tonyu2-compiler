@@ -41,6 +41,7 @@ let cnt:Number;//ターン
     if(checkWin(ctx)) return res;
     let kings=0;
     let same={};
+    let first=having.length==12;
     for (let i=0;i<having.length;i++) {
         let p=having[i];
         if (same[p]) continue;
@@ -49,6 +50,7 @@ let cnt:Number;//ターン
         if (pl!==player) continue;
         for (let y=0;y<3;y++) {
             for (let x=0;x<3;x++) {
+                if (first && (x==2 || y==2 || (y==1 && x==0)) ) continue;
                 if (!overwriteable(x,y,p)) continue;
                 res.push{type:"put",index:i,x,y,p};
             }

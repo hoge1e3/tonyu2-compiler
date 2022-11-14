@@ -3,24 +3,34 @@ let logFle;
 let state: State;
 let context: Context;
 let lines: String[];
+let linesRead: String[];
+let actCnt:Number;
 \new(params) {
     super(params);
     logFile=file(logFile);
     lines=logFile.lines();
+    linesRead=[];
+    actCnt=1;
 }
 \step():Boolean {
     let pat=/Action:(.*)/;
     while (true) {
         let r=lines.shift();
+        linesRead.push(r);
         if (!r) return false;
         let m=pat.exec(r);
         if (!m) continue;
+        actCnt++;
         let a=$JSON.parse(m[1]);
         state=state.next(context, a);
         return true;
     }
 }
-\dump(bot){
+
+\dump(bot) {
+    print(play1(bot));
+}
+\play1(bot){
     bot.play(context, state);
     let lastNode=bot.lastRootNode;
     let lastActions=bot.lastActions;
@@ -34,6 +44,8 @@ let lines: String[];
         sns.sort \(a,b) {
             return b.qc-a.qc;
         };
-        print(sns);
+        return sns;
+        //print(sns);
     }
+    return null;
 }

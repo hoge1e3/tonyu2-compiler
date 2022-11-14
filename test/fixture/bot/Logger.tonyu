@@ -1,6 +1,7 @@
 native process;
 let logFile;
 let actCnt;
+let replay;
 \new(params) {
     super(params);
     actCnt=1;
@@ -21,6 +22,11 @@ let actCnt;
             }
         }
         print("actCnt resumed :",actCnt);
+    } else if (replay && replay.linesRead && replay.actCnt) {
+        actCnt=replay.actCnt;
+        logFile.text("Continue From:  "+replay.logFile.path()+"\n"+
+        replay.linesRead.join("\n")+"\n");
+        add("Restart");
     }
 }
 \formatDate(d) {

@@ -44,20 +44,26 @@ let bots=[0, botParameter(player1), botParameter(player2)];
 let replayFile=process.argv[11];
 if(replayFile){//リプレイtrueの時
     update();
-    let context=new Context{players:[1,2], bots};
-    let state=initialState(context);
-    let replay = new Replay{state, context, logFile: replayFile };
-    let turn=process.argv[12];
-    print(replay.state+"");
-    for (let i=0;i<turn;i++) {
-        replay.step();
+    for (let mt=0;mt<process.argv[10]-0 ;mt++) {
+        let context=new Context{players:[1,2], bots};
+        let state=initialState(context);
+        let replay = new Replay{state, context, logFile: replayFile };
+        let turn=process.argv[12];
         print(replay.state+"");
+        for (let i=0;i<turn;i++) {
+            replay.step();
+            print(replay.state+"");
+        }
+        let bot=bots[replay.state.player];
+        let sns=replay.play1(bot);//,context,replay.state, replay.state.player);
+        //for (let i=0;i<)
+        match(context, replay.state, replay);
     }
-    let bot=bots[replay.state.player];
-    replay.dump(bot);//,context,replay.state, replay.state.player);
 } else {
     for (let i=0;i<process.argv[10]-0 ;i++) {
-        match();   
+        let context=new Context{players:[1,2], bots};
+        let state=initialState(context);
+        match(context, state);   
     }
 }
 \dump(bot,context,state,player) {
@@ -96,11 +102,8 @@ if(replayFile){//リプレイtrueの時
     };
     return state;
 }
-\match() {
-    
-    let context=new Context{players:[1,2], bots};
-    let state=initialState(context);
-    let logger=new Logger();
+\match(context,state,replay) {    
+    let logger=new Logger{replay};
     let g=new GameMaster{context, state, logger};
     print(g.state+"");
     let winner=0;
