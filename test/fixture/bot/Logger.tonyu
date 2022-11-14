@@ -51,10 +51,24 @@ let actCnt;
         };
         if (sn.length==0) return;
         let qnmax=sn[0].qc;
+        let nz=sn.filter\(e){return e.qc>0;};
+        let qnmin=nz.length && nz[nz.length-1].qc;
         let qns=sn.map\(e) {
-            return floor(e.qc*100/qnmax);
+            return floor(e.qc*1000)/1000;
         };
-        add("Qn: Max="+qnmax+" "+$JSON.stringify(qns));
+        for (let i=qns.length-1;i>0;i--) {
+            let pi=i;
+            i--;
+            for (;i>=0;i--) {
+                if (qns[i]!=qns[pi]) break;
+            }
+            let len=pi-i;
+            i++;
+            if (len>1) {
+                qns.splice(i,len,qns[i]+"*"+len);
+            }
+        }
+        add("Qn: Max="+qnmax+" Min="+qnmin+" "+$JSON.stringify(qns));
     }
 }
 \argv() {

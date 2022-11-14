@@ -432,12 +432,45 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let qns = sn.map((function anonymous_1612(e) {
+          let nz = sn.filter((function anonymous_1614(e) {
             
-            return _this.floor(e.qc*100/qnmax);
+            return e.qc>0;
           }));
           
-          _this.add("Qn: Max="+qnmax+" "+Tonyu.globals.$JSON.stringify(qns));
+          let qnmin = nz.length&&nz[nz.length-1].qc;
+          
+          let qns = sn.map((function anonymous_1711(e) {
+            
+            return _this.floor(e.qc*1000)/1000;
+          }));
+          
+          for (let i = qns.length-1;
+           i>0 ; i--) {
+            {
+              let pi = i;
+              
+              i--;
+              ;
+              
+              while(i>=0) {
+                {
+                  if (qns[i]!=qns[pi]) {
+                    break;
+                    
+                  }
+                }
+                i--;
+              }
+              let len = pi-i;
+              
+              i++;
+              if (len>1) {
+                qns.splice(i,len,qns[i]+"*"+len);
+                
+              }
+            }
+          }
+          _this.add("Qn: Max="+qnmax+" Min="+qnmin+" "+Tonyu.globals.$JSON.stringify(qns));
           
         }
       },
@@ -470,12 +503,45 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let qns = sn.map((function anonymous_1612(e) {
+          let nz = sn.filter((function anonymous_1614(e) {
             
-            return _this.floor(e.qc*100/qnmax);
+            return e.qc>0;
           }));
           
-          (yield* _this.fiber$add(_thread, "Qn: Max="+qnmax+" "+Tonyu.globals.$JSON.stringify(qns)));
+          let qnmin = nz.length&&nz[nz.length-1].qc;
+          
+          let qns = sn.map((function anonymous_1711(e) {
+            
+            return _this.floor(e.qc*1000)/1000;
+          }));
+          
+          for (let i = qns.length-1;
+           i>0 ; i--) {
+            {
+              let pi = i;
+              
+              i--;
+              ;
+              
+              while(i>=0) {
+                {
+                  if (qns[i]!=qns[pi]) {
+                    break;
+                    
+                  }
+                }
+                i--;
+              }
+              let len = pi-i;
+              
+              i++;
+              if (len>1) {
+                qns.splice(i,len,qns[i]+"*"+len);
+                
+              }
+            }
+          }
+          (yield* _this.fiber$add(_thread, "Qn: Max="+qnmax+" Min="+qnmin+" "+Tonyu.globals.$JSON.stringify(qns)));
           
         }
         
@@ -961,7 +1027,12 @@ Tonyu.klass.define({
             }
             _this.iterated++;
             if (performance.now()-stime>3000) {
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Depth= "+_this.depth(leaf));
+              let ap = _this.actionPath(ctx,leaf);
+              
+              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_4979(a) {
+                
+                return Tonyu.globals.$JSON.stringify(a);
+              })).join("->"));
               stime+=3000;
               
             }
@@ -1068,7 +1139,12 @@ Tonyu.klass.define({
             }
             _this.iterated++;
             if (performance.now()-stime>3000) {
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Depth= "+_this.depth(leaf));
+              let ap=yield* _this.fiber$actionPath(_thread, ctx, leaf);
+              
+              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_4979(a) {
+                
+                return Tonyu.globals.$JSON.stringify(a);
+              })).join("->"));
               stime+=3000;
               
             }
@@ -1174,6 +1250,72 @@ Tonyu.klass.define({
           
         }
         return state;
+        
+      },
+      actionPath :function _trc_MCTSBot_actionPath(ctx,n) {
+        var _this=this;
+        
+        let nodePath = [];
+        
+        for (let nn = n;
+         nn ; nn=nn.parent) {
+          nodePath=[nn,...nodePath];
+        }
+        let res = [];
+        
+        for (let i = 0;
+         i<nodePath.length-1 ; i++) {
+          {
+            let pn = nodePath[i];
+            let cn = nodePath[i+1];
+            
+            let s = _this.getState(ctx,pn);
+            
+            let acts = s.actionsEvents(ctx);
+            
+            let idx = pn.subnodes.indexOf(cn);
+            
+            if (idx<0) {
+              throw new Error("Invalid path ");
+              
+            }
+            res.push(acts[idx]);
+          }
+        }
+        return res;
+      },
+      fiber$actionPath :function* _trc_MCTSBot_f_actionPath(_thread,ctx,n) {
+        var _this=this;
+        //var _arguments=Tonyu.A(arguments);
+        
+        let nodePath = [];
+        
+        for (let nn = n;
+         nn ; nn=nn.parent) {
+          nodePath=[nn,...nodePath];
+        }
+        let res = [];
+        
+        for (let i = 0;
+         i<nodePath.length-1 ; i++) {
+          {
+            let pn = nodePath[i];
+            let cn = nodePath[i+1];
+            
+            let s=yield* _this.fiber$getState(_thread, ctx, pn);
+            
+            let acts = s.actionsEvents(ctx);
+            
+            let idx = pn.subnodes.indexOf(cn);
+            
+            if (idx<0) {
+              throw new Error("Invalid path ");
+              
+            }
+            res.push(acts[idx]);
+          }
+        }
+        return res;
         
       },
       getState :function _trc_MCTSBot_getState(ctx,node) {
@@ -1299,7 +1441,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"actionPath":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.RandomBot',

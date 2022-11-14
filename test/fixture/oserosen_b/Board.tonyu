@@ -347,7 +347,7 @@ function enemyHasStation(turn){
     return count;
 }
 \value(ctx, p):Number {
-    let taken=5000;
+    let taken=0;
     // C駅数= complete路線の駅数
     // 総駅 + (自分の取った駅数 - 敵の取った駅数)*0.1　+ (自分の取ったC駅数 - 敵の取ったC駅数)
     let rests=lineRest();
@@ -360,7 +360,7 @@ function enemyHasStation(turn){
             taken-=comp?1:0.1;
         }
     }
-    return taken;
+    return taken/ctx.validStationNames.length+0.5;
 }
 \status(ctx) {
     let taken=[0,0,0], comps=[0,0,0];

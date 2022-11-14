@@ -48,7 +48,7 @@ for (let staKey of Object.keys($stations)) {
     if (staKey.match(/point/)) continue;
     $validStationNames.push(staKey);
 }
-
+$gameConfig.validStationNames=$validStationNames;
 new StationPlace;//各駅の座標のデータ
 update();
 //new MapScroll{x:0,y:0,scale:1};

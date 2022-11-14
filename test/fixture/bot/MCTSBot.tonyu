@@ -169,9 +169,11 @@ let os;
         //if (mem && mem<=memlim) break;
         //if (mu && mu.heapUsed>memlim) break;
         if (performance.now()-stime>3000) {
+            let ap=actionPath(ctx,leaf);
             print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+(
                 mu&&mu.heapUsed+"/"+mu.heapTotal
-            )+" Depth= "+depth(leaf));
+            )+" Path= "+ap.map\(a){return $JSON.stringify(a);}.join("->"));
+            //print(ap);
             stime+=3000;
         }
         // print("leaf", leaf);
@@ -208,7 +210,6 @@ let os;
         node=node.parent;
     }
 }
-
 \rollout(ctx, node, timeout) {
     var state=getState(ctx, node);
     var t=new Date().getTime();
@@ -219,7 +220,20 @@ let os;
     }
     return state;
 }
-
+\actionPath(ctx,n) {
+    let nodePath=[];
+    for (let nn=n;nn;nn=nn.parent) nodePath=[nn,...nodePath];
+    let res=[];
+    for (let i=0;i<nodePath.length-1;i++) {
+        let pn=nodePath[i],cn=nodePath[i+1];
+        let s=getState(ctx,pn);
+        let acts=s.actionsEvents(ctx);
+        let idx=pn.subnodes.indexOf(cn);
+        if (idx<0) throw new Error("Invalid path ");
+        res.push(acts[idx]);
+    }
+    return res;
+}
 \getState(ctx, node){
     //if (node.state) return node.state;
     var p=node.parent;
