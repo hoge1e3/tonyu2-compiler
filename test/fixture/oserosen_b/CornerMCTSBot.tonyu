@@ -1,12 +1,12 @@
 extends MCTSBot;
 
 \initNodeValues(ctx,s) {
-    let actions=state.actionsEvents(ctx);
+    let actions=s.actionsEvents(ctx);
     let hasCorner;
     if(s.diceNum !=null){
         hasCorner=actions.some(isCorner);
     }
-    if (!hasCorner) return super.initNodeValues(s,actions);
+    if (!hasCorner) return super.initNodeValues(ctx,s);
     return actions.map \(a){
         let q,n;
         if (isCorner(a)) {//角の駅なら，得点up&まだ辿っていない
