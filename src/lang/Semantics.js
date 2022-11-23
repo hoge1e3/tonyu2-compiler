@@ -50,7 +50,7 @@ var annotation3 = cu.annotation;
 var getMethod2 = cu.getMethod;
 var getDependingClasses = cu.getDependingClasses;
 var getParams = cu.getParams;
-var JSNATIVES = { Array: ["a"], String: "a", Boolean: true, Number: 1, Object: {}, RegExp: /a/, Error: new Error("a"), Date: new Date() };
+var JSNATIVES = { Array: ["a"], String: "a", Boolean: true, Number: 1, Object: {}, RegExp: /a/, Error: new Error("a"), Date: new Date(), Promise: Promise.resolve() };
 function visitSub(node) {
     var t = this;
     if (!node || typeof node != "object")

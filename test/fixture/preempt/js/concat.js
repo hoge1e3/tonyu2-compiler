@@ -2,29 +2,40 @@ Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
   namespace: 'user',
+  superclass: Tonyu.classes.kernel.Actor,
   includes: [],
   methods: function (__superClass) {
     return {
       main :function _trc_Main_main() {
-        "use strict";
         var _this=this;
         
-        null.preemptionTime=100;
+        _this.print("GO!");
+        _this.p = new Promise((function anonymous_57(s,e) {
+          
+          setTimeout(s,1000);
+        }));
+        
+        _this.waitFor(_this.p);
         while (true) {
           Tonyu.checkLoop();
-          console.log("hoge");
+          _this.print("hoge");
           
         }
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
-        "use strict";
         var _this=this;
         //var _arguments=Tonyu.A(arguments);
         
-        _thread.preemptionTime=100;
+        _this.print("GO!");
+        _this.p = new Promise((function anonymous_57(s,e) {
+          
+          setTimeout(s,1000);
+        }));
+        
+        (yield* _this.fiber$waitFor(_thread, _this.p));
         while (true) {
           yield null;
-          console.log("hoge");
+          _this.print("hoge");
           
         }
         
@@ -32,7 +43,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false}},"fields":{}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}}},"fields":{"p":{}}}
 });
 
 //# sourceMappingURL=concat.js.map

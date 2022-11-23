@@ -1,6 +1,12 @@
-native console;
 
+native setTimeout;
+
+print("GO!");
+let p=new Promise \(s,e) {
+    setTimeout(s,1000);
+};
+waitFor(p);
 //$preemptionTime=100;
 while(true) {
-    console.log("hoge");
+    print("hoge");
 }

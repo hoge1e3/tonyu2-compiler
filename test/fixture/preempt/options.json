@@ -1,7 +1,8 @@
 {
     "compiler":{
-        "dependingProjects": [{"dir":"../updatable/"}],
+        "dependingProjects": [{"namespace":"kernel"}],
+        "defaultSuperClass": "kernel.Actor",
         "outputFile": "js/concat.js","namespace":"user"
     },
-    "run":{}
+    "run":{"bootClass":"kernel.Boot","mainClass":"user.Main"}
 }
