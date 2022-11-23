@@ -157,7 +157,18 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			buf.printf("[%j].join('')",[",",node.body]);
 		},
 		backquoteText(node:BackquoteText) {
-			buf.printf("%l",node.text);
+			let s=node.text;
+			s=s.replace(/\\(.)/g, (_,r:string)=>{
+				switch(r) {
+					case "b":return "\b";
+					case "f":return "\f";
+					case "n":return "\n";
+					case "r":return "\r";
+					case "t":return "\t";
+				}
+				return r;				
+			});
+			buf.printf("%l",s);
 		},
 		dotExpr(node:DotExpr) {
 			buf.printf("...%v",node.expr);
