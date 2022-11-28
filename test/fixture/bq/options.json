@@ -2,7 +2,7 @@
     "compiler":{
         "dependingProjects": [{"dir":"../updatable/"}],
         "outputFile": "js/concat.js","namespace":"user",
-        "typeCheck":true, "field_strict":true
+        "typeCheck":true, "field_strict":true, "compress":true
     },
     "run":{}
 }

@@ -1,8 +1,11 @@
 native console;
+native fuga;
 let x=2+10;
 let s=`test 
  \`${x}\`
  \\\n
  "
 desuka? `;
+ fuga;
 console.log(s);
+ 

@@ -61,11 +61,12 @@ function genJS(klass, env, genOptions) {
     }
     genOptions = genOptions || {};
     // env.codeBuffer is not recommended(if generate in parallel...?)
-    const buf = (genOptions.codeBuffer || env.codeBuffer || new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6 }));
+    const buf = (genOptions.codeBuffer || env.codeBuffer ||
+        new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6, compress: env.options.compiler.compress }));
     var traceIndex = genOptions.traceIndex || {};
     buf.setSrcFile(srcFile);
     var printf = buf.printf;
-    var ctx = context_1.context();
+    var ctx = (0, context_1.context)();
     var debug = false;
     //var traceTbl=env.traceTbl;
     // method := fiber | function
@@ -123,7 +124,7 @@ function genJS(klass, env, genOptions) {
             buf.printf("%s%s", GLOBAL_HEAD, n);
         }
         else if (t == ST.PARAM || t == ST.LOCAL || t == ST.NATIVE || t == ST.MODULE) {
-            if (tonyu1_1.isTonyu1(env.options) && t == ST.NATIVE) {
+            if ((0, tonyu1_1.isTonyu1)(env.options) && t == ST.NATIVE) {
                 buf.printf("%s.%s", THIZ, n);
             }
             else {
@@ -269,7 +270,7 @@ function genJS(klass, env, genOptions) {
             }*/
         },
         varsDecl: function (node) {
-            if (compiler_1.isNonBlockScopeDeclprefix(node.declPrefix)) {
+            if ((0, compiler_1.isNonBlockScopeDeclprefix)(node.declPrefix)) {
                 const decls = node.decls.filter((n) => n.value);
                 if (decls.length > 0) {
                     for (let decl of decls) {
@@ -289,7 +290,7 @@ function genJS(klass, env, genOptions) {
             }
             else {
                 buf.printf("%v: %f", node.key, function () {
-                    /*const si=*/ varAccess(node.key.text, annotation(node).scopeInfo, annotation(node));
+                    varAccess(node.key.text, annotation(node).scopeInfo, annotation(node));
                 });
             }
         },
@@ -306,8 +307,9 @@ function genJS(klass, env, genOptions) {
             buf.printf("(%v)", node.expr);
         },
         varAccess: function (node) {
+            buf.addMapping(node);
             var n = node.name.text;
-            /*const si=*/ varAccess(n, annotation(node).scopeInfo, annotation(node));
+            varAccess(n, annotation(node).scopeInfo, annotation(node));
         },
         exprstmt: function (node) {
             //var t:any={};
@@ -489,7 +491,7 @@ function genJS(klass, env, genOptions) {
             var an = annotation(node);
             if (node.inFor.type == "forin") {
                 const inFor = node.inFor;
-                const pre = (compiler_1.isBlockScopeDeclprefix(inFor.isVar) ? inFor.isVar.text + " " : "");
+                const pre = ((0, compiler_1.isBlockScopeDeclprefix)(inFor.isVar) ? inFor.isVar.text + " " : "");
                 buf.printf("for (%s[%f] of %s(%v,%s)) {%{" +
                     "%f%n" +
                     "%}}", pre, loopVarsF(inFor.isVar, inFor.vars), ITER2, inFor.set, inFor.vars.length, noSurroundCompoundF(node.loop));
@@ -533,6 +535,7 @@ function genJS(klass, env, genOptions) {
                         var an = annotation(v);
                         if (i > 0)
                             buf.printf(", ");
+                        buf.addMapping(v);
                         varAccess(v.text, an.scopeInfo, an);
                     });
                 };
@@ -633,13 +636,13 @@ function genJS(klass, env, genOptions) {
     function typeToLiteral(resolvedType) {
         if (resolvedType) {
             const t = resolvedType;
-            if (CompilerTypes_1.isMethodType(t)) {
+            if ((0, CompilerTypes_1.isMethodType)(t)) {
                 buf.printf("Tonyu.classMetas[%l].decls.methods.%s", t.method.klass.fullName, t.method.name);
             }
-            else if (CompilerTypes_1.isMeta(t)) {
+            else if ((0, CompilerTypes_1.isMeta)(t)) {
                 buf.printf("Tonyu.classMetas[%l]", t.fullName);
             }
-            else if (CompilerTypes_1.isNativeClass(t)) {
+            else if ((0, CompilerTypes_1.isNativeClass)(t)) {
                 buf.printf(t.class.name);
             }
             else {
@@ -654,7 +657,7 @@ function genJS(klass, env, genOptions) {
         var a = annotation(node);
         var thisForVIM = a.varInMain ? THIZ + "." : "";
         var pa = annotation(parent);
-        const pre = (compiler_1.isNonBlockScopeDeclprefix(parent.declPrefix) || pa.varInMain ? "" : parent.declPrefix + " ");
+        const pre = ((0, compiler_1.isNonBlockScopeDeclprefix)(parent.declPrefix) || pa.varInMain ? "" : parent.declPrefix + " ");
         if (node.value) {
             const t = (!ctx.noWait) && annotation(node).fiberCall;
             const to = (!ctx.noWait) && annotation(node).otherFiberCall;
@@ -792,12 +795,13 @@ function genJS(klass, env, genOptions) {
         var opt = true;
         //waitStmts=stmts;
         printf("%s%s :function* %s(%j) {%{" +
-            //USE_STRICT+
-            "var %s=%s;%n" +
-            "%svar %s=%s;%n" +
+            "var %s=%s;%n", FIBPRE, fiber.name, genFn("f_" + fiber.name), [",", [THNode].concat(fiber.params)], THIZ, GET_THIS);
+        if (fiber.useArgs) {
+            printf("var %s=%s;%n", ARGS, "Tonyu.A(arguments)");
+        }
+        printf("%f%n" +
             "%f%n" +
-            "%f%n" +
-            "%}},%n", FIBPRE, fiber.name, genFn("f_" + fiber.name), [",", [THNode].concat(fiber.params)], THIZ, GET_THIS, (fiber.useArgs ? "" : "//"), ARGS, "Tonyu.A(arguments)", genLocalsF(fiber), fbody);
+            "%}},%n", genLocalsF(fiber), fbody);
         function fbody() {
             ctx.enter({ method: fiber, noWait: false, threadAvail: true,
                 finfo: fiber }, function () {

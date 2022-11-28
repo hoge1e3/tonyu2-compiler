@@ -326,7 +326,7 @@ export = class Builder {
 		}
 		await this.showProgress("genJS");
 		//throw "test break";
-		const buf = new IndentBuffer({ fixLazyLength: 6 });
+		const buf = new IndentBuffer({ fixLazyLength: 6, compress: env.options.compiler.compress });
 		buf.traceIndex = {};
 		await this.genJS(ord, {
 			codeBuffer: buf,

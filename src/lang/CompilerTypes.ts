@@ -38,6 +38,7 @@ export type CompilerOptions={
 	diagnose?: boolean,
 	genAMD?: boolean,
 	noLoopCheck?: boolean,
+	compress?: boolean,
 };
 export type Destinations=FileDest|MemoryDest;
 type FileDest={

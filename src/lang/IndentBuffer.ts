@@ -43,7 +43,8 @@ const Pos2RC=function (src:string) {
 type Options={
 	fixLazyLength: number,
 	dstFile?:SFile,
-	mapFile?:SFile
+	mapFile?:SFile,
+	compress: boolean,
 };
 export class IndentBuffer {
 	options: Options;
@@ -51,6 +52,7 @@ export class IndentBuffer {
 	mapFile: SFile;
     srcFile: SFile;
     srcRCM: SrcRCM;
+	compress: boolean;
     useLengthPlace=false;
     lazyOverflow=false;
 	constructor(options:Partial<Options>) {
@@ -59,6 +61,7 @@ export class IndentBuffer {
 		this.options.fixLazyLength=this.options.fixLazyLength||6;
 		$.dstFile=options.dstFile;
 		$.mapFile=options.mapFile;
+		$.compress=options.compress;
 	}
 	get printf():(fmt:string, ...args:any[])=>void {return this._printf.bind(this);}
 	_printf(fmt:string, ...args:any[]) {
@@ -184,18 +187,21 @@ export class IndentBuffer {
 		if (rc) {
 			//console.log("Map",{src:{file:$.srcFile+"",row:rc.row,col:rc.col},
 			//dst:{row:$.bufRow,col:$.bufCol}  });
+			// line is 1 origin, column is 0 origin, WOW!!
+			//https://github.com/mozilla/source-map#sourcemapgeneratorprototypeaddmappingmapping
 			$.srcmap.addMapping({
 				generated: {
 					line: $.bufRow,
-					column: $.bufCol
+					column: $.bufCol-1
 				},
 				source: $.srcFile+"",
 				original: {
 					line: rc.row,
-					column: rc.col
+					column: rc.col-1
 				}
 				//name: "christopher"
 			});
+			//console.log("SRCM", $.bufRow, $.bufCol, rc.row, rc.col, token+"" );
 		}
 	};
 	setSrcFile(f:SFile) {
@@ -267,15 +273,18 @@ export class IndentBuffer {
 		//return {put: function () {} };
 	}
 	ln() {
+		if (this.compress) return;
 		const $=this;
 		$.print("\n"+$.indentBuf);
 	}
 	indent() {
+		if (this.compress) return;
 		const $=this;
 		$.indentBuf+=$.indentStr;
 		$.print("\n"+$.indentBuf);
 	}
 	dedent() {
+		if (this.compress) return;
 		const $=this;
 		var len=$.indentStr.length;
 		if (!$.buf.last(len).match(/^\s*$/)) {

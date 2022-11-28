@@ -62,7 +62,7 @@ function orderByInheritance(classes) {
                     break;
                 }
             }
-            throw TError_1.default(R_1.default("circularDependencyDetected", ""), "Unknown", 0);
+            throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", ""), "Unknown", 0);
         }
     }
     function dep1(c) {
@@ -81,7 +81,7 @@ function orderByInheritance(classes) {
         function pushPath(c) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
-                throw TError_1.default(R_1.default("circularDependencyDetected", path.join("->")), "Unknown", 0);
+                throw (0, TError_1.default)((0, R_1.default)("circularDependencyDetected", path.join("->")), "Unknown", 0);
             }
             visited[c.fullName] = true;
         }
@@ -127,7 +127,7 @@ module.exports = class Builder {
     }
     isTonyu1() {
         const options = this.getOptions();
-        return tonyu1_1.isTonyu1(options);
+        return (0, tonyu1_1.isTonyu1)(options);
     }
     getOptions() { return this.prj.getOptions(); }
     getOutputFile(...f) { return this.prj.getOutputFile(...f); }
@@ -336,10 +336,10 @@ module.exports = class Builder {
             while (true) {
                 env.unresolvedVars = 0;
                 for (let n_1 in compilingClasses) {
-                    TypeChecker_1.checkTypeDecl(compilingClasses[n_1], env);
+                    (0, TypeChecker_1.checkTypeDecl)(compilingClasses[n_1], env);
                 }
                 for (let n_2 in compilingClasses) {
-                    TypeChecker_1.checkExpr(compilingClasses[n_2], env);
+                    (0, TypeChecker_1.checkExpr)(compilingClasses[n_2], env);
                 }
                 if (env.unresolvedVars <= 0)
                     break;
@@ -350,14 +350,14 @@ module.exports = class Builder {
         }
         await this.showProgress("genJS");
         //throw "test break";
-        const buf = new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6 });
+        const buf = new IndentBuffer_1.IndentBuffer({ fixLazyLength: 6, compress: env.options.compiler.compress });
         buf.traceIndex = {};
         await this.genJS(ord, {
             codeBuffer: buf,
             traceIndex: buf.traceIndex,
         });
         const s = SourceFiles_1.sourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
-        if (CompilerTypes_1.isFileDest(destinations)) {
+        if ((0, CompilerTypes_1.isFileDest)(destinations)) {
             const outf = this.getOutputFile();
             await s.saveAs(outf);
         }

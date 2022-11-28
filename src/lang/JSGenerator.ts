@@ -48,7 +48,8 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	}
 	genOptions=genOptions||{};
 	// env.codeBuffer is not recommended(if generate in parallel...?)
-	const buf=(genOptions.codeBuffer || (env as any).codeBuffer || new IndentBuffer({fixLazyLength:6})) as IndentBuffer;
+	const buf=(genOptions.codeBuffer || (env as any).codeBuffer || 
+	new IndentBuffer({fixLazyLength:6, compress: env.options.compiler.compress })) as IndentBuffer;
 	var traceIndex=genOptions.traceIndex||{};
 	buf.setSrcFile(srcFile);
 	var printf=buf.printf;
@@ -269,7 +270,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				buf.printf("%v: %v", node.key, node.value);
 			} else {
 				buf.printf("%v: %f", node.key, function () {
-					/*const si=*/varAccess( node.key.text, annotation(node).scopeInfo, annotation(node));
+					varAccess( node.key.text, annotation(node).scopeInfo, annotation(node));
 				});
 			}
 		},
@@ -286,8 +287,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			buf.printf("(%v)",node.expr);
 		},
 		varAccess: function (node:VarAccess) {
+			buf.addMapping(node);
 			var n=node.name.text;
-			/*const si=*/varAccess(n,annotation(node).scopeInfo, annotation(node));
+			varAccess(n,annotation(node).scopeInfo, annotation(node));
 		},
 		exprstmt: function (node:Exprstmt) {//exprStmt
 			//var t:any={};
@@ -531,6 +533,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 					vars.forEach((v,i)=>{
 						var an=annotation(v);
 						if (i>0) buf.printf(", ");
+						buf.addMapping(v);
 						varAccess(v.text, an.scopeInfo,an);
 					});
 				};
@@ -783,15 +786,17 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		//waitStmts=stmts;
 		printf(
 			"%s%s :function* %s(%j) {%{"+
-				//USE_STRICT+
-				"var %s=%s;%n"+
-				"%svar %s=%s;%n"+
-				"%f%n"+
+				"var %s=%s;%n",
+			FIBPRE, fiber.name, genFn("f_"+fiber.name), [",",[THNode].concat(fiber.params)],
+				THIZ, GET_THIS
+		);
+		if (fiber.useArgs) {
+			printf(
+				"var %s=%s;%n",ARGS, "Tonyu.A(arguments)");			
+		}
+		printf(	"%f%n"+
 				"%f%n"+
 			"%}},%n",
-			FIBPRE, fiber.name, genFn("f_"+fiber.name), [",",[THNode].concat(fiber.params)],
-				THIZ, GET_THIS,
-				(fiber.useArgs?"":"//"), ARGS, "Tonyu.A(arguments)",
 				genLocalsF(fiber),
 				fbody
 		);

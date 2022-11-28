@@ -45,7 +45,7 @@ class IndentBuffer {
         this.lazyOverflow = false;
         this.traceIndex = {};
         //$.printf=$;
-        this.buf = StringBuilder_1.default();
+        this.buf = (0, StringBuilder_1.default)();
         this.bufRow = 1;
         this.bufCol = 1;
         this.srcmap = new source_map_1.default.SourceMapGenerator();
@@ -56,6 +56,7 @@ class IndentBuffer {
         this.options.fixLazyLength = this.options.fixLazyLength || 6;
         $.dstFile = options.dstFile;
         $.mapFile = options.mapFile;
+        $.compress = options.compress;
     }
     get printf() { return this._printf.bind(this); }
     _printf(fmt, ...args) {
@@ -202,18 +203,21 @@ class IndentBuffer {
         if (rc) {
             //console.log("Map",{src:{file:$.srcFile+"",row:rc.row,col:rc.col},
             //dst:{row:$.bufRow,col:$.bufCol}  });
+            // line is 1 origin, column is 0 origin, WOW!!
+            //https://github.com/mozilla/source-map#sourcemapgeneratorprototypeaddmappingmapping
             $.srcmap.addMapping({
                 generated: {
                     line: $.bufRow,
-                    column: $.bufCol
+                    column: $.bufCol - 1
                 },
                 source: $.srcFile + "",
                 original: {
                     line: rc.row,
-                    column: rc.col
+                    column: rc.col - 1
                 }
                 //name: "christopher"
             });
+            //console.log("SRCM", $.bufRow, $.bufCol, rc.row, rc.col, token+"" );
         }
     }
     ;
@@ -285,15 +289,21 @@ class IndentBuffer {
         //return {put: function () {} };
     }
     ln() {
+        if (this.compress)
+            return;
         const $ = this;
         $.print("\n" + $.indentBuf);
     }
     indent() {
+        if (this.compress)
+            return;
         const $ = this;
         $.indentBuf += $.indentStr;
         $.print("\n" + $.indentBuf);
     }
     dedent() {
+        if (this.compress)
+            return;
         const $ = this;
         var len = $.indentStr.length;
         if (!$.buf.last(len).match(/^\s*$/)) {
