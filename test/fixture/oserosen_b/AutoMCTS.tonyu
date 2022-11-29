@@ -27,7 +27,7 @@ $gameConfig={
     replay = {file=process.argv[12], turn=process.argv[13]-0},
 };
 $kintetsu=!!mapType.match(/^k/);
-
+$metro=!!mapType.match(/^m/);
 $main=this;
 
 var searching;
@@ -37,6 +37,10 @@ if($kintetsu){
     update();
     new DeleteStation;
     update();
+}else if($metro){
+    new MLines;
+    update();
+
 }else{
     new Lines;//路線と駅のデータ
     update();
@@ -55,6 +59,8 @@ update();
 var diceArray=[];
 if($kintetsu){
     diceArray=[2,2,2,2,3,3,3,4,4,4,5,5];
+}else if($metro){
+    diceArray=[2,2,2,2,3,3,3,3,3,4,4,5];//ダイスの出目用の配列
 }else{
     diceArray=[2,2,2,2,2,2,3,3,3,4,4,5];//ダイスの出目用の配列
 }

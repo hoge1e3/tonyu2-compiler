@@ -66,6 +66,11 @@ function kintetsu(){
     new Label{x:460,y:20,align:"right",template:"近鉄モード"};
 }
 
+function Metro(){
+    $metro = true;
+    new Label{x:460,y:80,align:"right",template:"地下鉄モード"};
+}
+
 function back(){
     loadPage(Desc);
 }
