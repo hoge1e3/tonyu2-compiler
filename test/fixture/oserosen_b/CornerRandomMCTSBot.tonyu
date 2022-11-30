@@ -1,0 +1,17 @@
+extends MCTSBot;
+includes CornerBotMod;
+
+\play(ctx:Context, s:State):Action {
+    if (!ctx) throw new Error("CTX is null");
+    let actions=s.actionsEvents(ctx);
+    let hasCorner;
+    if(s.diceNum !=null){
+        hasCorner=actions.some(isCorner);
+    }
+    if (hasCorner) {
+        var a=actions[rnd(actions.length)];
+        return a;
+    }
+    return super.play(ctx, s);
+}
+

@@ -1,4 +1,5 @@
 extends MCTSBot;
+includes CornerBotMod;
 
 \initNodeValues(ctx,s) {
     let actions=s.actionsEvents(ctx);
@@ -16,11 +17,4 @@ extends MCTSBot;
         }
         return {q,n};
     };
-}
-\isCorner(a){
-    if($stations[a.stext].nexts.length == $stations[a.stext].lines.length){//角の駅かを判定
-        return true;//角ならtrue
-    }else{
-        return false;
-    }
 }
