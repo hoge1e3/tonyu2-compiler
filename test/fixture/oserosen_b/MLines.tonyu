@@ -3,7 +3,7 @@
 
 lineColor:""
 */
-
+$areas={};
 $lines={
     "三田線":{lineColor:"#2E6AB1"},
     "浅草線":{lineColor:"#D04E3C"},

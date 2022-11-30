@@ -40,6 +40,8 @@ if($kintetsu){
 }else if($metro){
     new MLines;
     update();
+    new DeleteStation;
+    update();
 
 }else{
     new Lines;//路線と駅のデータ
