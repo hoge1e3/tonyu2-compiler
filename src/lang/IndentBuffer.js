@@ -45,7 +45,7 @@ class IndentBuffer {
         this.lazyOverflow = false;
         this.traceIndex = {};
         //$.printf=$;
-        this.buf = (0, StringBuilder_1.default)();
+        this.buf = StringBuilder_1.default();
         this.bufRow = 1;
         this.bufCol = 1;
         this.srcmap = new source_map_1.default.SourceMapGenerator();
