@@ -342,10 +342,15 @@ export = class Builder {
 	genJS(ord: C_Meta[], genOptions:GenOptions) {
 		// 途中でコンパイルエラーを起こすと。。。
         const env=this.getEnv();
+        // TODO: delete polyfill
+        genOptions.codeBuffer.printf("if(!Tonyu.load)Tonyu.load=(_,f)=>f();%n");
+        //
+        genOptions.codeBuffer.printf("Tonyu.load(%s, ()=>{%n", JSON.stringify(env.options));
 		for (let c of ord) {
             console.log("genJS", c.fullName);
 			JSGenerator.genJS(c, env, genOptions);
 		}
+        genOptions.codeBuffer.printf("%n});%n");	
 		return Promise.resolve();
 	}
     showProgress (m:string) {

@@ -2,9 +2,10 @@ import R from "../lib/R";
 import {IT,IT2} from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
 import root from "../lib/root";
-import assert from "../lib/assert";
+import assert, { opt } from "../lib/assert";
 import { ClassDefinition, ClassDefinitionContext, ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
 import TError from "./TError";
+import { ProjectOptions } from "../lang/CompilerTypes";
 
 // old browser support
 if (!root.performance) {
@@ -83,6 +84,9 @@ var klass={
 			o=o[k];
 		}
 		return o;
+	},
+	hasNamespace(top,nsp) {
+		return nsp in top;
 	},
 /*Function.prototype.constructor=function () {
 	throw new Error("This method should not be called");
@@ -408,11 +412,30 @@ function is(obj:any, klass:any) {
 	}
 	return false;
 }
+function load(options:ProjectOptions, definitions:()=>void) {
+	let myns="user";
+	if (options.compiler && options.compiler.namespace && options.compiler.dependingProjects) {
+		myns=options.compiler.namespace;
+		for (let dp of options.compiler.dependingProjects) {
+			if (dp.namespace && ! klass.hasNamespace(Tonyu.classes, dp.namespace)) {
+				console.warn("Missing dependencies: ", dp.namespace, " is required from ",myns);
+				Tonyu.loadEvent({type:"missing", from:myns, to: dp.namespace});
+			}
+		}
+	}
+	try {
+		definitions();
+		Tonyu.loadEvent({type:"success", namespace:myns, options});
+	}catch (e) {
+		Tonyu.loadEvent({type:"error", namespace:myns, e, options});
+		throw e;
+	}
+}
 //setInterval(resetLoopCheck,16);
 const Tonyu={
 		thread, 
 		supports_await:true,
-		klass, bless, extend, messages: R,
+		klass, bless, extend, messages: R, load, loadEvent:(e:any)=>{},
 		globals, classes, classMetas, setGlobal, getGlobal, getClass,
 		timeout,
 		bindFunc, not_a_tonyu_object, is,

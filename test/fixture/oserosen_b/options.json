@@ -1,3 +1,3 @@
-{"compiler":{"defaultSuperClass":"Actor","commentLastPos":true,"diagnose":false,
+{"compiler":{"defaultSuperClass":"Actor","commentLastPos":true,"diagnose":false,"compress":true,
 "dependingProjects":[{"namespace":"kernel"},{"dir":"../bot/"}],
 "namespace":"user","noLoopCheck":true,"field_strict":false,"typeCheck":false},"run":{"mainClass":"user.AutoMCTS","bootClass":"Boot","globals":{"$defaultFPS":60,"$imageSmoothingDisabled":true,"$soundLoadAndDecode":false}},"kernelEditable":false,"version":1566017719851,"plugins":{"jquery_ui":1},"language":"tonyu"}

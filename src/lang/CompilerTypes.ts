@@ -29,7 +29,14 @@ export type ProjectOptions={
 export type BuilderContextDef={
 	destinations?: Destinations,
 };
+export type DependencySppec={
+	namespace?: string;
+	dir?: string,
+	url?: string,
+}
 export type CompilerOptions={
+	namespace: string,
+	dependingProjects: DependencySppec[],
 	typeCheck?: boolean,
 	//typeInference?: boolean,
 	defaultSuperClass?: string,

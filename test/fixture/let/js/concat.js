@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"dependingProjects":[{"dir":"../updatable/"}],"outputFile":"js/concat.js","namespace":"user"},"run":{}}, ()=>{
 Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
@@ -37,7 +39,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         "field strict";
         _this.a = [1,5,3];
@@ -81,7 +82,6 @@ Tonyu.klass.define({
       },
       fiber$test :function* _trc_Main_f_test(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         (yield* _thread.await(new Promise((function anonymous_108(s,e) {
           
@@ -117,7 +117,6 @@ Tonyu.klass.define({
       },
       fiber$test2 :function* _trc_Main_f_test2(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         for (let i=yield* _this.fiber$test(_thread);
          i<10 ; i++) {
@@ -153,7 +152,6 @@ Tonyu.klass.define({
       },
       fiber$test3 :function* _trc_Main_f_test3(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var i;
         var x;
         
@@ -169,6 +167,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test2":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"test3":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"a":{},"j":{}}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map

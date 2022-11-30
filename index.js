@@ -10,7 +10,11 @@ const prjPath=process.argv[2];
 const run=process.argv.indexOf("-r")>=0;
 const daemon=process.argv.indexOf("-d")>=0;
 const rename={idx:process.argv.indexOf("-ren")};
+const Tonyu=require("./src/runtime/TonyuRuntime");
 const R=require("./src/lib/R");
+Tonyu.loadEvent=(e)=>{
+    console.log("loadEvent",e);
+};
 //R.setLocale("ja");
 if (rename.idx>=0) {
     rename.from=process.argv[rename.idx+1];
@@ -78,7 +82,7 @@ builder.fullCompile(opt).then(async function (s) {
         });
     }
     if (run||daemon) {
-        let Tonyu=root.Tonyu;
+        //let Tonyu=root.Tonyu;
         Tonyu.onRuntimeError=e=>console.error(e);
         Tonyu.globals.$builder=builder;
         Tonyu.globals.$currentProject=prj;
