@@ -83,6 +83,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
 	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
+	const srcFile=klass.src!.tonyu; //file object  //S
 	if (klass.src && klass.src.js) {
 		// falsify on generateJS. if some class hasSemanticError, it remains true
 		klass.jsNotUpToDate=true;
@@ -194,6 +195,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 					//console.log("head.ftype:",stmt);
 				}
 				var name=head.name.text;
+				if (methods[name]) throw TError(R("MethodAlreadyDeclared",name),srcFile,stmt.pos);
 				var propHead=(head.params ? "" : head.setter ? "__setter__" : "__getter__");
 				name=propHead+name;
 				methods[name]={

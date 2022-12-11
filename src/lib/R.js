@@ -1,5 +1,6 @@
 "use strict";
 const ja = {
+    "MethodAlreadyDeclared": "メソッド{1}はすでに定義されています",
     typeNotFound: "型{1}が見つかりません",
     cannotCallNonFunctionType: "関数・メソッドでないので呼び出すことはできません",
     memberNotFoundInClass: "クラス{1}にフィールドまたはメソッド{2}が定義されていません",
@@ -35,6 +36,7 @@ const ja = {
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
 };
 const en = {
+    "MethodAlreadyDeclared": "Method {1} is already defined",
     typeNotFound: "Type {1} is not found",
     cannotCallNonFunctionType: "Cannot call what is neither function or method.",
     memberNotFoundInClass: "No such field or method: {1}.{2}",
