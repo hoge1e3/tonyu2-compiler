@@ -211,7 +211,7 @@ function initClassDecls(klass, env) {
                     //console.log("head.ftype:",stmt);
                 }
                 var name = head.name.text;
-                if (methods[name])
+                if (methods.hasOwnProperty(name))
                     throw (0, TError_1.default)((0, R_1.default)("MethodAlreadyDeclared", name), srcFile, stmt.pos);
                 var propHead = (head.params ? "" : head.setter ? "__setter__" : "__getter__");
                 name = propHead + name;

@@ -195,7 +195,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 					//console.log("head.ftype:",stmt);
 				}
 				var name=head.name.text;
-				if (methods[name]) throw TError(R("MethodAlreadyDeclared",name),srcFile,stmt.pos);
+				if (methods.hasOwnProperty(name)) throw TError(R("MethodAlreadyDeclared",name),srcFile,stmt.pos);
 				var propHead=(head.params ? "" : head.setter ? "__setter__" : "__getter__");
 				name=propHead+name;
 				methods[name]={
