@@ -1,6 +1,9 @@
 extends MCTSBot;
 includes CornerBotMod;
 
+\toString(){
+    return `cmcts_${iteration}_${timeout}`;
+}
 \initNodeValues(ctx,s) {
     let actions=s.actionsEvents(ctx);
     let hasCorner;

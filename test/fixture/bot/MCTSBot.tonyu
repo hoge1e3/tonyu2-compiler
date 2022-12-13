@@ -17,6 +17,9 @@ let timeoutCount=0;
 let expcount=0;
 let iterated=0;
 let os;
+\toString(){
+    return `mcts_${iteration}_${timeout}`;
+}
 //var rootNode={};
 /*Node={
     parent?: Node,

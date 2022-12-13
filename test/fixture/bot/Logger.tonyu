@@ -10,7 +10,10 @@ let replay;
     argvs.shift();
     argvs.shift();
     argvs.shift();
-    logFile=logFile|| ( formatDate(new Date())+argvs.join("_") ).replace(/[\s\/\\\:\?\*\<\>\|]/g,"_")+".txt";
+    if (!logFile && params.bots) {
+        logFile=replSpecial( formatDate(new Date())+"_"+params.bots[1]+"_vs_"+params.bots[2] )+".txt";
+    }
+    logFile=logFile|| replSpecial( formatDate(new Date())+argvs.join("_") )+".txt";
     print("logFileName",logFile);
     logFile=file(logFile);
     if (logFile.exists()) {
@@ -29,7 +32,11 @@ let replay;
         add("Restart");
     }
 }
+\replSpecial(f) {
+    return f.replace(/[\s\/\\\:\?\*\<\>\|]/g,"_");
+}
 \formatDate(d) {
+    if (!d) d=new Date();
     let p=\(n){return ((10000+n)+"").substring(3,5);}; 
     return (1900+d.getYear())+"/"+ p(d.getMonth()+1) +"/"+p(d.getDate())+" "+
     p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());

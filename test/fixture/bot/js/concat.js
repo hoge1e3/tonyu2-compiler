@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"defaultSuperClass":"Actor","commentLastPos":true,"diagnose":false,"dependingProjects":[{"namespace":"kernel"}],"namespace":"bot","noLoopCheck":true,"field_strict":false,"typeCheck":false},"run":{"mainClass":"user.AutoMCTS","bootClass":"Boot","globals":{"$defaultFPS":60,"$imageSmoothingDisabled":true,"$soundLoadAndDecode":false}},"kernelEditable":false,"version":1566017719851,"plugins":{"jquery_ui":1},"language":"tonyu"}, ()=>{
 Tonyu.klass.define({
   fullName: 'bot.Action',
   shortName: 'Action',
@@ -12,7 +14,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Action_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
@@ -35,7 +36,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Bot_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
@@ -47,7 +47,6 @@ Tonyu.klass.define({
       },
       fiber$play :function* _trc_Bot_f_play(_thread,ctx,s) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドplayが実装されていません");
         
@@ -75,7 +74,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Context_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -104,7 +102,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_GameMaster_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -117,7 +114,6 @@ Tonyu.klass.define({
       },
       fiber$onAppear :function* _trc_GameMaster_f_onAppear(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
@@ -184,7 +180,6 @@ Tonyu.klass.define({
       },
       fiber$step :function* _trc_GameMaster_f_step(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (_this.gameover()) {
           throw new Error("Game is over");
@@ -256,7 +251,6 @@ Tonyu.klass.define({
       },
       fiber$getBot :function* _trc_GameMaster_f_getBot(_thread,p) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (_this.context.bots&&_this.context.bots[p]) {
           return _this.context.bots[p];
@@ -272,7 +266,6 @@ Tonyu.klass.define({
       },
       fiber$gameover :function* _trc_GameMaster_f_gameover(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.state.gameover(_this.context);
         
@@ -288,7 +281,6 @@ Tonyu.klass.define({
       },
       fiber$run :function* _trc_GameMaster_f_run(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         while (! _this.gameover()) {
           (yield* _this.fiber$step(_thread));
@@ -319,7 +311,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Logger_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -337,7 +328,11 @@ Tonyu.klass.define({
         argvs.shift();
         argvs.shift();
         argvs.shift();
-        _this.logFile=_this.logFile||(_this.formatDate(new Date())+argvs.join("_")).replace(/[\s\/\\\:\?\*\<\>\|]/g,"_")+".txt";
+        if (! _this.logFile&&params.bots) {
+          _this.logFile=_this.replSpecial(_this.formatDate(new Date())+"_"+params.bots[1]+"_vs_"+params.bots[2])+".txt";
+          
+        }
+        _this.logFile=_this.logFile||_this.replSpecial(_this.formatDate(new Date())+argvs.join("_"))+".txt";
         _this.print("logFileName",_this.logFile);
         _this.logFile=_this.file(_this.logFile);
         if (_this.logFile.exists()) {
@@ -363,10 +358,24 @@ Tonyu.klass.define({
           }
         }
       },
+      replSpecial :function _trc_Logger_replSpecial(f) {
+        var _this=this;
+        
+        return f.replace(/[\s\/\\\:\?\*\<\>\|]/g,"_");
+      },
+      fiber$replSpecial :function* _trc_Logger_f_replSpecial(_thread,f) {
+        var _this=this;
+        
+        return f.replace(/[\s\/\\\:\?\*\<\>\|]/g,"_");
+        
+      },
       formatDate :function _trc_Logger_formatDate(d) {
         var _this=this;
         
-        let p = (function anonymous_936(n) {
+        if (! d) {
+          d=new Date();
+        }
+        let p = (function anonymous_1158(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -375,9 +384,11 @@ Tonyu.klass.define({
       },
       fiber$formatDate :function* _trc_Logger_f_formatDate(_thread,d) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
-        let p = (function anonymous_936(n) {
+        if (! d) {
+          d=new Date();
+        }
+        let p = (function anonymous_1158(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -392,7 +403,6 @@ Tonyu.klass.define({
       },
       fiber$add :function* _trc_Logger_f_add(_thread,line) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.logFile.appendText(_this.formatDate(new Date())+": "+line+"\n");
         
@@ -406,7 +416,6 @@ Tonyu.klass.define({
       },
       fiber$action :function* _trc_Logger_f_action(_thread,act) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         act=Tonyu.globals.$JSON.stringify(act);
         (yield* _this.fiber$add(_thread, ['[',_this.actCnt,']Action: ',act].join('')));
@@ -432,7 +441,7 @@ Tonyu.klass.define({
               sn.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_1718(a,b) {
+          sn.sort((function anonymous_1940(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -441,14 +450,14 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let nz = sn.filter((function anonymous_1859(e) {
+          let nz = sn.filter((function anonymous_2081(e) {
             
             return e.qc>0;
           }));
           
           let qnmin = nz.length&&nz[nz.length-1].qc;
           
-          let qns = sn.map((function anonymous_1956(e) {
+          let qns = sn.map((function anonymous_2178(e) {
             
             return _this.floor(e.qc*1000)/1000;
           }));
@@ -485,7 +494,6 @@ Tonyu.klass.define({
       },
       fiber$botStatus :function* _trc_Logger_f_botStatus(_thread,bot) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$add(_thread, ['Bot: ITER=',bot.iterated,' EXP=',bot.expcount,' T/O=',bot.timeoutCount].join('')));
         let lastNode = bot.lastRootNode;
@@ -503,7 +511,7 @@ Tonyu.klass.define({
               sn.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_1718(a,b) {
+          sn.sort((function anonymous_1940(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -512,14 +520,14 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let nz = sn.filter((function anonymous_1859(e) {
+          let nz = sn.filter((function anonymous_2081(e) {
             
             return e.qc>0;
           }));
           
           let qnmin = nz.length&&nz[nz.length-1].qc;
           
-          let qns = sn.map((function anonymous_1956(e) {
+          let qns = sn.map((function anonymous_2178(e) {
             
             return _this.floor(e.qc*1000)/1000;
           }));
@@ -562,7 +570,6 @@ Tonyu.klass.define({
       },
       fiber$argv :function* _trc_Logger_f_argv(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$add(_thread, "argv: "+process.argv.join(" ")));
         
@@ -570,7 +577,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"formatDate":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"add":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"action":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botStatus":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"argv":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"logFile":{},"actCnt":{},"replay":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"replSpecial":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"formatDate":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"add":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"action":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botStatus":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"argv":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"logFile":{},"actCnt":{},"replay":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.MCTSBot',
@@ -600,7 +607,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_MCTSBot_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -618,37 +624,47 @@ Tonyu.klass.define({
         
         
       },
+      toString :function _trc_MCTSBot_toString() {
+        var _this=this;
+        
+        return ['mcts_',_this.iteration,'_',_this.timeout].join('');
+      },
+      fiber$toString :function* _trc_MCTSBot_f_toString(_thread) {
+        var _this=this;
+        
+        return ['mcts_',_this.iteration,'_',_this.timeout].join('');
+        
+      },
       initNodeValues :function _trc_MCTSBot_initNodeValues(ctx,state) {
         var _this=this;
         
         let actions = state.actionsEvents(ctx);
         
         if (state.nextIsEvent(ctx)) {
-          return actions.map((function anonymous_660() {
+          return actions.map((function anonymous_721() {
             
             return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
           }));
           
         }
-        return actions.map((function anonymous_740() {
+        return actions.map((function anonymous_801() {
           
           return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
       },
       fiber$initNodeValues :function* _trc_MCTSBot_f_initNodeValues(_thread,ctx,state) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let actions = state.actionsEvents(ctx);
         
         if (state.nextIsEvent(ctx)) {
-          return actions.map((function anonymous_660() {
+          return actions.map((function anonymous_721() {
             
             return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
           }));
           
         }
-        return actions.map((function anonymous_740() {
+        return actions.map((function anonymous_801() {
           
           return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
@@ -669,7 +685,7 @@ Tonyu.klass.define({
         }
         let vals = _this.initNodeValues(ctx,s);
         
-        node.subnodes=vals.map((function anonymous_1187(r,i) {
+        node.subnodes=vals.map((function anonymous_1248(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -683,7 +699,6 @@ Tonyu.klass.define({
       },
       fiber$expand :function* _trc_MCTSBot_f_expand(_thread,ctx,node) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (node.n<_this.expandThresh) {
           throw new Error(node.n+"<"+_this.expandThresh);
@@ -697,7 +712,7 @@ Tonyu.klass.define({
         }
         let vals=yield* _this.fiber$initNodeValues(_thread, ctx, s);
         
-        node.subnodes=vals.map((function anonymous_1187(r,i) {
+        node.subnodes=vals.map((function anonymous_1248(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -723,7 +738,6 @@ Tonyu.klass.define({
       },
       fiber$str :function* _trc_MCTSBot_f_str(_thread,s) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var r;
         
         r = s+"";
@@ -750,7 +764,6 @@ Tonyu.klass.define({
       },
       fiber$c :function* _trc_MCTSBot_f_c(_thread,node,a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var nsa;
         var _n;
         
@@ -782,7 +795,6 @@ Tonyu.klass.define({
       },
       fiber$q :function* _trc_MCTSBot_f_q(_thread,node,a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (a==null) {
           return node.q.value;
@@ -814,7 +826,6 @@ Tonyu.klass.define({
       },
       fiber$n :function* _trc_MCTSBot_f_n(_thread,node,a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (a==null) {
           return yield* _this.fiber$nanc(_thread, node.n);
@@ -887,7 +898,6 @@ Tonyu.klass.define({
       },
       fiber$selection :function* _trc_MCTSBot_f_selection(_thread,ctx,node) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var sgn;
         var ma;
@@ -955,7 +965,6 @@ Tonyu.klass.define({
       },
       fiber$depth :function* _trc_MCTSBot_f_depth(_thread,node) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let res = 0;
         
@@ -1038,7 +1047,7 @@ Tonyu.klass.define({
             if (performance.now()-stime>3000) {
               let ap = _this.actionPath(ctx,leaf);
               
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_4979(a) {
+              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5040(a) {
                 
                 return Tonyu.globals.$JSON.stringify(a);
               })).join("->"));
@@ -1080,7 +1089,6 @@ Tonyu.klass.define({
       },
       fiber$play :function* _trc_MCTSBot_f_play(_thread,ctx,s) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var rootNode;
         var i;
         var endState;
@@ -1150,7 +1158,7 @@ Tonyu.klass.define({
             if (performance.now()-stime>3000) {
               let ap=yield* _this.fiber$actionPath(_thread, ctx, leaf);
               
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_4979(a) {
+              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5040(a) {
                 
                 return Tonyu.globals.$JSON.stringify(a);
               })).join("->"));
@@ -1202,7 +1210,6 @@ Tonyu.klass.define({
       },
       fiber$backup :function* _trc_MCTSBot_f_backup(_thread,node,value) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         while (node) {
           node.q=node.q.inc(value);
@@ -1237,7 +1244,6 @@ Tonyu.klass.define({
       },
       fiber$rollout :function* _trc_MCTSBot_f_rollout(_thread,ctx,node,timeout) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var state;
         var t;
         var a;
@@ -1295,7 +1301,6 @@ Tonyu.klass.define({
       },
       fiber$actionPath :function* _trc_MCTSBot_f_actionPath(_thread,ctx,n) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let nodePath = [];
         
@@ -1358,7 +1363,6 @@ Tonyu.klass.define({
       },
       fiber$getState :function* _trc_MCTSBot_f_getState(_thread,ctx,node) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var p;
         var idx;
         
@@ -1404,7 +1408,6 @@ Tonyu.klass.define({
       },
       fiber$playRandom :function* _trc_MCTSBot_f_playRandom(_thread,ctx,s) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -1434,7 +1437,6 @@ Tonyu.klass.define({
       },
       fiber$nanc :function* _trc_MCTSBot_f_nanc(_thread,v) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (typeof  v!=="number") {
           throw new Error("null");
@@ -1450,7 +1452,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"actionPath":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"toString":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"actionPath":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.RandomBot',
@@ -1466,7 +1468,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_RandomBot_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
@@ -1487,7 +1488,6 @@ Tonyu.klass.define({
       },
       fiber$play :function* _trc_RandomBot_f_play(_thread,ctx,s) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -1522,7 +1522,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Rational_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -1540,7 +1539,6 @@ Tonyu.klass.define({
       },
       fiber$inc :function* _trc_Rational_f_inc(_thread,qby) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return new Tonyu.classes.bot.Rational(_this.q+qby,_this.n+1);
         
@@ -1564,7 +1562,6 @@ Tonyu.klass.define({
       },
       fiber$nanc :function* _trc_Rational_f_nanc(_thread,v) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (v!==v) {
           throw new Error(_this.q+" / "+_this.n);
@@ -1580,7 +1577,6 @@ Tonyu.klass.define({
       },
       fiber$toString :function* _trc_Rational_f_toString(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.q+"/"+_this.n;
         
@@ -1610,7 +1606,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Replay_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -1657,7 +1652,6 @@ Tonyu.klass.define({
       },
       fiber$step :function* _trc_Replay_f_step(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let pat = /Action:(.*)/;
         
@@ -1686,35 +1680,16 @@ Tonyu.klass.define({
       dump :function _trc_Replay_dump(bot) {
         var _this=this;
         
-        bot.play(_this.context,_this.state);
-        let lastNode = bot.lastRootNode;
-        
-        let lastActions = bot.lastActions;
-        
-        if (lastNode&&lastActions) {
-          let sns = [];
-          
-          for (let a = 0;
-           a<lastNode.subnodes.length ; a++) {
-            {
-              let qc = bot.q(lastNode,a);
-              
-              let sn = lastNode.subnodes[a];
-              
-              sns.push({action: lastActions[a],qc: qc});
-            }
-          }
-          sns.sort((function anonymous_1001(a,b) {
-            
-            return b.qc-a.qc;
-          }));
-          _this.print(sns);
-          
-        }
+        _this.print(_this.play1(bot));
       },
       fiber$dump :function* _trc_Replay_f_dump(_thread,bot) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
+        
+        _this.print(_this.play1(bot));
+        
+      },
+      play1 :function _trc_Replay_play1(bot) {
+        var _this=this;
         
         bot.play(_this.context,_this.state);
         let lastNode = bot.lastRootNode;
@@ -1734,19 +1709,50 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc});
             }
           }
-          sns.sort((function anonymous_1001(a,b) {
+          sns.sort((function anonymous_1045(a,b) {
             
             return b.qc-a.qc;
           }));
-          _this.print(sns);
+          return sns;
           
         }
+        return null;
+      },
+      fiber$play1 :function* _trc_Replay_f_play1(_thread,bot) {
+        var _this=this;
+        
+        bot.play(_this.context,_this.state);
+        let lastNode = bot.lastRootNode;
+        
+        let lastActions = bot.lastActions;
+        
+        if (lastNode&&lastActions) {
+          let sns = [];
+          
+          for (let a = 0;
+           a<lastNode.subnodes.length ; a++) {
+            {
+              let qc = bot.q(lastNode,a);
+              
+              let sn = lastNode.subnodes[a];
+              
+              sns.push({action: lastActions[a],qc: qc});
+            }
+          }
+          sns.sort((function anonymous_1045(a,b) {
+            
+            return b.qc-a.qc;
+          }));
+          return sns;
+          
+        }
+        return null;
         
       },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"step":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"Boolean"}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"logFle":{},"state":{},"context":{},"lines":{},"linesRead":{},"actCnt":{},"logFile":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"step":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"Boolean"}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play1":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"logFle":{},"state":{},"context":{},"lines":{},"linesRead":{},"actCnt":{},"logFile":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.State',
@@ -1763,7 +1769,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_State_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -1794,7 +1799,6 @@ Tonyu.klass.define({
       },
       fiber$next :function* _trc_State_f_next(_thread,ctx,a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドnextが実装されていません");
         
@@ -1808,7 +1812,6 @@ Tonyu.klass.define({
       },
       fiber$actionsEvents :function* _trc_State_f_actionsEvents(_thread,ctx) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドactionsEventsが実装されていません");
         
@@ -1821,7 +1824,6 @@ Tonyu.klass.define({
       },
       fiber$gameover :function* _trc_State_f_gameover(_thread,ctx) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.actionsEvents(ctx).length==0;
         
@@ -1834,7 +1836,6 @@ Tonyu.klass.define({
       },
       fiber$id :function* _trc_State_f_id(_thread,ctx) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドidが実装されていません");
         
@@ -1847,7 +1848,6 @@ Tonyu.klass.define({
       },
       fiber$playerIndex :function* _trc_State_f_playerIndex(_thread,ctx,p) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return ctx.players.indexOf(p);
         
@@ -1859,7 +1859,6 @@ Tonyu.klass.define({
       },
       fiber$nextIsEvent :function* _trc_State_f_nextIsEvent(_thread,ctx) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return false;
         
@@ -1868,6 +1867,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"print":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"next":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.Action"],"returnValue":"bot.State"}},"actionsEvents":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context"],"returnValue":null}},"gameover":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context"],"returnValue":null}},"id":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"playerIndex":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"nextIsEvent":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context"],"returnValue":null}}},"fields":{"player":{},"Player":{}}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map

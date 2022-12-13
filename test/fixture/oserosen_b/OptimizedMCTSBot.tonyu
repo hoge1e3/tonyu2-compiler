@@ -1,6 +1,9 @@
 extends MCTSBot;
 
 let searchDist=timeout%10==0 ?2 :timeout%10; // touchedな路線から距離searchDist以内の路線を探索
+\toString(){
+    return `omcts_${iteration}_${timeout}_${searchDist}`;
+}
 \initNodeValues(ctx,s) {
     let actions=s.actionsEvents(ctx);
     if(s.diceNum==null) return super.initNodeValues(ctx, s);
