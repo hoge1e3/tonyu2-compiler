@@ -60,10 +60,13 @@ if(replayFile){//リプレイtrueの時
             replay.step();
             print(replay.state+"");
         }
-        let bot=bots[replay.state.player];
-        let sns=replay.play1(bot);//,context,replay.state, replay.state.player);
-        //for (let i=0;i<)
-        match(context, replay.state, replay);
+        let acts=replay.state.actionsEvents(context);
+        for (let act of acts) {
+            let nr=replay.actionModified(act);
+            //let bot=bots[ns.player];
+            //let sns=replay.play1(bot);//,context,replay.state, replay.state.player);
+            match(context, nr.state, nr);
+        }
     }
 } else {
     for (let i=0;i<process.argv[10]-0 ;i++) {

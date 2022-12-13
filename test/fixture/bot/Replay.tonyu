@@ -5,7 +5,20 @@ let context: Context;
 let lines: String[];
 let linesRead: String[];
 let actCnt:Number;
+\clone() {
+    return new Replay{doClone:this};
+}
 \new(params) {
+    if (params.doClone) {
+        let p=params.doClone;
+        logFile=p.logFile;
+        state=p.state;
+        context=p.context;
+        lines=p.lines;
+        linesRead=p.linesRead.slice();
+        actCnt=p.actCnt;
+        return;
+    }
     super(params);
     logFile=file(logFile);
     lines=logFile.lines();
@@ -25,6 +38,13 @@ let actCnt:Number;
         state=state.next(context, a);
         return true;
     }
+}
+\actionModified(a:Action) {
+    let res=clone();
+    res.state=res.state.next(context,a);
+    res.linesRead.push(`INSERTED [${res.actCnt}]Action: ${$JSON.stringify(a)}`);
+    res.actCnt++;
+    return res;
 }
 
 \dump(bot) {
