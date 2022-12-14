@@ -1,10 +1,11 @@
 
-let logFle;
+let logFile;
 let state: State;
 let context: Context;
 let lines: String[];
 let linesRead: String[];
 let actCnt:Number;
+let modAction: Action;
 \clone() {
     return new Replay{doClone:this};
 }
@@ -44,6 +45,7 @@ let actCnt:Number;
     res.state=res.state.next(context,a);
     res.linesRead.push(`INSERTED [${res.actCnt}]Action: ${$JSON.stringify(a)}`);
     res.actCnt++;
+    res.modAction=a;
     return res;
 }
 
@@ -68,4 +70,8 @@ let actCnt:Number;
         //print(sns);
     }
     return null;
+}
+\toString() {
+    let a=modAction? "_"+$JSON.stringify(modAction) : "";
+    return logFile.name()+a;
 }

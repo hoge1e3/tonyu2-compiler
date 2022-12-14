@@ -10,10 +10,14 @@ let replay;
     argvs.shift();
     argvs.shift();
     argvs.shift();
-    if (!logFile && params.bots) {
-        logFile=replSpecial( formatDate(new Date())+"_"+params.bots[1]+"_vs_"+params.bots[2] )+".txt";
+    let prefix=params.prefix+"";
+    if (!logFile && replay) {
+        logFile=replSpecial(prefix+formatDate(new Date())+"_cont_"+replay+".txt" );
     }
-    logFile=logFile|| replSpecial( formatDate(new Date())+argvs.join("_") )+".txt";
+    if (!logFile && params.bots) {
+        logFile=replSpecial(prefix+formatDate(new Date())+"_"+params.bots[1]+"_vs_"+params.bots[2] )+".txt";
+    }
+    logFile=logFile|| replSpecial( prefix+formatDate(new Date())+argvs.join("_") )+".txt";
     print("logFileName",logFile);
     logFile=file(logFile);
     if (logFile.exists()) {

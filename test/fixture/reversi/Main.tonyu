@@ -1,8 +1,11 @@
 native process;
 "field strict";
 if (process.argv[1]=="--expose-gc") process.argv.shift();
-//                                              4    5   6  7     8    9  10    11             12
-// node index.js test\fixture\gobblet_b\   -r mcts 100 2  mcts  1000 2  1234  replayFile.txt 10
+//                                             4      5   6  7     8    9  10    11             12
+// node index.js test\fixture\reversi\   -r   n/f   mcts 100 2  mcts  1000 2  1234  replayFile.txt 10
+let rule=process.argv.splice(4,1)[0];
+let free=rule.match(/^f/i);
+
 if(!process.argv[10]){
     throw new Error("ゲーム実行回数が入力されていません！");
 }
@@ -51,7 +54,7 @@ if(replayFile){//リプレイtrueの時
     update();
     for (let mt=0;mt<process.argv[10]-0 ;mt++) {
         let bots=[0, botParameter(player1), botParameter(player2)];
-        let context=new Context{players:[1,2], bots};
+        let context=new Context{players:[1,2], bots, free};
         let state=initialState(context);
         let replay = new Replay{state, context, logFile: replayFile };
         let turn=process.argv[12];
@@ -71,7 +74,7 @@ if(replayFile){//リプレイtrueの時
 } else {
     for (let i=0;i<process.argv[10]-0 ;i++) {
         let bots=[0, botParameter(player1), botParameter(player2)];
-        let context=new Context{players:[1,2], bots};
+        let context=new Context{players:[1,2], bots, free};
         let state=initialState(context);
         match(context, state);   
     }
@@ -105,10 +108,12 @@ if(replayFile){//リプレイtrueの時
             mat.set(j,i,0);
         }
     }
-    mat.set(3,3,1);
-    mat.set(4,4,1);
-    mat.set(3,4,2);
-    mat.set(4,3,2);
+    if (!context.free) {
+        mat.set(3,3,1);
+        mat.set(4,4,1);
+        mat.set(3,4,2);
+        mat.set(4,3,2);
+    }
     let player=1;
     let state=new Board{
         mat,player,
@@ -117,7 +122,7 @@ if(replayFile){//リプレイtrueの時
 }
 \match(context,state,replay) {    
     let bots=context.bots;
-    let logger=new Logger{replay,bots};
+    let logger=new Logger{replay,bots,prefix:rule};
     let g=new GameMaster{context, state, logger};
     print(g.state+"");
     let winner=0;

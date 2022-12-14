@@ -390,6 +390,10 @@ Tonyu.klass.define({
         if (process.argv[1]=="--expose-gc") {
           process.argv.shift();
         }
+        _this.rule = process.argv.splice(4,1)[0];
+        
+        _this.free = _this.rule.match(/^f/i);
+        
         if (! process.argv[10]) {
           throw new Error("ゲーム実行回数が入力されていません！");
           
@@ -410,7 +414,7 @@ Tonyu.klass.define({
             {
               let bots = [0,_this.botParameter(_this.player1),_this.botParameter(_this.player2)];
               
-              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots});
+              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots,free: _this.free});
               
               let state = _this.initialState(context);
               
@@ -443,7 +447,7 @@ Tonyu.klass.define({
             {
               let bots = [0,_this.botParameter(_this.player1),_this.botParameter(_this.player2)];
               
-              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots});
+              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots,free: _this.free});
               
               let state = _this.initialState(context);
               
@@ -460,6 +464,10 @@ Tonyu.klass.define({
         if (process.argv[1]=="--expose-gc") {
           process.argv.shift();
         }
+        _this.rule = process.argv.splice(4,1)[0];
+        
+        _this.free = _this.rule.match(/^f/i);
+        
         if (! process.argv[10]) {
           throw new Error("ゲーム実行回数が入力されていません！");
           
@@ -480,7 +488,7 @@ Tonyu.klass.define({
             {
               let bots = [0,_this.botParameter(_this.player1),_this.botParameter(_this.player2)];
               
-              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots});
+              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots,free: _this.free});
               
               let state=yield* _this.fiber$initialState(_thread, context);
               
@@ -513,7 +521,7 @@ Tonyu.klass.define({
             {
               let bots = [0,_this.botParameter(_this.player1),_this.botParameter(_this.player2)];
               
-              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots});
+              let context = new Tonyu.classes.bot.Context({players: [1,2],bots: bots,free: _this.free});
               
               let state=yield* _this.fiber$initialState(_thread, context);
               
@@ -651,7 +659,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3383(a,b) {
+          sns.sort((function anonymous_3472(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -683,7 +691,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3383(a,b) {
+          sns.sort((function anonymous_3472(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -710,10 +718,13 @@ Tonyu.klass.define({
             }
           }
         }
-        mat.set(3,3,1);
-        mat.set(4,4,1);
-        mat.set(3,4,2);
-        mat.set(4,3,2);
+        if (! context.free) {
+          mat.set(3,3,1);
+          mat.set(4,4,1);
+          mat.set(3,4,2);
+          mat.set(4,3,2);
+          
+        }
         let player = 1;
         
         let state = new Tonyu.classes.user.Board({mat: mat,player: player});
@@ -738,10 +749,13 @@ Tonyu.klass.define({
             }
           }
         }
-        mat.set(3,3,1);
-        mat.set(4,4,1);
-        mat.set(3,4,2);
-        mat.set(4,3,2);
+        if (! context.free) {
+          mat.set(3,3,1);
+          mat.set(4,4,1);
+          mat.set(3,4,2);
+          mat.set(4,3,2);
+          
+        }
         let player = 1;
         
         let state = new Tonyu.classes.user.Board({mat: mat,player: player});
@@ -754,7 +768,7 @@ Tonyu.klass.define({
         
         let bots = context.bots;
         
-        let logger = new Tonyu.classes.bot.Logger({replay: replay,bots: bots});
+        let logger = new Tonyu.classes.bot.Logger({replay: replay,bots: bots,prefix: _this.rule});
         
         let g = new Tonyu.classes.bot.GameMaster({context: context,state: state,logger: logger});
         
@@ -778,7 +792,7 @@ Tonyu.klass.define({
         
         let bots = context.bots;
         
-        let logger = new Tonyu.classes.bot.Logger({replay: replay,bots: bots});
+        let logger = new Tonyu.classes.bot.Logger({replay: replay,bots: bots,prefix: _this.rule});
         
         let g = new Tonyu.classes.bot.GameMaster({context: context,state: state,logger: logger});
         
@@ -801,7 +815,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"randomRange":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null,null],"returnValue":null}},"initialState":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}}},"fields":{"player1":{},"player2":{},"replayFile":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"randomRange":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null,null],"returnValue":null}},"initialState":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}}},"fields":{"rule":{},"free":{},"player1":{},"player2":{},"replayFile":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Test',

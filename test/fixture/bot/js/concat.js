@@ -328,11 +328,17 @@ Tonyu.klass.define({
         argvs.shift();
         argvs.shift();
         argvs.shift();
-        if (! _this.logFile&&params.bots) {
-          _this.logFile=_this.replSpecial(_this.formatDate(new Date())+"_"+params.bots[1]+"_vs_"+params.bots[2])+".txt";
+        let prefix = params.prefix+"";
+        
+        if (! _this.logFile&&_this.replay) {
+          _this.logFile=_this.replSpecial(prefix+_this.formatDate(new Date())+"_cont_"+_this.replay+".txt");
           
         }
-        _this.logFile=_this.logFile||_this.replSpecial(_this.formatDate(new Date())+argvs.join("_"))+".txt";
+        if (! _this.logFile&&params.bots) {
+          _this.logFile=_this.replSpecial(prefix+_this.formatDate(new Date())+"_"+params.bots[1]+"_vs_"+params.bots[2])+".txt";
+          
+        }
+        _this.logFile=_this.logFile||_this.replSpecial(prefix+_this.formatDate(new Date())+argvs.join("_"))+".txt";
         _this.print("logFileName",_this.logFile);
         _this.logFile=_this.file(_this.logFile);
         if (_this.logFile.exists()) {
@@ -375,7 +381,7 @@ Tonyu.klass.define({
         if (! d) {
           d=new Date();
         }
-        let p = (function anonymous_1158(n) {
+        let p = (function anonymous_1328(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -388,7 +394,7 @@ Tonyu.klass.define({
         if (! d) {
           d=new Date();
         }
-        let p = (function anonymous_1158(n) {
+        let p = (function anonymous_1328(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -441,7 +447,7 @@ Tonyu.klass.define({
               sn.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_1940(a,b) {
+          sn.sort((function anonymous_2110(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -450,14 +456,14 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let nz = sn.filter((function anonymous_2081(e) {
+          let nz = sn.filter((function anonymous_2251(e) {
             
             return e.qc>0;
           }));
           
           let qnmin = nz.length&&nz[nz.length-1].qc;
           
-          let qns = sn.map((function anonymous_2178(e) {
+          let qns = sn.map((function anonymous_2348(e) {
             
             return _this.floor(e.qc*1000)/1000;
           }));
@@ -511,7 +517,7 @@ Tonyu.klass.define({
               sn.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_1940(a,b) {
+          sn.sort((function anonymous_2110(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -520,14 +526,14 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let nz = sn.filter((function anonymous_2081(e) {
+          let nz = sn.filter((function anonymous_2251(e) {
             
             return e.qc>0;
           }));
           
           let qnmin = nz.length&&nz[nz.length-1].qc;
           
-          let qns = sn.map((function anonymous_2178(e) {
+          let qns = sn.map((function anonymous_2348(e) {
             
             return _this.floor(e.qc*1000)/1000;
           }));
@@ -1603,9 +1609,11 @@ Tonyu.klass.define({
         
         
         
+        
       },
       fiber$main :function* _trc_Replay_f_main(_thread) {
         var _this=this;
+        
         
         
         
@@ -1708,6 +1716,7 @@ Tonyu.klass.define({
         res.state=res.state.next(_this.context,a);
         res.linesRead.push(['INSERTED [',res.actCnt,']Action: ',Tonyu.globals.$JSON.stringify(a)].join(''));
         res.actCnt++;
+        res.modAction=a;
         return res;
       },
       fiber$actionModified :function* _trc_Replay_f_actionModified(_thread,a) {
@@ -1718,6 +1727,7 @@ Tonyu.klass.define({
         res.state=res.state.next(_this.context,a);
         res.linesRead.push(['INSERTED [',res.actCnt,']Action: ',Tonyu.globals.$JSON.stringify(a)].join(''));
         res.actCnt++;
+        res.modAction=a;
         return res;
         
       },
@@ -1753,7 +1763,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc});
             }
           }
-          sns.sort((function anonymous_1564(a,b) {
+          sns.sort((function anonymous_1611(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -1783,7 +1793,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc});
             }
           }
-          sns.sort((function anonymous_1564(a,b) {
+          sns.sort((function anonymous_1611(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -1793,10 +1803,25 @@ Tonyu.klass.define({
         return null;
         
       },
+      toString :function _trc_Replay_toString() {
+        var _this=this;
+        
+        let a = _this.modAction?"_"+Tonyu.globals.$JSON.stringify(_this.modAction):"";
+        
+        return _this.logFile.name()+a;
+      },
+      fiber$toString :function* _trc_Replay_f_toString(_thread) {
+        var _this=this;
+        
+        let a = _this.modAction?"_"+Tonyu.globals.$JSON.stringify(_this.modAction):"";
+        
+        return _this.logFile.name()+a;
+        
+      },
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"clone":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"step":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"Boolean"}},"actionModified":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Action"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play1":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"logFle":{},"state":{},"context":{},"lines":{},"linesRead":{},"actCnt":{},"logFile":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"clone":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"new":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"step":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"Boolean"}},"actionModified":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Action"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play1":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"toString":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"logFile":{},"state":{},"context":{},"lines":{},"linesRead":{},"actCnt":{},"modAction":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.State',
