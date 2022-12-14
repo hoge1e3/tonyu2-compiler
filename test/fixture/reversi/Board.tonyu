@@ -69,9 +69,21 @@ let foePassed:Boolean;
     // ActionとEventを混ぜて返すことはできません．
     // 常に同じ順序で同じものを返してください
     let res=[];
+    let foe=3-player;
     for (let y=0;y<8;y++) {
         for (let x=0;x<8;x++) {
             if (mat.get(x,y)!=0) continue;
+            if (!ctx.free) {
+                let hasFoe=0;
+                for (let dy=-1;dy<=1;dy++) {
+                    for (let dx=-1;dx<=1;dx++) {
+                        if (dx==0&&dy==0)continue;
+                        if (mat.get(x+dx,y+dy)==foe) {hasFoe=1;break;}
+                    }
+                    if (hasFoe) break;
+                }
+                if (!hasFoe) continue;
+            }
             res.push{x,y};
         }
     }

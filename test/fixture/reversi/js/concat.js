@@ -206,6 +206,8 @@ Tonyu.klass.define({
         
         let res = [];
         
+        let foe = 3-_this.player;
+        
         for (let y = 0;
          y<8 ; y++) {
           {
@@ -216,13 +218,46 @@ Tonyu.klass.define({
                   continue;
                   
                 }
+                if (! ctx.free) {
+                  let hasFoe = 0;
+                  
+                  for (let dy = - 1;
+                   dy<=1 ; dy++) {
+                    {
+                      for (let dx = - 1;
+                       dx<=1 ; dx++) {
+                        {
+                          if (dx==0&&dy==0) {
+                            continue;
+                            
+                          }
+                          if (_this.mat.get(x+dx,y+dy)==foe) {
+                            hasFoe=1;
+                            break;
+                            
+                            
+                          }
+                        }
+                      }
+                      if (hasFoe) {
+                        break;
+                        
+                      }
+                    }
+                  }
+                  if (! hasFoe) {
+                    continue;
+                    
+                  }
+                  
+                }
                 res.push({x: x,y: y});
               }
             }
           }
         }
         if (! ctx.free) {
-          res=res.filter((function anonymous_2307(a) {
+          res=res.filter((function anonymous_2748(a) {
             
             return _this.next(ctx,a).changed;
           }));
@@ -239,6 +274,8 @@ Tonyu.klass.define({
         
         let res = [];
         
+        let foe = 3-_this.player;
+        
         for (let y = 0;
          y<8 ; y++) {
           {
@@ -249,13 +286,46 @@ Tonyu.klass.define({
                   continue;
                   
                 }
+                if (! ctx.free) {
+                  let hasFoe = 0;
+                  
+                  for (let dy = - 1;
+                   dy<=1 ; dy++) {
+                    {
+                      for (let dx = - 1;
+                       dx<=1 ; dx++) {
+                        {
+                          if (dx==0&&dy==0) {
+                            continue;
+                            
+                          }
+                          if (_this.mat.get(x+dx,y+dy)==foe) {
+                            hasFoe=1;
+                            break;
+                            
+                            
+                          }
+                        }
+                      }
+                      if (hasFoe) {
+                        break;
+                        
+                      }
+                    }
+                  }
+                  if (! hasFoe) {
+                    continue;
+                    
+                  }
+                  
+                }
                 res.push({x: x,y: y});
               }
             }
           }
         }
         if (! ctx.free) {
-          res=res.filter((function anonymous_2307(a) {
+          res=res.filter((function anonymous_2748(a) {
             
             return _this.next(ctx,a).changed;
           }));
