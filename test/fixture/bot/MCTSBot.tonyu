@@ -10,6 +10,7 @@ var Cp;
 var expandThresh;
 var value; // (ctx, player, state)=>number (playerにとってのstateの評価値)
 var iteration;
+let iterationByActions; // iterationを有効手の数*iterationで設定
 var player;
 let timeout;
 let lastRootNode, lastActions;
@@ -137,9 +138,19 @@ let os;
         n:expandThresh+1, 
         subnodes: null,
     };
+    let acts=s.actionsEvents(ctx);
     player=s.player;
     nanc(expandThresh);
     expand(ctx,rootNode);
+    if (acts.length==1) {
+        lastRootNode=rootNode;
+        lastActions=acts;
+        return acts[0];
+    }
+    let iteration=this.iteration;
+    if (iterationByActions) {
+        iteration*=acts.length;
+    }
     iterated=0;
     let stime=performance.now();
     if (typeof gc==="function") {
@@ -173,7 +184,7 @@ let os;
         //if (mu && mu.heapUsed>memlim) break;
         if (performance.now()-stime>3000) {
             let ap=actionPath(ctx,leaf);
-            print("Progress: iter=", iterated, " exp=" ,expcount, " Mem= "+(
+            print("Progress: iter=", iterated,"/",iteration, " exp=" ,expcount, " Mem= "+(
                 mu&&mu.heapUsed+"/"+mu.heapTotal
             )+" Path= "+ap.map\(a){return $JSON.stringify(a);}.join("->"));
             //print(ap);
@@ -199,7 +210,6 @@ let os;
             ma=a;
         }
     }
-    var acts=s.actionsEvents(ctx);
     //print (acts.length , rootNode.subnodes.length, ma);
     if (!acts[ma]) throw new Error("Action not found "+ma);
     print("EXP",expcount," TO",timeoutCount);

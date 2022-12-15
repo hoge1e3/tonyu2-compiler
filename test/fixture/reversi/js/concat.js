@@ -633,7 +633,7 @@ Tonyu.klass.define({
         
         
         if (player.name=="mcts") {
-          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout)});
+          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout),iterationByActions: ! _this.free});
           
         } else {
           if (player.name=="cmcts") {
@@ -653,7 +653,7 @@ Tonyu.klass.define({
         
         
         if (player.name=="mcts") {
-          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout)});
+          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout),iterationByActions: ! _this.free});
           
         } else {
           if (player.name=="cmcts") {
@@ -729,7 +729,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3472(a,b) {
+          sns.sort((function anonymous_3497(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -761,7 +761,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3472(a,b) {
+          sns.sort((function anonymous_3497(a,b) {
             
             return b.qc-a.qc;
           }));

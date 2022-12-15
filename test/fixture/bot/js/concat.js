@@ -603,6 +603,7 @@ Tonyu.klass.define({
         
         
         
+        
         _this.timeoutCount = 0;
         
         _this.expcount = 0;
@@ -613,6 +614,7 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_MCTSBot_f_main(_thread) {
         var _this=this;
+        
         
         
         
@@ -647,13 +649,13 @@ Tonyu.klass.define({
         let actions = state.actionsEvents(ctx);
         
         if (state.nextIsEvent(ctx)) {
-          return actions.map((function anonymous_721() {
+          return actions.map((function anonymous_778() {
             
             return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
           }));
           
         }
-        return actions.map((function anonymous_801() {
+        return actions.map((function anonymous_858() {
           
           return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
@@ -664,13 +666,13 @@ Tonyu.klass.define({
         let actions = state.actionsEvents(ctx);
         
         if (state.nextIsEvent(ctx)) {
-          return actions.map((function anonymous_721() {
+          return actions.map((function anonymous_778() {
             
             return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
           }));
           
         }
-        return actions.map((function anonymous_801() {
+        return actions.map((function anonymous_858() {
           
           return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
         }));
@@ -691,7 +693,7 @@ Tonyu.klass.define({
         }
         let vals = _this.initNodeValues(ctx,s);
         
-        node.subnodes=vals.map((function anonymous_1248(r,i) {
+        node.subnodes=vals.map((function anonymous_1305(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -718,7 +720,7 @@ Tonyu.klass.define({
         }
         let vals=yield* _this.fiber$initNodeValues(_thread, ctx, s);
         
-        node.subnodes=vals.map((function anonymous_1248(r,i) {
+        node.subnodes=vals.map((function anonymous_1305(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -992,7 +994,6 @@ Tonyu.klass.define({
         var mqc;
         var a;
         var qc;
-        var acts;
         
         if (! _this.os&&typeof  require==="function") {
           _this.os=require("os");
@@ -1005,9 +1006,23 @@ Tonyu.klass.define({
         _this.timeoutCount=0;
         rootNode = {parent: null,state: s,q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh+1,subnodes: null};
         
+        let acts = s.actionsEvents(ctx);
+        
         _this.player=s.player;
         _this.nanc(_this.expandThresh);
         _this.expand(ctx,rootNode);
+        if (acts.length==1) {
+          _this.lastRootNode=rootNode;
+          _this.lastActions=acts;
+          return acts[0];
+          
+        }
+        let iteration = _this.iteration;
+        
+        if (_this.iterationByActions) {
+          iteration*=acts.length;
+          
+        }
         _this.iterated=0;
         let stime = performance.now();
         
@@ -1022,7 +1037,7 @@ Tonyu.klass.define({
         }
         let mu;
         for (i = 0;
-         i<_this.iteration ; i++) {
+         i<iteration ; i++) {
           {
             let leaf;
             let expRecur = 0;
@@ -1053,7 +1068,7 @@ Tonyu.klass.define({
             if (performance.now()-stime>3000) {
               let ap = _this.actionPath(ctx,leaf);
               
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5040(a) {
+              _this.print("Progress: iter=",_this.iterated,"/",iteration," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5371(a) {
                 
                 return Tonyu.globals.$JSON.stringify(a);
               })).join("->"));
@@ -1082,8 +1097,6 @@ Tonyu.klass.define({
             }
           }
         }
-        acts = s.actionsEvents(ctx);
-        
         if (! acts[ma]) {
           throw new Error("Action not found "+ma);
           
@@ -1103,7 +1116,6 @@ Tonyu.klass.define({
         var mqc;
         var a;
         var qc;
-        var acts;
         
         if (! _this.os&&typeof  require==="function") {
           _this.os=require("os");
@@ -1116,9 +1128,23 @@ Tonyu.klass.define({
         _this.timeoutCount=0;
         rootNode = {parent: null,state: s,q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh+1,subnodes: null};
         
+        let acts = s.actionsEvents(ctx);
+        
         _this.player=s.player;
         (yield* _this.fiber$nanc(_thread, _this.expandThresh));
         (yield* _this.fiber$expand(_thread, ctx, rootNode));
+        if (acts.length==1) {
+          _this.lastRootNode=rootNode;
+          _this.lastActions=acts;
+          return acts[0];
+          
+        }
+        let iteration = _this.iteration;
+        
+        if (_this.iterationByActions) {
+          iteration*=acts.length;
+          
+        }
         _this.iterated=0;
         let stime = performance.now();
         
@@ -1133,7 +1159,7 @@ Tonyu.klass.define({
         }
         let mu;
         for (i = 0;
-         i<_this.iteration ; i++) {
+         i<iteration ; i++) {
           {
             let leaf;
             let expRecur = 0;
@@ -1164,7 +1190,7 @@ Tonyu.klass.define({
             if (performance.now()-stime>3000) {
               let ap=yield* _this.fiber$actionPath(_thread, ctx, leaf);
               
-              _this.print("Progress: iter=",_this.iterated," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5040(a) {
+              _this.print("Progress: iter=",_this.iterated,"/",iteration," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5371(a) {
                 
                 return Tonyu.globals.$JSON.stringify(a);
               })).join("->"));
@@ -1193,8 +1219,6 @@ Tonyu.klass.define({
             }
           }
         }
-        acts = s.actionsEvents(ctx);
-        
         if (! acts[ma]) {
           throw new Error("Action not found "+ma);
           
@@ -1458,7 +1482,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"toString":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"actionPath":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"toString":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}},"initNodeValues":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"expand":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"str":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"c":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"q":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"n":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"selection":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context",null],"returnValue":null}},"depth":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"play":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"backup":{"nowait":false,"isMain":false,"vtype":{"params":[null,"Number"],"returnValue":null}},"rollout":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}},"actionPath":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"getState":{"nowait":false,"isMain":false,"vtype":{"params":[null,null],"returnValue":null}},"playRandom":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","bot.State"],"returnValue":"bot.Action"}},"nanc":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"Cp":{},"expandThresh":{},"value":{},"iteration":{},"iterationByActions":{},"player":{},"timeout":{},"lastRootNode":{},"lastActions":{},"timeoutCount":{},"expcount":{},"iterated":{},"os":{}}}
 });
 Tonyu.klass.define({
   fullName: 'bot.RandomBot',

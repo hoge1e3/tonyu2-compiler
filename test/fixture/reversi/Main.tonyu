@@ -22,7 +22,7 @@ print(player2);
 \botParameter(player){
     var bot;
     if(player.name == "mcts"){
-        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout)};
+        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout),iterationByActions:!free};
     }else if(player.name == "cmcts"){
         //bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout)};
     }else{
