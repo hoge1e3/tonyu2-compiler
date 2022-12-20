@@ -20,8 +20,9 @@ print(player2);
 $folderName1 = player1;//フォルダ生成用
 $folderName2 = player2;//フォルダ生成用
 $loopCount=1;
+$free=!!mapType.match(/f/);
 $gameConfig={
-    debug=true,
+    debug=$free,
     player = 2,
     players = [1,2],
     replay = {file=process.argv[12], turn=process.argv[13]-0},

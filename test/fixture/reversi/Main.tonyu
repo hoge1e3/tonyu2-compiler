@@ -61,6 +61,7 @@ if(replayFile){//リプレイtrueの時
         print(replay.state+"");
         for (let i=0;i<turn;i++) {
             replay.step();
+            print((i+1)+"/"+turn);
             print(replay.state+"");
         }
         let acts=replay.state.actionsEvents(context);

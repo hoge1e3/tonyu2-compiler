@@ -3,6 +3,7 @@ let logFile;
 let actCnt;
 let replay;
 \new(params) {
+    params=params||{};
     super(params);
     actCnt=1;
     let argvs=[...process.argv];
@@ -10,7 +11,7 @@ let replay;
     argvs.shift();
     argvs.shift();
     argvs.shift();
-    let prefix=params.prefix+"";
+    let prefix=(params.prefix && params.prefix+"") || "";
     if (!logFile && replay) {
         logFile=replSpecial(prefix+formatDate(new Date())+"_cont_"+replay+".txt" );
     }
@@ -37,7 +38,7 @@ let replay;
     }
 }
 \replSpecial(f) {
-    return f.replace(/[\s\/\\\:\?\*\<\>\|]/g,"_");
+    return f.replace(/[\{\}\"\s\/\\\:\?\*\<\>\|]/g,"_");
 }
 \formatDate(d) {
     if (!d) d=new Date();

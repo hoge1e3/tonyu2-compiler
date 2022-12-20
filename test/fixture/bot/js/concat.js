@@ -320,6 +320,7 @@ Tonyu.klass.define({
       initialize :function _trc_Logger_initialize(params) {
         var _this=this;
         
+        params=params||{};
         __superClass.apply( _this, [params]);
         _this.actCnt=1;
         let argvs = [...process.argv];
@@ -328,7 +329,7 @@ Tonyu.klass.define({
         argvs.shift();
         argvs.shift();
         argvs.shift();
-        let prefix = params.prefix+"";
+        let prefix = (params.prefix&&params.prefix+"")||"";
         
         if (! _this.logFile&&_this.replay) {
           _this.logFile=_this.replSpecial(prefix+_this.formatDate(new Date())+"_cont_"+_this.replay+".txt");
@@ -367,12 +368,12 @@ Tonyu.klass.define({
       replSpecial :function _trc_Logger_replSpecial(f) {
         var _this=this;
         
-        return f.replace(/[\s\/\\\:\?\*\<\>\|]/g,"_");
+        return f.replace(/[\{\}\"\s\/\\\:\?\*\<\>\|]/g,"_");
       },
       fiber$replSpecial :function* _trc_Logger_f_replSpecial(_thread,f) {
         var _this=this;
         
-        return f.replace(/[\s\/\\\:\?\*\<\>\|]/g,"_");
+        return f.replace(/[\{\}\"\s\/\\\:\?\*\<\>\|]/g,"_");
         
       },
       formatDate :function _trc_Logger_formatDate(d) {
@@ -381,7 +382,7 @@ Tonyu.klass.define({
         if (! d) {
           d=new Date();
         }
-        let p = (function anonymous_1328(n) {
+        let p = (function anonymous_1383(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -394,7 +395,7 @@ Tonyu.klass.define({
         if (! d) {
           d=new Date();
         }
-        let p = (function anonymous_1328(n) {
+        let p = (function anonymous_1383(n) {
           
           return ((10000+n)+"").substring(3,5);
         });
@@ -447,7 +448,7 @@ Tonyu.klass.define({
               sn.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_2110(a,b) {
+          sn.sort((function anonymous_2165(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -456,14 +457,14 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let nz = sn.filter((function anonymous_2251(e) {
+          let nz = sn.filter((function anonymous_2306(e) {
             
             return e.qc>0;
           }));
           
           let qnmin = nz.length&&nz[nz.length-1].qc;
           
-          let qns = sn.map((function anonymous_2348(e) {
+          let qns = sn.map((function anonymous_2403(e) {
             
             return _this.floor(e.qc*1000)/1000;
           }));
@@ -517,7 +518,7 @@ Tonyu.klass.define({
               sn.push({action: lastActions[a],qc: qc});
             }
           }
-          sn.sort((function anonymous_2110(a,b) {
+          sn.sort((function anonymous_2165(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -526,14 +527,14 @@ Tonyu.klass.define({
           }
           let qnmax = sn[0].qc;
           
-          let nz = sn.filter((function anonymous_2251(e) {
+          let nz = sn.filter((function anonymous_2306(e) {
             
             return e.qc>0;
           }));
           
           let qnmin = nz.length&&nz[nz.length-1].qc;
           
-          let qns = sn.map((function anonymous_2348(e) {
+          let qns = sn.map((function anonymous_2403(e) {
             
             return _this.floor(e.qc*1000)/1000;
           }));

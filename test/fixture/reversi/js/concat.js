@@ -497,6 +497,7 @@ Tonyu.klass.define({
                i<turn ; i++) {
                 {
                   replay.step();
+                  _this.print(i+"/"+turn);
                   _this.print(replay.state+"");
                 }
               }
@@ -571,6 +572,7 @@ Tonyu.klass.define({
                i<turn ; i++) {
                 {
                   replay.step();
+                  _this.print(i+"/"+turn);
                   _this.print(replay.state+"");
                 }
               }
@@ -729,7 +731,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3497(a,b) {
+          sns.sort((function anonymous_3529(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -761,7 +763,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3497(a,b) {
+          sns.sort((function anonymous_3529(a,b) {
             
             return b.qc-a.qc;
           }));
