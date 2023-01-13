@@ -12,18 +12,24 @@ var player1 = {name:process.argv[4],iteration:process.argv[5],timeout:process.ar
 var player2 = {name:process.argv[7],iteration:process.argv[8],timeout:process.argv[9]};
 print(player1);
 print(player2);
+\randomRange(rstr) {
+    let p=/^([\.\d]+)-([\.\d]+)$/;
+    let m=p.exec(rstr);
+    if (!m) return Number(rstr);
+    return rnd(m[2]-m[1])+(m[1]-0);
+}
 \botParameter(player){
     var bot;
     if(player.name == "mcts"){
-        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout)};
     }else if(player.name == "cmcts"){
-        //bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:Number(player.iteration), timeout:Number(player.timeout)};
+        //bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:Number(player.timeout)};
     }else{
         throw new Error("bot:",bot);
     }
     return bot;
 }
-let bots=[0, botParameter(player1), botParameter(player2)];
+//let bots;
 
 \value(ctx:Context, player: Number, state:Board) {
     /*let acts=state.actionsEvents(ctx);
@@ -45,6 +51,7 @@ let bots=[0, botParameter(player1), botParameter(player2)];
 let replayFile=process.argv[11];
 if(replayFile){//リプレイtrueの時
     update();
+    let bots=[0, botParameter(player1), botParameter(player2)];
     let context=new Context{players:[1,2], bots};
     let state=initialState(context);
     let replay = new Replay{state, context, logFile: replayFile };
@@ -77,7 +84,7 @@ if(replayFile){//リプレイtrueの時
     //print("iters:" ,it1, it2);
     //print("totaltimes:", tt1, tt2);
     //print("timeouts:", to1, to2);
-    
+    let bots=[0, botParameter(player1), botParameter(player2)];
     let context=new Context{players:[1,2], bots};
     let state=initialState(context);
     let logger=new Logger{bots};

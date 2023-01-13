@@ -5,6 +5,7 @@ if (process.argv[1]=="--expose-gc") process.argv.shift();
 // node index.js test\fixture\reversi\   -r   n/f   mcts 100 2  mcts  1000 2  1234  replayFile.txt 10
 let rule=process.argv.splice(4,1)[0];
 let free=rule.match(/^f/i);
+let disable_iba=rule.match(/d/);
 
 if(!process.argv[10]){
     throw new Error("ゲーム実行回数が入力されていません！");
@@ -22,7 +23,7 @@ print(player2);
 \botParameter(player){
     var bot;
     if(player.name == "mcts"){
-        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout),iterationByActions:!free};
+        bot = new MCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout),iterationByActions:(!disable_iba) && (!free)};
     }else if(player.name == "cmcts"){
         //bot = new CornerMCTSBot{value,Cp:10, expandThresh:3, iteration:randomRange(player.iteration), timeout:randomRange(player.timeout)};
     }else{

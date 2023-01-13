@@ -464,6 +464,8 @@ Tonyu.klass.define({
         
         _this.free = _this.rule.match(/^f/i);
         
+        _this.disable_iba = _this.rule.match(/d/);
+        
         if (! process.argv[10]) {
           throw new Error("ゲーム実行回数が入力されていません！");
           
@@ -497,7 +499,7 @@ Tonyu.klass.define({
                i<turn ; i++) {
                 {
                   replay.step();
-                  _this.print(i+"/"+turn);
+                  _this.print((i+1)+"/"+turn);
                   _this.print(replay.state+"");
                 }
               }
@@ -539,6 +541,8 @@ Tonyu.klass.define({
         
         _this.free = _this.rule.match(/^f/i);
         
+        _this.disable_iba = _this.rule.match(/d/);
+        
         if (! process.argv[10]) {
           throw new Error("ゲーム実行回数が入力されていません！");
           
@@ -572,7 +576,7 @@ Tonyu.klass.define({
                i<turn ; i++) {
                 {
                   replay.step();
-                  _this.print(i+"/"+turn);
+                  _this.print((i+1)+"/"+turn);
                   _this.print(replay.state+"");
                 }
               }
@@ -635,7 +639,7 @@ Tonyu.klass.define({
         
         
         if (player.name=="mcts") {
-          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout),iterationByActions: ! _this.free});
+          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout),iterationByActions: (! _this.disable_iba)&&(! _this.free)});
           
         } else {
           if (player.name=="cmcts") {
@@ -655,7 +659,7 @@ Tonyu.klass.define({
         
         
         if (player.name=="mcts") {
-          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout),iterationByActions: ! _this.free});
+          bot=new Tonyu.classes.bot.MCTSBot({value: Tonyu.bindFunc(_this,_this.value),Cp: 10,expandThresh: 3,iteration: _this.randomRange(player.iteration),timeout: _this.randomRange(player.timeout),iterationByActions: (! _this.disable_iba)&&(! _this.free)});
           
         } else {
           if (player.name=="cmcts") {
@@ -731,7 +735,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3529(a,b) {
+          sns.sort((function anonymous_3587(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -763,7 +767,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3529(a,b) {
+          sns.sort((function anonymous_3587(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -887,7 +891,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"randomRange":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null,null],"returnValue":null}},"initialState":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}}},"fields":{"rule":{},"free":{},"player1":{},"player2":{},"replayFile":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"randomRange":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null,null],"returnValue":null}},"initialState":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}}},"fields":{"rule":{},"free":{},"disable_iba":{},"player1":{},"player2":{},"replayFile":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Test',
