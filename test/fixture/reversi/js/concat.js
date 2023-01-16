@@ -464,6 +464,8 @@ Tonyu.klass.define({
         
         _this.free = _this.rule.match(/^f/i);
         
+        _this.freeIniCorner = _this.free&&_this.rule.match(/i/i);
+        
         _this.disable_iba = _this.rule.match(/d/);
         
         if (! process.argv[10]) {
@@ -540,6 +542,8 @@ Tonyu.klass.define({
         _this.rule = process.argv.splice(4,1)[0];
         
         _this.free = _this.rule.match(/^f/i);
+        
+        _this.freeIniCorner = _this.free&&_this.rule.match(/i/i);
         
         _this.disable_iba = _this.rule.match(/d/);
         
@@ -735,7 +739,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3587(a,b) {
+          sns.sort((function anonymous_3632(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -767,7 +771,7 @@ Tonyu.klass.define({
               sns.push({action: lastActions[a],qc: qc,q: sn.q+"",n: sn.n,ns: ns+" gov="+ns.gameover(),value: _this.value(context,player,ns)});
             }
           }
-          sns.sort((function anonymous_3587(a,b) {
+          sns.sort((function anonymous_3632(a,b) {
             
             return b.qc-a.qc;
           }));
@@ -800,6 +804,14 @@ Tonyu.klass.define({
           mat.set(3,4,2);
           mat.set(4,3,2);
           
+        } else {
+          if (_this.freeIniCorner) {
+            mat.set(0,0,1);
+            mat.set(7,7,1);
+            mat.set(0,7,2);
+            mat.set(7,0,2);
+            
+          }
         }
         let player = 1;
         
@@ -831,6 +843,14 @@ Tonyu.klass.define({
           mat.set(3,4,2);
           mat.set(4,3,2);
           
+        } else {
+          if (_this.freeIniCorner) {
+            mat.set(0,0,1);
+            mat.set(7,7,1);
+            mat.set(0,7,2);
+            mat.set(7,0,2);
+            
+          }
         }
         let player = 1;
         
@@ -891,7 +911,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"randomRange":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null,null],"returnValue":null}},"initialState":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}}},"fields":{"rule":{},"free":{},"disable_iba":{},"player1":{},"player2":{},"replayFile":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"randomRange":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"dump":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null,null],"returnValue":null}},"initialState":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[null,null,null],"returnValue":null}}},"fields":{"rule":{},"free":{},"freeIniCorner":{},"disable_iba":{},"player1":{},"player2":{},"replayFile":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Test',

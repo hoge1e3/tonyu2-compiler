@@ -5,6 +5,7 @@ if (process.argv[1]=="--expose-gc") process.argv.shift();
 // node index.js test\fixture\reversi\   -r   n/f   mcts 100 2  mcts  1000 2  1234  replayFile.txt 10
 let rule=process.argv.splice(4,1)[0];
 let free=rule.match(/^f/i);
+let freeIniCorner=free && rule.match(/i/i);
 let disable_iba=rule.match(/d/);
 
 if(!process.argv[10]){
@@ -115,6 +116,11 @@ if(replayFile){//リプレイtrueの時
         mat.set(4,4,1);
         mat.set(3,4,2);
         mat.set(4,3,2);
+    } else if (freeIniCorner) {
+        mat.set(0,0,1);
+        mat.set(7,7,1);
+        mat.set(0,7,2);
+        mat.set(7,0,2);
     }
     let player=1;
     let state=new Board{
