@@ -1,0 +1,412 @@
+extends State;
+"field strict";
+var turn;               //誰のターンか
+//var ready;              //探索中か否か
+//var onReady;            //ready=trueになったら呼ばれる
+var error;
+var diceNum;            //ダイスの出目(gameConfig.debug==falseのときのみ有効．undefinedのときは「まだ振っていない」)
+var turnCount;          //何周したか
+//var prevMyStation=[];   //各プレイヤーの１手前にどこを取ったか(ボタン表示用)
+//var selected;
+//var choice;             //何文字の駅を選べばいいか(テキスト表示用)
+var owner;              //誰が保持しているか
+var getStation;         //prevPlayerの人が取った駅
+//var prev;               //前のボードの情報
+//var gameOver;
+var attack;
+//var lost;
+var attackChance;
+var prevPlayer;
+var notTaken;           //new Boardされた時に渡される、取られていない全ての駅の名前のリスト
+//var message1 = "塗り替える駅を選んでください";
+//var message2 = "塗り替えられる駅が存在しませんでした";
+
+\next(gameConfig,b){
+    if (typeof b.num==="number") {
+        let nb=clone();
+        nb.diceNum=b.num;
+        nb.turn=turn;
+        return nb;
+    }
+    return clicked(gameConfig,b);
+}
+
+\nextIsEvent(gameConfig,b){
+    return !gameConfig.debug && diceNum==null;
+}
+\clone() {
+    return new Board{
+        owner: Object.assign({}, owner), 
+        error, diceNum, turnCount, getStation, attack, attackChance, prevPlayer
+    };
+}
+function clicked(gameConfig,b){
+    //print(NotTaken);
+    if (!gameConfig.debug && !diceNum) {
+        throw new Error("サイコロが振られていません");
+    }
+    var curHotSpring=b.stext.indexOf("温泉")>-1;
+    var nb=clone();
+    nb.diceNum=null;
+    //nb = new Board{owner: Object.assign({}, owner), /*prev:this ,*/turnCount:turnCount};
+    if(attack){//本当は奪取処理をした後に消したい(消えない)
+        attack.die();
+    }
+    //var grp=new Sprites();
+    /*if(lost){
+        lost.die();
+    }*/
+    
+    //温泉駅を取った次のボードで実行したい処理
+    /*if(attackChance){
+        if(nb.owner[b.stext] && nb.owner[b.stext].owner != turn){
+            nb.owner[b.stext].owner = turn;
+            if(gameConfig.replay == false){
+                var attackLog = new CreateFile{attackedStation:b.stext,attackedPlayer:turn,attacked:"attacked"};
+            }
+                
+            setNextTurn(nb);//ターン変更
+                
+            $main.colorCount();
+            if(attack){
+                attack.die();
+            }
+            return nb;
+        }else{
+            if(attack){
+                attack.die();
+            }
+            nb.error = "塗り替え可能な駅ではありません";
+            nb.attackChance = true;
+            return nb;
+        }
+    }*/
+    
+    
+    if(gameConfig.debug == true || gameConfig.replay == true || namelengthComparison(b.stext,diceNum)){
+        nb.getStation = b.stext;//次のボードのgetStationに入れる駅の名前
+        //var ns=new Scheduler();
+        if(! nb.owner[b.stext]){//ownerに押された駅が無かったら
+            nb.owner[b.stext]={name:b.stext,owner:turn};//その駅をownerに数値turnで追加する
+            //print(nextSearchStops(b,  {}));
+            //print(b.stext,"point:",evaluateStation(b.stext));
+            var lines = $stations[b.stext].lines;
+            //var count = lines.length;
+            for (var line of lines) \(line){
+                var s=new Searcher{from:$name2Node[b.stext],current:$name2Node[b.stext],lineName:line,owner:nb.owner[b.stext].owner, path:new Path, board:nb,/*_scheduler:ns, layer:grp*/};
+                var paths=s.allPaths;
+                if(line==="山手線" || line==="大阪環状線"){
+                    if(paths[1]){
+                        if(paths[0].nodes.length == paths[1].nodes.length){
+                        }else if(paths[0].nodes.length > paths[1].nodes.length){
+                            paths.splice(0,1);
+                        }else{
+                            paths.splice(1,1);
+                        }
+                    }
+                }
+                    //count--;
+                for (var path of paths) {
+                    for(var node of path.nodes){
+                        if(!(nb.owner[node.name]) || nb.owner[node.name].owner != turn){
+                            if(node.name.indexOf("point") > -1){
+                                            //pointオブジェクトは弾く
+                            }else{
+                                nb.owner[node.name] = {owner:turn};
+                            }
+                        }
+                                    
+                    }
+                                
+                }
+                    /*if(count == 0){
+                        
+                    }*/
+                            
+                /*if(gameConfig.limTurn && (gameConfig.limTurn)-0 === turnCount){//ゲーム終了処理
+                    nb.gameOver=true;
+                                //loadPage(GameSet);
+                }
+                moved to actionsEvents
+                */
+                            
+                
+            }(line);
+            /*if(curHotSpring){//選んだのが温泉駅だったら
+                            if(nb.enemyHasStation(turn)){
+                                if(choice){
+                                    choice.die();
+                                }
+                                if(gameConfig.replay == false){
+                                    new PopupLabel{x:0,y:70,align:"left",fillStyle:"Black",text:"塗り替える駅を選んでください"};
+                                }
+                                nb.turn = turn;
+                                nb.turnCount = turnCount;
+                                nb.selected = b.stext;
+                                $main.colorCount();
+                                nb.prevPlayer = turn;
+                                nb.attackChance = true;
+                                return nb;
+                            }else{
+                                new PopupLabel{x:0,y:70,align:"left",fillStyle:"Black",text:"塗り替えられる駅が存在しませんでした"};
+                            }
+                                
+                        }*/
+            //var tmp = lineStations($stations[b.stext].lines[0]);
+            //print(nb.isComplete(tmp,turn),b.stext,turn);
+            nb.selected = b.stext;
+            $main.colorCount();
+            nb.prevPlayer = turn;
+                                
+            setNextTurn(gameConfig,nb);//ターン変更
+   
+            //nb.diceNum = $main.dice();
+            //nb.ready=true;
+            //if(onReady) onReady();
+            //while(!nb.ready) ns.stepsAll();        
+                
+        }else{//すでに取られている駅を押した場合
+            nb.error = "その駅は既に取られています";
+            //nb.ready=true;
+            //if(onReady) onReady();
+            return nb;
+        }
+    }else{//文字数と一致した駅が選ばれなかった場合
+        nb.error = "指定された文字数と一致した駅を選んでください";
+        //nb.ready=true;
+        //if(onReady) onReady();
+        return nb;
+    }
+    return nb;
+    //$rsta = residualStation();
+}
+
+
+// まだ使われていない
+// stationに隣接する接続駅を配列で返す．
+\nextSearchStops(station,  visited, ctx:GameConfig) {//station:ある駅 visited:探索済みリスト
+    var stopStations=[];//結果のリスト
+    if (visited[station.stext]){
+        return stopStations;
+    }
+    visited[station.stext]=station;//visited{}にbを追加
+    for (var n in $stations[station.stext].nexts){
+        //nが接続駅＆空白で，探索済リストにないなら
+        if(isStopStation(n) && !owner[n] && !visited[n]){
+            stopStations.push(n);
+        }else{
+            stopStations=stopStations.concat(nextSearchStops($name2Button[n],  visited));
+        }
+    }
+    return stopStations; 
+}
+
+//まだ使われていない
+function evaluateStation(stationName){//ある駅の評価値を返す
+    var s=$stations[stationName];
+    if (s.point) return s.point;
+    var point=1;//基本点
+    point+=linesAllStations(stationName);//総駅数　+n点
+    point=point+(point*(s.lines.length/10));//路線数　1.n倍点
+    if(s.nexts.length == s.lines.length && s.midway!=true){//角の駅
+        point+=linesAllStations(stationName)/2;//角　+総駅数/2点
+    }
+    s.point=point;
+    return point;
+}
+
+function evaluatBoard(){
+    //まだ
+}
+//nextSearchStopsから呼ばれる．まだ使われていない
+function isStopStation(stationName){//ある駅についてその駅が探索打ち切り駅か判定する
+    if(stationName.indexOf("point") > -1){//pointオブジェクトなら
+        return false;
+    }else if($stations[stationName].midway==false){//分岐駅
+        return true;
+    }else if(!($stations[stationName].midway==true) && $stations[stationName].lines.length > 1){
+        return true;//midwayがtureではない　かつ　linesが１つより多い場合
+    }else if($stations[stationName].nexts.length == $stations[stationName].lines.length){
+        return true;//角
+    }else{
+        return false;
+    }
+}
+
+//まだ使われていない
+function lineStations(lineName){//渡された路線に所属する駅をリストにして返す
+    var lineStations=[];
+    for(var station of $stations){
+        if($stations[station].lines.indexOf(lineName)>-1){
+            lineStations.push(station);
+        }
+    }
+    return lineStations;
+}
+//まだ使われていない
+function isComplete(stationList,playerTurn){
+    for(var s of stationList){
+        if(!owner[s] || owner[s].owner!=playerTurn){
+            return false;
+        }
+    }
+    return true;
+}
+//evaluateStationから呼ばれる．まだ使われていない．
+function linesAllStations(stationName){//ある駅に所属する路線の総駅数を返す
+    var sum=0;
+    var sLines=$stations[stationName].lines;
+    for(var i=0;i<sLines.length;i++){
+        for (let name of $validStationNames) {
+            //接続駅が選ばれた場合、同じ駅を重複して数えている
+            //あえてこのままにするのも手かもしれない
+            if($stations[name].lines.indexOf(sLines[i])>-1){
+                sum+=1;
+            }
+        }
+    }
+    return sum;
+}
+
+function setNextTurn(gameConfig,nb) {
+    if(turn == gameConfig.player){
+        nb.turn = 1;
+        nb.turnCount = turnCount + 1;
+    }else{
+        nb.turn = turn+1;
+        nb.turnCount = turnCount;
+    }
+} 
+
+\NotTaken(num){//num文字の駅が1つでも未取得ならばtrueを返す
+    for(var name of $validStationNames){
+        if(!owner[name] && namelengthComparison(name,num)){//ownerにsが無かったら(未取得)
+            return true;
+        }
+    }
+    return false;
+}
+
+function enemyHasStation(turn){
+    var enemyStation = false;
+    for(var b2 in owner){
+        if(owner[b2].owner != turn){
+            enemyStation = true;
+            break;
+        }
+    }
+    return enemyStation;
+}
+
+\player {//.playerでturnを取得できる
+    return turn;
+}
+
+/*今のボードからどの駅が取れるかを返す*/
+\actionsEvents(ctx:GameConfig) {
+    var res=[];
+    if (ctx.limTurn && (ctx.limTurn)-0 === turnCount) return res;
+    if(!ctx.debug && diceNum==null){//ダイスが振られていない場合
+        if(NotTaken(2)){//2で取れる駅が無い場合
+            res.push({num:2,prob:3/12});
+        }
+        if(NotTaken(3)){
+            res.push({num:3,prob:3/12});
+        }
+        if(NotTaken(4)){
+            res.push({num:4,prob:3/12});
+        }
+        if(NotTaken(5)){
+            res.push({num:5,prob:3/12});
+        }
+        for(var r of res){
+            r.prob=1/res.length;
+        }
+        return res;
+    }
+
+    for (var name of $validStationNames) {
+        if(!owner[name] && (ctx.debug || isNextBlank(name)/*namelengthComparison(name,diceNum)*/)){
+            res.push({stext:name});
+        }
+    }
+    //print(res[0].stext);
+    return res;
+}
+
+\isNextBlank(name){
+    for(let sta in $stations[name].nexts){
+        if(owner[sta]){
+            return true;
+        }
+    }
+    return false;
+}
+\lineRest() {
+    let count={};
+    for(let line,val of $lines) {
+        count[line]=val.stationCount;
+    }
+    for(let st,_ of owner){
+        for (let line of $stations[st].lines) {
+            count[line]--;
+        }
+    }
+    return count;
+}
+\value(ctx, p):Number {
+    let taken=0;
+    // C駅数= complete路線の駅数
+    // 総駅 + (自分の取った駅数 - 敵の取った駅数)*0.1　+ (自分の取ったC駅数 - 敵の取ったC駅数)
+    let rests=lineRest();
+    
+    for(let st,_ of owner){
+        let comp=$stations[st].lines.some \(line) {return rests[line]===0;};
+        if(owner[st].owner==p){
+            taken+=comp?1:0.1;
+        } else {
+            taken-=comp?1:0.1;
+        }
+    }
+    return taken/ctx.validStationNames.length+0.5;
+}
+\status(ctx) {
+    let taken=[0,0,0], comps=[0,0,0];
+    let rests=lineRest();
+    
+    for(let st,_ of owner){
+        let comp=$stations[st].lines.some \(line) {return rests[line]===0;};
+        taken[owner[st].owner]++ ;
+        if (comp) { comps[owner[st].owner]++ ; }
+    }
+    return `P1= ${taken[1]}(${comps[1]}) P2=${taken[2]}(${comps[2]})`;
+}
+
+
+function namelengthComparison(sn,d){
+    sn=sn.replace(/\(.*/,"").length;
+    if(d == 5){
+        if(sn == 1 || sn >= 5){
+            return true;
+        }else{
+            return false;
+        }
+    }else{
+        if(sn == d){
+            return true;
+        }else{
+            return false;
+        }
+    }
+}
+
+function getTouchedLines() {
+    //だれかが1駅でも取得している路線の集合
+    let lines={};
+    for(let key, value in owner){
+        for (let line of $stations[key].lines) {
+            lines[line]=1;
+        }
+    }
+    return lines;
+}

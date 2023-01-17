@@ -1,0 +1,23 @@
+extends MCTSBot;
+includes CornerBotMod;
+
+\toString(){
+    return `cmcts_${iteration}_${timeout}`;
+}
+\initNodeValues(ctx,s) {
+    let actions=s.actionsEvents(ctx);
+    let hasCorner;
+    if(s.diceNum !=null){
+        hasCorner=actions.some(isCorner);
+    }
+    if (!hasCorner) return super.initNodeValues(ctx,s);
+    return actions.map \(a){
+        let q,n;
+        if (isCorner(a)) {//角の駅なら，得点up&まだ辿っていない
+            q=new Rational(5,0); n=0;
+        } else {
+            q=new Rational(0,0); n=1;//角じゃない駅は「すでにたどった扱い」にすると，辿りにくくなるかも
+        }
+        return {q,n};
+    };
+}

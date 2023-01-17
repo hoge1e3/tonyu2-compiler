@@ -1,0 +1,90 @@
+extends MCTSBot;
+
+let searchDist=timeout%10==0 ?2 :timeout%10; // touchedな路線から距離searchDist以内の路線を探索
+\toString(){
+    return `omcts_${iteration}_${timeout}_${searchDist}`;
+}
+\initNodeValues(ctx,s) {
+    let actions=s.actionsEvents(ctx);
+    if(s.diceNum==null) return super.initNodeValues(ctx, s);
+    let c1=segmentedCandidates(actions);// 線区内は代表駅のみ取得
+    let lines=linesWithin(s);//すでにとっている路線の近辺の路線
+    let c2;
+    if (lines) {
+        c2={};
+        // c2=c1 & linesに属するもの
+        for (let s,_ of c1) {
+            if ($stations[s].lines.some \(line) {return lines[line];}) {
+                c2[s]=1;
+            }
+        }
+        /*if (Object.keys(c2).length==0) {
+            print(c1,c2,lines);
+           throw new Error(`Why only ${Object.keys(c2)}`);
+        }*/
+        if (Object.keys(c2)==0) c2=c1; 
+    } else c2=c1;
+    //print(Object.keys(c2));
+    let hasEnabled=false;
+    let res=actions.map \(a){
+        let q,n;
+        let disabled=!c2[a.stext];
+        if(!disabled) hasEnabled=true;
+        q=new Rational(0,0); n=0;
+        /*if (c2[a.stext]) {//探索候補なら，まだ辿っていない
+            q=new Rational(0,0); n=0;
+        } else {
+            q=new Rational(0,0); n=1;//探索候補じゃない駅は「すでにたどった扱い」にすると，辿りにくくなるかも
+        }*/
+        return {q,n,disabled};
+    };
+    if (!hasEnabled) {
+        // 1or5文字の駅がすでにとっている路線の近くにないとこうなる．
+        print(c1, lines, c2, actions.map\(r){return r.stext;});
+        throw new Error("all disabled");
+    }
+    return res;
+}
+function linesWithin(s:Board) {
+    let t=s.getTouchedLines();
+    if (Object.keys(t).length==0) return null;
+    let res={};
+    for (let a,_ of $lines) {
+        for (let b,_ of t) {
+            if (lineDist(a,b)<=searchDist) {
+                res[a]=1;
+            }
+        }
+    }
+    return res;
+}
+function lineDist(a,b) {
+    if (a==b) return 0;
+    if (a>b) return lineDist(b,a);
+    if (!$lineDists[a]) {
+        print ($lineDists);
+        throw new Error("Cannot get "+a+"-"+b);
+    }
+    return $lineDists[a][b];
+}
+function segmentedCandidates(actions) {
+    let res={}, visited={};
+    for (let a of actions) {
+        let station=a.stext;
+        let st=$stations[station];
+        if (!st.lineSegment) {
+            res[station]=1;
+            continue;
+        }
+        let k=`${st.lineSegment}-${namelength(station)}`;
+        if (visited[k]) continue;
+        visited[k]=station;
+        res[station]=1;
+    }
+    return res;
+}
+function namelength(sn){
+    sn=sn.replace(/\(.*/,"").length;
+    if(sn == 1 || sn >= 5) return 5;
+    return sn;
+}

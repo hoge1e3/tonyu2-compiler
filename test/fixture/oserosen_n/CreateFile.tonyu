@@ -1,0 +1,16 @@
+folder = $folderName1.name+String($folderName1.iteration)+"_"+String($folderName1.timeout)+"_"+$folderName2.name+String($folderName2.iteration)+"_"+String($folderName2.timeout);
+textName = "../files/"+folder+"/"+String($loopCount)+"_log.txt";
+//textName = "freelog_0.txt";
+f=file(textName);
+
+if(logStationName){
+    f.appendText(logStationName+"\t"+logOwner+"\t"+rsta+"\t"+bsta+"\n");
+}else{
+    f.appendText("dice"+"\t"+dice+"\n");
+}
+
+/*
+if(attackedStation){
+    f.text(c+attackedStation+"\t"+attackedPlayer+"\t"+attacked+"\t"+rsta+"\t"+bsta+"\n");
+}
+*/

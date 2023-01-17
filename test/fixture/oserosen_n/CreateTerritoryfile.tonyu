@@ -1,0 +1,9 @@
+//リプレイ時のみ動く
+
+f=file("00_log_tr.txt");//指定した名前の付いたテキストを先に用意しておく
+c="";
+if (f.exists()){
+    c=f.text();
+}
+
+f.text(c+rsta+"\t"+bsta+"\n");

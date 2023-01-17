@@ -1,0 +1,233 @@
+var staKey;
+var notDelete={};
+var delsta;
+var delArea=["北海道","四国","九州","孤立"];
+var deleteLines={};
+
+
+/*削除する路線登録*/
+for(var i=0;i<delArea.length;i++){
+    if (!$areas[delArea[i]]) continue;
+    for(var j=0;j<$areas[delArea[i]].lines.length;j++){
+        var keyLine=$areas[delArea[i]].lines[j];
+        deleteLines[keyLine]=true;
+    }
+}
+//print(deleteLines);
+deleteStations_ByLines(deleteLines);
+for (let l,_ of deleteLines) delete $lines[l];
+initLineSegments();
+initLineDists();
+countStations();
+
+\countStations() {
+    for(let sn,_ of $stations) {
+        if (sn.match(/point/)) continue;
+        for (let line of $stations[sn].lines) {
+            $lines[line].stationCount=$lines[line].stationCount||0;
+            $lines[line].stationCount++;
+        }
+    }
+    /*for (let line,v of $lines) {
+        print(line, v.stationCount);
+    }*/
+}
+/*中間駅間引き用
+for(staKey of Object.keys($stations)){//key:駅名のみを配列型で取得
+    if($stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && 
+    checkPointStation(staKey) && (!notDelete[staKey])){
+        delsta=staKey;
+        reConnect(delsta);
+        delete $stations[delsta];
+        logDeleteStations(delsta);
+    }
+}
+
+
+\logDeleteStations(logDelete){
+    textName = "deleteStations.txt";
+    f=file(textName);//freelog.txt
+    f.appendText(logDelete+"\n");
+}
+
+\checkPointStation(staName){
+    var checksta = $stations[staName].nexts;
+    for(var i=0;i<checksta.length;i++){
+        if(checksta[i].indexOf("point")>-1){
+            return false;
+        }
+    }
+    return true;
+}
+
+\reConnect(staName){
+    var next_0 = $stations[staName].nexts[0];
+    var next_0_len = $stations[next_0].nexts.length;
+    notDelete[next_0]=true;
+    var next_1 = $stations[staName].nexts[1];
+    var next_1_len = $stations[next_1].nexts.length;
+    notDelete[next_1]=true;
+    
+    for(var i=0;i<next_0_len;i++){
+        if($stations[next_0].nexts[i]==staName){
+            $stations[next_0].nexts[i]=next_1;
+        }
+    }
+    for(var i=0;i<next_1_len;i++){
+        if($stations[next_1].nexts[i]==staName){
+            $stations[next_1].nexts[i]=next_0;
+        }
+    }
+}*/
+
+\deleteStations_ByLines(deleteLines){
+    /*nextsの中でshouldDeleteのtrueの駅を探して消す*/
+    for(st of Object.keys($stations)){
+        $stations[st].nexts = $stations[st].nexts.filter(function(station) {
+            return !shouldDelete(station,deleteLines);
+        });
+        $stations[st].lines = $stations[st].lines.filter(function(line) {
+            return !deleteLines[line];
+        });
+    }
+    
+    for(st of Object.keys($stations)){
+        if(shouldDelete(st,deleteLines)){
+            delete $stations[st];
+        }
+    }
+}
+
+
+\shouldDelete(station:String,deleteLines){
+    for(var i=0;i<$stations[station].lines.length;i++){
+        if(!deleteLines[$stations[station].lines[i]]){
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+\isSimpleStation(staKey:String) {
+    // 接続駅ではない途中駅か
+    return $stations[staKey].lines.length==1 && $stations[staKey].nexts.length==2 && notConnectedToPoint(staKey);
+}
+\notConnectedToPoint(staName){
+    var checksta = $stations[staName].nexts;
+    for(var i=0;i<checksta.length;i++){
+        if(checksta[i].indexOf("point")>-1){
+            return false;
+        }
+    }
+    return true;        
+}
+\initLineSegments() {
+    $lineSegments={};
+    for(let staKey of Object.keys($stations)){
+        if (!isSimpleStation(staKey)) continue;
+        let st=$stations[staKey];
+        for (let nxName of st.nexts) {
+            if (!isSimpleStation(nxName)) continue;
+            let els=$stations[nxName].lineSegment;
+            if (els) {
+                let mys=st.lineSegment;
+                if (mys && els!==mys) {
+                    //Merge
+                    for (let e of els) {
+                        $stations[e].lineSegment=mys;
+                        mys.push(e);
+                    }
+                } else {
+                    st.lineSegment=els;
+                    els.push(staKey);
+                }
+            }
+        }        
+        if (!st.lineSegment) {
+            $lineSegments[staKey]=st.lineSegment=[staKey];
+        }
+    }
+    for (let k of Object.keys($lineSegments)) {
+        if ($lineSegments[k].length==1) {
+            delete $stations[k].lineSegment;
+            delete $lineSegments[k];
+        }
+    }
+    for(let sg,stas in $lineSegments){
+        for (let sta of stas) {
+            $stations[sta].lineSegment=sg;
+        }
+    }
+    //print($lineSegments);
+    /*for (let k, sta in $stations) {
+        print(k, sta.lineSegment);
+    }*/
+}
+\initLineDists() {
+    let lineDists={};// {[String]: {[String]:Number}}
+    \add(a,b,d) {
+        if (a>b) return add(b,a,d);
+        lineDists[a]=lineDists[a]||{};
+        let la=lineDists[a];
+        if (!la[b] || d<la[b]) {
+            la[b]=d;
+            return true;
+        }
+        return false;
+    }
+    \getAll(a:String) {// res: {[String]:Number}
+        let res=Object.assign({},lineDists[a]||{});
+        for (let b, dists in lineDists) {
+            if (dists[a]) res[b]=dists[a];
+        }
+        return res;
+    }
+    for(let staKey,st in $stations){
+        if (st.lines.length<2) continue;
+        for (let a of st.lines) {
+            for (let b of st.lines) {
+                if (a===b) continue;
+                add(a,b,1);
+            }
+        }
+    }
+
+    let step=1;
+    let next;
+    do {
+        next=false;
+        print("Detect Line Dists");
+        for (let lineKeyA, la in $lines) {
+            let distsAB=getAll(lineKeyA);
+            //print(lineKeyA, distsAB);
+            for (let lineKeyB, distAB in distsAB) {
+                let distsBC=getAll(lineKeyB);
+                for (let lineKeyC, distBC in distsBC) {
+                    if (lineKeyC===lineKeyA) continue;
+                    let distAC=distAB+distBC;
+                    if (add(lineKeyA,lineKeyC, distAC)) next=true;
+                }
+            }
+        }
+    } while(next);
+    $lineDists=lineDists;
+    let undefs={};
+    for (let a,_ of $lines) {
+        for (let b,_ of $lines) {
+            if (a>=b) continue;
+            if (!$lineDists[a] || !$lineDists[a][b]) {
+                print("Dist Undef", a, b);
+                undefs[a]=1;
+                undefs[b]=1;
+                throw new Error("Dist Undef");
+            }
+        }
+    }
+    for (let k,_ in undefs) {
+        print(k,$lineDists[k],getAll(k));
+    }
+    //print(lineDists);
+    return lineDists;
+}
