@@ -4,7 +4,7 @@ var turn;               //誰のターンか
 //var ready;              //探索中か否か
 //var onReady;            //ready=trueになったら呼ばれる
 var error;
-var diceNum;            //ダイスの出目(gameConfig.debug==falseのときのみ有効．undefinedのときは「まだ振っていない」)
+//var diceNum;            //ダイスの出目(gameConfig.debug==falseのときのみ有効．undefinedのときは「まだ振っていない」)
 var turnCount;          //何周したか
 //var prevMyStation=[];   //各プレイヤーの１手前にどこを取ったか(ボタン表示用)
 //var selected;
@@ -24,7 +24,7 @@ var notTaken;           //new Boardされた時に渡される、取られてい
 \next(gameConfig,b){
     if (typeof b.num==="number") {
         let nb=clone();
-        nb.diceNum=b.num;
+        //nb.diceNum=b.num;
         nb.turn=turn;
         return nb;
     }
@@ -32,22 +32,23 @@ var notTaken;           //new Boardされた時に渡される、取られてい
 }
 
 \nextIsEvent(gameConfig,b){
-    return !gameConfig.debug && diceNum==null;
+    /*return !gameConfig.debug && diceNum==null;*/
+    return false;
 }
 \clone() {
     return new Board{
         owner: Object.assign({}, owner), 
-        error, diceNum, turnCount, getStation, attack, attackChance, prevPlayer
+        error, /*diceNum,*/ turnCount, getStation, attack, attackChance, prevPlayer
     };
 }
 function clicked(gameConfig,b){
     //print(NotTaken);
-    if (!gameConfig.debug && !diceNum) {
+    /*if (!gameConfig.debug && !diceNum) {
         throw new Error("サイコロが振られていません");
-    }
+    }*/
     var curHotSpring=b.stext.indexOf("温泉")>-1;
     var nb=clone();
-    nb.diceNum=null;
+    //nb.diceNum=null;
     //nb = new Board{owner: Object.assign({}, owner), /*prev:this ,*/turnCount:turnCount};
     if(attack){//本当は奪取処理をした後に消したい(消えない)
         attack.die();
@@ -83,7 +84,7 @@ function clicked(gameConfig,b){
     }*/
     
     
-    if(gameConfig.debug == true || gameConfig.replay == true || namelengthComparison(b.stext,diceNum)){
+    if(gameConfig.debug == true || gameConfig.replay == true || isNextBlank(b.text)/*namelengthComparison(b.stext,diceNum)*/){
         nb.getStation = b.stext;//次のボードのgetStationに入れる駅の名前
         //var ns=new Scheduler();
         if(! nb.owner[b.stext]){//ownerに押された駅が無かったら
@@ -306,7 +307,7 @@ function enemyHasStation(turn){
 \actionsEvents(ctx:GameConfig) {
     var res=[];
     if (ctx.limTurn && (ctx.limTurn)-0 === turnCount) return res;
-    if(!ctx.debug && diceNum==null){//ダイスが振られていない場合
+    /*if(!ctx.debug && diceNum==null){//ダイスが振られていない場合
         if(NotTaken(2)){//2で取れる駅が無い場合
             res.push({num:2,prob:3/12});
         }
@@ -323,7 +324,7 @@ function enemyHasStation(turn){
             r.prob=1/res.length;
         }
         return res;
-    }
+    }*/
 
     for (var name of $validStationNames) {
         if(!owner[name] && (ctx.debug || isNextBlank(name)/*namelengthComparison(name,diceNum)*/)){
@@ -335,9 +336,11 @@ function enemyHasStation(turn){
 }
 
 \isNextBlank(name){
-    for(let sta in $stations[name].nexts){
-        if(owner[sta]){
-            return true;
+    if($stations[name]){
+        for(let sta in $stations[name].nexts){
+            if(owner[sta]){
+                return true;
+            }
         }
     }
     return false;
