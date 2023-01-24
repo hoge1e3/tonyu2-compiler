@@ -25,3 +25,6 @@ test/fixture/gobblet_b/files
 test/fixture/gobblet_b/js
 test/fixture/gobblet_b/images/icon_thumbnail.png
 test/fixture/reversi/files
+test/fixture/oserosen_d/files
+test/fixture/oserosen_d
+test/fixture/oserosen_n/files
