@@ -84,7 +84,7 @@ function clicked(gameConfig,b){
     }*/
     
     
-    if(gameConfig.debug == true || gameConfig.replay == true || isNextBlank(b.text)/*namelengthComparison(b.stext,diceNum)*/){
+    if(gameConfig.debug == true || gameConfig.replay == true || isNextBlank(b.stext)/*namelengthComparison(b.stext,diceNum)*/){
         nb.getStation = b.stext;//次のボードのgetStationに入れる駅の名前
         //var ns=new Scheduler();
         if(! nb.owner[b.stext]){//ownerに押された駅が無かったら
