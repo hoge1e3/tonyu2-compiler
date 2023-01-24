@@ -16,6 +16,11 @@ $lines={
     "銀座線":{lineColor:"#F19A38"},
     "半蔵門線":{lineColor:"#8B76D0"},
 };
+
+$iniOwner={
+    "中野":{name:"中野",owner:1},
+    "西船橋":{name:"西船橋",owner:2},
+};
 $stations={
     //三田線
     "西高島平":{lines:["三田線"],nexts:["新高島平"]},

@@ -4,6 +4,10 @@
 lineColor:""
 */
 $areas={"孤立":{lines:["田原本線"]}};
+$iniOwner{
+    "大和西大寺":{name:"大和西大寺",owner:1},
+    "橿原神宮前":{name:"橿原神宮前",owner:2},
+};
 
 $lines={
     "京都線":{lineColor:"#954A35"},

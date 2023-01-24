@@ -10,6 +10,10 @@ $areas={
     "孤立":{lines:["大湊線","八戸線","城端線","氷見線","七尾線"]},
 };
 
+$iniOwner={
+    "東京":{name:"東京",owner:1},
+    "神戸":{name:"神戸",owner:2},
+};
 $lines={
     "宗谷本線":{lineColor:"#954A35"},
     "石北本線":{lineColor:"#F7931D"},

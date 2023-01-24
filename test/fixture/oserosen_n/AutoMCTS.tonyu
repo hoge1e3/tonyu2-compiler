@@ -138,10 +138,6 @@ var allStations=$stationPlace.length;
 
 var kouho=[];
 var stname;
-var first={
-    "東京":{name:"東京",owner:1},
-    "神戸":{name:"神戸",owner:2}
-};
 
 
 if($gameConfig.replay.file){//リプレイtrueの時
@@ -168,7 +164,7 @@ if($gameConfig.replay.file){//リプレイtrueの時
 }else{
     while ($loopCount && $loopCount<matchCount) {
         print("Game Start!");
-        var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:first, gameConfig: $gameConfig};
+        var board = new Board{turn: 1, turnCount:1, ready: true,diceNum:dice(),owner:$iniOwner, gameConfig: $gameConfig};
         print(board.owner);
         let logger=new Logger;
         var g=new GameMaster{state: board, context:$gameConfig, logger};
