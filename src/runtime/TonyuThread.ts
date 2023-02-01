@@ -286,15 +286,16 @@ class KilledError extends Error {
 			try {
 				while (performance.now()<lim && !this.fSuspended) {
 					const n=this.generator.next();
+					if (n.done) {
+						this.termStatus="success";
+						this.retVal=n.value;
+						this.notifyEnd(this.retVal);
+						break;
+					}	
 					if (n.value) {
 						awaited=n.value;
 						break;
 					}
-					if (n.done) {
-						this.termStatus="success";
-						this.notifyEnd(this.retVal);
-						break;
-					}	
 				}
 				fb.preempted= (!awaited) && (!this.fSuspended) && this.isAlive();
 			} catch (e){
