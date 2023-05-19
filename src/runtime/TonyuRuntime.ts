@@ -248,8 +248,9 @@ var klass={
 			init:true,
 			//initFullName:fullName,
 			includesRec:(parent?extend({},parent.meta.includesRec):{}),
-			nonShimParent:parent
+			nonShimParent:parent,
 		}) as TonyuClass;
+		res.toString=()=>{return `[class ${fullName}]`};
 		addKlassAndNameToDecls(res.meta);
 		res.extendFrom=extender;
 		//addMeta(fullName, res.meta);
@@ -404,6 +405,9 @@ function resetLoopCheck(disableTime: number) {
 	lastLoopCheck=root.performance.now()+(disableTime||0);
 }
 function is(obj:any, klass:any) {
+	if (typeof klass==="string") {
+		return typeof obj===klass;
+	}
 	if (!obj) return false;
 	if (!klass) return false;
 	if (obj instanceof klass) return true;
