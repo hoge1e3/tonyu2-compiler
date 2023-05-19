@@ -105,6 +105,11 @@ R.setLocale = locale => {
     if (locale === "en")
         dict = en;
 };
+R.getLocale = () => {
+    if (dict === en)
+        return "en";
+    return "ja";
+};
 R.dicts = { ja, en };
 module.exports = R;
 //module.exports=R;
