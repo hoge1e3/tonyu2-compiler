@@ -12,9 +12,9 @@ import * as cu from "./compiler";
 import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { AnnotatedType, Annotation, ArrayType, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType } from "./CompilerTypes";
+import { AnnotatedType, Annotation, ArrayType, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType, UnionType, isUnionType } from "./CompilerTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler";
 
 var ScopeTypes=cu.ScopeTypes;
@@ -794,13 +794,34 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		arrayTypeExpr(node: ArrayTypeExpr) {
 			//console.log("ARRATYTPEEXPR",node);
 			resolveArrayType(node);
+		},
+		unionTypeExpr(node: UnionTypeExpr) {
+			resolveUnionType(node);
 		}
 	});
 	varAccessesAnnotator.def=visitSub;//S
 	function resolveType(node:TypeExpr):AnnotatedType {
 		if (isNamedTypeExpr(node)) return resolveNamedType(node);
 		else if (isArrayTypeExpr(node)) return resolveArrayType(node);
+		else if (isUnionTypeExpr(node)) return resolveUnionType(node);
 	}
+	function resolveUnionType(node:UnionTypeExpr):UnionType {
+		let left=resolveType(node.left);
+		let right=resolveType(node.right);
+		let candidates: AnnotatedType[];
+		if (isUnionType(left) && isUnionType(right)) {
+			candidates=[...left.candidates, ...right.candidates];
+		} else if (isUnionType(left)) {
+			candidates=[...left.candidates, right];
+		} else if (isUnionType(right)) {
+			candidates=[left, ...right.candidates];
+		} else {
+			candidates=[left,right];
+		}
+		const resolvedType:AnnotatedType={candidates};
+		annotation(node, {resolvedType});
+		return resolvedType;
+	}	
 	function resolveArrayType(node:ArrayTypeExpr):ArrayType {
 		const et=resolveType(node.element);
 		//console.log("ET",et);

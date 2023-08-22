@@ -38,6 +38,7 @@ const Visitor_1 = require("./Visitor");
 const context_1 = require("./context");
 const parser_1 = require("./parser");
 const NodeTypes_1 = require("./NodeTypes");
+const CompilerTypes_1 = require("./CompilerTypes");
 const compiler_1 = require("./compiler");
 var ScopeTypes = cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -838,6 +839,9 @@ function annotateSource2(klass, env) {
         arrayTypeExpr(node) {
             //console.log("ARRATYTPEEXPR",node);
             resolveArrayType(node);
+        },
+        unionTypeExpr(node) {
+            resolveUnionType(node);
         }
     });
     varAccessesAnnotator.def = visitSub; //S
@@ -846,6 +850,28 @@ function annotateSource2(klass, env) {
             return resolveNamedType(node);
         else if ((0, NodeTypes_1.isArrayTypeExpr)(node))
             return resolveArrayType(node);
+        else if ((0, NodeTypes_1.isUnionTypeExpr)(node))
+            return resolveUnionType(node);
+    }
+    function resolveUnionType(node) {
+        let left = resolveType(node.left);
+        let right = resolveType(node.right);
+        let candidates;
+        if ((0, CompilerTypes_1.isUnionType)(left) && (0, CompilerTypes_1.isUnionType)(right)) {
+            candidates = [...left.candidates, ...right.candidates];
+        }
+        else if ((0, CompilerTypes_1.isUnionType)(left)) {
+            candidates = [...left.candidates, right];
+        }
+        else if ((0, CompilerTypes_1.isUnionType)(right)) {
+            candidates = [left, ...right.candidates];
+        }
+        else {
+            candidates = [left, right];
+        }
+        const resolvedType = { candidates };
+        annotation(node, { resolvedType });
+        return resolvedType;
     }
     function resolveArrayType(node) {
         const et = resolveType(node.element);

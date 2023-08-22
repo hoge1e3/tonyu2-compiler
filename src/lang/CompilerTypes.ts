@@ -127,8 +127,9 @@ export type FuncInfo={// also includes Method
 export type NativeClass={class: Constructor, sampleValue?:any};
 export type MethodType={method: FuncInfo};
 export type ArrayType={element:AnnotatedType};
+export type UnionType={candidates:AnnotatedType[]};
 export type NamedType=NativeClass|C_Meta;
-export type AnnotatedType=NamedType|MethodType|ArrayType;
+export type AnnotatedType=NamedType|MethodType|ArrayType|UnionType;
 export function isArrayType(klass: AnnotatedType): klass is ArrayType {
 	return (klass as any).element;
 }
@@ -140,6 +141,9 @@ export function isMeta(klass: AnnotatedType): klass is C_Meta {
 }
 export function isMethodType(klass: AnnotatedType): klass is MethodType {
 	return (klass as any).method;
+}
+export function isUnionType(klass: AnnotatedType): klass is UnionType {
+	return (klass as any).candidates;
 }
 export type Annotation={
 	scopeInfo?: ScopeInfo,

@@ -2,6 +2,8 @@ extends Updatable;
 native console;
 var x:Number;
 let s:String;
+let ns:Number|String|A=3;
+console.log(ns.hoge);
 \test():A {
 	let i=0,s=0;
 	while(i<n) {

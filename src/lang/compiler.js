@@ -7,6 +7,7 @@ exports.getParams = exports.getDependingClasses = exports.getProperty = exports.
 const TonyuRuntime_1 = __importDefault(require("../runtime/TonyuRuntime"));
 const root_1 = __importDefault(require("../lib/root"));
 const CompilerTypes_1 = require("./CompilerTypes");
+const RuntimeTypes_1 = require("../runtime/RuntimeTypes");
 const NONBLOCKSCOPE_DECLPREFIX = "var";
 function isBlockScopeDeclprefix(t) {
     return t && t.text !== NONBLOCKSCOPE_DECLPREFIX;
@@ -195,6 +196,9 @@ function resolvedType2Digest(t) {
     else if ((0, CompilerTypes_1.isNativeClass)(t)) {
         return t.class.name;
     }
+    else if ((0, CompilerTypes_1.isUnionType)(t)) {
+        return { candidates: t.candidates.map(resolvedType2Digest) };
+    }
     else {
         return { element: resolvedType2Digest(t.element) };
     }
@@ -235,8 +239,11 @@ function typeDigest2ResolvedType(d) {
             return { class: root_1.default[d] };
         }
     }
-    else {
+    else if ((0, RuntimeTypes_1.isArrayTypeDigest)(d)) {
         return { element: typeDigest2ResolvedType(d.element) };
+    }
+    else {
+        return { candidates: d.candidates.map(typeDigest2ResolvedType) };
     }
 }
 exports.typeDigest2ResolvedType = typeDigest2ResolvedType;

@@ -270,10 +270,19 @@ module.exports = function PF({ TT }) {
         console.log(left, op);
         throw new Error("Invalid type op type");
     });
+    tExp.mkInfixl((left, op, right) => {
+        if (op.text === "|") {
+            return { type: "unionTypeExpr", left, right };
+        }
+        throw new Error("Invalid type infix op type");
+    });
     const arrayTypePostfix = g("arrayTypePostfix").ands(tk("["), tk("]")).ret();
     const optionalTypePostfix = g("optionalTypePostfix").ands(tk("?")).ret();
-    tExp.postfix(0, arrayTypePostfix);
-    tExp.postfix(0, optionalTypePostfix);
+    prio = 0;
+    tExp.infixl(prio, tk("|"));
+    prio++;
+    tExp.postfix(prio, arrayTypePostfix);
+    tExp.postfix(prio, optionalTypePostfix);
     tExp.element(namedTypeExpr);
     const typeExpr = tExp.build();
     var typeDecl = g("typeDecl").ands(tk(":"), typeExpr).ret(null, "vtype");

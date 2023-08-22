@@ -645,6 +645,15 @@ function genJS(klass, env, genOptions) {
             else if ((0, CompilerTypes_1.isNativeClass)(t)) {
                 buf.printf(t.class.name);
             }
+            else if ((0, CompilerTypes_1.isUnionType)(t)) {
+                buf.printf("{candidates: [%f]}", () => {
+                    for (let c of t.candidates) {
+                        typeToLiteral(c);
+                        buf.printf(", ");
+                    }
+                    ;
+                });
+            }
             else {
                 buf.printf("[%f]", () => typeToLiteral(t.element));
             }

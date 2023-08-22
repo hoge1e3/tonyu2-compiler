@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isMethodType = exports.isMeta = exports.isNativeClass = exports.isArrayType = exports.isMemoryDest = exports.isFileDest = void 0;
+exports.isUnionType = exports.isMethodType = exports.isMeta = exports.isNativeClass = exports.isArrayType = exports.isMemoryDest = exports.isFileDest = void 0;
 function isFileDest(d) {
     return d.file;
 }
@@ -25,3 +25,7 @@ function isMethodType(klass) {
     return klass.method;
 }
 exports.isMethodType = isMethodType;
+function isUnionType(klass) {
+    return klass.candidates;
+}
+exports.isUnionType = isUnionType;

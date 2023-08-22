@@ -274,7 +274,7 @@ export type Throw=NodeBase&{
 export function isThrow(n:TNode):n is Throw {
    return n && n.type==="throw";
 }
-export type TypeExpr=NamedTypeExpr|ArrayTypeExpr;
+export type TypeExpr=NamedTypeExpr|ArrayTypeExpr|UnionTypeExpr;
 export type ArrayTypeExpr=NodeBase&{
     type: "arrayTypeExpr",
     element: TypeExpr;
@@ -289,6 +289,15 @@ export type NamedTypeExpr=NodeBase&{
 export function isNamedTypeExpr(n:TNode):n is NamedTypeExpr {
    return n && n.type==="namedTypeExpr";
 }
+export type UnionTypeExpr=NodeBase&{
+  type: "unionTypeExpr";
+  left: TypeExpr;
+  right: TypeExpr;
+};
+export function isUnionTypeExpr(n:TNode):n is UnionTypeExpr {
+  return n && n.type==="unionTypeExpr";
+}
+
 export type TypeDecl=NodeBase&{
   type: "typeDecl";
   vtype: TypeExpr

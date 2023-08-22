@@ -8,7 +8,7 @@ import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
-import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass } from "./CompilerTypes";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType } from "./CompilerTypes";
 import { ArgList, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { DeclsInDefinition } from "../runtime/RuntimeTypes";
@@ -643,6 +643,13 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				buf.printf("Tonyu.classMetas[%l]",t.fullName);
 			} else if (isNativeClass(t)) {
 				buf.printf(t.class.name);
+			} else if (isUnionType(t)) {
+				buf.printf("{candidates: [%f]}", ()=> {
+					for (let c of t.candidates) {
+						typeToLiteral(c);	
+						buf.printf(", ")
+					};
+				});
 			} else {
 				buf.printf("[%f]",()=>typeToLiteral(t.element));
 			}

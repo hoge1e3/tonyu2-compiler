@@ -8,7 +8,16 @@ export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Extender};
 export function isTonyuClass(v:any):v is TonyuClass {
 	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
-export type TypeDigest=string|{element: TypeDigest};
+export type TypeDigest=string|ArrayTypeDigest|UnionTypeDigest;
+export type ArrayTypeDigest={element: TypeDigest};
+export type UnionTypeDigest={candidates: TypeDigest[]};
+export function isArrayTypeDigest(d:TypeDigest):d is ArrayTypeDigest {
+	return (d as any).element;
+}
+export function isUnionTypeDigest(d:TypeDigest):d is UnionTypeDigest {
+	return (d as any).union;
+}
+
 export type MethodTypeDigest={
 	params?: TypeDigest[], returnValue?: TypeDigest
 };

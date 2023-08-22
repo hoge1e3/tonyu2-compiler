@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"dependingProjects":[{"dir":"../updatable/"}],"outputFile":"js/concat.js","namespace":"user","typeCheck":"true"},"run":{}}, ()=>{
 Tonyu.klass.define({
   fullName: 'user.A',
   shortName: 'A',
@@ -11,16 +13,21 @@ Tonyu.klass.define({
         
         
         
+        _this.ns = 3;
+        
+        console.log(_this.ns.hoge);
         _this.print(Number);
         _this.print(Number);
         console.log(_this.s.length);
       },
       fiber$main :function* _trc_A_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
+        _this.ns = 3;
+        
+        console.log(_this.ns.hoge);
         _this.print(Number);
         _this.print(Number);
         console.log(_this.s.length);
@@ -44,7 +51,6 @@ Tonyu.klass.define({
       },
       fiber$test :function* _trc_A_f_test(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let i = 0;
         let s = 0;
@@ -73,7 +79,7 @@ Tonyu.klass.define({
       __dummy: false
     };
   },
-  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}},"toste":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":"user.A"}},"__setter__e":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"},"print":{},"n":{}}}
+  decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"test":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}},"toste":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":"user.A"}},"__setter__e":{"nowait":true,"isMain":false,"vtype":{"params":["Number"],"returnValue":null}}},"fields":{"x":{"vtype":"Number"},"s":{"vtype":"String"},"ns":{"vtype":{"candidates":["Number","String","user.A"]}},"print":{},"n":{}}}
 });
 Tonyu.klass.define({
   fullName: 'user.Ary',
@@ -91,7 +97,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Ary_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.list = [new Tonyu.classes.user.A];
         
@@ -153,7 +158,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         "external waitable";
         _this.a = new Tonyu.classes.user.A();
@@ -196,7 +200,6 @@ Tonyu.klass.define({
       },
       fiber$print :function* _trc_Main_f_print(_thread,...x) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         console.log(...x);
         
@@ -209,7 +212,6 @@ Tonyu.klass.define({
       },
       fiber$getA :function* _trc_Main_f_getA(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let b;
         return _this.a;
@@ -223,7 +225,6 @@ Tonyu.klass.define({
       },
       fiber$func :function* _trc_Main_f_func(_thread,...a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         a.push("fuga");
         (yield* _this.fiber$print(_thread, "FUNC", ...a));
@@ -233,6 +234,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"print":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"getA":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":"user.A"}},"func":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{"a":{"vtype":"user.A"},"n":{"vtype":"Number"},"s":{"vtype":"String"},"r":{"vtype":"user.A"},"alist":{"vtype":{"element":"user.A"}}}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map

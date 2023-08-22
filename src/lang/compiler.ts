@@ -1,8 +1,8 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
-import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, NativeClass } from "./CompilerTypes";
-import { DeclsInDefinition, Meta, ShimMeta, TypeDigest } from "../runtime/RuntimeTypes";
+import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, isUnionType, NativeClass } from "./CompilerTypes";
+import { DeclsInDefinition, Meta, ShimMeta, TypeDigest, isArrayTypeDigest } from "../runtime/RuntimeTypes";
 import { Token } from "./parser";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
@@ -146,6 +146,8 @@ import { Token } from "./parser";
 			return t.fullName;
 		} else if (isNativeClass(t)) {
 			return t.class.name;
+		} else if (isUnionType(t)) {
+			return {candidates: t.candidates.map(resolvedType2Digest)};
 		} else {
 			return {element: resolvedType2Digest(t.element)};
 		}
@@ -183,8 +185,10 @@ import { Token } from "./parser";
 			} else if (root[d]) {
 				return {class: root[d]};
 			}	
-		} else {
+		} else if (isArrayTypeDigest(d)) {
 			return {element: typeDigest2ResolvedType(d.element)};
+		} else {
+			return {candidates: d.candidates.map(typeDigest2ResolvedType)};
 		}
 	}
 	export function getField(klass: C_Meta, name: string){
