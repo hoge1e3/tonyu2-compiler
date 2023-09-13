@@ -187,16 +187,16 @@ exports.getSource = getSource;
     }
 }*/
 function resolvedType2Digest(t) {
-    if ((0, CompilerTypes_1.isMethodType)(t)) {
+    if (CompilerTypes_1.isMethodType(t)) {
         return `${t.method.klass.fullName}.${t.method.name}()`;
     }
-    else if ((0, CompilerTypes_1.isMeta)(t)) {
+    else if (CompilerTypes_1.isMeta(t)) {
         return t.fullName;
     }
-    else if ((0, CompilerTypes_1.isNativeClass)(t)) {
+    else if (CompilerTypes_1.isNativeClass(t)) {
         return t.class.name;
     }
-    else if ((0, CompilerTypes_1.isUnionType)(t)) {
+    else if (CompilerTypes_1.isUnionType(t)) {
         return { candidates: t.candidates.map(resolvedType2Digest) };
     }
     else {
@@ -239,7 +239,7 @@ function typeDigest2ResolvedType(d) {
             return { class: root_1.default[d] };
         }
     }
-    else if ((0, RuntimeTypes_1.isArrayTypeDigest)(d)) {
+    else if (RuntimeTypes_1.isArrayTypeDigest(d)) {
         return { element: typeDigest2ResolvedType(d.element) };
     }
     else {
