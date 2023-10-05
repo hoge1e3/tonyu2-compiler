@@ -17,7 +17,7 @@ const tokenizerFactory_1 = require("./tokenizerFactory");
 module.exports = function PF({ TT }) {
     //var p:any=Parser;
     var $ = {};
-    var g = Grammar_1.default(parser_1.TokensParser.context);
+    var g = (0, Grammar_1.default)(parser_1.TokensParser.context);
     var G = g.get;
     var tk = parser_1.TokensParser.token;
     function disp(n) { return JSON.stringify(n); }
@@ -74,7 +74,7 @@ module.exports = function PF({ TT }) {
     function comLastOpt(p) {
         return p.sep0(tk(",")).and(tk(",").opt()).retN(0).setName(`(comLastOpt ${p.name})`, { type: "rept", elem: p });
     }
-    var e = ExpressionParser2_1.ExpressionParser(parser_1.TokensParser.context);
+    var e = (0, ExpressionParser2_1.ExpressionParser)(parser_1.TokensParser.context);
     var explz = e.lazy(); //.firstTokens(ALL);
     const dottableExpr = explz.or(tk("...").and(explz).ret((_, e) => ({ type: "dotExpr", expr: e })));
     var arrayElem = g("arrayElem").ands(tk("["), explz, tk("]")).ret(null, "subscript");
@@ -83,8 +83,9 @@ module.exports = function PF({ TT }) {
     var parenExpr = g("parenExpr").ands(tk("("), explz, tk(")")).ret(null, "expr");
     var varAccess = g("varAccess").ands(symbol).ret("name");
     // _l = _lazy
-    var funcExpr_l = G("funcExpr").firstTokens(["function", "\\"]);
-    var funcExprArg = g("funcExprArg").ands(funcExpr_l).ret("obj");
+    var funcExpr_l = G("funcExpr").firstTokens(["function", "\\", "("]);
+    var nonArrowFuncExpr_l = G("nonArrowFuncExpr").firstTokens(["function", "\\"]);
+    var funcExprArg = g("funcExprArg").ands(nonArrowFuncExpr_l).ret("obj");
     var objlit_l = G("objlit").firstTokens("{");
     var objlitArg = g("objlitArg").ands(objlit_l).ret("obj");
     var objOrFuncArg = g("objOrFuncArg").ors(objlitArg, funcExprArg);
@@ -95,15 +96,15 @@ module.exports = function PF({ TT }) {
             throw disp(argList);
         }
         if (argList) {
-            var rg = parser_1.getRange(argList);
-            parser_1.addRange(res, rg);
+            var rg = (0, parser_1.getRange)(argList);
+            (0, parser_1.addRange)(res, rg);
             argList.args.forEach(function (arg) {
                 res.push(arg);
             });
         }
         oof.forEach(function (o) {
-            var rg = parser_1.getRange(o);
-            parser_1.addRange(res, rg);
+            var rg = (0, parser_1.getRange)(o);
+            (0, parser_1.addRange)(res, rg);
             res.push(o.obj);
         });
         return res;
@@ -136,10 +137,10 @@ module.exports = function PF({ TT }) {
     e.element(regex);
     e.element(literal);
     e.element(backquoteLiteral);
+    e.element(funcExpr_l);
     e.element(parenExpr);
     e.element(newExpr);
     e.element(superExpr);
-    e.element(funcExpr_l);
     e.element(objlit_l);
     e.element(G("arylit").firstTokens("["));
     e.element(varAccess);
@@ -209,7 +210,7 @@ module.exports = function PF({ TT }) {
     e.postfix(prio, arrayElem);
     function mki(left, op, right) {
         const res = { type: "infix", left, op, right };
-        parser_1.setRange(res);
+        (0, parser_1.setRange)(res);
         res.toString = function () {
             return "(" + left + op + right + ")";
         };
@@ -259,7 +260,7 @@ module.exports = function PF({ TT }) {
     var trys = g("try").ands(tk("try"), "stmt", catches.rep1()).ret(null, "stmt", "catches");
     var throwSt = g("throw").ands(tk("throw"), expr, tk(";")).ret(null, "ex");
     const namedTypeExpr = g("namedTypeExpr").ands(symbol).ret("name");
-    const tExp = ExpressionParser2_1.ExpressionParser(parser_1.TokensParser.context);
+    const tExp = (0, ExpressionParser2_1.ExpressionParser)(parser_1.TokensParser.context);
     tExp.mkPostfix((left, op) => {
         if (op.type === "arrayTypePostfix") {
             //console.log("ARRAYTYPE",left,op);
@@ -302,7 +303,7 @@ module.exports = function PF({ TT }) {
     const stmt_built = g("stmt").ors("return", "if", "for", "while", "do", "break", "continue", "switch", "ifWait", "try", "throw", "nativeDecl", "funcDecl", "compound", "exprstmt", "varsDecl", "empty");
     // ------- end of stmts
     g("funcExprHead").ands(tk("function").or(tk("\\")), symbol.opt(), paramDecls.opt()).ret(null, "name", "params");
-    const nonArrowfuncExpr = g("nonArrowFuncExpr").ands("funcExprHead", "compound").ret("head", "body");
+    const nonArrowFuncExpr = g("nonArrowFuncExpr").ands("funcExprHead", "compound").ret("head", "body");
     const arrowFuncExpr = g("arrowFuncExpr").ands(tk("\\").opt(), paramDecls, tk("=>"), expr).ret(null, "params", null, "retVal");
     const funcExpr = g("funcExpr").ors("nonArrowFuncExpr", "arrowFuncExpr");
     var jsonElem = g("jsonElem").ands(symbol.or(literal), tk(":").or(tk("=")).and(expr).retN(1).opt()).ret("key", "value");
@@ -332,7 +333,7 @@ module.exports = function PF({ TT }) {
         if (!tokenRes.isSuccess()) {
             //return "ERROR\nToken error at "+tokenRes.src.maxPos+"\n"+
             //	str.substring(0,tokenRes.src.maxPos)+"!!HERE!!"+str.substring(tokenRes.src.maxPos);
-            throw TError_1.default(R_1.default("lexicalError") + ": " + tokenRes.error, file, tokenRes.src.maxErrors.pos);
+            throw (0, TError_1.default)((0, R_1.default)("lexicalError") + ": " + tokenRes.error, file, tokenRes.src.maxErrors.pos);
         }
         var tokens = tokenRes.result[0];
         //console.log("Tokens: "+tokens.join(","));
@@ -351,7 +352,7 @@ module.exports = function PF({ TT }) {
         var lt = tokens[maxErrors.pos];
         var mp = (lt ? lt.pos : str.length);
         const len = (lt ? lt.len : 0);
-        throw TError_1.default(R_1.default("parseError") + `: ${maxErrors.errors.join(", ")}`, file, mp, len);
+        throw (0, TError_1.default)((0, R_1.default)("parseError") + `: ${maxErrors.errors.join(", ")}`, file, mp, len);
         /*return "ERROR\nSyntax error at "+mp+"\n"+
         str.substring(0,mp)+"!!HERE!!"+str.substring(mp);*/
     };

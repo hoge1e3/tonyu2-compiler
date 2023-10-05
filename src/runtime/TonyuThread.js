@@ -72,7 +72,7 @@ class TonyuThread {
         if (typeof methodName == "string") {
             method = obj["fiber$" + methodName];
             if (!method) {
-                throw new Error(R_1.default("undefinedMethod", methodName));
+                throw new Error((0, R_1.default)("undefinedMethod", methodName));
             }
         }
         if (typeof methodName == "function") {
@@ -80,7 +80,7 @@ class TonyuThread {
             method = fmethod.fiber;
             if (!method) {
                 var n = fmethod.methodInfo ? fmethod.methodInfo.name : fmethod.name;
-                throw new Error(R_1.default("notAWaitableMethod", n));
+                throw new Error((0, R_1.default)("notAWaitableMethod", n));
             }
         }
         args = [this].concat(args);

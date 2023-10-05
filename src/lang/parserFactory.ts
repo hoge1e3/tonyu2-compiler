@@ -83,8 +83,9 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	var parenExpr = g("parenExpr").ands(tk("("), explz , tk(")")).ret(null,"expr");
 	var varAccess = g("varAccess").ands(symbol).ret("name");
 	// _l = _lazy
-	var funcExpr_l=G("funcExpr").firstTokens(["function","\\"]);
-	var funcExprArg=g("funcExprArg").ands(funcExpr_l).ret("obj");
+	var funcExpr_l=G("funcExpr").firstTokens(["function","\\","("]);
+	var nonArrowFuncExpr_l=G("nonArrowFuncExpr").firstTokens(["function","\\"]);
+	var funcExprArg=g("funcExprArg").ands(nonArrowFuncExpr_l).ret("obj");
 	var objlit_l=G("objlit").firstTokens("{");
 	var objlitArg=g("objlitArg").ands(objlit_l).ret("obj");
 	var objOrFuncArg=g("objOrFuncArg").ors(objlitArg, funcExprArg);
@@ -138,10 +139,10 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	e.element(regex);
 	e.element(literal);
 	e.element(backquoteLiteral);
+	e.element(funcExpr_l);
 	e.element(parenExpr);
 	e.element(newExpr);
 	e.element(superExpr);
-	e.element(funcExpr_l);
 	e.element(objlit_l);
 	e.element(G("arylit").firstTokens("["));
 	e.element(varAccess);
@@ -311,7 +312,7 @@ export= function PF({TT}:{TT:Tokenizer}) {
 	const stmt_built=g("stmt").ors("return", "if", "for", "while", "do","break", "continue", "switch","ifWait","try", "throw","nativeDecl", "funcDecl", "compound", "exprstmt", "varsDecl","empty");
 	// ------- end of stmts
 	g("funcExprHead").ands(tk("function").or(tk("\\")), symbol.opt() ,paramDecls.opt() ).ret(null,"name","params");
-	const nonArrowfuncExpr=g("nonArrowFuncExpr").ands("funcExprHead","compound").ret("head","body");
+	const nonArrowFuncExpr=g("nonArrowFuncExpr").ands("funcExprHead","compound").ret("head","body");
 	const arrowFuncExpr=g("arrowFuncExpr").ands(tk("\\").opt(), paramDecls , tk("=>"), expr).ret(null, "params",null, "retVal");
 	const funcExpr=g("funcExpr").ors("nonArrowFuncExpr","arrowFuncExpr");
 	var jsonElem=g("jsonElem").ands(

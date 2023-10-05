@@ -280,8 +280,11 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		arylit: function (node:Arylit) {
 			buf.printf("[%j]", [",", node.elems]);
 		},
-		funcExpr: function (node: FuncExpr) {
-			genFuncExpr(node);
+		nonArrowFuncExpr: function (node: NonArrowFuncExpr) {
+			genNonArrowFuncExpr(node);
+		},
+		arrowFuncExpr: function (node: ArrowFuncExpr) {
+			genArrowFuncExpr(node);
 		},
 		parenExpr: function (node:ParenExpr) {
 			buf.printf("(%v)",node.expr);
@@ -843,13 +846,6 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		}
 	}
 	
-	function genFuncExpr(node:FuncExpr) {//G
-		if (isArrowFuncExpr(node)) {
-			return genArrowFuncExpr(node);
-		} else {
-			return genNonArrowFuncExpr(node);
-		}
-	}
 	function genArrowFuncExpr(node:ArrowFuncExpr) {	
 		const finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
 		if (!isArrowFuncInfo(finfo)) {

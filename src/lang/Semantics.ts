@@ -12,7 +12,7 @@ import * as cu from "./compiler";
 import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr, isArrowFuncExpr, ArrowFuncExpr} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr, isArrowFuncExpr, ArrowFuncExpr, NonArrowFuncExpr} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { AnnotatedType, Annotation, ArrayType, ArrowFuncInfo, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType, NonArrowFuncInfo, UnionType, isNonArrowFuncInfo, isUnionType } from "./CompilerTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler";
@@ -154,7 +154,9 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 			},
 			funcDecl: function (node:FuncDecl) {//-- Unify later
 			},
-			funcExpr: function (node:FuncExpr) {
+			nonArrowfuncExpr: function (node:NonArrowFuncInfo) {
+			},
+			arrowfuncExpr: function (node:ArrowFuncExpr) {
 			},
 			"catch": function (node:Catch) {
 			},
@@ -488,8 +490,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			ctx.locals.subFuncDecls[node.head.name.text]=node;
 			//initParamsLocals(node);??
 		},
-		funcExpr: function (node: FuncExpr) {/*FEIGNORE*/
+		nonArrowfuncExpr: function (node: NonArrowFuncExpr) {/*FEIGNORE*/
 			//initParamsLocals(node);??
+		},
+		arroFuncExpr: function (node: ArrowFuncExpr) {/*FEIGNORE*/
+		//initParamsLocals(node);??
 		},
 		"catch": function (node: Catch) {
 			ctx.locals.varDecls[node.name.text]=node;
@@ -540,8 +545,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		},
 		funcDecl: function (node:FuncDecl) {/*FDITSELFIGNORE*/
 		},
-		funcExpr: function (node:FuncExpr) {/*FEIGNORE*/
-			annotateSubFuncExpr(node);
+		nonArrowFuncExpr: function (node:NonArrowFuncExpr) {/*FEIGNORE*/
+			annotateNonArrowSubFuncExpr(node);
+		},
+		arrowFuncExpr: function (node:ArrowFuncExpr) {/*FEIGNORE*/
+			annotateArrowFuncExpr(node);
 		},
 		objlit:function (node: Objlit) {
 			var t=this;
@@ -915,12 +923,13 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	}
 	function annotateArrowFuncExpr(node:ArrowFuncExpr):ArrowFuncInfo {
 		var m:any,ps:ParamDecl[];
-		m=OM.match( node, {head:{params:{params:OM.P}}});
+		m=OM.match( node, {params:{params:OM.P}});
 		if (m) {
 			ps=m.P;
 		} else {
 			ps=[];
 		}
+		//console.log("Arrow params ",ps, node);
 		const finfo:ArrowFuncInfo={klass, retVal: node.retVal, nowait:true};
 		var ns=newScope(ctx.scope);
 		//var locals;
@@ -938,11 +947,11 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		annotation(node,{funcInfo:finfo});
 		return finfo;
 	}
-	function annotateSubFuncExpr(node: FuncExpr|FuncDecl):FuncInfo {// annotateSubFunc or FuncExpr
+	function annotateNonArrowSubFuncExpr(node: NonArrowFuncExpr|FuncDecl):FuncInfo {// annotateSubFunc or FuncExpr
 		var m:any,ps:ParamDecl[];
-		if (isArrowFuncExpr(node)) {
+		/*if (isArrowFuncExpr(node)) {
 			return annotateArrowFuncExpr(node);
-		}
+		}*/
 		const body=node.body;
 		var name=(node.head.name ? node.head.name.text : "anonymous_"+node.pos );
 		m=OM.match( node, {head:{params:{params:OM.P}}});
@@ -971,13 +980,13 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		finfo.paramTypes=resolveTypesOfParams(finfo.params);
 		//annotation(node,res);
 		annotation(node,{funcInfo:finfo});
-		annotateSubFuncExprs(finfo.locals!, ns);
+		annotateNonArrowSubFuncExprs(finfo.locals!, ns);
 		return finfo;
 	}
-	function annotateSubFuncExprs(locals:Locals, scope:ScopeMap) {//S
+	function annotateNonArrowSubFuncExprs(locals:Locals, scope:ScopeMap) {//S
 		ctx.enter({scope}, function () {
 			for (var n in locals.subFuncDecls) {
-				annotateSubFuncExpr(locals.subFuncDecls[n]);
+				annotateNonArrowSubFuncExpr(locals.subFuncDecls[n]);
 			}
 		});
 	}
@@ -999,7 +1008,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotateVarAccesses(f.stmts, ns);
 		});
 		f.scope=ns;
-		annotateSubFuncExprs(f.locals!, ns);
+		annotateNonArrowSubFuncExprs(f.locals!, ns);
 		return ns;
 	}
 	function annotateSource() {//S
