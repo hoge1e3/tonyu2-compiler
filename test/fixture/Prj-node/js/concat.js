@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"dependingProjects":[{"dir":"../updatable/"}],"outputFile":"js/concat.js","namespace":"user"},"run":{}}, ()=>{
 Tonyu.klass.define({
   fullName: 'user.Excludes',
   shortName: 'Excludes',
@@ -6,28 +8,22 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Excludes_main() {
-        "use strict";
         var _this=this;
         
       },
       fiber$main :function* _trc_Excludes_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
       man :function _trc_Excludes_man() {
-        "use strict";
         var _this=this;
         
         _this.console.log("Excludes:man");
         return 30;
       },
       fiber$man :function* _trc_Excludes_f_man(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.console.log("Excludes:man");
         return 30;
@@ -47,7 +43,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Main_main() {
-        "use strict";
         var _this=this;
         
         _this.s=new Set;
@@ -72,9 +67,7 @@ Tonyu.klass.define({
         Tonyu.globals.$restart();
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.s=new Set;
         _this.s.add(5);
@@ -112,7 +105,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Chara_main() {
-        "use strict";
         var _this=this;
         
         _this.y=__superClass.prototype.man.apply( _this, []);
@@ -129,9 +121,7 @@ Tonyu.klass.define({
         }
       },
       fiber$main :function* _trc_Chara_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.y=(yield* __superClass.prototype.fiber$man.apply( _this, [_thread]));
         _this.x=100;
@@ -148,7 +138,6 @@ Tonyu.klass.define({
         
       },
       a :function _trc_Chara_a() {
-        "use strict";
         var _this=this;
         
         while (true) {
@@ -158,37 +147,30 @@ Tonyu.klass.define({
         }
       },
       move :function _trc_Chara_move() {
-        "use strict";
         var _this=this;
         
         _this.x+=10;
       },
       fiber$move :function* _trc_Chara_f_move(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.x+=10;
         
       },
       man :function _trc_Chara_man() {
-        "use strict";
         var _this=this;
         
         console.log("Chara:man");
         return 10;
       },
       fiber$man :function* _trc_Chara_f_man(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         console.log("Chara:man");
         return 10;
         
       },
       men :function _trc_Chara_men() {
-        "use strict";
         var _this=this;
         
         _this.man();
@@ -198,9 +180,7 @@ Tonyu.klass.define({
         _this.man();
       },
       fiber$men :function* _trc_Chara_f_men(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$man(_thread));
         if (! _this.test) {
@@ -223,7 +203,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Field_main() {
-        "use strict";
         var _this=this;
         
         Tonyu.globals.$Boot.autoReload=(function anonymous_129(e) {
@@ -235,9 +214,7 @@ Tonyu.klass.define({
         new _this.BodyActor({isStatic: true,x: 307,y: 50,width: 10,height: 200,fillStyle: "#8f8"});
       },
       fiber$main :function* _trc_Field_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         Tonyu.globals.$Boot.autoReload=(function anonymous_129(e) {
           
@@ -262,7 +239,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Preya_main() {
-        "use strict";
         var _this=this;
         
         _this.man();
@@ -287,9 +263,7 @@ Tonyu.klass.define({
         console.log("Men end");
       },
       fiber$main :function* _trc_Preya_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$man(_thread));
         _this.x=0;
@@ -314,16 +288,13 @@ Tonyu.klass.define({
         
       },
       man :function _trc_Preya_man() {
-        "use strict";
         var _this=this;
         
         _this.y=__superClass.prototype.man.apply( _this, []);
         console.log("Preya::Man",_this.y);
       },
       fiber$man :function* _trc_Preya_f_man(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.y=(yield* __superClass.prototype.fiber$man.apply( _this, [_thread]));
         console.log("Preya::Man",_this.y);
@@ -333,6 +304,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"man":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map

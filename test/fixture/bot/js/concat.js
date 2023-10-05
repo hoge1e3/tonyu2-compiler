@@ -650,16 +650,10 @@ Tonyu.klass.define({
         let actions = state.actionsEvents(ctx);
         
         if (state.nextIsEvent(ctx)) {
-          return actions.map((function anonymous_778() {
-            
-            return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
-          }));
+          return actions.map((()=>({q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh})));
           
         }
-        return actions.map((function anonymous_858() {
-          
-          return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
-        }));
+        return actions.map((()=>({q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()})));
       },
       fiber$initNodeValues :function* _trc_MCTSBot_f_initNodeValues(_thread,ctx,state) {
         var _this=this;
@@ -667,16 +661,10 @@ Tonyu.klass.define({
         let actions = state.actionsEvents(ctx);
         
         if (state.nextIsEvent(ctx)) {
-          return actions.map((function anonymous_778() {
-            
-            return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh};
-          }));
+          return actions.map((()=>({q: new Tonyu.classes.bot.Rational(0,0),n: _this.expandThresh})));
           
         }
-        return actions.map((function anonymous_858() {
-          
-          return {q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()};
-        }));
+        return actions.map((()=>({q: new Tonyu.classes.bot.Rational(0,0),n: _this.rnd()})));
         
       },
       expand :function _trc_MCTSBot_expand(ctx,node) {
@@ -694,7 +682,7 @@ Tonyu.klass.define({
         }
         let vals = _this.initNodeValues(ctx,s);
         
-        node.subnodes=vals.map((function anonymous_1305(r,i) {
+        node.subnodes=vals.map((function anonymous_1295(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -721,7 +709,7 @@ Tonyu.klass.define({
         }
         let vals=yield* _this.fiber$initNodeValues(_thread, ctx, s);
         
-        node.subnodes=vals.map((function anonymous_1305(r,i) {
+        node.subnodes=vals.map((function anonymous_1295(r,i) {
           
           let res = {parent: node,q: r.q,n: r.n,subnodes: null};
           
@@ -1069,10 +1057,7 @@ Tonyu.klass.define({
             if (performance.now()-stime>3000) {
               let ap = _this.actionPath(ctx,leaf);
               
-              _this.print("Progress: iter=",_this.iterated,"/",iteration," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5371(a) {
-                
-                return Tonyu.globals.$JSON.stringify(a);
-              })).join("->"));
+              _this.print("Progress: iter=",_this.iterated,"/",iteration," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map(((a)=>(Tonyu.globals.$JSON.stringify(a)))).join("->"));
               stime+=3000;
               
             }
@@ -1191,10 +1176,7 @@ Tonyu.klass.define({
             if (performance.now()-stime>3000) {
               let ap=yield* _this.fiber$actionPath(_thread, ctx, leaf);
               
-              _this.print("Progress: iter=",_this.iterated,"/",iteration," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map((function anonymous_5371(a) {
-                
-                return Tonyu.globals.$JSON.stringify(a);
-              })).join("->"));
+              _this.print("Progress: iter=",_this.iterated,"/",iteration," exp=",_this.expcount," Mem= "+(mu&&mu.heapUsed+"/"+mu.heapTotal)+" Path= "+ap.map(((a)=>(Tonyu.globals.$JSON.stringify(a)))).join("->"));
               stime+=3000;
               
             }

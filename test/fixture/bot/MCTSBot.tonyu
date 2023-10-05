@@ -32,9 +32,9 @@ let os;
 \initNodeValues(ctx, state) {
     let actions=state.actionsEvents(ctx);
     if (state.nextIsEvent(ctx)) {
-        return actions.map\{return {q:new Rational(0,0), n:expandThresh};};
+        return actions.map(()=>{q:new Rational(0,0), n:expandThresh});
     }
-    return actions.map\{return {q:new Rational(0,0), n:rnd()};};
+    return actions.map(()=>{q:new Rational(0,0), n:rnd()});
 }
 \expand(ctx:Context, node) {
     /*var sk=s.id();
@@ -186,7 +186,7 @@ let os;
             let ap=actionPath(ctx,leaf);
             print("Progress: iter=", iterated,"/",iteration, " exp=" ,expcount, " Mem= "+(
                 mu&&mu.heapUsed+"/"+mu.heapTotal
-            )+" Path= "+ap.map\(a){return $JSON.stringify(a);}.join("->"));
+            )+" Path= "+ap.map((a)=>$JSON.stringify(a)).join("->"));
             //print(ap);
             stime+=3000;
         }

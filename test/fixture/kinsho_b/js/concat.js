@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"namespace":"user","defaultSuperClass":"kernel.Actor","dependingProjects":[{"namespace":"kernel"},{"dir":"../bot/"}],"noLoopCheck":true,"field_strict":true,"typeCheck":true},"run":{"mainClass":"user.Main","bootClass":"kernel.Boot","globals":{"$defaultFPS":60,"$imageSmoothingDisabled":true,"$soundLoadAndDecode":false}},"plugins":{},"kernelEditable":false,"language":"tonyu","version":1658553334869}, ()=>{
 Tonyu.klass.define({
   fullName: 'user.Board',
   shortName: 'Board',
@@ -14,7 +16,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Board_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -35,7 +36,6 @@ Tonyu.klass.define({
       },
       fiber$next :function* _trc_Board_f_next(_thread,ctx,a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let nm = _this.mat.clone();
         
@@ -88,7 +88,6 @@ Tonyu.klass.define({
       },
       fiber$actionsEvents :function* _trc_Board_f_actionsEvents(_thread,ctx) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let res = [];
         
@@ -133,7 +132,6 @@ Tonyu.klass.define({
       },
       fiber$gameover :function* _trc_Board_f_gameover(_thread,ctx) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.actionsEvents(ctx).length==0;
         
@@ -157,7 +155,6 @@ Tonyu.klass.define({
       },
       fiber$toString :function* _trc_Board_f_toString(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let buf = "";
         let py = 0;
@@ -220,6 +217,7 @@ Tonyu.klass.define({
           for (let i = 0;
            i<turn ; i++) {
             {
+              _this.print(replay.state+"");
               replay.step();
             }
           }
@@ -240,7 +238,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         "field strict";
         if (! process.argv[10]) {
@@ -272,6 +269,7 @@ Tonyu.klass.define({
           for (let i = 0;
            i<turn ; i++) {
             {
+              _this.print(replay.state+"");
               replay.step();
             }
           }
@@ -313,7 +311,6 @@ Tonyu.klass.define({
       },
       fiber$botParameter :function* _trc_Main_f_botParameter(_thread,player) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var bot;
         
         
@@ -356,7 +353,6 @@ Tonyu.klass.define({
       },
       fiber$value :function* _trc_Main_f_value(_thread,ctx,player,state) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let acts = state.actionsEvents(ctx);
         
@@ -405,7 +401,6 @@ Tonyu.klass.define({
       },
       fiber$initBoard :function* _trc_Main_f_initBoard(_thread,context) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let mat = new Tonyu.classes.kernel.Matrix;
         
@@ -456,7 +451,6 @@ Tonyu.klass.define({
       },
       fiber$match :function* _trc_Main_f_match(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let context = new Tonyu.classes.bot.Context({players: [1,2],bots: _this.bots});
         
@@ -483,6 +477,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"botParameter":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"value":{"nowait":false,"isMain":false,"vtype":{"params":["bot.Context","Number","user.Board"],"returnValue":null}},"initBoard":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}},"match":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"player1":{},"player2":{},"bots":{},"komas":{},"replayFile":{}}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map
