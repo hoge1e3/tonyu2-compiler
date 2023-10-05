@@ -1,8 +1,8 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import root from "../lib/root";
 import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
-import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, isUnionType, NativeClass } from "./CompilerTypes";
-import { DeclsInDefinition, Meta, ShimMeta, TypeDigest, isArrayTypeDigest } from "../runtime/RuntimeTypes";
+import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, isUnionType, NativeClass, NonArrowFuncInfo } from "./CompilerTypes";
+import { DeclsInDefinition, Meta, MethodInfo, ShimMeta, TypeDigest, isArrayTypeDigest } from "../runtime/RuntimeTypes";
 import { Token } from "./parser";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
@@ -44,7 +44,7 @@ import { Token } from "./parser";
 		}
 		export class METHOD{
 			type=ScopeTypes.METHOD;
-			constructor(public klass:string, public name:string , public info:FuncInfo){}
+			constructor(public klass:string, public name:string , public info:NonArrowFuncInfo){}
 		}
 		export class THVAR {
 			type=ScopeTypes.THVAR;
@@ -204,8 +204,8 @@ import { Token } from "./parser";
 		}
 		return res;
 	}
-	export function getMethod(klass: C_Meta,name:string) {//B
-		let res:FuncInfo=null;
+	export function getMethod(klass: C_Meta,name:string):NonArrowFuncInfo {//B
+		let res:NonArrowFuncInfo=null;
 		for (let k of getDependingClasses(klass)) {
 			if (res) break;
 			res=k.decls.methods[name];

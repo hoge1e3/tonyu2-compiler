@@ -8,8 +8,8 @@ import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
-import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType } from "./CompilerTypes";
-import { ArgList, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, JsonElem, NewExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType, NonArrowFuncInfo, isNonArrowFuncInfo, isArrowFuncInfo } from "./CompilerTypes";
+import { ArgList, ArrowFuncExpr, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, isArrowFuncExpr, JsonElem, NewExpr, NonArrowFuncExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { DeclsInDefinition } from "../runtime/RuntimeTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
@@ -742,8 +742,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				});
 				if (debug) console.log("method2", name);
 				if (!method.nowait ) {
+					const naMethod=method as NonArrowFuncInfo;
 					ctx.enter({noWait:false,threadAvail:true}, function () {
-						genFiber(method);
+						genFiber(naMethod);
 					});
 				}
 				if (debug) console.log("method3", name);
@@ -785,7 +786,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		}
 		return res;
 	}
-	function genFiber(fiber: FuncInfo) {//G
+	function genFiber(fiber: NonArrowFuncInfo) {//G
 		if (isConstructor(fiber)) return;
 		var stmts=fiber.stmts;
 		var noWaitStmts=[],  curStmts=noWaitStmts;
@@ -816,7 +817,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			});
 		}
 	}
-	function genFunc(func:FuncInfo) {//G
+	function genFunc(func:NonArrowFuncInfo) {//G
 		var fname= isConstructor(func) ? "initialize" : func.name;
 		if (!func.params) {//TODO
 			console.log("MYSTERY",func.params);
@@ -841,8 +842,34 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			});
 		}
 	}
+	
 	function genFuncExpr(node:FuncExpr) {//G
-		var finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (isArrowFuncExpr(node)) {
+			return genArrowFuncExpr(node);
+		} else {
+			return genNonArrowFuncExpr(node);
+		}
+	}
+	function genArrowFuncExpr(node:ArrowFuncExpr) {	
+		const finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (!isArrowFuncInfo(finfo)) {
+			throw new Error("NonArrow func info!");
+		}
+		buf.printf("((%j)=>(%f))",
+					[",", finfo.params],fbody,
+		);
+		function fbody() {
+			ctx.enter({noWait: true, threadAvail:false,
+				finfo:finfo, /*scope: finfo.scope*/ }, function () {
+				printf("%v", node.retVal);
+			});
+		}
+	}
+	function genNonArrowFuncExpr(node:NonArrowFuncExpr) {//G
+		const finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (!isNonArrowFuncInfo(finfo)) {
+			throw new Error("Arrow func info!");
+		}
 		buf.printf("(function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
@@ -878,6 +905,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	}
 	function genSubFunc(node: FuncDecl) {//G
 		var finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (!isNonArrowFuncInfo(finfo)) {
+			throw new Error("Arrow func info!");
+		}
 		buf.printf("function %s(%j) {%{"+
 						"%f%n"+
 						"%f"+
@@ -895,7 +925,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			});
 		}
 	}
-	function genLocalsF(finfo:FuncInfo) {//G
+	function genLocalsF(finfo:NonArrowFuncInfo) {//G
 		return f;
 		function f() {
 			ctx.enter({/*scope:finfo.scope*/}, function (){

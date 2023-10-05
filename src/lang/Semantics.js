@@ -936,7 +936,9 @@ function annotateSource2(klass, env) {
     function initParamsLocals(f) {
         //console.log("IS_MAIN", f, f.name, f.isMain);
         ctx.enter({ isMain: f.isMain, finfo: f }, function () {
-            f.locals = collectLocals(f.stmts);
+            if (CompilerTypes_1.isNonArrowFuncInfo(f)) {
+                f.locals = collectLocals(f.stmts);
+            }
             f.params = getParams(f);
         });
         //if (!f.params) throw new Error("f.params is not inited");
@@ -965,9 +967,38 @@ function annotateSource2(klass, env) {
             }
         }
     }
+    function annotateArrowFuncExpr(node) {
+        var m, ps;
+        m = OM.match(node, { head: { params: { params: OM.P } } });
+        if (m) {
+            ps = m.P;
+        }
+        else {
+            ps = [];
+        }
+        const finfo = { klass, retVal: node.retVal, nowait: true };
+        var ns = newScope(ctx.scope);
+        //var locals;
+        ctx.enter({ finfo }, function () {
+            ps.forEach(function (p) {
+                var si = new SI.PARAM(finfo);
+                annotation(p, { scopeInfo: si });
+                ns[p.name.text] = si;
+            });
+            ctx.enter({ scope: ns }, () => varAccessesAnnotator.visit(node.retVal));
+        });
+        finfo.scope = ns;
+        finfo.params = ps;
+        finfo.paramTypes = resolveTypesOfParams(finfo.params);
+        annotation(node, { funcInfo: finfo });
+        return finfo;
+    }
     function annotateSubFuncExpr(node) {
         var m, ps;
-        var body = node.body;
+        if (NodeTypes_1.isArrowFuncExpr(node)) {
+            return annotateArrowFuncExpr(node);
+        }
+        const body = node.body;
         var name = (node.head.name ? node.head.name.text : "anonymous_" + node.pos);
         m = OM.match(node, { head: { params: { params: OM.P } } });
         if (m) {

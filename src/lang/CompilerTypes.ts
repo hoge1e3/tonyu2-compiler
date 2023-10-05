@@ -1,7 +1,7 @@
 import { Constructor, FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
 import { IndentBuffer } from "./IndentBuffer";
-import { Catch, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes";
+import { Catch, Expr, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes";
 import { Token } from "./parser";
 
 export type C_MetaMap={[key: string]:C_Meta};
@@ -62,7 +62,7 @@ type MemoryDest={
 export function isMemoryDest(d:Destinations):d is MemoryDest  {
 	return (d as any).memory;
 }
-export type Methods={[key: string]: FuncInfo};
+export type Methods={[key: string]: NonArrowFuncInfo};
 export type Locals={
 	varDecls: {[key: string]:VarDecl},
 	subFuncDecls: {[key: string]:FuncDecl},
@@ -73,7 +73,7 @@ export type C_FieldInfo=FieldInfo & {
 	resolvedType?: AnnotatedType,
 };
 export type C_Decls={
-	methods: {[key:string]: FuncInfo},
+	methods: {[key:string]: NonArrowFuncInfo},
 	fields:  {[key:string]: C_FieldInfo},
 	natives: object,
 	amds: object,
@@ -104,28 +104,40 @@ export type ScopeMap={[key:string]: ScopeInfo};
 	params?: ParamDecl[],
 	useArgs?:boolean,
 };*/
-export type FuncInfo={// also includes Method
+export type FuncInfoBase={// also includes Method
 	klass: C_Meta,
 	node?: FuncDecl,
 	head?: FuncDeclHead,
 	ftype?:string,//"function"|"fiber"|"constructor"|"\\",
-	//klass?: string,
-	name: string, //pos?:number,
 	isMain?: boolean,
-	stmts: Stmt[],
-	locals?: Locals,
+	//stmts: Stmt[],
+	//locals?: Locals,
 	params?: ParamDecl[],
 	scope?: ScopeMap,
-	//fiberCallRequired?:boolean,
 	useArgs?:boolean,
-	//useTry?:boolean,
 	paramTypes?: AnnotatedType[],
 	returnType?: AnnotatedType,
-	nowait: boolean,
-
+	//nowait: boolean,
 };
+export type FuncInfo=NonArrowFuncInfo|ArrowFuncInfo;
+export type NonArrowFuncInfo=FuncInfoBase & {// also includes Method
+	name: string, //pos?:number,
+	stmts: Stmt[],
+	locals?: Locals,
+	nowait: boolean,
+};
+export function isNonArrowFuncInfo(f:FuncInfo):f is NonArrowFuncInfo {
+	return (f as any).stmts;
+}
+export type ArrowFuncInfo=FuncInfoBase & {
+	retVal: Expr,
+	nowait: true,
+};
+export function isArrowFuncInfo(f:FuncInfo):f is ArrowFuncInfo {
+	return (f as any).retVal;
+}
 export type NativeClass={class: Constructor, sampleValue?:any};
-export type MethodType={method: FuncInfo};
+export type MethodType={method: NonArrowFuncInfo};
 export type ArrayType={element:AnnotatedType};
 export type UnionType={candidates:AnnotatedType[]};
 export type NamedType=NativeClass|C_Meta;

@@ -82,6 +82,7 @@ module.exports = function PF({ TT }) {
     var member = g("member").ands(tk("."), symresv).ret(null, "name");
     var parenExpr = g("parenExpr").ands(tk("("), explz, tk(")")).ret(null, "expr");
     var varAccess = g("varAccess").ands(symbol).ret("name");
+    // _l = _lazy
     var funcExpr_l = G("funcExpr").firstTokens(["function", "\\"]);
     var funcExprArg = g("funcExprArg").ands(funcExpr_l).ret("obj");
     var objlit_l = G("objlit").firstTokens("{");
@@ -301,7 +302,9 @@ module.exports = function PF({ TT }) {
     const stmt_built = g("stmt").ors("return", "if", "for", "while", "do", "break", "continue", "switch", "ifWait", "try", "throw", "nativeDecl", "funcDecl", "compound", "exprstmt", "varsDecl", "empty");
     // ------- end of stmts
     g("funcExprHead").ands(tk("function").or(tk("\\")), symbol.opt(), paramDecls.opt()).ret(null, "name", "params");
-    var funcExpr = g("funcExpr").ands("funcExprHead", "compound").ret("head", "body");
+    const nonArrowfuncExpr = g("nonArrowFuncExpr").ands("funcExprHead", "compound").ret("head", "body");
+    const arrowFuncExpr = g("arrowFuncExpr").ands(tk("\\").opt(), paramDecls, tk("=>"), expr).ret(null, "params", null, "retVal");
+    const funcExpr = g("funcExpr").ors("nonArrowFuncExpr", "arrowFuncExpr");
     var jsonElem = g("jsonElem").ands(symbol.or(literal), tk(":").or(tk("=")).and(expr).retN(1).opt()).ret("key", "value");
     var objlit = g("objlit").ands(tk("{"), comLastOpt(jsonElem), tk("}")).ret(null, "elems");
     var arylit = g("arylit").ands(tk("["), comLastOpt(dottableExpr), tk("]")).ret(null, "elems");

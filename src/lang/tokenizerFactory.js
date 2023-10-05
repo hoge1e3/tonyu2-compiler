@@ -323,6 +323,7 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
     dtk(REG | DIV, SAMENAME, "<<", REG);
     dtk(REG | DIV, SAMENAME, "&&", REG);
     dtk(REG | DIV, SAMENAME, "||", REG);
+    dtk(REG | DIV, SAMENAME, "=>", REG);
     dtk(REG | DIV, SAMENAME, "(", REG);
     dtk(REG | DIV, SAMENAME, ")", DIV);
     dtk(REG | DIV, SAMENAME, "[", REG);

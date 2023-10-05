@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isJsonElem = exports.isFuncExpr = exports.isFuncExprHead = exports.isEmpty = exports.isIfWait = exports.isNativeDecl = exports.isFuncDecl = exports.isFuncDeclHead = exports.isSetterDecl = exports.isParamDecls = exports.isParamDecl = exports.isVarsDecl = exports.isVarDecl = exports.isTypeDecl = exports.isUnionTypeExpr = exports.isNamedTypeExpr = exports.isArrayTypeExpr = exports.isThrow = exports.isTry = exports.isCatch = exports.isFinally = exports.isContinue = exports.isBreak = exports.isSwitch = exports.isDefault = exports.isCase = exports.isDo = exports.isWhile = exports.isFor = exports.isNormalFor = exports.isForin = exports.isIf = exports.isReturn = exports.isCompound = exports.isExprstmt = exports.isSuperExpr = exports.isNewExpr = exports.isScall = exports.isCall = exports.isObjlitArg = exports.isFuncExprArg = exports.isVarAccess = exports.isParenExpr = exports.isMember = exports.isArgList = exports.isArrayElem = exports.isTrifix = exports.isInfix = exports.isPostfix = exports.isPrefix = void 0;
-exports.isBackquoteLiteral = exports.isBackquoteText = exports.isProgram = exports.isIncludes = exports.isExtends = exports.isArylit = exports.isObjlit = void 0;
+exports.isNonArrowFuncExpr = exports.isFuncExprOrDecl = exports.isFuncExprHead = exports.isEmpty = exports.isIfWait = exports.isNativeDecl = exports.isFuncDecl = exports.isFuncDeclHead = exports.isSetterDecl = exports.isParamDecls = exports.isParamDecl = exports.isVarsDecl = exports.isVarDecl = exports.isTypeDecl = exports.isUnionTypeExpr = exports.isNamedTypeExpr = exports.isArrayTypeExpr = exports.isThrow = exports.isTry = exports.isCatch = exports.isFinally = exports.isContinue = exports.isBreak = exports.isSwitch = exports.isDefault = exports.isCase = exports.isDo = exports.isWhile = exports.isFor = exports.isNormalFor = exports.isForin = exports.isIf = exports.isReturn = exports.isCompound = exports.isExprstmt = exports.isSuperExpr = exports.isNewExpr = exports.isScall = exports.isCall = exports.isObjlitArg = exports.isFuncExprArg = exports.isVarAccess = exports.isParenExpr = exports.isMember = exports.isArgList = exports.isArrayElem = exports.isTrifix = exports.isInfix = exports.isPostfix = exports.isPrefix = void 0;
+exports.isBackquoteLiteral = exports.isBackquoteText = exports.isProgram = exports.isIncludes = exports.isExtends = exports.isArylit = exports.isObjlit = exports.isJsonElem = exports.isFuncExpr = exports.isArrowFuncExpr = void 0;
 function isPrefix(n) {
     return n.type == "prefix";
 }
@@ -194,8 +194,20 @@ function isFuncExprHead(n) {
     return n && n.type === "funcExprHead";
 }
 exports.isFuncExprHead = isFuncExprHead;
+function isFuncExprOrDecl(n) {
+    return isFuncExpr(n) || isFuncDecl(n);
+}
+exports.isFuncExprOrDecl = isFuncExprOrDecl;
+function isNonArrowFuncExpr(n) {
+    return n && (n.type === "nonArrowFuncExpr");
+}
+exports.isNonArrowFuncExpr = isNonArrowFuncExpr;
+function isArrowFuncExpr(n) {
+    return n && (n.type === "arrowFuncExpr");
+}
+exports.isArrowFuncExpr = isArrowFuncExpr;
 function isFuncExpr(n) {
-    return n && n.type === "funcExpr";
+    return isNonArrowFuncExpr(n) || isArrowFuncExpr(n);
 }
 exports.isFuncExpr = isFuncExpr;
 function isJsonElem(n) {

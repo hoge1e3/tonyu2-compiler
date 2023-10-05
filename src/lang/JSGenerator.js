@@ -27,6 +27,7 @@ const OM = __importStar(require("./ObjectMatcher"));
 const cu = __importStar(require("./compiler"));
 const context_1 = require("./context");
 const CompilerTypes_1 = require("./CompilerTypes");
+const NodeTypes_1 = require("./NodeTypes");
 const compiler_1 = require("./compiler");
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -751,8 +752,9 @@ function genJS(klass, env, genOptions) {
                 if (debug)
                     console.log("method2", name);
                 if (!method.nowait) {
+                    const naMethod = method;
                     ctx.enter({ noWait: false, threadAvail: true }, function () {
-                        genFiber(method);
+                        genFiber(naMethod);
                     });
                 }
                 if (debug)
@@ -842,7 +844,31 @@ function genJS(klass, env, genOptions) {
         }
     }
     function genFuncExpr(node) {
-        var finfo = annotation(node).funcInfo; // annotateSubFuncExpr(node);
+        if (NodeTypes_1.isArrowFuncExpr(node)) {
+            return genArrowFuncExpr(node);
+        }
+        else {
+            return genNonArrowFuncExpr(node);
+        }
+    }
+    function genArrowFuncExpr(node) {
+        const finfo = annotation(node).funcInfo; // annotateSubFuncExpr(node);
+        if (!CompilerTypes_1.isArrowFuncInfo(finfo)) {
+            throw new Error("NonArrow func info!");
+        }
+        buf.printf("((%j)=>(%f))", [",", finfo.params], fbody);
+        function fbody() {
+            ctx.enter({ noWait: true, threadAvail: false,
+                finfo: finfo, /*scope: finfo.scope*/ }, function () {
+                printf("%v", node.retVal);
+            });
+        }
+    }
+    function genNonArrowFuncExpr(node) {
+        const finfo = annotation(node).funcInfo; // annotateSubFuncExpr(node);
+        if (!CompilerTypes_1.isNonArrowFuncInfo(finfo)) {
+            throw new Error("Arrow func info!");
+        }
         buf.printf("(function %s(%j) {%{" +
             "%f%n" +
             "%f" +
@@ -876,6 +902,9 @@ function genJS(klass, env, genOptions) {
     }
     function genSubFunc(node) {
         var finfo = annotation(node).funcInfo; // annotateSubFuncExpr(node);
+        if (!CompilerTypes_1.isNonArrowFuncInfo(finfo)) {
+            throw new Error("Arrow func info!");
+        }
         buf.printf("function %s(%j) {%{" +
             "%f%n" +
             "%f" +

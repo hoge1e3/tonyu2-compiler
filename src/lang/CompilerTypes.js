@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isUnionType = exports.isMethodType = exports.isMeta = exports.isNativeClass = exports.isArrayType = exports.isMemoryDest = exports.isFileDest = void 0;
+exports.isUnionType = exports.isMethodType = exports.isMeta = exports.isNativeClass = exports.isArrayType = exports.isArrowFuncInfo = exports.isNonArrowFuncInfo = exports.isMemoryDest = exports.isFileDest = void 0;
 function isFileDest(d) {
     return d.file;
 }
@@ -9,6 +9,14 @@ function isMemoryDest(d) {
     return d.memory;
 }
 exports.isMemoryDest = isMemoryDest;
+function isNonArrowFuncInfo(f) {
+    return f.stmts;
+}
+exports.isNonArrowFuncInfo = isNonArrowFuncInfo;
+function isArrowFuncInfo(f) {
+    return f.retVal;
+}
+exports.isArrowFuncInfo = isArrowFuncInfo;
 function isArrayType(klass) {
     return klass.element;
 }

@@ -12,9 +12,9 @@ import * as cu from "./compiler";
 import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr} from "./NodeTypes";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr, isArrowFuncExpr, ArrowFuncExpr} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { AnnotatedType, Annotation, ArrayType, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType, UnionType, isUnionType } from "./CompilerTypes";
+import { AnnotatedType, Annotation, ArrayType, ArrowFuncInfo, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType, NonArrowFuncInfo, UnionType, isNonArrowFuncInfo, isUnionType } from "./CompilerTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler";
 
 var ScopeTypes=cu.ScopeTypes;
@@ -89,7 +89,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 		klass.jsNotUpToDate=true;
 	}
 	const node=parse(klass, env.options);
-	var MAIN:FuncInfo={klass, name:"main",stmts:[], isMain:true, nowait: false};//, klass:klass.fullName};
+	var MAIN:NonArrowFuncInfo={klass, name:"main",stmts:[], isMain:true, nowait: false};//, klass:klass.fullName};
 	// method := fiber | function
 	const fields={}, methods:Methods={main: MAIN}, natives={}, amds={},softRefClasses={};
 	klass.decls={fields, methods, natives, amds, softRefClasses};
@@ -858,7 +858,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			varAccessesAnnotator.visit(node);
 		});
 	}
-	function copyLocals(finfo: FuncInfo, scope: ScopeMap) {//S
+	function copyLocals(finfo: NonArrowFuncInfo, scope: ScopeMap) {//S
 		const locals=finfo.locals!;
 		for (var i in locals.varDecls) {
 			//console.log("LocalVar ",i,"declared by ",finfo);
@@ -884,7 +884,9 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	function initParamsLocals(f: FuncInfo) {//S
 		//console.log("IS_MAIN", f, f.name, f.isMain);
 		ctx.enter({isMain:f.isMain,finfo:f}, function () {
-			f.locals=collectLocals(f.stmts);
+			if (isNonArrowFuncInfo(f)) {
+				f.locals=collectLocals(f.stmts);
+			}
 			f.params=getParams(f);
 		});
 		//if (!f.params) throw new Error("f.params is not inited");
@@ -911,9 +913,37 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		}
 	}
-	function annotateSubFuncExpr(node: FuncExpr|FuncDecl) {// annotateSubFunc or FuncExpr
+	function annotateArrowFuncExpr(node:ArrowFuncExpr):ArrowFuncInfo {
 		var m:any,ps:ParamDecl[];
-		var body=node.body;
+		m=OM.match( node, {head:{params:{params:OM.P}}});
+		if (m) {
+			ps=m.P;
+		} else {
+			ps=[];
+		}
+		const finfo:ArrowFuncInfo={klass, retVal: node.retVal, nowait:true};
+		var ns=newScope(ctx.scope);
+		//var locals;
+		ctx.enter({finfo}, function () {
+			ps.forEach(function (p) {
+				var si=new SI.PARAM(finfo);
+				annotation(p,{scopeInfo:si});
+				ns[p.name.text]=si;
+			});
+			ctx.enter({scope: ns},()=>varAccessesAnnotator.visit(node.retVal));
+		});
+		finfo.scope=ns;
+		finfo.params=ps;
+		finfo.paramTypes=resolveTypesOfParams(finfo.params);
+		annotation(node,{funcInfo:finfo});
+		return finfo;
+	}
+	function annotateSubFuncExpr(node: FuncExpr|FuncDecl):FuncInfo {// annotateSubFunc or FuncExpr
+		var m:any,ps:ParamDecl[];
+		if (isArrowFuncExpr(node)) {
+			return annotateArrowFuncExpr(node);
+		}
+		const body=node.body;
 		var name=(node.head.name ? node.head.name.text : "anonymous_"+node.pos );
 		m=OM.match( node, {head:{params:{params:OM.P}}});
 		if (m) {
@@ -921,7 +951,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		} else {
 			ps=[];
 		}
-		var finfo:FuncInfo={klass, name, stmts:body.stmts, nowait: true};
+		var finfo:NonArrowFuncInfo={klass, name, stmts:body.stmts, nowait: true};
 		var ns=newScope(ctx.scope);
 		//var locals;
 		ctx.enter({finfo}, function () {
@@ -951,7 +981,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			}
 		});
 	}
-	function annotateMethodFiber(f: FuncInfo) {//S
+	function annotateMethodFiber(f: NonArrowFuncInfo) {//S
 		var ns=newScope(ctx.scope);
 		f.params!.forEach((p, i:number)=>{
 			var si=new SI.PARAM(f);

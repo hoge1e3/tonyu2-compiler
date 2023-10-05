@@ -303,6 +303,8 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	dtk(REG|DIV,SAMENAME ,"&&",REG );
 	dtk(REG|DIV,SAMENAME ,"||",REG );
 
+	dtk(REG|DIV,SAMENAME ,"=>",REG );
+
 
 	dtk(REG|DIV,SAMENAME ,"(",REG );
 	dtk(REG|DIV,SAMENAME ,")",DIV );

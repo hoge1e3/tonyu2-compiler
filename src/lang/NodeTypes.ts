@@ -401,13 +401,32 @@ export type FuncExprHead=NodeBase&{
 export function isFuncExprHead(n:TNode):n is FuncExprHead {
    return n && n.type==="funcExprHead";
 }
-export type FuncExpr=NodeBase&{
+export function isFuncExprOrDecl(n:TNode): n is (FuncDecl|FuncExpr) {
+    return isFuncExpr(n) || isFuncDecl(n);
+}
+export type FuncExpr=NonArrowFuncExpr|ArrowFuncExpr;/* NodeBase&{
   type: "funcExpr";
   head: FuncExprHead,
   body: Compound
+};*/
+export type NonArrowFuncExpr=NodeBase&{
+  type: "nonArrowFuncExpr";
+  head: FuncExprHead,
+  body: Compound
 };
-export function isFuncExpr(n:TNode):n is FuncExpr {
-   return n && n.type==="funcExpr";
+export type ArrowFuncExpr=NodeBase&{
+  type: "arrowFuncExpr";
+  head: FuncExprHead,
+  retVal: Expr,
+};
+export function isNonArrowFuncExpr(n:TNode):n is NonArrowFuncExpr {
+   return n && (n.type==="nonArrowFuncExpr");
+}
+export function isArrowFuncExpr(n:TNode):n is ArrowFuncExpr {
+  return n && (n.type==="arrowFuncExpr");
+}
+export function isFuncExpr(n:TNode):n is FuncExpr{
+  return isNonArrowFuncExpr(n)||isArrowFuncExpr(n);
 }
 export type JsonElem=NodeBase&{
   type: "jsonElem";
