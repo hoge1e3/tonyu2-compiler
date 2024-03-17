@@ -171,6 +171,9 @@ function genJS(klass, env, genOptions) {
         },
         backquoteText(node) {
             let s = node.text;
+            s = s.replace(/\\u([0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])/g, (_, r) => {
+                return String.fromCharCode(parseInt(`0x${r}`));
+            });
             s = s.replace(/\\(.)/g, (_, r) => {
                 switch (r) {
                     case "b": return "\b";
