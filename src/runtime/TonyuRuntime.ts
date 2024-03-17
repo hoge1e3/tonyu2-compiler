@@ -7,6 +7,19 @@ import { ClassDefinition, ClassDefinitionContext, ClassTree, isTonyuClass, Meta,
 import TError from "./TError";
 import { ProjectOptions } from "../lang/CompilerTypes";
 
+const reservedWords=[
+    "abstract",    "arguments",    "await",    "boolean",    "break",    "byte",
+    "case",    "catch",    "char",    "class",    "const",    "continue",
+    "debugger",    "default",    "delete",    "do",    "double",
+    "else",    "enum",    "eval",    "export",    "extends",    "false",
+    "final",    "finally",    "float",    "for",    "function",    "goto",
+    "if",    "implements",    "import",    "in",    "instanceof",    "int",
+    "interface",    "let",    "long",    "native",    "new",    "null",
+    "package",    "private",    "protected",    "public",    "return",
+    "short",    "static",    "super",    "switch",    "synchronized",
+    "this",    "throw",    "throws",    "transient",    "true",    "try",    "typeof",
+    "var",    "void",    "volatile",    "while",    "with",    "yield"
+];
 // old browser support
 if (!root.performance) {
 	root.performance = {};
@@ -164,6 +177,7 @@ var klass={
 			delete methods.initialize;
 			function exprWithName(name:string, expr:string, bindings:{[key:string]:any}) {
 				const bnames=Object.keys(bindings);
+				if (reservedWords.includes(name)) name="_"+name;
     			const f=new Function(...bnames, `const ${name}=${expr}; return ${name};`);
     			return f(...bnames.map((k:any)=>bindings[k]));
 			}
