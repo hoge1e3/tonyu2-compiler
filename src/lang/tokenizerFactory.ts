@@ -254,7 +254,8 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 			if (c===head) {
 				return [s.substring(0,i+1)];
 			} else if (c==="\\") {
-				i++;
+				if (s[i]==='u') i+=4;
+				else i++;
 			}
 		}
 		return false;

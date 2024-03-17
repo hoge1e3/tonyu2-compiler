@@ -159,6 +159,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		},
 		backquoteText(node:BackquoteText) {
 			let s=node.text;
+			s=s.replace(/\\u([0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])/g, (_,r:string)=>{
+				return String.fromCharCode(parseInt(`0x${r}`));
+			});
 			s=s.replace(/\\(.)/g, (_,r:string)=>{
 				switch(r) {
 					case "b":return "\b";
