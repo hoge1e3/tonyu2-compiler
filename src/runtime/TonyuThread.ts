@@ -86,18 +86,10 @@ class KilledError extends Error {
 			this.tGrpObjectPoolAge=g.objectPoolAge;
 			//if (g) g.add(fb);
 		}
-		isWaiting() {
-			return this._isWaiting;
-		}
 		suspend() {
 			this.fSuspended=true;
 			//this.cnt=0;
 		}
-		/*enter(frameFunc: Function) {
-			//var n=frameFunc.name;
-			//cnts.enterC[n]=(cnts.enterC[n]||0)+1;
-			this.frame={prev:this.frame, func:frameFunc};
-		}*/
 		apply(obj:any, methodName:string, args:any[]) {
 			if (!args) args=[];
 		    let method: TonyuMethod;
@@ -117,19 +109,6 @@ class KilledError extends Error {
 			}
 			args=[this].concat(args);
 			this.generator=method.apply(obj, args);
-			/*var pc=0;
-			return this.enter(function (th) {
-				switch (pc){
-				case 0:
-					method.apply(obj,args);
-					pc=1;break;
-				case 1:
-					th.termStatus="success";
-					th.notifyEnd(th.retVal);
-					args[0].exit();
-					pc=2;break;
-				}
-			});*/
 		}
 		notifyEnd(r) {
 			this.onEndHandlers.forEach(function (e) {
@@ -176,45 +155,6 @@ class KilledError extends Error {
 		fail(err) {
 			return this.promise().then(e=>e, err);
 		}
-		/*gotoCatch(e) {
-			var fb=this;
-			if (fb.tryStack.length==0) {
-				fb.termStatus="exception";
-				fb.kill();
-				if (fb.handleEx) fb.handleEx(e);
-				else fb.notifyTermination({status:"exception",exception:e});
-				return;
-			}
-			fb.lastEx=e;
-			var s=fb.tryStack.pop();
-			while (fb.frame) {
-				if (s.frame===fb.frame) {
-					fb.catchPC=s.catchPC;
-					break;
-				} else {
-					fb.frame=fb.frame.prev;
-				}
-			}
-		}
-		startCatch() {
-			var fb=this;
-			var e=fb.lastEx;
-			fb.lastEx=null;
-			return e;
-		}
-		exit(res) {
-			//cnts.exitC++;
-			this.frame=(this.frame ? this.frame.prev:null);
-			this.retVal=res;
-		}
-		enterTry(catchPC) {
-			var fb=this;
-			fb.tryStack.push({frame:fb.frame,catchPC:catchPC});
-		}
-		exitTry() {
-			var fb=this;
-			fb.tryStack.pop();
-		}*/
 		waitEvent(obj:any, eventSpec:any[]) { // eventSpec=[EventType, arg1, arg2....]
 			const fb=this;
 			fb.suspend();
@@ -226,28 +166,9 @@ class KilledError extends Error {
 				fb.stepsLoop();
 			});
 		}
-		/*runAsync(f:Function) {
-			var fb=this;
-			var succ=function () {
-				fb.retVal=arguments;
-				fb.steps();
-			};
-			var err=function () {
-				var msg="";
-				for (var i=0; i<arguments.length; i++) {
-					msg+=arguments[i]+",";
-				}
-				if (msg.length==0) msg="Async fail";
-				var e:any=new Error(msg);
-				e.args=arguments;
-				fb.gotoCatch(e);
-				fb.steps();
-			};
-			fb.suspend();
-			setTimeout(function () {
-				f(succ,err);
-			},0);
-		}*/
+		isWaiting() {
+			return this._isWaiting;
+		}
 		waitFor(j:any):Promise<any> {
 			var fb=this;
 			fb._isWaiting=true;
@@ -257,10 +178,12 @@ class KilledError extends Error {
 			return Promise.resolve(p).then(function (r) {
 				fb.retVal=r;
 				fb.lastEx=null;
+				fb._isWaiting=false;
 				fb.stepsLoop();
 			}).then(e=>e,function (e) {
 				e=fb.wrapError(e);
 				fb.lastEx=e;
+				fb._isWaiting=false;
 				fb.stepsLoop();
 			});
 		}
@@ -276,6 +199,9 @@ class KilledError extends Error {
 		}
 		steps() {
 			const fb=this;
+			if (fb.isWaiting()) {
+				throw new Error("Illegal state: Cannot step while awaiting.");
+			}
 			if (fb.isDead()) return;
 			const sv=this.Tonyu.currentThread;
 			this.Tonyu.currentThread=fb;
@@ -307,19 +233,6 @@ class KilledError extends Error {
 					return this.waitFor(awaited);
 				}
 			}
-			/*
-			while (fb.cnt>0 && fb.frame) {
-				try {
-					//while (new Date().getTime()<lim) {
-					while (fb.cnt-->0 && fb.frame) {
-						fb.frame.func(fb);
-					}
-					fb.preempted= (!fb.fSuspended) && fb.isAlive();
-				} catch(e) {
-					fb.gotoCatch(e);
-				}
-			}*/
-			
 		}
 		exception(e:Error) {
 			this.termStatus="exception";
@@ -339,18 +252,12 @@ class KilledError extends Error {
 		}
 		kill() {
 			var fb=this;
-			//fb._isAlive=false;
 			fb._isDead=true;
-			//fb.frame=null;
 			if (!fb.termStatus) {
 				fb.termStatus="killed";
 				fb.notifyTermination({status:"killed"});
 			}
 		}
-		/*clearFrame() {
-			this.frame=null;
-			this.tryStack=[];
-		}*/
 		*await(p:any) {
 			this.lastEx=null;
 			yield p;
