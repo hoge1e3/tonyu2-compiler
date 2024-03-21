@@ -20,7 +20,7 @@ window.initCmd=function ({shui, BuilderClient}) {
         const config={
             worker:{
                 url: "../BuilderWorker.js",
-                ns2depspec: {kernel: {namespace:"kernel",url:"min-ui/kernel.js"}}
+                ns2depspec: {kernel: {namespace:"kernel",url:"min-ui/concat.js"}}
             }
         };
         F.addDependencyResolver((prj,spec)=>{

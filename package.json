@@ -4,6 +4,7 @@
   "description": "Compiler of Tonyu2, language for a game engine.",
   "main": "index.js",
   "scripts": {
+    "build": "build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

@@ -2010,6 +2010,9 @@ function genJS(klass, env, genOptions) {
         },
         backquoteText(node) {
             let s = node.text;
+            s = s.replace(/\\u([0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F])/g, (_, r) => {
+                return String.fromCharCode(parseInt(`0x${r}`));
+            });
             s = s.replace(/\\(.)/g, (_, r) => {
                 switch (r) {
                     case "b": return "\b";
@@ -9750,7 +9753,10 @@ function tokenizerFactory({ reserved, caseInsensitive }) {
                     return [s.substring(0, i + 1)];
                 }
                 else if (c === "\\") {
-                    i++;
+                    if (s[i] === 'u')
+                        i += 4;
+                    else
+                        i++;
                 }
             }
             return false;
@@ -14683,6 +14689,19 @@ const root_1 = __importDefault(require("../lib/root"));
 const assert_1 = __importDefault(require("../lib/assert"));
 const RuntimeTypes_1 = require("./RuntimeTypes");
 const TError_1 = __importDefault(require("./TError"));
+const reservedWords = [
+    "abstract", "arguments", "await", "boolean", "break", "byte",
+    "case", "catch", "char", "class", "const", "continue",
+    "debugger", "default", "delete", "do", "double",
+    "else", "enum", "eval", "export", "extends", "false",
+    "final", "finally", "float", "for", "function", "goto",
+    "if", "implements", "import", "in", "instanceof", "int",
+    "interface", "let", "long", "native", "new", "null",
+    "package", "private", "protected", "public", "return",
+    "short", "static", "super", "switch", "synchronized",
+    "this", "throw", "throws", "transient", "true", "try", "typeof",
+    "var", "void", "volatile", "while", "with", "yield"
+];
 // old browser support
 if (!root_1.default.performance) {
     root_1.default.performance = {};
@@ -14843,6 +14862,8 @@ var klass = {
             delete methods.initialize;
             function exprWithName(name, expr, bindings) {
                 const bnames = Object.keys(bindings);
+                if (reservedWords.includes(name))
+                    name = "_" + name;
                 const f = new Function(...bnames, `const ${name}=${expr}; return ${name};`);
                 return f(...bnames.map((k) => bindings[k]));
             }

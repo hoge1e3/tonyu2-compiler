@@ -13,7 +13,7 @@ requirejs(["../FS","../BuilderClient4Sys"],
     const Deubgger=TonyuBuilderClient.DebuggerCore({Tonyu});
     F.addDependencyResolver((prj,spec)=>{
         if (spec.namespace==="kernel") {
-            return F.create("compiled",{namespace:"kernel",url:"kernel.js"});
+            return F.create("compiled",{namespace:"kernel",url:"concat.js"});
         }
     });
     Debugger.on("runtimeError",evt=>{
