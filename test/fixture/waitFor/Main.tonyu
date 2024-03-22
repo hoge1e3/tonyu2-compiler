@@ -4,6 +4,7 @@ native Promise;
 
 try {
     //a.b.c;
+    console.log("await...");
     r=__await new Promise \(s,e) {
         setTimeout(\{
             e(100);   
@@ -11,5 +12,5 @@ try {
     };
     console.log(r);
 } catch (e){
-    console.error("ERA-",e);
+    console.error("ERA-",e.stack);
 }

@@ -157,12 +157,14 @@ class KilledError extends Error {
 		}
 		waitEvent(obj:any, eventSpec:any[]) { // eventSpec=[EventType, arg1, arg2....]
 			const fb=this;
+			fb._isWaiting=true;
 			fb.suspend();
 			if (typeof obj.on!=="function") return;
 			let h=obj.on(...eventSpec,(...args)=>{
 				fb.lastEvent=args;
 				fb.retVal=args[0];
 				h.remove();
+				fb._isWaiting=false;
 				fb.stepsLoop();
 			});
 		}
