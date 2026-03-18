@@ -25,6 +25,7 @@
   "homepage": "https://github.com/hoge1e3/tonyu2-compiler#readme",
   "dependencies": {
     "@hoge1e3/sfile": "^1.0.0",
+    "@types/web": "^0.0.343",
     "source-map": "^0.7.6",
     "source-map-support": "^0.5.19",
     "tmp": "^0.1.0"

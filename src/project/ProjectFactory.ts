@@ -15,7 +15,7 @@ export const addDependencyResolver=(f:DependencyResolver)=>{
 export const addType=(n:string,f)=>{
     types[n]=f;
 };
-exports.fromDependencySpec=function (prj:IProject,spec: DependencySpec) {
+export const fromDependencySpec=function (prj:IProject,spec: DependencySpec) {
     for (let f of resolvers) {
         const res=f(prj,spec);
         if (res) return res;
@@ -62,8 +62,8 @@ export class ProjectCore {
         return this;
     }
 }
-ProjectCore.factory=exports;
-exports.createCore=()=>new ProjectCore();
+//ProjectCore.factory=exports;
+export const createCore=()=>new ProjectCore();
 const dirBasedMod={
     getDir() {return this.dir;},
     resolve(rdir){// not in compiledProject
@@ -124,8 +124,8 @@ const dirBasedMod={
         return res;
     }
 };
-exports.createDirBasedCore=function (params) {
-    const res=this.createCore();
+export const createDirBasedCore=function (this: ProjectCore, params) {
+    const res=createCore() as typeof dirBasedMod;
     res.dir=params.dir;
     if (!res.dir.exists()) throw new Error(res.dir.path()+" Does not exist.");
     return res.include(dirBasedMod);
