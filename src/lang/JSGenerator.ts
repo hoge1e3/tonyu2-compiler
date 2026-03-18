@@ -1,9 +1,6 @@
 import {Visitor} from "./Visitor";
 
 import {IndentBuffer} from "./IndentBuffer";
-import TError from "../runtime/TError";
-import R from "../lib/R";
-import assert from "../lib/assert";
 import { isTonyu1 } from "./tonyu1";
 import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
@@ -11,7 +8,6 @@ import {context} from "./context";
 import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType, NonArrowFuncInfo, isNonArrowFuncInfo, isArrowFuncInfo } from "./CompilerTypes";
 import { ArgList, ArrowFuncExpr, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, isArrowFuncExpr, JsonElem, NewExpr, NonArrowFuncExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
-import { DeclsInDefinition } from "../runtime/RuntimeTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
 
 //export=(cu as any).JSGenerator=(function () {
@@ -35,13 +31,11 @@ var stype=cu.getScopeType;
 //var nc=cu.nullCheck;
 //var genSym=cu.genSym;
 var annotation3=cu.annotation;
-var getMethod2=cu.getMethod;
-var getDependingClasses=cu.getDependingClasses;
-var getParams=cu.getParams;
 
 //-----------
 export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
-	var srcFile=klass.src.tonyu; //file object  //S
+	var srcFile=klass?.src?.tonyu; //file object  //S
+	if (!srcFile) {console.log("No source file",klass);throw new Error("No souce file");}
 	var srcCont=srcFile.text();
 	function getSource(node:TNode) {
 		return cu.getSource(srcCont,node);

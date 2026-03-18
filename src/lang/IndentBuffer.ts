@@ -1,7 +1,7 @@
-import { SFile } from "../lib/SFileType";
 import StringBuilder from "../lib/StringBuilder";
-import SourceMap from "./source-map";
+import * as SourceMap from "source-map";
 import { Visitor } from "./Visitor";
+import { SFile } from "@hoge1e3/sfile";
 /*const A=require("../lib/assert");
 
 const StringBuilder=require("../lib/StringBuilder");
@@ -10,7 +10,7 @@ type SrcRCM={
 	getRC(n:number):{row:number, col:number}
 };
 const Pos2RC=function (src:string) {
-	var map=[];
+	var map=[] as number[];
 	var pos=0;
 	var lastRow=0;
 	src.split("\n").forEach(function (line) {
@@ -41,27 +41,27 @@ const Pos2RC=function (src:string) {
 	};
 };
 type Options={
-	fixLazyLength: number,
+	fixLazyLength?: number,
 	dstFile?:SFile,
 	mapFile?:SFile,
-	compress: boolean,
+	compress?: boolean,
 };
 export class IndentBuffer {
 	options: Options;
-	dstFile: SFile;
-	mapFile: SFile;
-    srcFile: SFile;
-    srcRCM: SrcRCM;
+	dstFile?: SFile;
+	mapFile?: SFile;
+    srcFile?: SFile;
+    srcRCM?: SrcRCM;
 	compress: boolean;
     useLengthPlace=false;
     lazyOverflow=false;
-	constructor(options:Partial<Options>) {
-		const $=this;
-		this.options=options||{} as any;
-		this.options.fixLazyLength=this.options.fixLazyLength||6;
-		$.dstFile=options.dstFile;
-		$.mapFile=options.mapFile;
-		$.compress=options.compress;
+	constructor(options:Options) {
+		options=options||{} as any;
+		options.fixLazyLength=options.fixLazyLength||6;
+		this.options=options;
+		this.dstFile=options.dstFile;
+		this.mapFile=options.mapFile;
+		this.compress=!!options.compress;
 	}
 	get printf():(fmt:string, ...args:any[])=>void {return this._printf.bind(this);}
 	_printf(fmt:string, ...args:any[]) {
@@ -169,16 +169,17 @@ export class IndentBuffer {
 		this.visitor.visit(n);
     }
 	visitor?: Visitor;
-	traceIndex={};
+	traceIndex={} as Record<string,number>; 
 	addTraceIndex (fname:string) {
 		this.traceIndex[fname]=1;
 	}
 	addMapping(token:any) {
 		const $=this;
+		if (!$.srcRCM) throw new Error("srcRCM not inited");
 		//console.log("Token",token,$.srcFile+"");
 		if (!$.srcFile) return ;
 		// token:extend({text:String},{pos:Number}|{row:Number,col:Number})
-		var rc: { row: number; col: number; };
+		var rc: { row: number; col: number; }|undefined;
 		if (typeof token.row=="number" && typeof token.col=="number") {
 			rc={row:token.row, col:token.col};
 		} else if (typeof token.pos=="number") {
@@ -243,7 +244,7 @@ export class IndentBuffer {
 		$.useLengthPlace=true;
 		place.inited=true;
 		//place.src=place.gen;
-		place.put=function (val) {
+		place.put=function (val:any) {
 			this.val=val+"";
 			if (this.puts) {
 				if (this.val.length>this.length) {
@@ -253,7 +254,7 @@ export class IndentBuffer {
 					this.val+=this.pad;
 				}
 				var place=this;
-				this.puts.forEach(function (i) {
+				this.puts.forEach(function (i:number) {
 					$.buf.replace(i, place.val);
 					/*var pl=$.buf.length;
 					$.buf=$.buf.substring(0,i)+place.val+$.buf.substring(i+place.length);
@@ -308,259 +309,17 @@ export class IndentBuffer {
 	}
 	indentBuf="";
 	indentStr="  ";
-	mapStr:string;
+	mapStr?:string;
 	close() {
-		const $=this;
-		$.mapStr=$.srcmap.toString();
-		if ($.mapFile && $.dstFile) {
-			$.mapFile.text($.mapStr);
-			$.printf("%n//# sourceMappingURL=%s%n",$.mapFile.relPath($.dstFile.up()));
+		this.mapStr=this.srcmap.toString();
+		if (this.mapFile && this.dstFile) {
+			this.mapFile.text(this.mapStr);
+			this.printf("%n//# sourceMappingURL=%s%n",this.mapFile.relPath(this.dstFile.up()!));
 		}
-		const gen=$.buf+"";
-		if ($.dstFile) {
-			$.dstFile.text(gen);
+		const gen=this.buf+"";
+		if (this.dstFile) {
+			this.dstFile.text(gen);
 		}
 		return gen;
 	};
 }
-/*
-export= function IndentBuffer(options) {
-	options=options||{};
-	options.fixLazyLength=options.fixLazyLength||6;
-	var $:any=function (fmt:string, ...args:any[]) {
-		//var args=arguments;
-		//var fmt=args[0];
-		//console.log(fmt+ " -- "+arguments[0]+" --- "+arguments.length);
-		var ai=-1;
-		function shiftArg(nullable=false) {
-			ai++;
-			var res=args[ai];
-			if (res==null && !nullable) {
-				console.log(args);
-				throw new Error(ai+"th null param: fmt="+fmt);
-			}
-			return res;
-		}
-		while (true) {
-			var i=fmt.indexOf("%");
-			if (i<0) {$.print(fmt); break;}
-			$.print(fmt.substring(0,i));
-			i++;
-			var fstr=fmt.charAt(i);
-			if (fstr=="s") {
-				var str=shiftArg();
-				if (typeof str == "string" || typeof str =="number") {}
-				else if (str==null) str="null";
-				else if (str.text) {
-					$.addMapping(str);
-					str=str.text;
-				}
-				$.print(str);
-				i++;
-			} else if (fstr=="d") {
-				var n=shiftArg();
-				if (typeof n!="number") throw new Error (n+" is not a number: fmt="+fmt);
-				$.print(n);
-				i++;
-			} else if (fstr=="n") {
-				$.ln();
-				i++;
-			} else if (fstr=="{") {
-				$.indent();
-				i++;
-			} else if (fstr=="}") {
-				$.dedent();
-				i++;
-			} else if (fstr=="%") {
-				$.print("%");
-				i++;
-			} else if (fstr=="f") {
-				shiftArg()($);
-				i++;
-			} else if (fstr=="l") {
-				var lit=shiftArg();
-				$.print($.toLiteral(lit));
-				i++;
-			} else if (fstr=="v") {
-				var a=shiftArg();
-				if (!a) throw new Error ("Null %v");
-				if (typeof a!="object") throw new Error("nonobject %v:"+a);
-				$.addMapping(a);
-				$.visitor.visit(a);
-				i++;
-			} else if (fstr=="z") {
-				var place=shiftArg();
-				if ("val" in place) {
-					$.print(place.val);
-					return;
-				}
-				if (!place.inited) {
-					$.lazy(place);
-				}
-				place.print();
-				//$.print(place.gen);
-				i++;
-			} else if (fstr=="j") {
-				var sp_node=shiftArg();
-				var sp=sp_node[0];
-				var node=sp_node[1];
-				var sep=false;
-				if (!node || !node.forEach) {
-					console.log(node);
-					throw new Error (node+" is not array. cannot join fmt:"+fmt);
-				}
-				for (let n of node) {
-					if (sep) $.printf(sp);
-					sep=true;
-					$.visitor.visit(n);
-				}
-				i++;
-			} else if (fstr=="D"){
-				shiftArg(true);
-				i++;
-			} else {
-				i+=2;
-			}
-			fmt=fmt.substring(i);
-		}
-	};
-	$.addTraceIndex=function (fname) {
-		if (!this.traceIndex) this.traceIndex={};
-		this.traceIndex[fname]=1;
-	};
-	$.addMapping=function (token) {
-		//console.log("Token",token,$.srcFile+"");
-		if (!$.srcFile) return ;
-		// token:extend({text:String},{pos:Number}|{row:Number,col:Number})
-		var rc;
-		if (typeof token.row=="number" && typeof token.col=="number") {
-			rc={row:token.row, col:token.col};
-		} else if (typeof token.pos=="number") {
-			rc=$.srcRCM.getRC(token.pos);
-		}
-		if (rc) {
-			//console.log("Map",{src:{file:$.srcFile+"",row:rc.row,col:rc.col},
-			//dst:{row:$.bufRow,col:$.bufCol}  });
-			$.srcmap.addMapping({
-				generated: {
-					line: $.bufRow,
-					column: $.bufCol
-				},
-				source: $.srcFile+"",
-				original: {
-					line: rc.row,
-					column: rc.col
-				}
-				//name: "christopher"
-			});
-		}
-	};
-	$.setSrcFile=function (f) {
-		$.srcFile=f;
-		$.srcRCM=Pos2RC(f.text());
-		$.srcmap.setSourceContent(f.path(),f.text());
-	};
-	$.print=function (v) {
-		$.buf.append(v);
-		var a=(v+"").split("\n");
-		a.forEach(function (line,i) {
-			if (i<a.length-1) {// has \n
-				$.bufCol+=line.length+1;
-				$.bufRow++;
-				$.bufCol=1;
-			} else {
-				$.bufCol+=line.length;
-			}
-		});
-	};
-	$.dstFile=options.dstFile;
-	$.mapFile=options.mapFile;
-	$.printf=$;
-	$.buf=StringBuilder();
-	$.bufRow=1;
-	$.bufCol=1;
-	$.srcmap=new SourceMap.SourceMapGenerator();
-	$.lazy=function (place) {
-		if (!place) place={};
-			place.length=place.length||options.fixLazyLength;
-			place.pad=place.pad||" ";
-			place.gen=(function () {
-				var r="";
-				for(var i=0;i<place.length;i++) r+=place.pad;
-				return r;
-			})();
-			place.puts=[];
-			$.useLengthPlace=true;
-
-		place.inited=true;
-		//place.src=place.gen;
-		place.put=function (val) {
-			this.val=val+"";
-			if (this.puts) {
-				if (this.val.length>this.length) {
-					$.lazyOverflow=true;
-				}
-				while (this.val.length<this.length) {
-					this.val+=this.pad;
-				}
-				var place=this;
-				this.puts.forEach(function (i) {
-					$.buf.replace(i, place.val);
-
-				});
-			}
-
-			return this.val;
-		};
-		place.print=function () {
-			if (this.puts) this.puts.push($.buf.getLength());
-			$.print(this.gen);
-		};
-		return place;
-		//return {put: function () {} };
-	};
-	$.ln=function () {
-		$.print("\n"+$.indentBuf);
-	};
-	$.indent=function () {
-		$.indentBuf+=$.indentStr;
-		$.print("\n"+$.indentBuf);
-	};
-	$.dedent = function () {
-		var len=$.indentStr.length;
-		if (!$.buf.last(len).match(/^\s*$/)) {
-			console.log($.buf);
-			throw new Error ("Non-space truncated ");
-		}
-		$.buf.truncate(len);//=$.buf.substring(0,$.buf.length-len);
-		$.indentBuf=$.indentBuf.substring(0 , $.indentBuf.length-len);
-	};
-	$.toLiteral= function (s, quote) {
-		if (!quote) quote="'";
-	if (typeof s!=="string") {
-		console.log("no literal ",s);
-		throw new Error("toLiteral:"+s+" is not a literal");
-	}
-		s = s.replace(/\\/g, "\\\\");
-		s = s.replace(/\r/g, "\\r");
-		s = s.replace(/\n/g, "\\n");
-		if (quote=="'") s = s.replace(/'/g, "\\'");
-		else s = s.replace(/"/g, '\\"');
-		return quote + s + quote;
-	};
-	$.indentBuf="";
-	$.indentStr="  ";
-	$.close=function () {
-		$.mapStr=$.srcmap.toString();
-		if ($.mapFile && $.dstFile) {
-			$.mapFile.text($.mapStr);
-			$.printf("%n//# sourceMappingURL=%s%n",$.mapFile.relPath($.dstFile.up()));
-		}
-		const gen=$.buf+"";
-		if ($.dstFile) {
-			$.dstFile.text(gen);
-		}
-		return gen;
-	};
-	return $;
-};*/

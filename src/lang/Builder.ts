@@ -2,7 +2,7 @@ import Tonyu from "../runtime/TonyuRuntime";
 import TError from "../runtime/TError";
 import R from "../lib/R";
 import { isTonyu1 } from "./tonyu1";
-import JSGenerator = require("./JSGenerator");
+import JSGenerator from "./JSGenerator";
 import {IndentBuffer} from "./IndentBuffer";
 import * as Semantics from "./Semantics";
 import { SourceFiles, SourceFile, sourceFiles } from "./SourceFiles";
@@ -81,7 +81,7 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
 }
 
 // includes langMod, dirBase
-export = class Builder {
+export default class Builder {
     prj: any;
     env: BuilderEnv;
 	// Difference from TonyuProject

@@ -78,31 +78,31 @@ const en={
     }
     console.log(buf);*/
 
-let dict=en;
-function R(name,...params) {
+let dict:Record<string,string>=en;
+function R(name:string,...params:any[]) {
     let mesg=dict[name];
     if (!mesg) {
         return englishify(name)+(params.length?": "+params.join(","):"");
     }
     return buildMesg(mesg, ...params);//+"です！";
 }
-function buildMesg(...params) {
+function buildMesg(...params:any[]) {
     var a=Array.prototype.slice.call(arguments);
     var format=a.shift();
     if (a.length===1 && a[0] instanceof Array) a=a[0];
     var P="vroijvowe0r324";
     format=format.replace(/\{([0-9])\}/g,P+"$1"+P);
-    format=format.replace(new RegExp(P+"([0-9])"+P,"g"),function (_,n) {
+    format=format.replace(new RegExp(P+"([0-9])"+P,"g"),function (_:string,n:string) {
         return a[parseInt(n)-1]+"";
     });
     return format;
 }
-function englishify(name) {
+function englishify(name:string) {
     name=name.replace(/([A-Z])/g," $1");
     name=name[0].toUpperCase()+name.substring(1);
     return name;
 }
-R.setLocale=locale=>{
+R.setLocale=(locale:string)=>{
     if (locale==="ja") dict=ja;
     if (locale==="en") dict=en;
 };
@@ -111,5 +111,5 @@ R.getLocale=()=>{
     return "ja";
 };
 R.dicts={ja,en};
-export=R;
+export default R;
 //module.exports=R;

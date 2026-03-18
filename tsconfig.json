@@ -1,10 +1,18 @@
 {
-  "compilerOptions": {
-    "target": "es2018",
-    "strict": false,
-    "strictNullChecks": false,
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "esModuleInterop": true
+    "compilerOptions": {
+      // ソースマップを有効化
+      "sourceMap": true,
+      // TSはECMAScript 5に変換
+      "target": "ES2022",
+      "lib": ["es2022"],
+      // TSのモジュールはES Modulesとして出力
+      "module": "esnext",
+      //"allowImportingTsExtensions": true,
+      "noEmitOnError": true,
+      "declaration": true,
+      "moduleResolution": "node",
+      // 厳密モードとして設定
+      "strict": true,
+      "outDir":"./js"
+    }
   }
-}

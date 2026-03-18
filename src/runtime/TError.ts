@@ -1,10 +1,17 @@
-function TError(message:string, src, pos:number, len=0) {
+import { SFile } from "@hoge1e3/sfile";
+import { isTonyuClass, TonyuClass } from "./RuntimeTypes";
+import { C_Meta } from "../lang/CompilerTypes";
+
+function isCMeta(src:any): src is C_Meta{
+	return src?.src;
+}
+export default function TError(message:string, src: SFile|string|C_Meta, pos:number, len=0) {
 	let rc;
-	const extend=(dst,src)=>{for (var k in src) dst[k]=src[k];return dst;};
+	//const extend=(dst,src)=>{for (var k in src) dst[k]=src[k];return dst;};
 	if (typeof src=="string") {
 		rc=TError.calcRowCol(src,pos);
 		message+=" at "+(rc.row)+":"+(rc.col);
-		return extend(new Error(message),{
+		return Object.assign(new Error(message),{
 			isTError:true,
 			src:{
 				path:function () {return "/";},
@@ -17,18 +24,18 @@ function TError(message:string, src, pos:number, len=0) {
 			}
 		});
 	}
-	let klass=null;
-	if (src && src.src) {
+	let klass:C_Meta|null=null;
+	if (isCMeta(src)) {
 		klass=src;
-		src=klass.src.tonyu;
+		if (klass.src) src=klass.src.tonyu;
 	}
-	if (typeof src.name!=="function" || typeof src.text!=="function") {
+	if (!SFile.is(src)) {
 		throw new Error("src="+src+" should be file object");
 	}
 	const s=src.text();
 	rc=TError.calcRowCol(s,pos);
 	message+=" at "+src.name()+":"+rc.row+":"+rc.col;
-	return extend(new Error(message),{
+	return Object.assign(new Error(message),{
 		isTError:true,
 		src,pos,row:rc.row, col:rc.col, len, klass,
 		raise: function () {
@@ -58,5 +65,4 @@ lines[row].length=4
 	}
 	return {row:row+1,col:col+1};
 };
-export=TError;
 //module.exports=TError;

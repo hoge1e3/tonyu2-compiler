@@ -476,4 +476,4 @@ if (root.Tonyu) {
 	throw new Error("Tonyu called twice!");
 }
 root.Tonyu=Tonyu;
-export= Tonyu;
+export default Tonyu;

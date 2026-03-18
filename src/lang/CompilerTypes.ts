@@ -1,3 +1,4 @@
+import { SFile } from "@hoge1e3/sfile";
 import { Constructor, FieldInfo, Meta } from "../runtime/RuntimeTypes";
 import { ScopeInfo } from "./compiler";
 import { IndentBuffer } from "./IndentBuffer";
@@ -29,14 +30,14 @@ export type ProjectOptions={
 export type BuilderContextDef={
 	destinations?: Destinations,
 };
-export type DependencySppec={
+export type DependencySpec={
 	namespace?: string;
 	dir?: string,
 	url?: string,
 }
 export type CompilerOptions={
 	namespace: string,
-	dependingProjects: DependencySppec[],
+	dependingProjects: DependencySpec[],
 	typeCheck?: boolean,
 	//typeInference?: boolean,
 	defaultSuperClass?: string,
@@ -83,7 +84,7 @@ export type C_Meta=Meta & {
 	decls: C_Decls,
 	superclass: C_Meta,
 	includes: C_Meta[],
-	src?: {tonyu?:any, js?:any, map?: string},
+	src?: {tonyu?:SFile, js?:SFile, map?: string},
     hasSemanticError?: boolean,
     jsNotUpToDate: boolean,
     directives: {

@@ -1,6 +1,6 @@
 import {tokenizerFactory} from "./tokenizerFactory";
 
-export= tokenizerFactory({
+export default tokenizerFactory({
 	caseInsensitive: true,
 	reserved:{
 		'while':true,

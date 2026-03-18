@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Compiler of Tonyu2, language for a game engine.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "build",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,6 +24,8 @@
   },
   "homepage": "https://github.com/hoge1e3/tonyu2-compiler#readme",
   "dependencies": {
+    "@hoge1e3/sfile": "^1.0.0",
+    "source-map": "^0.7.6",
     "source-map-support": "^0.5.19",
     "tmp": "^0.1.0"
   },

@@ -1,7 +1,7 @@
 //from https://codepen.io/hoge1e3/pen/OJJaKyV?editors=0010
-export= function StringBuilder(bufSize=1024) {
+export default function StringBuilder(bufSize=1024) {
     const buf=[""];
-    function rest(lastIdx) {
+    function rest(lastIdx:number) {
         return bufSize-buf[lastIdx].length;
     }
     function validate() {
@@ -9,7 +9,7 @@ export= function StringBuilder(bufSize=1024) {
             if (buf[i].length!==bufSize) {console.log(buf); throw new Error("NO!"); }
         }
     }
-    function append(content) {
+    function append(content:string) {
         content=content+"";
         while(content) {
             let lastIdx=buf.length-1;
@@ -25,12 +25,12 @@ export= function StringBuilder(bufSize=1024) {
         }
         validate();
     }
-    function rowcol(index) {
+    function rowcol(index: number) {
         const row=Math.floor(index/bufSize);
         const col=index % bufSize;
         return {row,col};
     }
-    function replace(index, replacement) {//replacement.length<= bufSize
+    function replace(index:number, replacement:string) {//replacement.length<= bufSize
         replacement=replacement+"";
         if (replacement.length>bufSize) {
             throw new Error("Cannot replace over len="+bufSize);
@@ -50,7 +50,7 @@ export= function StringBuilder(bufSize=1024) {
         }
         validate();
     }
-    function truncate(length) {
+    function truncate(length: number) {
         while(true) {
             let lastIdx=buf.length-1;
             let dec=buf[lastIdx].length-length;
@@ -70,7 +70,7 @@ export= function StringBuilder(bufSize=1024) {
         const lastIdx=buf.length-1;
         return bufSize*lastIdx+buf[lastIdx].length;
     }
-    function last(len) {
+    function last(len: number) {
         if (len>bufSize) {
             throw new Error("Cannot replace over len="+bufSize);
         }

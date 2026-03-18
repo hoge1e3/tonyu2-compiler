@@ -11,17 +11,16 @@ import {ExpressionParser} from "./ExpressionParser2";
 import Grammar from "./Grammar";
 import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
 import { BQH, BQT, BQX, Tokenizer } from "./tokenizerFactory";
-import { L } from "./ObjectMatcher";
 
 
-export= function PF({TT}:{TT:Tokenizer}) {
+export default function PF({TT}:{TT:Tokenizer}) {
 	//var p:any=Parser;
 	var $:any={};
 	var g=Grammar(TokensParser.context);
 	var G=g.get;
 
 	var tk=TokensParser.token;
-	function disp(n) {return JSON.stringify(n);}
+	function disp(n:any) {return JSON.stringify(n);}
 	var num=tk("number").ret(function (n) {
 		n.type="number";
 		if (typeof n.text!="string") throw new Error("No text for "+disp(n));

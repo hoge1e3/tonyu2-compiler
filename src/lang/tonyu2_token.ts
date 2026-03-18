@@ -1,6 +1,6 @@
 import {tokenizerFactory} from "./tokenizerFactory";
 
-export= tokenizerFactory({
+export default tokenizerFactory({
 	caseInsensitive: false,
 	reserved:{
 		"function":true, "var":true , "return":true, "typeof": true, "if":true,
