@@ -1,4 +1,5 @@
 node_modules/
+js/
 test/fixture/kc
 test/fixture/kinsho/files/log.txt
 test/fixture/kinsho/files/logold.txt

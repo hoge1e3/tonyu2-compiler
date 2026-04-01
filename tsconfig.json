@@ -8,7 +8,7 @@
       // TSのモジュールはES Modulesとして出力
       "module": "esnext",
       //"allowImportingTsExtensions": true,
-      "noEmitOnError": true,
+      "noEmitOnError": false,
       "declaration": true,
       "moduleResolution": "node",
       // 厳密モードとして設定

@@ -1,46 +1,49 @@
-//define(function (require,exports,module) {
-/*const root=require("root");*/
+import { SFile } from "@hoge1e3/sfile";
 
-import root from "../lib/root";
-
-function timeout(t) {
-    return new Promise(s=>setTimeout(s,t));
-}
-let vm;
-declare const global:any;
-declare const require:any;
-/*global global*/
-if (typeof global!=="undefined" && global.require && global.require.name!=="requirejs") {
-    vm=global.require("vm");
-}
 export class SourceFile {
-    url: any;
-    text: any;
-    file: any;
-    sourceMap: any;
+    url?: string;
+    text: string;
+    file?: SFile;
+    sourceMap: string;
     functions: any;
-    parent: SourceFiles;
+    parent?: SourceFiles;
     // var text, sourceMap:S.Sourcemap;
-    constructor(text, sourceMap) {
-        if (typeof text==="object") {
-            const params=text;
-            sourceMap=params.sourceMap;
+    constructor(text:string, sourceMap:string);
+    constructor(params:{
+        file?: SFile,
+        text?: string,
+        url?: string,
+        sourceMap:string, 
+    });
+    constructor(...args:any[]) {
+        if (typeof args[0]==="object") {
+            const params=args[0] as {
+                file?: SFile,
+                text?: string,
+                url?: string,
+                sourceMap:string, 
+            };
+            this.sourceMap=params.sourceMap;
             //functions=params.functions;
             if (params.file) {
                 this.file=params.file;
-                text=this.file.text();
+                this.text=this.file.text();
+            } else if (params.text) {
+                this.text=params.text;
             } else {
-                text=params.text;
+                throw new Error("Either file or text should be specified");
             }
             if (params.url) {
                 this.url=params.url;
             }
+        } else {
+            this.text=args[0] as string;
+            this.sourceMap=args[1] ??  args[1].toString();
+
         }
-        this.text=text;
-        this.sourceMap=sourceMap && sourceMap.toString();
         //this.functions=functions;
     }
-    async saveAs(outf) {
+    async saveAs(outf:SFile) {
         const mapFile=outf.sibling(outf.name()+".map");
         let text=this.text;
         //text+="\n//# traceFunctions="+JSON.stringify(this.functions);
@@ -51,65 +54,35 @@ export class SourceFile {
         await outf.text(text);
         //return Promise.resolve();
     }
-    exec(options) {
-        return new Promise((resolve, reject)=>{
-            if (root.window) {
-                const document=root.document;
-                let u;
-                if (this.url) {
-                    u=this.url;
-                } else {
-                    const b=new root.Blob([this.text], {type: 'text/plain'});
-                    u=root.URL.createObjectURL(b);
-                }
-                const s=document.createElement("script");
-                console.log("load script",u);
-                s.setAttribute("src",u);
-                s.addEventListener("load",e=>{
-                    resolve(e);
-                });
-                this.parent.url2SourceFile[u]=this;
-                document.body.appendChild(s);
-            } else if (options && options.tmpdir){
-                const tmpdir=options.tmpdir;
-                const uniqFile=tmpdir.rel(Math.random()+".js");
-                const mapFile=uniqFile.sibling(uniqFile.name()+".map");
-                let text=this.text;
-                text+="\n//# sourceMappingURL="+mapFile.name();
-                uniqFile.text(text);
-                mapFile.text(this.sourceMap);
-                //console.log("EX",uniqFile.exists());
-                require(uniqFile.path());
-                uniqFile.rm();
-                mapFile.rm();
-                resolve(void(0));
-            } else if (this.file && typeof require==="function") {
-                require(this.file.path());
-                resolve(void(0));
-            } else if (root.importScripts && this.url){
-                root.importScripts(this.url);
-                resolve(void(0));
-            } else {
-                const F=Function;
-                const f=(vm? vm.compileFunction(this.text) : new F(this.text));
-                resolve(f());
-            }
-        });
+    async exec() {        
+        let u;
+        if ((globalThis as any).pNode && this.file) {
+            const p=(globalThis as any).pNode;
+            return await p.importModule(this.file);
+        }
+        if (typeof process!=="undefined" && this.file) {
+            return await import(this.file.path());
+        }
+        if (this.url) {
+            u=this.url;
+        } else {
+            const b=new Blob([this.text], {type: 'text/plain'});
+            u=URL.createObjectURL(b);
+        }
+        if (this.parent) this.parent.url2SourceFile[u]=this;
+        return await import(u);
     }
     export() {
         return {text:this.text, sourceMap:this.sourceMap, functions:this.functions};
     }
 }
 export class SourceFiles {
-    url2SourceFile: {};
+    url2SourceFile= {} as Record<string, SourceFile>;
     constructor() {
         this.url2SourceFile={};
     }
-    add(text, sourceMap) {
+    add(text:string, sourceMap:string) {
         const sourceFile=new SourceFile(text, sourceMap);
-        /*if (sourceFile.functions) for (let k in sourceFile.functions) {
-            this.functions[k]=sourceFile;
-        }*/
         sourceFile.parent=this;
         return sourceFile;
     }

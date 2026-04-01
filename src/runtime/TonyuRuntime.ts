@@ -1,8 +1,6 @@
 import R from "../lib/R";
 import {IT,IT2} from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
-import root from "../lib/root";
-import assert, { opt } from "../lib/assert";
 import { ClassDefinition, ClassDefinitionContext, ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
 import TError from "./TError";
 import { ProjectOptions } from "../lang/CompilerTypes";
@@ -20,15 +18,7 @@ const reservedWords=[
     "this",    "throw",    "throws",    "transient",    "true",    "try",    "typeof",
     "var",    "void",    "volatile",    "while",    "with",    "yield"
 ];
-// old browser support
-if (!root.performance) {
-	root.performance = {};
-}
-if (!root.performance.now) {
-	root.performance.now = function now() {
-		return Date.now();
-	};
-}
+
 function thread() {
 	var t=new TonyuThread(Tonyu);
 	t.handleEx=handleEx;
@@ -60,7 +50,6 @@ function addMeta(fn:string,m:Partial<Meta>):Meta {
 	// why use addMeta?
 	// because when compiled from source, additional info(src file) is contained.
 	// k.meta={...} erases these info
-	assert.is(arguments,[String,Object]);
 	return extend(klass.getMeta(fn), m);
 }
 function getMeta(klass: Meta|TonyuClass):Meta {
@@ -78,18 +67,18 @@ var klass={
 			if (n.substring(0,ns.length)===ns) delete classMetas[n];
 		}
 	},
-	getMeta(k:string):Meta {// Class or fullName
+	getMeta(k:string|Function):Meta {// Class or fullName
 		if (typeof k=="function") {
 			return (k as any).meta as Meta;
-		} else if (typeof k=="string"){
+		} else /*if (typeof k=="string")*/{
 			var mm = classMetas[k];
 			if (!mm) classMetas[k]=mm={} as Meta;
 			return mm;
 		}
 	},
-	ensureNamespace(top,nsp) {
+	ensureNamespace(top:ClassTree,nsp:string) {
 		var keys=nsp.split(".");
-		var o=top;
+		var o=top as any;
 		var i;
 		for (i=0; i<keys.length; i++) {
 			var k=keys[i];
@@ -98,7 +87,7 @@ var klass={
 		}
 		return o;
 	},
-	hasNamespace(top,nsp) {
+	hasNamespace(top:ClassTree,nsp:string) {
 		return nsp in top;
 	},
 /*Function.prototype.constructor=function () {
@@ -120,7 +109,7 @@ var klass={
 		type ClassCheckContext={
 			path:Meta[],
 		};
-		function addKlassAndNameToDecls(klass) {
+		function addKlassAndNameToDecls(klass:ClassDefinition|Meta) {
 			for (let name of Object.keys(decls.fields)) {
 				Object.assign(klass.decls.fields[name],{name, klass});
 			}
@@ -159,16 +148,20 @@ var klass={
 			chkmeta(c.meta,ctx);
 			return c;
 		}
-		function extender(_parent:TonyuClass, ctx:ClassDefinitionContext):TonyuShimClass {
-			let parent:TonyuShimClass=_parent;
+		function extender(_parent:TonyuClass|TonyuShimClass|null, ctx:ClassDefinitionContext):TonyuShimClass {
+			let parent:TonyuShimClass|null=_parent;
 			var isShim=!ctx.init;
 			var includesRec=ctx.includesRec;
-			if (includesRec[fullName]) return parent;
+			if (includesRec[fullName]) {
+				if (!parent) throw new Error(R("includesCannotBeUsedWithoutSuperclass"))
+				return parent;
+			}
 			includesRec[fullName]=true;
 			//console.log(ctx.initFullName, fullName);//,  includesRec[fullName],JSON.stringify(ctx));
-			includes.forEach((m:TonyuClass)=>{
+			for (let m of includes) {
+				if (!parent) throw new Error(R("includesCannotBeUsedWithoutSuperclass"))
 				parent=m.extendFrom(parent,extend(ctx,{init:false}));
-			});
+			};
 			var methods=typeof methodsF==="function"? methodsF(parent):methodsF;
 			/*if (typeof Profiler!=="undefined") {
 				Profiler.profile(methods, fullName);
@@ -206,7 +199,7 @@ var klass={
 			// methods: res's own methods(no superclass/modules)
 			//res.methods=methods;
 			var prot=res.prototype;
-			var props={};
+			var props={} as Record<string,1>;
 			//var propReg=klass.propReg;//^__([gs]et)ter__(.*)$/;
 			//var k;
 			for (let k in methods) {
@@ -241,7 +234,7 @@ var klass={
 			prot.isTonyuObject=true;
 			//console.log("Prots1",props);
 			for (let k of Object.keys(props)) {
-				const desc={};
+				const desc={} as Record<string,1>;
 				for (let type of ["get", "set"] as ("get"|"set")[]) {
 					const tter=prot[property.methodFor(type, k)];
 					if (tter) {
@@ -292,7 +285,7 @@ var klass={
 	},*/
 	getDependingClasses(_k:Meta|TonyuClass) {
 		const k:Meta=getMeta(_k);
-		var res=[];
+		var res=[] as Meta[];
 		if (k.superclass) res=[k.superclass];
 		if (k.includes) res=res.concat(k.includes);
 		return res;
@@ -326,11 +319,12 @@ function getGlobal(n:string) {
 function getClass(n:string) {
 	//CFN: n.split(".")
 	var ns=n.split(".");
-	var res=classes;
+	var _res:any=classes;
 	ns.forEach(function (na) {
 		if (!res) return;
-		res=res[na];
+		_res=_res[na];
 	});
+	const res:TonyuClass=_res;
 	if (!res && ns.length==1) {
 		var found:string;
 		for (var nn in classes) {
@@ -369,7 +363,7 @@ function callFunc(f,args, fName) {
 	if (typeof f!="function") throw new Error(R("notAFunction",fName));
 	return f.apply({},args);
 }
-function checkNonNull(v, name) {
+function checkNonNull(v:any, name:string) {
 	if (v!=v || v==null) throw new Error(R("uninitialized",name,v));
 	return v;
 }
@@ -387,10 +381,10 @@ function not_a_tonyu_object(o) {
 	console.log("Not a tonyu object: ",o);
 	throw new Error(o+" is not a tonyu object");
 }
-function hasKey(k, obj) {
+function hasKey(k:any, obj:any) {
 	return k in obj;
 }
-function run(bootClassName) {
+function run(bootClassName:string) {
 	var bootClass=getClass(bootClassName);
 	if (!isTonyuClass(bootClass)) throw new Error( R("bootClassIsNotFound",bootClassName));
 	Tonyu.runMode=true;
@@ -405,10 +399,10 @@ function run(bootClassName) {
 	//$LASTPOS=0;
 	//th.steps();
 }
-var lastLoopCheck=root.performance.now();
+var lastLoopCheck=performance.now();
 var prevCheckLoopCalled;
 function checkLoop() {
-	var now=root.performance.now();
+	var now=performance.now();
 	if (now-lastLoopCheck>1000) {
 		resetLoopCheck(10000);
 		throw new Error(R("infiniteLoopDetected"));
@@ -416,7 +410,7 @@ function checkLoop() {
 	prevCheckLoopCalled=now;
 }
 function resetLoopCheck(disableTime: number) {
-	lastLoopCheck=root.performance.now()+(disableTime||0);
+	lastLoopCheck=performance.now()+(disableTime||0);
 }
 function is(obj:any, klass:any) {
 	if (typeof klass==="string") {
@@ -463,7 +457,7 @@ const Tonyu={
 		currentThread: null as TonyuThread,
 		runMode: false,
 		onRuntimeError: (e:Error)=>{
-			if (root.alert) root.alert("Error: "+e);
+			if (typeof alert!=="undefined") alert("Error: "+e);
 			console.log(e.stack);
 			throw e;
 		},TError,
@@ -471,9 +465,9 @@ const Tonyu={
 		A, ID:Math.random()
 };
 //const TT=TonyuThreadF(Tonyu);
-if (root.Tonyu) {
+if (globalThis.Tonyu) {
 	console.error("Tonyu called twice!");
 	throw new Error("Tonyu called twice!");
 }
-root.Tonyu=Tonyu;
+globalThis.Tonyu=Tonyu;
 export default Tonyu;

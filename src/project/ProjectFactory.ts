@@ -1,18 +1,22 @@
 //define(function (require,exports,module) {
 // This factory will be widely used, even BitArrow.
 
-import { DependencySpec } from "../lang/CompilerTypes";
-
+import { SFile } from "@hoge1e3/sfile";
+import { DependencySpec, ProjectOptions } from "../lang/CompilerTypes.js";
+import {FS } from "./FS.js";
+import * as path from "path";
+import { DirBasedCore, DirBasedMod, DirBasedOptions, IProject, IProjectCore } from "./projectTypes.js";
 
 //let Compiler, /*SourceFiles,*/sysMod,run2Mod;
-type IProject=ProjectCore;
-type DependencyResolver=(prj:IProject, spec:DependencySpec)=>IProject;
-const resolvers=[] as DependencyResolver[],types={};
+//export type IProject=ProjectCore;
+export type DependencyResolver=(prj:IProject, spec:DependencySpec)=>IProject;
+export type ProjectFunc=(params:any)=>IProject;
+const resolvers=[] as DependencyResolver[],types={} as Record<string, ProjectFunc>;
 export const addDependencyResolver=(f:DependencyResolver)=>{
     //f: (prj, spec) => prj
     resolvers.push(f);
 };
-export const addType=(n:string,f)=>{
+export const addType=(n:string,f:ProjectFunc)=>{
     types[n]=f;
 };
 export const fromDependencySpec=function (prj:IProject,spec: DependencySpec) {
@@ -29,76 +33,83 @@ export const fromDependencySpec=function (prj:IProject,spec: DependencySpec) {
         });
     }*/
 };
-export const create=function (type,params) {
+export const create=function (type:string, params:any) {
     if (!types[type]) throw new Error(`Invalid type ${type}`);
     return types[type](params);
 };
-export class ProjectCore {
-    getPublishedURL(){}//override in BAProject
-    getOptions(opt) {return {};}//stub
-    getName() {
-        return this.dir.name().replace(/\/$/,"");
+export class ProjectCore implements IProjectCore{
+    getPublishedURL():string{
+        throw new Error("Not implemented");
+    }//override in BAProject
+    getOptions() {return {} as ProjectOptions;}//stub
+    getName():string {
+        throw new Error("Not implemented");
     }
-    getDependingProjects() {
+    getDependingProjects():IProject[] {
         var opt=this.getOptions();
         var dp=(opt.compiler && opt.compiler.dependingProjects) || [];
         return dp.map(dprj=>
-            ProjectCore.factory.fromDependencySpec(this,dprj)
+            fromDependencySpec(this,dprj)
         );
     }
-    include(mod) {
+    include<T>(mod:T) {
+        const res=this as (T & this);
         for (let k of Object.getOwnPropertyNames(mod)) {
-            if (typeof mod[k]==="function") this[k]=mod[k];
+            const amod=mod as any;
+            if (typeof amod[k]==="function") (res as any)[k]=amod[k];
         }
-        return this;
+        return res;
     }
-    delegate(obj) {
+    delegate(obj:any) {
+        const res:any=this;
         if (obj.constructor.prototype) {
-            const add=k=>{
-                if (typeof obj[k]==="function") this[k]=(...args)=>obj[k](...args);
+            const add=(k:string)=>{
+                if (typeof obj[k]==="function") res[k]=(...args:any[])=>obj[k](...args);
             };
             for (let k of Object.getOwnPropertyNames(obj.constructor.prototype)) add(k);
         }
-        return this;
+        return res;
     }
 }
 //ProjectCore.factory=exports;
 export const createCore=()=>new ProjectCore();
-const dirBasedMod={
-    getDir() {return this.dir;},
-    resolve(rdir){// not in compiledProject
-        if (rdir instanceof Array) {
+const dirBasedMod:DirBasedMod={
+    getDir() {return (this as DirBasedCore).dir;},
+    getName() {
+        return this.getDir().name().replace(/\/$/,"");
+    },
+    resolve(rdir:SFile|string){// not in compiledProject
+        /*if (rdir instanceof Array) {
             var res=[];
             rdir.forEach(function (e) {
                 res.push(this.resolve(e));
             });
             return res;
-        }
+        }*/
         if (typeof rdir=="string") {
-            /*global FS*/ //TODO
-            if (typeof FS!=="undefined") {
-                return FS.resolve(rdir, this.getDir().path());
+            if (path.isAbsolute(rdir) ) {
+                return FS.get(path.join(rdir));
             } else {
                 return this.getDir().rel(rdir);
             }
         }
-        if (!rdir || !rdir.isDir) throw new Error("Cannot TPR.resolve: "+rdir);
+        if (!SFile.is(rdir)) throw new Error("Cannot TPR.resolve: "+rdir);
         return rdir;
     },
-    getOptions(opt) {
-        return this.getOptionsFile().obj();
+    getOptions() {
+        return this.getOptionsFile().obj() as ProjectOptions;
     },
     getOptionsFile() {// not in compiledProject
-        var resFile=this.dir.rel("options.json");
+        var resFile=this.getDir().rel("options.json");
         return resFile;
     },
-    setOptions(opt) {// not in compiledProject
+    setOptions(opt:ProjectOptions) {// not in compiledProject
         return this.getOptionsFile().obj(opt);
     },
-    fixOptions(TPR,opt) {// required in BAProject
+    fixOptions(TPR:any,opt:any) {// required in BAProject
         if (!opt.compiler) opt.compiler={};
     },
-    getOutputFile(lang) {// not in compiledProject
+    getOutputFile(lang:string="tonyu") {// not in compiledProject
         var opt=this.getOptions();
         var outF=this.resolve(opt.compiler.outputFile||"js/concat.js");
         if (outF.isDir()) {
@@ -109,13 +120,13 @@ const dirBasedMod={
     removeOutputFile() {// not in compiledProject
         this.getOutputFile().rm();
     },
-    path(){return this.dir.path();},// not in compiledProject
+    path(){return this.getDir().path();},// not in compiledProject
     getEXT() {throw new Error("getEXT must be overriden.");},//stub
     sourceFiles() {
-        const res={};
+        const res={} as Record<string,SFile>;
         const ext=this.getEXT();
-        this.dir.recursive(collect);
-        function collect(f) {
+        this.getDir().recursive(collect);
+        function collect(f:SFile) {
             if (f.endsWith(ext)) {
                 var nb=f.truncExt(ext);
                 res[nb]=f;
@@ -124,10 +135,9 @@ const dirBasedMod={
         return res;
     }
 };
-export const createDirBasedCore=function (this: ProjectCore, params) {
-    const res=createCore() as typeof dirBasedMod;
+export const createDirBasedCore=function (params:DirBasedOptions) {
+    const res=createCore() as DirBasedCore;
     res.dir=params.dir;
     if (!res.dir.exists()) throw new Error(res.dir.path()+" Does not exist.");
-    return res.include(dirBasedMod);
+    return res.include(dirBasedMod) as DirBasedCore; 
 };
-//});/*--end of define--*/

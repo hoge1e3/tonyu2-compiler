@@ -39,6 +39,7 @@ export type CompilerOptions={
 	namespace: string,
 	dependingProjects: DependencySpec[],
 	typeCheck?: boolean,
+	outputFile?: string,
 	//typeInference?: boolean,
 	defaultSuperClass?: string,
 	field_strict?: boolean,

@@ -2,7 +2,7 @@ export type MetaMap={[key: string]:Meta};
 export type ClassTree={[key:string]:ClassTree}|TonyuClass; // Tonyu.classes.user.Hoge  Tonyu.classes.kernel.Actor etc
 export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:MethodInfo};
 export type Constructor = new (...args: any[]) => any;
-export type Extender=(parent:TonyuShimClass, ctx:ClassDefinitionContext)=>TonyuShimClass;
+export type Extender=(parent:TonyuShimClass|null, ctx:ClassDefinitionContext)=>TonyuShimClass;
 export type TonyuClass= Constructor & {meta:Meta, extendFrom:Extender};
 export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Extender};
 export function isTonyuClass(v:any):v is TonyuClass {
@@ -29,7 +29,7 @@ export type MethodInfo={
 
 export type ShimMeta=Meta | {isShim: true, extenderFullName:string, func: TonyuShimClass};
 export type FuncMap={[key:string]: Function};
-export type FuncMapFactory=(superclass:TonyuShimClass)=>FuncMap;
+export type FuncMapFactory=(superclass:TonyuShimClass|null)=>FuncMap;
 export type ClassDefinition={
 	superclass:TonyuClass|null,
 	includes:TonyuClass[],
@@ -46,7 +46,7 @@ export type ClassDefinitionContext={
 	init: boolean,
 	includesRec: {[key:string]:boolean},
 	//initFullName: string,
-	nonShimParent?: TonyuClass,
+	nonShimParent: TonyuClass|null,
 
 };
 export type DeclsInDefinition={

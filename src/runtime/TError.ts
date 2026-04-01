@@ -5,8 +5,21 @@ import { C_Meta } from "../lang/CompilerTypes";
 function isCMeta(src:any): src is C_Meta{
 	return src?.src;
 }
-export default function TError(message:string, src: SFile|string|C_Meta, pos:number, len=0) {
+export type TError=Error&{
+	isTError:boolean,
+	src:{
+		path():string,
+		name():string,
+		text():string,
+	},
+	pos:number, row:number, col:number, len:number,
+	klass?: C_Meta,
+	raise():void,
+}
+export default function TError(message:string, src: SFile|string|C_Meta, pos:number, len=0):TError {
 	let rc;
+	let klass:C_Meta|null=null;
+	let srcFile:TError["src"];
 	//const extend=(dst,src)=>{for (var k in src) dst[k]=src[k];return dst;};
 	if (typeof src=="string") {
 		rc=TError.calcRowCol(src,pos);
@@ -23,21 +36,26 @@ export default function TError(message:string, src: SFile|string|C_Meta, pos:num
 				throw this;
 			}
 		});
-	}
-	let klass:C_Meta|null=null;
-	if (isCMeta(src)) {
+	} else if (isCMeta(src)) {
 		klass=src;
-		if (klass.src) src=klass.src.tonyu;
-	}
-	if (!SFile.is(src)) {
+		if (klass?.src?.tonyu) srcFile=klass.src.tonyu;
+		else srcFile={
+			path() {return "/";},
+			name() { return "unknown name";},
+			text() { return "unknown src";}
+		};
+	} else if (SFile.is(src)) {
+		srcFile=src;
+	} else {
 		throw new Error("src="+src+" should be file object");
 	}
-	const s=src.text();
+	const s=srcFile.text();
 	rc=TError.calcRowCol(s,pos);
-	message+=" at "+src.name()+":"+rc.row+":"+rc.col;
+	message+=" at "+srcFile.name()+":"+rc.row+":"+rc.col;
 	return Object.assign(new Error(message),{
 		isTError:true,
-		src,pos,row:rc.row, col:rc.col, len, klass,
+		src:srcFile,
+		pos,row:rc.row, col:rc.col, len, klass,
 		raise: function () {
 			throw this;
 		}
