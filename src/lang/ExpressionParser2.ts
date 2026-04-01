@@ -32,6 +32,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 				}
 			},
 			get() {
+				if (!e) throw new Error("compsite: no parser added.");
 				return e;
 			}
 		};
@@ -50,7 +51,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		};
 	}
 	function toStrF(...attrs:string[]) {
-		return function () {
+		return function (this:any) {
 			let buf="(";
 			for (let a of attrs) {
 				buf+=this[a];
@@ -66,7 +67,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 	type MkPostfix=(left:any, op:any)=>any;
 	type MkTrifix=(left:any, op:any, mid:any, op2:any, right:any)=>any;
 	const $={
-		element(e) {
+		element(e:Parser) {
 			prefixOrElement.reg("element", -1, e);
 			element.add(e);
 		},
@@ -109,7 +110,7 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		mkTrifixr(f:MkTrifix) {
 			$.mkTrifixr_def=f;
 		},
-		built: null,
+		built: null as null|Parser,
 		build() {
 			//postfixOrInfix.build();
 			//prefixOrElement.build();
@@ -146,7 +147,11 @@ export function ExpressionParser (context: ParserContext, name="Expression") {
 		},
 		lazy() {
 			return context.create(
-				(st:State)=>$.built.parse(st)
+				(st:State)=>{
+					const p=$.built;
+					if (!p) throw new Error("lazy: not built yet");
+					return p.parse(st);
+				}
 			).setName(name,{type:"lazy",name});
 		},
 	};

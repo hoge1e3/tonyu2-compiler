@@ -4,6 +4,7 @@
 	type Variable = Function & {
 		vname:string, cond:any
 	};
+	type Template=any;
 	export function v(name:string, cond={}):Variable {
 		const res=function (cond2:any) {
 			const cond3=Object.assign({},cond);
@@ -17,7 +18,7 @@
 		return res;
 	}
 	function isVariable(a:any): a is Variable {
-		return a[VAR];
+		return a&&a[VAR];
 	}
 	//OM.isVar=isVar;
 	export const A=v("A");
@@ -51,15 +52,13 @@
 		var c=names.substring(i,i+1);
 		OM[c]=v(c);
 	}*/
-	export function isVar(o) {
-		return o && o[VAR];
-	}
-	export function match(obj, tmpl) {
+	export const isVar=isVariable;
+	export function match(obj:object, tmpl:Template) {
 		var res={};
 		if (m(obj,tmpl,res)) return res;
 		return null;
 	};
-	function m(obj, tmpl, res) {
+	function m(obj:any, tmpl:Template, res:Record<string,any>) {
 		if (obj===tmpl) return true;
 		else if (obj==null) return false;
 		else if (isVariable(tmpl)) {

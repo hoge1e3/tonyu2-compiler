@@ -55,7 +55,7 @@ export default function TError(message:string, src: SFile|string|C_Meta, pos:num
 	return Object.assign(new Error(message),{
 		isTError:true,
 		src:srcFile,
-		pos,row:rc.row, col:rc.col, len, klass,
+		pos,row:rc.row, col:rc.col, len, klass:klass??undefined,
 		raise: function () {
 			throw this;
 		}

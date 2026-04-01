@@ -1,11 +1,11 @@
-import SourceMap from "./source-map";
+import * as SourceMap from "source-map";
 import {sourceFiles} from "./SourceFiles";
-import StackTrace from "./stacktrace";
+import * as StackTrace from "stacktrace-js";
 
 /*const S=require("./source-map");
 const StackTrace=require("./stacktrace");
 const SourceFiles=require("./SourceFiles");*/
-export= {
+export default {
     async decode(e) {
         try{
             const tr=await StackTrace.fromError(e,{offline:true});

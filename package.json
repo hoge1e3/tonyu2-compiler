@@ -24,13 +24,16 @@
   },
   "homepage": "https://github.com/hoge1e3/tonyu2-compiler#readme",
   "dependencies": {
+    "@hoge1e3/content": "^2.0.2",
     "@hoge1e3/sfile": "^1.0.0",
     "@types/web": "^0.0.343",
     "source-map": "^0.7.6",
     "source-map-support": "^0.5.19",
+    "stacktrace-js": "^2.0.2",
     "tmp": "^0.1.0"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "browserify": "^16.5.2",
     "ts-migrate": "^0.0.0",
     "typescript": "^5.7.3"
