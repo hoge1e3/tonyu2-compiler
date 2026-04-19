@@ -1,40 +1,41 @@
 import { SFile } from "@hoge1e3/sfile";
 
+type SourceFileParam=FileBasedSourceFileParam|URLBasedSourceFileParam;
+type FileBasedSourceFileParam={
+    file?: SFile,
+    text?: string,
+    sourceMap?:string, 
+};
+type URLBasedSourceFileParam={url:string};
+function isURLBasedSourceFileParam(p:SourceFileParam):p is URLBasedSourceFileParam {
+    return (p as any).url;
+}
 export class SourceFile {
     url?: string;
-    text: string;
+    text?: string;
     file?: SFile;
-    sourceMap: string;
+    sourceMap?: string;
     functions: any;
     parent?: SourceFiles;
     // var text, sourceMap:S.Sourcemap;
     constructor(text:string, sourceMap:string);
-    constructor(params:{
-        file?: SFile,
-        text?: string,
-        url?: string,
-        sourceMap:string, 
-    });
+    constructor(params:SourceFileParam);
     constructor(...args:any[]) {
         if (typeof args[0]==="object") {
-            const params=args[0] as {
-                file?: SFile,
-                text?: string,
-                url?: string,
-                sourceMap:string, 
-            };
-            this.sourceMap=params.sourceMap;
-            //functions=params.functions;
-            if (params.file) {
-                this.file=params.file;
-                this.text=this.file.text();
-            } else if (params.text) {
-                this.text=params.text;
-            } else {
-                throw new Error("Either file or text should be specified");
-            }
-            if (params.url) {
+            const params=args[0] as SourceFileParam;
+            if (isURLBasedSourceFileParam(params)) {
                 this.url=params.url;
+            } else {
+                this.sourceMap=params.sourceMap;
+                //functions=params.functions;
+                if (params.file) {
+                    this.file=params.file;
+                    this.text=this.file.text();
+                } else if (params.text) {
+                    this.text=params.text;
+                } else {
+                    throw new Error("Either file or text should be specified");
+                }
             }
         } else {
             this.text=args[0] as string;
@@ -46,6 +47,7 @@ export class SourceFile {
     async saveAs(outf:SFile) {
         const mapFile=outf.sibling(outf.name()+".map");
         let text=this.text;
+        if (!text) throw new Error("Cannot save: this source file is URL based");
         //text+="\n//# traceFunctions="+JSON.stringify(this.functions);
         if (this.sourceMap) {
             await mapFile.text(this.sourceMap);
@@ -56,17 +58,18 @@ export class SourceFile {
     }
     async exec() {        
         let u;
-        if ((globalThis as any).pNode && this.file) {
-            const p=(globalThis as any).pNode;
+        const g=(globalThis as any);
+        if (g.pNode && this.file) {
+            const p=g.pNode;
             return await p.importModule(this.file);
         }
-        if (typeof process!=="undefined" && this.file) {
+        if (g.process && this.file) {
             return await import(this.file.path());
         }
         if (this.url) {
             u=this.url;
         } else {
-            const b=new Blob([this.text], {type: 'text/plain'});
+            const b=new Blob([this.text!], {type: 'text/plain'});
             u=URL.createObjectURL(b);
         }
         if (this.parent) this.parent.url2SourceFile[u]=this;
@@ -81,8 +84,12 @@ export class SourceFiles {
     constructor() {
         this.url2SourceFile={};
     }
-    add(text:string, sourceMap:string) {
-        const sourceFile=new SourceFile(text, sourceMap);
+    add(text:string, sourceMap:string):SourceFile;
+    add(params:SourceFileParam):SourceFile;
+    add(text:string|SourceFileParam, sourceMap?:string):SourceFile {
+        const sourceFile=typeof text==="string"?
+            new SourceFile(text, sourceMap!):
+            new SourceFile(text);
         sourceFile.parent=this;
         return sourceFile;
     }

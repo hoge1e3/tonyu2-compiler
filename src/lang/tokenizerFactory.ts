@@ -1,5 +1,5 @@
-import { is } from "../runtime/TonyuRuntime";
-import { ALL, Parser, State, StringParser, StrLikeResult, StrStateSrc } from "./parser";
+import { RegExpLike } from "./NodeTypes";
+import { ALL, ParsedNode, Parser, State, StringParser, StrLikeResult, StrStateSrc, Token } from "./parser";
 
 //import Parser from "./parser";
 export type ReservedList={[key: string]:boolean};
@@ -23,7 +23,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		8192: 1, 8193: 1, 8194: 1, 8195: 1, 8196: 1, 8197: 1, 8198: 1, 8199: 1,
 		8200: 1, 8201: 1, 8202: 1, 8232: 1, 8233: 1, 8239: 1, 8287: 1,
 		12288: 1, 65279: 1
-	};
+	} as Record<number,1|undefined>;
 	function skipSpace(str:string,pos:number) {
 		const spos=pos;
 		const max=str.length;
@@ -60,12 +60,13 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	}
 	//var sp=Parser.StringParser;
 	var SAMENAME="SAMENAME";
-	const DIV=1,REG=2;
-	type Mode=number;
+	type SAMENAME="SAMENAME";
+	const DIV:Mode=1,REG:Mode=2;
+	type Mode=1|2|3;
 	//var space=sp.reg(/^(\s*(\/\*\/?([^\/]|[^*]\/|\r|\n)*\*\/)*(\/\/.*\r?\n)*)*/).setName("space");
 	var space=new StringParser().strLike(skipSpace).setName("space");
 	const sp=StringParser.withSpace(space);
-	function tk(r, name?:string) {
+	function tk(r:string|RegExpLike, name?:string) {
 		let pat:Parser;
 		//let fst:string;
 		if (typeof r=="string") {
@@ -92,22 +93,27 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		//if (fst) res=res.first(fst);
 		//return res;//.profile();
 	}
-	var parsers:any={},posts:any={};
+	var parsers:Record<string,Parser>={},posts:Record<string,Mode>={};
 	function dtk2(prev:Mode, name:string, parser:Parser|string) {
 		//console.log("2reg="+prev+" name="+name);
 		if (typeof parser=="string") parser=tk(parser, name);
-		parsers[prev]=or(parsers[prev], parser.ret((res)=>{
+		parsers[prev]=or(parsers[prev], parser.ret((res:any)=>{
 			res.type=name;
 			return res;
 		}).setName(name) );
 	}
-	function dtk(prev:Mode, name:string, parser, post:Mode) {
-		if(name==SAMENAME) name=parser;
-		for (var m=1; m<=prev; m*=2) {
+	function dtk(prev:Mode, name:string, parser:Parser|string, post:Mode):void;
+	function dtk(prev:Mode, name:SAMENAME, parser:string, post:Mode):void;
+	function dtk(prev:Mode, name:string, parser:Parser|string, post:Mode) {
+		if(name==SAMENAME) { 
+			if (typeof parser!=="string") throw new Error("dtk invalid arg");
+			name=parser;
+		}
+		for (var m:Mode=1; m<=prev; m*=2) {
 			//prev=1  -> m=1
 			//prev=2  -> m=1x,2
 			//XXprev=3  -> m=1,2,3
-			if ((prev&m)!=0) dtk2(prev&m, name, parser);
+			if ((prev&m)!=0) dtk2((prev&m)as Mode, name, parser);
 		}
 		posts[name]=post;
 	}
@@ -116,7 +122,7 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		return a.or(b);
 	}
 	class Step {
-		mode=REG;
+		mode=REG as Mode;
 		constructor(public state:State) {
 		}
 		next() {
@@ -145,12 +151,12 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		}
 		return res;
 	}
-	function tokenizeBQ(bqt:any, stp: Step) {
+	function tokenizeBQ(bqt:ParsedNode, stp: Step) {
 		let state=stp.state;
 		let str=(state.src as StrStateSrc).str;
 		let pos=state.pos;
 		let opos=pos;
-		const subs=[];
+		const subs=[] as ParsedNode[];
 		bqt.subs=subs;
 		bqt.type=BQ;
 		const pushBQX=()=>{
@@ -185,12 +191,12 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 	}	
 	function flattenBQ(tokens:any[]):any[] {
 		const res=[];
-		const isAry=(a)=>a && typeof a.map==="function";
+		//const isAry=(a)=>a && typeof a.map==="function";
 		for (let token of tokens) {
 			if (token.type===BQ) {
 				res.push({type:BQH, text:"`", pos:token.pos});
 				for (let sub of token.subs){
-					if (isAry(sub)) {
+					if (Array.isArray(sub)) {
 						for (let e of flattenBQ(sub)) {
 							res.push(e);
 						}
@@ -241,109 +247,110 @@ export function tokenizerFactory({reserved,caseInsensitive}:{reserved: ReservedL
 		return st;
 	}).setName("tokens:all");
 	// Tested at https://codepen.io/hoge1e3/pen/NWWaaPB?editors=1010
-	var num=tk(/^(?:0x[0-9a-f]+|0b[01]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e-?[0-9]+)?)/i,"'number'").ret(function (n) {
+	var num=tk(/^(?:0x[0-9a-f]+|0b[01]+|(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:e-?[0-9]+)?)/i,"'number'").ret(function (_n:Token) {
+		const n=_n as any;
 		n.type="number";
-		n.value=n.text-0;//parseInt(n.text);
+		n.value=Number(n.text);//parseInt(n.text);
 		return n;
 	}).first("0123456789");
-	var literal=tk({exec: function (s) {
+	var literal=tk({exec: function (s:string) {
 		var head=s.substring(0,1);
-		if (head!=='"' && head!=="'") return false;
+		if (head!=='"' && head!=="'") return null;
 		for (var i=1 ;i<s.length ; i++) {
 			var c=s.substring(i,i+1);
 			if (c===head) {
-				return [s.substring(0,i+1)];
+				return [s.substring(0,i+1)] as RegExpExecArray;
 			} else if (c==="\\") {
 				if (s[i]==='u') i+=4;
 				else i++;
 			}
 		}
-		return false;
+		return null;
 	},toString:function(){return"'literal'";}
 	}).first("\"'");
-	var regex=tk({exec: function (s) {
-		if (s.substring(0,1)!=='/') return false;
+	var regex=tk({exec: function (s:string) {
+		if (s.substring(0,1)!=='/') return null;
 		for (var i=1 ;i<s.length ; i++) {
 			var c=s.substring(i,i+1);
 			if (c==='/') {
-				var r=/^[ig]*/.exec( s.substring(i+1) );
-				return [s.substring(0,i+1+r[0].length)];
+				var r=/^[ig]*/.exec( s.substring(i+1) )!;
+				return [s.substring(0,i+1+r[0].length)] as RegExpExecArray; 
 			} else if (c=="\n") {
-				return false;
+				return null;
 			} else if (c==="\\") {
 				i++;
 			}
 		}
-		return false;
+		return null;
 	},toString:function(){return"'regex'";}
 	}).first("/");
-
-	dtk(REG|DIV, "number", num,DIV );
+	const REG_DIV=(REG|DIV) as Mode;
+	dtk(REG_DIV, "number", num,DIV );
 	dtk(REG,  "regex" ,regex,DIV );
-	dtk(REG|DIV,  "literal" ,literal,DIV );
-	dtk(REG|DIV, BQH, "`", DIV);
+	dtk(REG_DIV,  "literal" ,literal,DIV );
+	dtk(REG_DIV, BQH, "`", DIV);
 
-	dtk(REG|DIV,SAMENAME ,"++",DIV );
-	dtk(REG|DIV,SAMENAME ,"--",DIV );
+	dtk(REG_DIV,SAMENAME ,"++",DIV );
+	dtk(REG_DIV,SAMENAME ,"--",DIV );
 
-	dtk(REG|DIV,SAMENAME ,"!==",REG );
-	dtk(REG|DIV,SAMENAME ,"===",REG );
-	dtk(REG|DIV,SAMENAME ,">>>",REG );
-	dtk(REG|DIV,SAMENAME ,"+=",REG );
-	dtk(REG|DIV,SAMENAME ,"-=",REG );
-	dtk(REG|DIV,SAMENAME ,"*=",REG );
-	dtk(REG|DIV,SAMENAME ,"/=",REG );
-	dtk(REG|DIV,SAMENAME ,"%=",REG );
-	dtk(REG|DIV,SAMENAME ,">=",REG );
-	dtk(REG|DIV,SAMENAME ,"<=",REG );
-	dtk(REG|DIV,SAMENAME ,"!=",REG );
-	dtk(REG|DIV,SAMENAME ,"==",REG );
-	dtk(REG|DIV,SAMENAME ,">>",REG );
-	dtk(REG|DIV,SAMENAME ,"<<",REG );
+	dtk(REG_DIV,SAMENAME ,"!==",REG );
+	dtk(REG_DIV,SAMENAME ,"===",REG );
+	dtk(REG_DIV,SAMENAME ,">>>",REG );
+	dtk(REG_DIV,SAMENAME ,"+=",REG );
+	dtk(REG_DIV,SAMENAME ,"-=",REG );
+	dtk(REG_DIV,SAMENAME ,"*=",REG );
+	dtk(REG_DIV,SAMENAME ,"/=",REG );
+	dtk(REG_DIV,SAMENAME ,"%=",REG );
+	dtk(REG_DIV,SAMENAME ,">=",REG );
+	dtk(REG_DIV,SAMENAME ,"<=",REG );
+	dtk(REG_DIV,SAMENAME ,"!=",REG );
+	dtk(REG_DIV,SAMENAME ,"==",REG );
+	dtk(REG_DIV,SAMENAME ,">>",REG );
+	dtk(REG_DIV,SAMENAME ,"<<",REG );
 
-	dtk(REG|DIV,SAMENAME ,"&&",REG );
-	dtk(REG|DIV,SAMENAME ,"||",REG );
+	dtk(REG_DIV,SAMENAME ,"&&",REG );
+	dtk(REG_DIV,SAMENAME ,"||",REG );
 
-	dtk(REG|DIV,SAMENAME ,"=>",REG );
-
-
-	dtk(REG|DIV,SAMENAME ,"(",REG );
-	dtk(REG|DIV,SAMENAME ,")",DIV );
+	dtk(REG_DIV,SAMENAME ,"=>",REG );
 
 
-	dtk(REG|DIV,SAMENAME ,"[",REG );
-	dtk(REG|DIV,SAMENAME ,"]",DIV );  // a[i]/3
+	dtk(REG_DIV,SAMENAME ,"(",REG );
+	dtk(REG_DIV,SAMENAME ,")",DIV );
 
-	dtk(REG|DIV,SAMENAME ,"{",REG );
-	//dtk(REG|DIV,SAMENAME ,"}",REG );  // if () { .. }  /[a-z]/.exec()
-	dtk(REG|DIV,SAMENAME ,"}",DIV ); //in tonyu:  a{x:5}/3
 
-	dtk(REG|DIV,SAMENAME ,">",REG );
-	dtk(REG|DIV,SAMENAME ,"<",REG );
-	dtk(REG|DIV,SAMENAME ,"^",REG );
-	dtk(REG|DIV,SAMENAME ,"+",REG );
-	dtk(REG|DIV,SAMENAME ,"-",REG );
-	dtk(REG|DIV, SAMENAME ,"...",REG );
-	dtk(REG|DIV, SAMENAME ,".",REG );
-	dtk(REG|DIV,SAMENAME ,"?",REG );
+	dtk(REG_DIV,SAMENAME ,"[",REG );
+	dtk(REG_DIV,SAMENAME ,"]",DIV );  // a[i]/3
 
-	dtk(REG|DIV, SAMENAME ,"=",REG );
-	dtk(REG|DIV, SAMENAME ,"*",REG );
-	dtk(REG|DIV, SAMENAME ,"%",REG );
+	dtk(REG_DIV,SAMENAME ,"{",REG );
+	//dtk(REG_DIV,SAMENAME ,"}",REG );  // if () { .. }  /[a-z]/.exec()
+	dtk(REG_DIV,SAMENAME ,"}",DIV ); //in tonyu:  a{x:5}/3
+
+	dtk(REG_DIV,SAMENAME ,">",REG );
+	dtk(REG_DIV,SAMENAME ,"<",REG );
+	dtk(REG_DIV,SAMENAME ,"^",REG );
+	dtk(REG_DIV,SAMENAME ,"+",REG );
+	dtk(REG_DIV,SAMENAME ,"-",REG );
+	dtk(REG_DIV, SAMENAME ,"...",REG );
+	dtk(REG_DIV, SAMENAME ,".",REG );
+	dtk(REG_DIV,SAMENAME ,"?",REG );
+
+	dtk(REG_DIV, SAMENAME ,"=",REG );
+	dtk(REG_DIV, SAMENAME ,"*",REG );
+	dtk(REG_DIV, SAMENAME ,"%",REG );
 	dtk(DIV, SAMENAME ,"/",REG );
 
 	//dtk(DIV|REG, SAMENAME ,"^",REG );
-	dtk(DIV|REG, SAMENAME ,"~",REG );
+	dtk(REG_DIV, SAMENAME ,"~",REG );
 
-	dtk(DIV|REG, SAMENAME ,"\\",REG );
-	dtk(DIV|REG, SAMENAME ,":",REG );
-	dtk(DIV|REG, SAMENAME ,";",REG );
-	dtk(DIV|REG, SAMENAME ,",",REG );
-	dtk(REG|DIV,SAMENAME ,"!",REG );
-	dtk(REG|DIV,SAMENAME ,"&",REG );
-	dtk(REG|DIV,SAMENAME ,"|",REG );
+	dtk(REG_DIV, SAMENAME ,"\\",REG );
+	dtk(REG_DIV, SAMENAME ,":",REG );
+	dtk(REG_DIV, SAMENAME ,";",REG );
+	dtk(REG_DIV, SAMENAME ,",",REG );
+	dtk(REG_DIV,SAMENAME ,"!",REG );
+	dtk(REG_DIV,SAMENAME ,"&",REG );
+	dtk(REG_DIV,SAMENAME ,"|",REG );
 
-	var symresv=tk(/^[a-zA-Z_$][a-zA-Z0-9_$]*/,"symresv_reg").ret(function (s) {
+	var symresv=tk(/^[a-zA-Z_$][a-zA-Z0-9_$]*/,"symresv_reg").ret(function (s:Token) {
 		s.type=(s.text=="constructor" ? "tk_constructor" :
 			reserved.hasOwnProperty(s.text) ? s.text : "symbol");
 		if (caseInsensitive) {

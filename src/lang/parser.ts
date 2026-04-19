@@ -1,4 +1,5 @@
 import R from "../lib/R";
+import { RegExpLike } from "./NodeTypes";
 
 //const Parser=(function () {
 export type And={type:"and", elems:Parser[]};
@@ -15,7 +16,12 @@ export type Lazy={type:"lazy", name:string};
 export type Struct=And|Or|Rept|RetN|RetObj|Opt|Primitive|Lazy|Empty;//|Alias;
 export const ALL=Symbol("ALL");
 export const SUBELEMENTS=Symbol("SUBELEMENTS");
+export type NodeRange={
+    pos:number,
+    len:number,
+}
 export type NodeBase={
+	[SUBELEMENTS]?: ParsedNode[],
     pos:number,
     len:number,
 };
@@ -31,22 +37,23 @@ type SpaceSpec =Parser|"TOKEN"|"RAWSTR";
 type FirstTbl={
 	[ALL]?: Parser;
 } & {[key: string]:Parser};
-type ParseFunc=(s:State)=>State;
+type ParseFunc=(this:Parser, s:State)=>State;
 
 const options={traceTap:false, optimizeFirst: true, profile: false ,
 verboseFirst: false,traceFirstTbl:false, traceToken:false};
 
 function dispTbl(tbl:FirstTbl) {
 	var buf="";
-	var h={};
+	var h={} as Record<string,any>;
 	if (!tbl) return buf;
 	for (let i in tbl) {// tbl:{char:Parser}   i:char
 		const n=tbl[i].name;
+		if (!n) continue;
 		h[n]=(h[n]||"")+i;
 	}
 	if (tbl[ALL]) {
 		const n=tbl[ALL].name;
-		h[n]=(h[n]||"")+"*";
+		if (n)	h[n]=(h[n]||"")+"*";
 	}
 	for (let n in h) {
 		buf+=h[n]+"->"+n+",";
@@ -98,7 +105,7 @@ export class ParserContext {
 			const src=s.src as TokenStateSrc;
 			var t=src.tokens[s.pos];
 			var f=t?t.type:null;
-			if (options.traceFirstTbl) {
+			if (options.traceFirstTbl && f) {
 				console.log(this.name+": firstT="+f+" tbl="+( tbl[f]?tbl[f].name:"-") );
 			}
 			if (f!=null && tbl[f]) {
@@ -126,7 +133,7 @@ type LazyInfo={
 };
 export class Parser {// class Parser
 	parse: (s:State)=>State;
-	struct: Struct;
+	struct?: Struct;
 	name?: string;
 	//context: ParserContext;
 	_first?: FirstTbl;
@@ -149,7 +156,7 @@ export class Parser {// class Parser
 		if (!options.traceTap) {
 			this.parse=parseFunc;
 		} else {
-			this.parse=function(s:State){
+			this.parse=function(this:Parser, s:State){
 				if( this.name===undefined) {
 					console.log(this);
 					throw new Error ("undefined name");
@@ -162,7 +169,7 @@ export class Parser {// class Parser
 				}
 				if (isTokenStateSrc(r.src)) {
 					const ts=r.src.tokens;
-					const f=(idx)=> idx==ts.length ? "EOT" :idx>ts.length ? "" :ts[idx];
+					const f=(idx:number)=> idx==ts.length ? "EOT" :idx>ts.length ? "" :ts[idx];
 					img=f(r.pos-1)+"["+f(r.pos)+"]"+f(r.pos+1);
 				}
 				console.log("/tap: name="+this.name+
@@ -242,7 +249,7 @@ export class Parser {// class Parser
 		if (!options.optimizeFirst) return _res;
 		//if (!this._first) return _res;
 		var tbl=this._first||{[ALL]:this};
-		var ntbl={};
+		var ntbl={} as FirstTbl;
 		//  tbl           ALL:a1  b:b1     c:c1
 		//  next.tbl      ALL:a2           c:c2     d:d2
 		//           ALL:a1>>next   b:b1>>next c:c1>>next
@@ -287,7 +294,7 @@ export class Parser {// class Parser
 		if (!options.optimizeFirst) return _res;
 		//if (!this._first) return this.retNoUnify(next);
 		var tbl=this._first || {[ALL]:this};
-		var ntbl={};
+		var ntbl={} as FirstTbl;
 		for (var c in tbl) {
 			ntbl[c]=tbl[c].retNoUnify(next);
 		}
@@ -308,7 +315,7 @@ export class Parser {// class Parser
 		if (!options.optimizeFirst) return this;
 		//if (space==null) throw "Space is null2!";
 		if (typeof ct=="string") {
-				var tbl={};
+				var tbl={} as FirstTbl;
 				for (var i=0; i<ct.length ; i++) {
 					tbl[ct.substring(i,i+1)]=this;
 				}
@@ -348,9 +355,10 @@ export class Parser {// class Parser
 	}
 	unifyFirst (other:Parser) {
 		//var thiz=this;
-		function or(a:Parser,b:Parser) {
-			if (!a) return b;
-			if (!b) return a;
+		function or(a?:Parser,b?:Parser):Parser {
+			if (!a && b) return b;
+			if (!b && a) return a;
+			if (!(a&&b)) throw new Error("One of them should present.");
 			return a.orNoUnify(b);//.checkTbl();
 		}
 		var tbl:FirstTbl={}; // tbl.* includes tbl[ALL]
@@ -420,11 +428,13 @@ export class Parser {// class Parser
 		return res;
 	}
 	setAlias(p:Parser){
+		if (!p.name) throw new Error("setAlias: name is not set");
 		return this.setName(p.name, p.struct);
 	}
-	setName (n:string, struct?: Struct|Parser) {
+	setName (n:string, struct?: Struct|Parser):this {
 		this.name=n;
 		if (struct instanceof Parser) {
+			if (!struct.name) throw new Error("setName: struct.name is not set");
 			this.struct=struct.struct || {type:"primitive", name:struct.name};//{type:"alias", target:struct};
 		} else {
 			this.struct=this.struct || struct;
@@ -523,7 +533,7 @@ export class Parser {// class Parser
 			if(valuesToArray) return r2;
 			return {sep:r1, value:r2};
 		});*/
-		return value.and(tail.rep0()).ret(function(r1, r2){
+		return value.and(tail.rep0()).ret(function(r1:ParsedNode, r2:ParsedNode){
 			//var i;
 			if (valuesToArray) {
 				/*var r=[r1];
@@ -537,7 +547,7 @@ export class Parser {// class Parser
 		}).setName("(sep1 "+value.name+" "+sep.name+")",{type:"rept", elem:this});
 	}
 	sep0(s:Parser){
-		return this.sep1(s,true).opt().ret(function (r) {
+		return this.sep1(s,true).opt().ret(function (r:ParsedNode) {
 			if (!r) return [];
 			return r;
 		}).setName(`(sep0 ${this.name})`,{type:"rept", elem:this});
@@ -560,15 +570,16 @@ export class Parser {// class Parser
 		const fields:{[key:string]:number}={};
 		const pnames=[];
 		for (let i=0 ; i<names.length ;i++) {
-			if (names[i]) {
-				fields[names[i]]=i;
-				pnames.push(`${names[i]}:${elems[i].name}`);
+			const name=names[i];
+			if (name) {
+				fields[name]=i;
+				pnames.push(`${name}:${elems[i].name}`);
 			} else {
 				pnames.push(elems[i].name);
 			}
 		}
 		return this.ret((...args:any[])=>{
-			const res={[SUBELEMENTS]:args};
+			const res={[SUBELEMENTS]:args} as ParsedNode;
 			for (let e of args) {
 				const rg=setRange(e);
 				addRange(res, rg);
@@ -594,38 +605,48 @@ export class Parser {// class Parser
 //type Token={type:string};
 export type ParseError=string;
 export type MaxErrors={pos:number, errors:ParseError[]};
-export type TokenStateSrc={tokens?:Token[], maxErrors:MaxErrors, global?:any};
+export type TokenStateSrc={tokens:Token[], maxErrors:MaxErrors, global?:any};
 export type StrStateSrc={str:string, maxErrors:MaxErrors, global?:any};
 export type StateSrc=TokenStateSrc|StrStateSrc;
 function isStrStateSrc(src:StateSrc):src is StrStateSrc {return typeof (src as any).str==="string";}
 function isTokenStateSrc(src:StateSrc):src is TokenStateSrc {return (src as any).tokens;}
+export type ParsedNode=any;
 export class State{
 	src:StateSrc;//{maxPos:number, global?:any, str?:string, tokens?:any[]};
-	pos:number;
-	result:any[];
+	pos:number=0;
+	result:ParsedNode[]=[];
 	get success():boolean {return !this._error;}
 	_error?:ParseError;
-	constructor(strOrTokens?: string|Token[], global?:any) { // class State
+	constructor(strOrTokens?: string|Token[], global?:any, cloneSrc?: State) { // class State
 		if (strOrTokens!=null) {
 			//this.src={maxPos:0, global:global};// maxPos is shared by all state
 			if (typeof strOrTokens=="string") {
 				this.src={maxErrors:{pos:0, errors:[]}, global, str:strOrTokens};
-			}
-			if (strOrTokens instanceof Array) {
+			} else if (Array.isArray(strOrTokens)) {
 				this.src={maxErrors:{pos:0, errors:[]}, global, tokens:strOrTokens};
+			} else {
+				throw new Error("Invalid src");
 			}
 			this.pos=0;
 			this.result=[];
 			//this.success=true;
+		} else if (cloneSrc) {
+			this.src=cloneSrc.src;
+			this.pos=cloneSrc.pos;
+			this.result=cloneSrc.result.slice();
+			this._error=cloneSrc._error;
+		} else {
+			throw new Error("State: Invalid constructor");
 		}
 	}
 	clone() {
-		var s=new State();
-		s.src=this.src;
+		var s=new State(undefined,undefined,this);
+		/*s.src=this.src;
 		s.pos=this.pos;
 		s.result=this.result.slice();
 		//s.success=this.success;
 		s._error=this._error;
+		*/
 		return s;
 	}
 	/*updateMaxPos(npos:number) {
@@ -637,7 +658,7 @@ export class State{
 	set error(error:ParseError|null) {
 		if (this.errorSet) throw new Error(`Cannot set error twice :${this}`);
 		this.errorSet=true;
-		this._error=error;
+		this._error=error ?? undefined;
 		if (!error) return;
         if (this.src.global && typeof this.src.global.backtrackCount==="number") {
             this.src.global.backtrackCount++;
@@ -648,7 +669,7 @@ export class State{
 			this.src.maxErrors={pos:this.pos, errors:[error]};
 		}
 	}
-	get error() {return this._error;}
+	get error() {return this._error??null;}
 	isSuccess() {
 		return this.success;
 	}
@@ -656,7 +677,7 @@ export class State{
 			if (!this.src.global) this.src.global={};
 			return this.src.global;
 	}
-	withError(est:ParseError) {
+	withError(est:ParseError|null) {
 		const res=this.clone();
 		res.error=est;
 		return res;
@@ -669,7 +690,7 @@ export class State{
 		}
 		if (isTokenStateSrc(r.src)) {
 			const ts=r.src.tokens;
-			const f=(idx)=> idx<0? "":idx==ts.length ? "EOT" :idx>ts.length ? "" :ts[idx];
+			const f=(idx:number)=> idx<0? "":idx==ts.length ? "EOT" :idx>ts.length ? "" :ts[idx];
 			img=f(r.pos-1)+"["+f(r.pos)+"]"+f(r.pos+1);
 		}
 		return `pos=${r.pos} ${img} ${this.success? `res=${this.result.length}`:"X"}`;
@@ -733,7 +754,7 @@ export class StringParser{
 			}
 		}).setName("STRLIKE");
 	}
-	reg(r:RegExp, name=r+"") {//r: regex (must have ^ at the head)
+	reg(r:RegExpLike, name=r+"") {//r: regex (must have ^ at the head)
 		if (!(r+"").match(/^\/\^/)) console.log("Waring regex should have ^ at the head:"+(r+""));
 		return this.strLike((str:string,pos:number)=>{
 			var res:any=r.exec( str.substring(pos) );
@@ -744,7 +765,7 @@ export class StringParser{
 			return {error:`Cannot read reg ${r}`};
 		}).setName(name);
 	}
-	parse(parser:Parser, str:string, global?) {
+	parse(parser:Parser, str:string, global?:any) {
 		var st=new State(str,global);
 		return parser.parse(st);
 	}
@@ -800,7 +821,7 @@ export const TokensParser={
 //$.TokensParser=TokensParser;
 export function lazy(context: ParserContext, pf:()=>Parser):Parser {
 	//let p:Parser;
-	const lz:LazyInfo={resolve, resolved:null};
+	const lz:LazyInfo={resolve};
 	function resolve() {
 		if (!lz.resolved) {
 			lz.resolved=pf();
@@ -816,7 +837,7 @@ export function lazy(context: ParserContext, pf:()=>Parser):Parser {
 	self._lazy=lz;
 	return self;
 }
-export function addRange(res, newr) {
+export function addRange(res:ParsedNode, newr: NodeRange|null) {
 	if (newr==null) return res;
 	if (typeof (res.pos)!="number") {
 		res.pos=newr.pos;
@@ -829,7 +850,7 @@ export function addRange(res, newr) {
 	if (newEnd>curEnd) res.len= newEnd-res.pos;
 	return res;
 }
-export function setRange(res) {
+export function setRange(res:any) {
 	if (res==null || typeof res=="string" || typeof res=="number" || typeof res=="boolean") return;
 	var exRange=getRange(res);
 	if (exRange!=null) return res;
@@ -840,7 +861,7 @@ export function setRange(res) {
 	}
 	return res;
 }
-export function getRange(e) {
+export function getRange(e:any):NodeRange|null {
 	if (e==null) return null;
 	if (typeof e.pos!="number") return null;
 	if (typeof e.len=="number") return e;

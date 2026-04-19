@@ -22,7 +22,7 @@ import TError from "../runtime/TError";
 	const getParams=cu.getParams;
 	//const JSNATIVES={Array:1, String:1, Boolean:1, Number:1, Void:1, Object:1,RegExp:1,Error:1};
 //var TypeChecker:any={};
-function visitSub(node:TNode) {//S
+function visitSub(this:Visitor,node:TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
 	//console.log("TCV",node.type,node);
@@ -32,7 +32,7 @@ function visitSub(node:TNode) {//S
 	if (!es) {
 		es=[];
 		for (var i in node) {
-			es.push(node[i]);
+			es.push((node as any)[i]);
 		}
 	}
 	es.forEach(function (e) {
@@ -55,13 +55,13 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 				node.isVar && node.isVar.text!=="var") {
 				if (node.vars.length==1) {
 					const sa=annotation(node.vars[0]);
-					sa.scopeInfo.resolvedType=a.resolvedType.element;
+					if (sa.scopeInfo) sa.scopeInfo.resolvedType=a.resolvedType.element;
 				} else if (node.vars.length==2) {
 					const sa=annotation(node.vars[1]);
-					sa.scopeInfo.resolvedType=a.resolvedType.element;
+					if (sa.scopeInfo)sa.scopeInfo.resolvedType=a.resolvedType.element;
 
 					const si=annotation(node.vars[0]);
-					si.scopeInfo.resolvedType={class:Number};
+					if (si.scopeInfo)si.scopeInfo.resolvedType={class:Number};
 
 				}
 			} else {
@@ -71,7 +71,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 		varDecl(node: VarDecl) {
 			//console.log("TCV","varDecl",node);
 			if (node.value) this.visit(node.value);
-			let rt:AnnotatedType;
+			let rt:AnnotatedType|undefined;
 			if (node.value) {
 				const a=annotation(node.value);
 				if (a.resolvedType) {
@@ -127,6 +127,7 @@ export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 }
 export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 	const srcFile=klass.src!.tonyu; //file object  //S
+	if (!srcFile) return;
 	function annotation(node:TNode, aobj?:Annotation):Annotation {//B
 		return annotation3(klass.annotation,node,aobj);
 	}
@@ -263,9 +264,9 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 	const ctx=context<TypeChkCtx>();
 	typeAnnotationVisitor.def=visitSub;
 	typeAnnotationVisitor.visit(klass.node);
-	function visitExpr(node) {
+	/*function visitExpr(node) {
 		typeAnnotationVisitor.visit(node);
 		var va=annotation(node);
 		return va.resolvedType;
-	}
+	}*/
 };

@@ -9,7 +9,7 @@ import { DirBasedCore, DirBasedMod, DirBasedOptions, IProject, IProjectCore } fr
 
 //let Compiler, /*SourceFiles,*/sysMod,run2Mod;
 //export type IProject=ProjectCore;
-export type DependencyResolver=(prj:IProject, spec:DependencySpec)=>IProject;
+export type DependencyResolver=(prj:IProject, spec:DependencySpec)=>IProject|undefined;
 export type ProjectFunc=(params:any)=>IProject;
 const resolvers=[] as DependencyResolver[],types={} as Record<string, ProjectFunc>;
 export const addDependencyResolver=(f:DependencyResolver)=>{

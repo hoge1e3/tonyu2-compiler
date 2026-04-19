@@ -1,15 +1,19 @@
 //define(["Klass"], function (Klass) {
 	//var Klass=require("../lib/Klass");
-	const SYMIT=typeof Symbol!=="undefined" && Symbol.iterator;
+	const SYMIT=Symbol.iterator;
 	interface ITonyuIterator {
 		set: any;
 		i: number;
 		next():boolean;
+		[0]: any;
+		[1]: any;
 	}
 	class ArrayValueIterator implements ITonyuIterator {
         set: any;
         i: number;
-		constructor(set) {
+		[0]: any;
+		[1]: any;
+		constructor(set:any) {
 			this.set=set;
 			this.i=0;
 		}
@@ -21,12 +25,14 @@
 		}
 	}
 	class ArrayKeyValueIterator implements ITonyuIterator {
-		constructor(set) {
+		constructor(set:any) {
 			this.set=set;
 			this.i=0;
 		}
         set: any;
         i: number;
+		[0]: any;
+		[1]: any;
 		next() {
 			if (this.i>=this.set.length) return false;
 			this[0]=this.i;
@@ -37,7 +43,7 @@
 	}
 	class ObjectKeyIterator implements ITonyuIterator {
         elems: any[];
-		constructor(set) {
+		constructor(set:any) {
 			this.elems=[];
 			for (var k in set) {
 				this.elems.push(k);
@@ -46,6 +52,8 @@
 		}
         set: any;
         i: number;
+		[0]: any;
+		[1]: any;
 		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i];
@@ -55,7 +63,7 @@
 	}
 	class ObjectKeyValueIterator  implements ITonyuIterator{
         elems: any[];
-		constructor(set) {
+		constructor(set:any) {
 			this.elems=[];
 			for (var k in set) {
 				this.elems.push([k,set[k]]);
@@ -64,6 +72,8 @@
 		}
         set: any;
         i: number;
+		[0]: any;
+		[1]: any; 
 		next() {
 			if (this.i>=this.elems.length) return false;
 			this[0]=this.elems[this.i][0];
@@ -74,11 +84,13 @@
 	}
 	class NativeIteratorWrapper implements ITonyuIterator {
         it: any;
-		constructor(it) {
+		constructor(it:Generator) {
 			this.it=it;
 		}
         set: any;
         i=0;
+		[0]: any;
+		[1]: any;
 		next() {
 			const {value,done}=this.it.next();
 			if (done) return false;
@@ -86,16 +98,13 @@
 			return true;
 		}
 	}
-	function isArray(obj) {
-		return obj && 
-		 typeof (obj.slice)==="function" &&
-		 typeof (obj.forEach)==="function" &&
-		 typeof (obj.length)==="number";
+	function isArray(obj:any) {
+		return obj && Array.isArray(obj);
 	}
-	function isObj(obj) {
+	function isObj(obj:any) {
 		return obj && typeof obj==="object";
 	}
-	export function IT(set:any, arity:number):ITonyuIterator {
+	export function IT(set:any, arity:1|2):ITonyuIterator {
 		if (set && typeof set.tonyuIterator==="function") {
 			// TODO: the prototype of class having tonyuIterator will iterate infinitively
 			return set.tonyuIterator(arity);
@@ -118,13 +127,13 @@
 			throw new Error(set+" is not iterable");
 		}
 	}
-	export function IT2(set:any, arity:number):Generator<any> {
+	export function IT2(set:any, arity:1|2):Generator<any> {
 		const it=IT(set,arity);
 		return function *() {
 			while(it.next()) {
 				const yielded=[];
 				for (let i=0;i<arity;i++) {
-					yielded[i]=it[i];
+					yielded[i]=it[i as 0|1];
 				}
 				yield yielded;
 			}

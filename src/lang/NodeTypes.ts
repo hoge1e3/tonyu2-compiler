@@ -8,6 +8,8 @@ export type NodeBase={
     pos:number,
     len:number,
 };*/
+export type RegExpLike={exec:RegExp["exec"], toString?:()=>string};
+	
 export type Expression=Elem|Prefix|Postfix|Infix|Trifix;
 export type Prefix=NodeBase&{
     type:"prefix",

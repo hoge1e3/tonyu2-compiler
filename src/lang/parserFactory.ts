@@ -9,8 +9,10 @@ import TError from "../runtime/TError";
 import R from "../lib/R";
 import {ExpressionParser} from "./ExpressionParser2.js";
 import Grammar from "./Grammar.js";
-import { addRange, ALL, getRange, Parser, setRange, State, StringParser, TokensParser } from "./parser";
+import { addRange, ALL, getRange, ParsedNode, Parser, setRange, State, StringParser, Token, TokensParser } from "./parser";
 import { BQH, BQT, BQX, Tokenizer } from "./tokenizerFactory";
+import { ArgList, DottableExpression, Expression, ObjOrFuncArg } from "./NodeTypes";
+import { SFile } from "@hoge1e3/sfile";
 
 
 export default function PF({TT}:{TT:Tokenizer}) {
@@ -21,11 +23,12 @@ export default function PF({TT}:{TT:Tokenizer}) {
 
 	var tk=TokensParser.token;
 	function disp(n:any) {return JSON.stringify(n);}
-	var num=tk("number").ret(function (n) {
-		n.type="number";
+	var num=tk("number").ret(function (n:Token) {
+		const res=n as any;
+		res.type="number";
 		if (typeof n.text!="string") throw new Error("No text for "+disp(n));
-		n.value=(n.text-0);
-		if (isNaN(n.value)) throw new Error("No value for "+disp(n));
+		res.value=Number(n.text);
+		if (isNaN(res.value)) throw new Error("No value for "+disp(n));
 		return n;
 	}).setName("numberLiteral");
 	var symbol=tk("symbol");
@@ -75,7 +78,7 @@ export default function PF({TT}:{TT:Tokenizer}) {
 	}
 	var e=ExpressionParser(TokensParser.context) ;
 	var explz=e.lazy();//.firstTokens(ALL);
-	const dottableExpr=explz.or(tk("...").and(explz).ret((_,e)=>({type:"dotExpr",expr:e})));
+	const dottableExpr=explz.or(tk("...").and(explz).ret((_:never,e:Expression)=>({type:"dotExpr",expr:e})));
 	var arrayElem=g("arrayElem").ands(tk("["), explz , tk("]")).ret(null,"subscript");
 	var argList=g("argList").ands(tk("("), comLastOpt(dottableExpr) , tk(")")).ret(null,"args");
 	var member=g("member").ands(tk(".") , symresv ).ret(null,     "name" );
@@ -89,8 +92,8 @@ export default function PF({TT}:{TT:Tokenizer}) {
 	var objlitArg=g("objlitArg").ands(objlit_l).ret("obj");
 	var objOrFuncArg=g("objOrFuncArg").ors(objlitArg, funcExprArg);
 	const backquoteLiteral=g("backquoteLiteral").ands(tk(BQH),tk(BQX).or(explz).rep0(),tk(BQT)).ret(null,"body");
-	function genCallBody(argList, oof) {
-		var res=[];
+	function genCallBody(argList:ArgList|null, oof:ObjOrFuncArg[]) {
+		var res=[] as DottableExpression[];
 		if (argList && !argList.args) {
 			throw disp(argList);
 		}
@@ -108,11 +111,11 @@ export default function PF({TT}:{TT:Tokenizer}) {
 		});
 		return res;
 	}
-	const callBodyWithArgList=argList.and(objOrFuncArg.rep0()).ret(function(a,oof) {
+	const callBodyWithArgList=argList.and(objOrFuncArg.rep0()).ret(function(a:ArgList,oof:ObjOrFuncArg[]) {
 		return genCallBody(a,oof);
 	});
 	g("callBodyWithArgList").alias(callBodyWithArgList);
-	const callBodyWithoutArgList=objOrFuncArg.rep1().ret(function (oof) {
+	const callBodyWithoutArgList=objOrFuncArg.rep1().ret(function (oof:ObjOrFuncArg[]) {
 		return genCallBody(null,oof);
 	});
 	g("callBodyWithoutArgList").alias(callBodyWithoutArgList);
@@ -129,7 +132,7 @@ export default function PF({TT}:{TT:Tokenizer}) {
 	or(tk("undefined")).
 	or(tk("_thread")).
 	or(tk("this")).
-	or(tk("arguments")).ret(function (t) {
+	or(tk("arguments")).ret(function (t:Token) {
 		t.type="reservedConst";
 		return t;
 	}).setName("reservedConst");
@@ -210,7 +213,7 @@ export default function PF({TT}:{TT:Tokenizer}) {
 	e.postfix(prio,call);
 	e.postfix(prio,member);
 	e.postfix(prio,arrayElem);
-	function mki(left, op ,right) {
+	function mki(left:ParsedNode, op:ParsedNode ,right:ParsedNode) {
 		const res={type:"infix",left,op,right};
 		setRange(res);
 		res.toString=function () {
@@ -332,7 +335,7 @@ export default function PF({TT}:{TT:Tokenizer}) {
 	/*for (var i in g.defs) {
 		g.defs[i].profile();
 	}*/
-	$.parse = function (file) {
+	$.parse = function (file:string|SFile) {
 		let str:string;
 		if (typeof file=="string") {
 			str=file;

@@ -1,7 +1,7 @@
 //import * as Parser from "./parser";
 import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct, SUBELEMENTS } from "./parser";
 
-const Grammar=function (context:ParserContext) {
+export default function (context:ParserContext) {
 	function trans(name:Parser|string):Parser {
 		if (typeof name=="string") return get(name);
 		return name;
@@ -12,9 +12,9 @@ const Grammar=function (context:ParserContext) {
 			return st;
 		});
 	}*/
-	function comp<T1,T2>(o1:T1, o2:T2):T1&T2 {
+	/*function comp<T1,T2>(o1:T1, o2:T2):T1&T2 {
 		return Object.assign(o1,o2);
-	}
+	}*/
 	function get(name:string):Parser {
 		if (defs[name]) return defs[name];
 		if (lazyDefs[name]) return lazyDefs[name];
@@ -35,13 +35,13 @@ const Grammar=function (context:ParserContext) {
 		}
 		return p;
 	}
-	function traverseStruct(st:Struct,visited:Set<any>) {
+	function traverseStruct(st:Struct|undefined,visited:Set<any>):any {
 		if (st && st.type==="lazy") return st.name;
 		if (st && st.type==="retN") {
 			return traverse(st.elems[st.index],visited);
 		}
 		if (st && st.type==="object") {
-			const fields={};
+			const fields={} as any;
 			for (let k in st.fields) {
 				fields[k]=st.elems[st.fields[k]];
 			}
@@ -52,7 +52,7 @@ const Grammar=function (context:ParserContext) {
 		}
 		return traverse(st, visited);
 	}
-	function traverse(val:any,visited:Set<any>/*,depth:number*/) {
+	function traverse(val:any,visited:Set<any>/*,depth:number*/):any {
 		//if (depth>10) return "DEPTH";
 		if (visited.has(val)) return "LOOP";
 		try {
@@ -69,7 +69,7 @@ const Grammar=function (context:ParserContext) {
 				return res;
 			}
 			if (typeof val==="object") {
-				const res={};
+				const res={} as any;
 				const keys=Object.keys(val);
 				for (const k of keys) {
 					res[k]=traverse(val[k],visited);
@@ -95,8 +95,8 @@ const Grammar=function (context:ParserContext) {
 		function uniq(a:any[]) {
 			return Array.from(new Set(a));
 		}
-		function toType(st, type? :string) {
-			if (!st) return;
+		function toType(st:any, type? :string):string {
+			if (!st) return "unknown";
 			if (st.type==="or") {
 				return uniq(st.elems.map(toType)).join("|");
 			} else if (st.type==="object"){
@@ -165,7 +165,7 @@ const Grammar=function (context:ParserContext) {
 	}*/
 	const defs:{[key:string]:Parser}={};
 	const lazyDefs:{[key:string]:Parser}={};
-	return comp((name:string)=>{
+	return Object.assign((name:string)=>{
 		return {
 			alias(parser:Parser):Parser {
 				defs[name]=parser;
@@ -225,8 +225,8 @@ const Grammar=function (context:ParserContext) {
 					}
 				};
 			},
-			ors(...parsers) {
-				parsers=parsers.map(trans);
+			ors(..._parsers:(Parser|string)[]) {
+				const parsers=_parsers.map(trans);
 				const p=chain(parsers, (p,e)=>p.or(e)).setName(name);
 				//p.parsers=parsers;
 				typeInfos.set(p,{name});//, struct:{type:"or", elems:parsers}});
@@ -239,4 +239,3 @@ const Grammar=function (context:ParserContext) {
 	//return $;
 };
 //Grammar.SUBELEMENTS=Symbol("[SUBELEMENTS]");
-export=  Grammar;

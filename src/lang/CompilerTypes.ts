@@ -34,6 +34,7 @@ export type DependencySpec={
 	namespace?: string;
 	dir?: string,
 	url?: string,
+	outputFile?: SFile,
 }
 export type CompilerOptions={
 	namespace: string,

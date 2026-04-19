@@ -2,7 +2,9 @@
 import * as F from "./ProjectFactory";
 import {sourceFiles} from "../lang/SourceFiles";
 import langMod from "../lang/langMod";
-import { DirBasedCore, DirBasedOptions, DirBasedTonyuProject, URLBasedTonyuProject } from "./projectTypes";
+import { DirBasedCore, DirBasedMod, DirBasedOptions, DirBasedTonyuProject, IProject, LangMod, LoadContext, URLBasedTonyuProject } from "./projectTypes";
+import { SFile } from "@hoge1e3/sfile";
+import { DependencySpec } from "../lang/CompilerTypes";
 
 F.addType("compiled",(params:any)=> {
     if (params.namespace && params.url) return urlBased(params);
@@ -40,14 +42,17 @@ function dirBased(params: DirBasedOptions):DirBasedTonyuProject {
             const sf=sourceFiles.add({
                 //text:outJS.text(),
                 file: outJS,
-                sourceMap:map.exists() && map.text(),
+                sourceMap:map.exists()?map.text():undefined,
             });
             await sf.exec();
             console.log("Loaded compiled classes params=",params);
         }
     });
 }
-function outputFileBased(params) {
+function outputFileBased(params:{
+    namespace:string,
+    outputFile:SFile,
+}) {
     const ns=params.namespace;
     const outputFile=params.outputFile;
     const res=F.createCore();
@@ -56,29 +61,33 @@ function outputFileBased(params) {
         getOutputFile() {
             return outputFile;
         },
-        loadClasses: async function (ctx) {
+        loadClasses: async function (this:LangMod, ctx:LoadContext) {
             console.log("Loading compiled classes ns=",ns,"outputFile=",outputFile);
             await this.loadDependingClasses();
             const outJS=outputFile;
             const map=outJS.sibling(outJS.name()+".map");
             const sf=sourceFiles.add({
                 text:outJS.text(),
-                sourceMap:map.exists() && map.text(),
+                sourceMap:map.exists()? map.text():undefined,
             });
             await sf.exec();
             console.log("Loaded compiled classes ns=",ns,"outputFile=",outputFile);
         },
     });
 }
-exports.create=params=>F.create("compiled",params);
-F.addDependencyResolver((prj, spec)=> {
-    if (spec.dir && prj.resolve) {
+export function isDirBasedProject(prj:IProject):prj is IProject&DirBasedMod{
+    return (prj as any).resolve;
+} 
+
+exports.create=(params:any)=>F.create("compiled",params);
+F.addDependencyResolver((prj:IProject, spec:DependencySpec)=> {
+    if (spec.dir && isDirBasedProject(prj)) {
         return F.create("compiled",{dir:prj.resolve(spec.dir)});
     }
     if (spec.namespace && spec.url) {
         return F.create("compiled",spec);
     }
-    if (spec.namespace && spec.outputFile && prj.resolve) {
+    if (spec.namespace && spec.outputFile && isDirBasedProject(prj)) {
         return F.create("compiled",{
             namespace: spec.namespace,
             outputFile: prj.resolve(spec.outputFile)

@@ -29,10 +29,12 @@ export type DirBasedCore = IProjectCore & DirBasedMod & {
     dir: SFile;
 };
 import { ProjectCore } from "../project/ProjectFactory";
+export interface LoadContext {
 
+}
 export interface LangMod {
     getNamespace(): string;
-    loadDependingClasses(): Promise<void>;
+    loadDependingClasses(ctx?:LoadContext): Promise<void>;
     getEXT(): string;
     loadClasses(): Promise<void>;
 }
