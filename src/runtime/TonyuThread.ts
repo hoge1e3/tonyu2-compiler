@@ -17,7 +17,7 @@ type TerminateEvent=
 	{status: "exception", exception:Error};
 type TerminateHandler=(st:TerminateEvent)=>void;
 class KilledError extends Error {
-	isKilled:true
+	isKilled=true
 }
 //const SYM_Exception=Symbol("exception");
 /*type Frame={
@@ -28,8 +28,8 @@ class KilledError extends Error {
 	//try {window.cnts=cnts;}catch(e){}
 	export class TonyuThread implements ThreadGroup {
         //frame: Frame;
-		generator: Generator<any>;
-        private _isDead: boolean;
+		generator?: Generator<any>;
+        private _isDead: boolean=false;
         //cnt: number;
         private _isWaiting: boolean;
         fSuspended: boolean;
@@ -42,15 +42,15 @@ class KilledError extends Error {
 		termStatus: TerminateStatus;
 		preempted=false;
         retVal: any;
-        lastEvent: any[];
-        lastEx: Error;
+        lastEvent?: any[];
+        lastEx?: Error;
         //catchPC: any;
         handleEx: any;
 		_threadGroup: undefined|ThreadGroup;
 		objectPoolAge: any;
         tGrpObjectPoolAge: any;
-		constructor(public Tonyu:{currentThread:TonyuThread, globals:{[key:string]:any}}) {
-			this.generator=null;
+		constructor(public Tonyu:{currentThread:TonyuThread|null, globals:{[key:string]:any}}) {
+			this.generator=undefined;
 			this._isDead=false;
 			//this._isAlive=true;
 			//this.cnt=0;
@@ -69,7 +69,7 @@ class KilledError extends Error {
 		}
 		isDead() {
 			this._isDead=this._isDead || (!!this.termStatus) ||
-			(this._threadGroup && (
+			(!!this._threadGroup && (
 					this._threadGroup.objectPoolAge!=this.tGrpObjectPoolAge ||
 					this._threadGroup.isDeadThreadGroup()
 			));
@@ -90,27 +90,28 @@ class KilledError extends Error {
 			this.fSuspended=true;
 			//this.cnt=0;
 		}
-		apply(obj:any, methodName:string, args:any[]) {
+		apply(obj:any, methodName:string|Function, args:any[]=[]) {
 			if (!args) args=[];
-		    let method: TonyuMethod;
+		    let method: TonyuMethod|undefined;
 			if (typeof methodName=="string") {
 				method=obj["fiber$"+methodName];
 				if (!method) {
 					throw new Error(R("undefinedMethod",methodName));
 				}
-			}
-			if (typeof methodName=="function") {
+			} else if (typeof methodName=="function") {
                 const fmethod:TonyuMethod=methodName ;
 				method=fmethod.fiber;
 				if (!method) {
 					var n=fmethod.methodInfo ? fmethod.methodInfo.name : fmethod.name;
 					throw new Error(R("notAWaitableMethod",n));
 				}
+			} else {
+				throw new Error("Invalid method specifier: "+methodName);
 			}
 			args=[this].concat(args);
 			this.generator=method.apply(obj, args);
 		}
-		notifyEnd(r) {
+		notifyEnd(r:any) {
 			this.onEndHandlers.forEach(function (e) {
 				e(r);
 			});
@@ -119,10 +120,10 @@ class KilledError extends Error {
 		notifyTermination(tst:TerminateEvent) {
 			this.onTerminateHandlers.forEach((e)=>e(tst));
 		}
-		on(type,f) {
+		on(type:"end"|"success"|"terminate",f:Function) {
 			if (type==="end"||type==="success") this.onEndHandlers.push(f);
-			if (type==="terminate") {
-				this.onTerminateHandlers.push(f);
+			else if (type==="terminate") {
+				this.onTerminateHandlers.push(f as TerminateHandler);
 				if (this.handleEx) delete this.handleEx;
 			}
 		}
@@ -148,11 +149,11 @@ class KilledError extends Error {
 				});
 			});
 		}
-		then(succ,err) {
+		then(succ:(retVal:any)=>any,err:(a:Error)=>any) {
 			if (err) return this.promise().then(succ,err);
 			else return this.promise().then(succ);
 		}
-		fail(err) {
+		fail(err:(a:Error)=>any) {
 			return this.promise().then(e=>e, err);
 		}
 		waitEvent(obj:any, eventSpec:any[]) { // eventSpec=[EventType, arg1, arg2....]
@@ -160,7 +161,7 @@ class KilledError extends Error {
 			fb._isWaiting=true;
 			fb.suspend();
 			if (typeof obj.on!=="function") return;
-			let h=obj.on(...eventSpec,(...args)=>{
+			let h=obj.on(...eventSpec,(...args:any[])=>{
 				fb.lastEvent=args;
 				fb.retVal=args[0];
 				h.remove();
@@ -179,7 +180,7 @@ class KilledError extends Error {
 			if (p instanceof TonyuThread) p=p.promise();
 			return Promise.resolve(p).then(function (r) {
 				fb.retVal=r;
-				fb.lastEx=null;
+				fb.lastEx=undefined;
 				fb._isWaiting=false;
 				fb.stepsLoop();
 			}).then(e=>e,function (e) {
@@ -205,6 +206,9 @@ class KilledError extends Error {
 				throw new Error("Illegal state: Cannot step while awaiting.");
 			}
 			if (fb.isDead()) return;
+			if (!this.generator) {
+				throw new Error("Not running");
+			}
 			const sv=this.Tonyu.currentThread;
 			this.Tonyu.currentThread=fb;
 			const lim=performance.now()+fb.preemptionTime;
@@ -227,7 +231,7 @@ class KilledError extends Error {
 				}
 				fb.preempted= (!awaited) && (!this.fSuspended) && this.isAlive();
 			} catch (e){
-				return this.exception(e);
+				return this.exception(e as Error);
 			} finally {
 				this.Tonyu.currentThread=sv;
 				if (awaited) {
@@ -261,7 +265,7 @@ class KilledError extends Error {
 			}
 		}
 		*await(p:any) {
-			this.lastEx=null;
+			this.lastEx=undefined;
 			yield p;
 			if (this.lastEx) throw this.lastEx;
 			return this.retVal;

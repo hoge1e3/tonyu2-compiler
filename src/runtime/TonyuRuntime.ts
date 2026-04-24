@@ -1,7 +1,7 @@
 import R from "../lib/R";
 import {IT,IT2} from "./TonyuIterator";
 import {TonyuThread} from "./TonyuThread";
-import { ClassDefinition, ClassDefinitionContext, ClassTree, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
+import { ClassDefinition, ClassDefinitionContext, ClassTree, ClassTreeRoot, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
 import TError from "./TError";
 import { ProjectOptions } from "../lang/CompilerTypes";
 
@@ -76,7 +76,7 @@ var klass={
 			return mm;
 		}
 	},
-	ensureNamespace(top:ClassTree,nsp:string) {
+	ensureNamespace(top:ClassTreeRoot,nsp:string) {
 		var keys=nsp.split(".");
 		var o=top as any;
 		var i;
@@ -87,7 +87,7 @@ var klass={
 		}
 		return o;
 	},
-	hasNamespace(top:ClassTree,nsp:string) {
+	hasNamespace(top:ClassTreeRoot,nsp:string) {
 		return nsp in top;
 	},
 /*Function.prototype.constructor=function () {
@@ -308,7 +308,7 @@ function extend (dst:any, src:any) {
 //alert("init");
 const globals:{[key:string]:any}={};
 
-var classes:ClassTree={};// classes.namespace.classname= function
+var classes:ClassTreeRoot={};// classes.namespace.classname= function
 var classMetas:{[key:string]:Meta}={}; // classes.namespace.classname.meta ( or env.classes / ctx.classes)
 function setGlobal(n:string,v:any) {
 	globals[n]=v;
@@ -316,30 +316,41 @@ function setGlobal(n:string,v:any) {
 function getGlobal(n:string) {
 	return globals[n];
 }
-function getClass(n:string) {
+function getClass(n:string):TonyuClass|undefined {
 	//CFN: n.split(".")
 	var ns=n.split(".");
-	var _res:any=classes;
-	ns.forEach(function (na) {
-		if (!res) return;
+	var _res:ClassTree|undefined=classes;
+	let na:string;
+	while (ns.length) {
+		na=ns.shift()!;
 		_res=_res[na];
-	});
-	const res:TonyuClass=_res;
-	if (!res && ns.length==1) {
-		var found:string;
-		for (var nn in classes) {
-			var nr=classes[nn][n];
-			if (nr) {
-				if (!res) { res=nr; found=nn+"."+n; }
+		if (!_res) break;
+		if (typeof _res==="function") {
+			if (ns.length) {
+				_res=undefined;
+			}
+			break;
+		}
+	}
+	let res=_res;
+	if (!res && n.split(".").length==1) {
+		let found:string|undefined;
+		for (let nn in classes) {
+			const e=classes[nn];
+			if (typeof e!=="object") continue;
+			const nr=e[n];
+			if (typeof nr==="function") {
+				if (!found) { res=nr; found=nn+"."+n; }
 				else throw new Error(R("ambiguousClassName",nn,n,found));
 			}
 		}
 	}
+	if (typeof res!=="function")return undefined;
 	return res;
 	//if (res instanceof Function) return res;//classes[n];
 	//throw new Error(`Not a class: ${n}`);
 }
-function bindFunc(t,meth) {
+function bindFunc(t:object,meth:any) {
 	if (typeof meth!="function") return meth;
 	var res:any=function () {
 		return meth.apply(t,arguments);
@@ -353,13 +364,13 @@ function bindFunc(t,meth) {
 	}
 	return res;
 }
-function invokeMethod(t, name, args, objName) {
+function invokeMethod(t:object, name:string, args:any[], objName:string) {
 	if (!t) throw new Error(R("cannotInvokeMethod",objName,t,name));
-	var f=t[name];
+	var f=(t as any)[name];
 	if (typeof f!="function") throw new Error(R("notAMethod", (objName=="this"? "": objName+"."),name,f));
 	return f.apply(t,args);
 }
-function callFunc(f,args, fName) {
+function callFunc(f:Function,args:any[], fName:string) {
 	if (typeof f!="function") throw new Error(R("notAFunction",fName));
 	return f.apply({},args);
 }
@@ -367,17 +378,17 @@ function checkNonNull(v:any, name:string) {
 	if (v!=v || v==null) throw new Error(R("uninitialized",name,v));
 	return v;
 }
-function A(args) {
+function A(args:any[]) {
 	var res=[];
 	for (var i=1 ; i<args.length; i++) {
 		res[i-1]=args[i];
 	}
 	return res;
 }
-function useNew(c) {
+function useNew(c:string) {
 	throw new Error(R("newIsRequiredOnInstanciate",c));
 }
-function not_a_tonyu_object(o) {
+function not_a_tonyu_object(o:any) {
 	console.log("Not a tonyu object: ",o);
 	throw new Error(o+" is not a tonyu object");
 }
@@ -454,20 +465,20 @@ const Tonyu={
 		hasKey, invokeMethod, callFunc, checkNonNull,
 		iterator:IT, iterator2:IT2, run, checkLoop, resetLoopCheck,
 		currentProject: null,
-		currentThread: null as TonyuThread,
+		currentThread: null as TonyuThread|null,
 		runMode: false,
-		onRuntimeError: (e:Error)=>{
+		onRuntimeError: ((e:Error)=>{
 			if (typeof alert!=="undefined") alert("Error: "+e);
 			console.log(e.stack);
 			throw e;
-		},TError,
+		}) as (e:Error)=>void ,TError,
 		VERSION:1560828115159,//EMBED_VERSION
 		A, ID:Math.random()
 };
 //const TT=TonyuThreadF(Tonyu);
-if (globalThis.Tonyu) {
+if ((globalThis as any).Tonyu) {
 	console.error("Tonyu called twice!");
 	throw new Error("Tonyu called twice!");
 }
-globalThis.Tonyu=Tonyu;
+(globalThis as any).Tonyu=Tonyu;
 export default Tonyu;

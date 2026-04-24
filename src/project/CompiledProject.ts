@@ -79,7 +79,7 @@ export function isDirBasedProject(prj:IProject):prj is IProject&DirBasedMod{
     return (prj as any).resolve;
 } 
 
-exports.create=(params:any)=>F.create("compiled",params);
+export const create=(params:any)=>F.create("compiled",params);
 F.addDependencyResolver((prj:IProject, spec:DependencySpec)=> {
     if (spec.dir && isDirBasedProject(prj)) {
         return F.create("compiled",{dir:prj.resolve(spec.dir)});

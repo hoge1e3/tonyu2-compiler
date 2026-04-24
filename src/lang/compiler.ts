@@ -1,9 +1,9 @@
-import Tonyu from "../runtime/TonyuRuntime";
-import root from "../lib/root";
-import { FuncDecl, ParamDecl, TNode, TypeDecl } from "./NodeTypes";
-import { AnnotatedType, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, isUnionType, NativeClass, NonArrowFuncInfo } from "./CompilerTypes";
-import { DeclsInDefinition, Meta, MethodInfo, ShimMeta, TypeDigest, isArrayTypeDigest } from "../runtime/RuntimeTypes";
-import { Token } from "./parser";
+import Tonyu from "../runtime/TonyuRuntime.js";
+//import root from "../lib/root";
+import type { ParamDecl, TNode } from "./NodeTypes";
+import { AnnotatedType, Annotation, C_FieldInfo, C_Meta, FuncInfo, isMeta, isMethodType, isNativeClass, isUnionType, NativeClass, NodeAnnotation, NonArrowFuncInfo } from "./CompilerTypes.js";
+import { DeclsInDefinition, Meta, TypeDigest, isArrayTypeDigest, isUnionTypeDigest } from "../runtime/RuntimeTypes.js";
+import { ParsedNode, Token } from "./parser.js";
 
 	/*import Tonyu = require("../runtime/TonyuRuntime");
 	const ObjectMatcher=require("./ObjectMatcher");
@@ -11,10 +11,10 @@ import { Token } from "./parser";
 	const root=require("../lib/root");*/
 	type valueOf<T>=T[keyof T];
 	const NONBLOCKSCOPE_DECLPREFIX="var";
-	export function isBlockScopeDeclprefix(t:Token){
+	export function isBlockScopeDeclprefix(t:Token|null){
 		return t && t.text!==NONBLOCKSCOPE_DECLPREFIX;
 	}
-	export function isNonBlockScopeDeclprefix(t:Token){
+	export function isNonBlockScopeDeclprefix(t:Token|null){
 		return t && t.text===NONBLOCKSCOPE_DECLPREFIX;
 	}
 	export const ScopeTypes={
@@ -77,40 +77,42 @@ import { Token } from "./parser";
 		return st ? st.type : null;
 	}
 	//cu.getScopeType=stype;
-	export function newScope(s) {//B
-		const f=function (){};
+	export function newScope<T extends object>(s:T):T {//B
+		return Object.create(s);
+		/*const f=function (){};
 		f.prototype=s;
-		return new f();
+		return (new f()) as T;*/
 	}
 	//cu.newScope=newScope;
-	export function nullCheck(o, mesg) {//B
+	export function nullCheck(o:any, mesg:string) {//B
 		if (!o) throw mesg+" is null";
 		return o;
 	}
 	//cu.nullCheck=nc;
-	export function genSym(prefix) {//B
+	export function genSym(prefix:string) {//B
 		return prefix+((symSeq++)+"").replace(/\./g,"");
 	}
 	//cu.genSym=genSym;
-	export function annotation<T>(aobjs, node, aobj:T|undefined=undefined) {//B
+	export function annotation(aobjs:Record<string,NodeAnnotation>, 
+			node:ParsedNode, aobj:Partial<Annotation>|undefined=undefined) {//B
 		if (!node._id) {
 			//if (!aobjs._idseq) aobjs._idseq=0;
 			node._id=++nodeIdSeq;
 		}
-		let res=aobjs[node._id];
-		if (!res) res=aobjs[node._id]={node:node};
+		let res:NodeAnnotation=aobjs[node._id];
+		if (!res) res=aobjs[node._id]={node};
 		if (res.node!==node) {
 			console.log("NOMATCH",res.node,node);
 			throw new Error("annotation node not match!");
 		}
 		if (aobj) {
-			for (let i in aobj) res[i]=aobj[i];
+			Object.assign(res,aobj);
 		}
 		return res;
 	}
-	export function packAnnotation(aobjs) {
+	export function packAnnotation(aobjs:Record<string,NodeAnnotation>) {
 		if (!aobjs) return;
-		function isEmptyAnnotation(a) {
+		function isEmptyAnnotation(a:NodeAnnotation) {
 			return a && typeof a==="object" && Object.keys(a).length===1 && Object.keys(a)[0]==="node";
 		}
 		for (let k of Object.keys(aobjs)) {
@@ -164,7 +166,7 @@ import { Token } from "./parser";
 			if(mi.paramTypes || mi.returnType) {
 				res.methods[i].vtype={
 					params: mi.paramTypes ? mi.paramTypes.map(
-						(t)=>t?resolvedType2Digest(t):null): null,
+						(t)=>t?resolvedType2Digest(t):null): undefined,
 					returnValue: mi.returnType ? resolvedType2Digest(mi.returnType): null,
 				};	
 			}
@@ -179,6 +181,7 @@ import { Token } from "./parser";
 		return res;
 	}
 	export function typeDigest2ResolvedType(d:TypeDigest):AnnotatedType|undefined {
+		const root=globalThis as any;
 		if (typeof d==="string") {
 			if (Tonyu.classMetas[d]) {
 				return Tonyu.classMetas[d] as C_Meta;
@@ -186,14 +189,18 @@ import { Token } from "./parser";
 				return {class: root[d]};
 			}	
 		} else if (isArrayTypeDigest(d)) {
-			return {element: typeDigest2ResolvedType(d.element)};
-		} else {
-			return {candidates: d.candidates.map(typeDigest2ResolvedType)};
+			const element=typeDigest2ResolvedType(d.element);
+			return element ? {element}: undefined;
+		} else if (isUnionTypeDigest(d)) {
+			const candidates=d.candidates.map(typeDigest2ResolvedType).filter(e=>!!e);
+			if (candidates.length===d.candidates.length) return {candidates};
+			return undefined;
 		}
+		return undefined;
 	}
 	export function getField(klass: C_Meta, name: string){
 		if (klass instanceof Function) return null;
-		let res:C_FieldInfo=null;
+		let res:C_FieldInfo|undefined;
 		for (let k of getDependingClasses(klass)) {
 			//console.log("getField", k, name);
 			if (res) break;
@@ -204,15 +211,15 @@ import { Token } from "./parser";
 		}
 		return res;
 	}
-	export function getMethod(klass: C_Meta,name:string):NonArrowFuncInfo {//B
-		let res:NonArrowFuncInfo=null;
+	export function getMethod(klass: C_Meta,name:string):NonArrowFuncInfo|undefined {//B
+		let res:NonArrowFuncInfo|undefined;
 		for (let k of getDependingClasses(klass)) {
 			if (res) break;
 			res=k.decls.methods[name];
 		}
 		return res;
 	}
-	export function getProperty(klass: C_Meta,name:string):{setter?: FuncInfo, getter?: FuncInfo} {
+	export function getProperty(klass: C_Meta,name:string):{setter?: FuncInfo, getter?: FuncInfo}|null {
 		const getter=getMethod(klass, Tonyu.klass.property.methodFor("get", name));
 		const setter=getMethod(klass, Tonyu.klass.property.methodFor("set", name));
 		if (!getter && !setter) return null;
@@ -221,7 +228,7 @@ import { Token } from "./parser";
 	//cu.getMethod=getMethod2;
 	// includes klass itself
 	export function getDependingClasses(klass:C_Meta) {//B
-		const visited={};
+		const visited={} as Record<string,boolean>;
 		const res=[] as C_Meta[];
 		function loop(k:Meta) {
 			if ((k as any).isShim) {

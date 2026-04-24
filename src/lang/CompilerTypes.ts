@@ -1,9 +1,9 @@
 import { SFile } from "@hoge1e3/sfile";
-import { Constructor, FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { ScopeInfo } from "./compiler";
-import { IndentBuffer } from "./IndentBuffer";
-import { Catch, Expr, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes";
-import { Token } from "./parser";
+import { Constructor, FieldInfo, Meta } from "../runtime/RuntimeTypes.js";
+import { ScopeInfo } from "./compiler.js";
+import { IndentBuffer } from "./IndentBuffer.js";
+import { Catch, Expr, Expression, Forin, FuncDecl, FuncDeclHead, ParamDecl, Program, Stmt, SuperExpr, TNode, VarDecl } from "./NodeTypes.js";
+import { Token } from "./parser.js";
 
 export type C_MetaMap={[key: string]:C_Meta};
 
@@ -24,8 +24,12 @@ export type BuilderEnv={
 	aliases: Aliases,
 	//amdPaths: string[],
 };
+export type RuntimeOptions={
+	bootClass: string,
+};
 export type ProjectOptions={
 	compiler: CompilerOptions,
+	run: RuntimeOptions,
 };
 export type BuilderContextDef={
 	destinations?: Destinations,
@@ -70,31 +74,36 @@ export type Locals={
 	varDecls: {[key: string]:VarDecl},
 	subFuncDecls: {[key: string]:FuncDecl},
 };
+/*export type CP_FieldInfo=C_FieldInfo & {
+	pos:number
+};*/
 export type C_FieldInfo=FieldInfo & {
 	node?:TNode,
-	//pos?:number,
+	pos?:number,
 	resolvedType?: AnnotatedType,
 };
+export type C_NativeInfo={};
+export type C_AmdInfo={};
 export type C_Decls={
 	methods: {[key:string]: NonArrowFuncInfo},
 	fields:  {[key:string]: C_FieldInfo},
-	natives: object,
-	amds: object,
-	softRefClasses: object
+	natives: {[key:string]: C_NativeInfo},
+	amds: {[key:string]: C_AmdInfo},
+	softRefClasses: {[key:string]: ScopeInfo}
 }
 export type C_Meta=Meta & {
 	decls: C_Decls,
-	superclass: C_Meta,
+	superclass: C_Meta|null,
 	includes: C_Meta[],
-	src?: {tonyu?:SFile, js?:SFile, map?: string},
+	src?: {tonyu?:SFile, js?:SFile|string, map?: string},
     hasSemanticError?: boolean,
-    jsNotUpToDate: boolean,
+    jsNotUpToDate: boolean|undefined,
     directives: {
 		field_strict?:boolean,
 		external_waitable?: boolean,
 	},
     node: Program, nodeTimestamp:number,
-	annotation?: object,
+	annotation?: Record<string,NodeAnnotation>,
 };
 export type ScopeMap={[key:string]: ScopeInfo};
 /*export type C_MethodInfo=MethodInfo&{
@@ -118,7 +127,7 @@ export type FuncInfoBase={// also includes Method
 	params?: ParamDecl[],
 	scope?: ScopeMap,
 	useArgs?:boolean,
-	paramTypes?: AnnotatedType[],
+	paramTypes?: (AnnotatedType|undefined)[],
 	returnType?: AnnotatedType,
 	//nowait: boolean,
 };
@@ -160,6 +169,9 @@ export function isMethodType(klass: AnnotatedType): klass is MethodType {
 export function isUnionType(klass: AnnotatedType): klass is UnionType {
 	return (klass as any).candidates;
 }
+export type NodeAnnotation=Annotation &{
+	node: TNode,
+};
 export type Annotation={
 	scopeInfo?: ScopeInfo,
 	//fieldInfo?: C_FieldInfo,

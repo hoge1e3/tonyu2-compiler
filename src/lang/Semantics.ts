@@ -1,21 +1,22 @@
 import Tonyu from "../runtime/TonyuRuntime";
 import R from "../lib/R";
 import TError from "../runtime/TError";
-import root from "../lib/root";
 import { isTonyu1 } from "./tonyu1";
-import ObjectMatcher = require("./ObjectMatcher");
+import * as ObjectMatcher from "./ObjectMatcher";
 const OM:any=ObjectMatcher;
 import TonyuLang1 from "./parse_tonyu1";
 import TonyuLang2 from "./parse_tonyu2";
-import assert from "../lib/assert";
+//import assert from "../lib/assert";
 import * as cu from "./compiler";
 import {Visitor} from "./Visitor";
 import {context} from "./context";
 import { SUBELEMENTS, Token } from "./parser";
 import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr, isArrowFuncExpr, ArrowFuncExpr, NonArrowFuncExpr} from "./NodeTypes";
 import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { AnnotatedType, Annotation, ArrayType, ArrowFuncInfo, BuilderEnv, C_Meta, FuncInfo, Locals, Methods, NamedType, NonArrowFuncInfo, UnionType, isNonArrowFuncInfo, isUnionType } from "./CompilerTypes";
+import { AnnotatedType, Annotation, ArrayType, ArrowFuncInfo, BuilderEnv, C_Decls, C_Meta, FuncInfo, Locals, Methods, NamedType, NonArrowFuncInfo, UnionType, isNonArrowFuncInfo, isUnionType } from "./CompilerTypes";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler";
+import { SFile } from "@hoge1e3/sfile";
+
 
 var ScopeTypes=cu.ScopeTypes;
 //var genSt=cu.newScopeType;
@@ -29,26 +30,30 @@ var getMethod2=cu.getMethod;
 var getDependingClasses=cu.getDependingClasses;
 var getParams=cu.getParams;
 var JSNATIVES={Array:["a"], String:"a", Boolean:true, Number:1, Object:{},RegExp:/a/,Error:new Error("a"),Date:new Date(),Promise:Promise.resolve()};
-function visitSub(node: TNode) {//S
+const neverThrown=(n:never)=>new Error("Never thrown this error");
+function visitSub(this:Visitor,node: TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
-	var es:TNode[];
-	if (node instanceof Array) es=node;
-	else es=node[SUBELEMENTS];
-	if (!es) {
+	let _es:any[]|undefined;
+	let es:any[]=[];
+	if (Array.isArray(node)) es=node;
+	else _es=node[SUBELEMENTS];
+	if (!_es) {
 		es=[];
 		for (var i in node) {
-			es.push(node[i]);
+			es.push((node as any)[i]);
 		}
 	}
-	es.forEach((e:TNode)=>t.visit(e));
+	es.forEach((e)=>t.visit(e));
 }
-function getSourceFile(klass: C_Meta) {
-	return assert(klass.src && klass.src.tonyu,"File for "+klass.fullName+" not found.");
+function getSourceFile(klass: C_Meta):SFile {
+	const src=(klass?.src?.tonyu);
+	if (!src) throw new Error("File for "+klass.fullName+" not found.");
+	return src;
 }
 export function parse(klass: C_Meta, options={}):Program {
 	const s=getSourceFile(klass);//.src.tonyu; //file object
-	let node:Program;
+	let node:Program|undefined;
 	if (klass.node && klass.nodeTimestamp==s.lastUpdate()) {
 		node=klass.node;
 	}
@@ -61,7 +66,7 @@ export function parse(klass: C_Meta, options={}):Program {
 		}
 		klass.nodeTimestamp=s.lastUpdate();
 	}
-	return node;
+	return node as Program;
 }
 type ScopeMap= {[key:string]: cu.ScopeInfo};
 type SemCtx={
@@ -83,7 +88,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 	// The main task of initClassDecls is resolve 'dependency', it calls before orderByInheritance
 	var s=getSourceFile(klass); //file object
 	klass.hasSemanticError=true;
-	const srcFile=klass.src!.tonyu; //file object  //S
+	const srcFile=s; //file object  //S
 	if (klass.src && klass.src.js) {
 		// falsify on generateJS. if some class hasSemanticError, it remains true
 		klass.jsNotUpToDate=true;
@@ -91,7 +96,11 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 	const node=parse(klass, env.options);
 	var MAIN:NonArrowFuncInfo={klass, name:"main",stmts:[], isMain:true, nowait: false};//, klass:klass.fullName};
 	// method := fiber | function
-	const fields={}, methods:Methods={main: MAIN}, natives={}, amds={},softRefClasses={};
+	const fields:C_Decls["fields"]={}, 
+		methods:Methods={main: MAIN}, 
+		natives:C_Decls["natives"]={}, 
+		amds:C_Decls["amds"]={},
+		softRefClasses:C_Decls["softRefClasses"]={};
 	klass.decls={fields, methods, natives, amds, softRefClasses};
 	// ↑ このクラスが持つフィールド，ファイバ，関数，ネイティブ変数，AMDモジュール変数
 	//   extends/includes以外から参照してれるクラス の集まり．親クラスの宣言は含まない
@@ -104,7 +113,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 		if (t) {
 			spcn=t.N;
 			pos=t.P;
-			if (spcn=="null") spcn=null;
+			if (spcn=="null") spcn=undefined;
 		}
 		klass.includes=[];
 		t=OM.match( program , {incl:{includeClassNames:OM.C}});
@@ -126,15 +135,15 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 			}
 			klass.superclass=spc;
 		} else {
-			delete klass.superclass;
+			klass.superclass=null;
 		}
 		klass.directives={};
 		//--
-		function addField(name:Token,node=undefined) {// name should be node
+		function addField(name:Token,node:TNode|undefined=undefined) {// name should be node
 			node=node||name;
 			fields[name+""]={
 				node:node,
-				klass:klass.fullName,
+				klass:klass/*.fullName*/,
 				name:name+"",
 				pos:node.pos
 			};
@@ -225,7 +234,7 @@ export function initClassDecls(klass:C_Meta, env:BuilderEnv ) {//S
 function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	// annotateSource2 is call after orderByInheritance
 	klass.hasSemanticError=true;
-	const srcFile=klass.src!.tonyu; //file object  //S
+	const srcFile=getSourceFile(klass);// klass.src!.tonyu; //file object  //S
 	var srcCont=srcFile.text();
 	function getSource(node: TNode) {
 		return cu.getSource(srcCont,node);
@@ -314,6 +323,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		};
 	klass.annotation={};
 	function annotation(node: TNode, aobj:Annotation|undefined=undefined):Annotation {//B
+		if (!klass.annotation) klass.annotation={};
 		return annotation3(klass.annotation,node,aobj);
 	}
 	function initTopLevelScope2(klass: C_Meta) {//S
@@ -363,7 +373,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		var decls=klass.decls;// Do not inherit parents' natives
 		if (!isTonyu1(env.options)) {
 			for (let i in JSNATIVES) {
-				s[i]=new SI.NATIVE("native::"+i, {class:root[i], sampleValue:JSNATIVES[i]});
+				s[i]=new SI.NATIVE("native::"+i, {class:(globalThis as any)[i], sampleValue:JSNATIVES[i as keyof typeof JSNATIVES]});
 			}
 		}
 		for (let i in env.aliases) {/*ENVC*/ //CFN  env.classes->env.aliases
@@ -371,7 +381,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			s[i]=new SI.CLASS(i,fullName,env.classes[fullName]);
 		}
 		for (let i in decls.natives) {
-			s[i]=new SI.NATIVE("native::"+i, {class:root[i]});
+			s[i]=new SI.NATIVE("native::"+i, {class:(globalThis as any)[i]});
 		}
 	}
 	function inheritSuperMethod() {//S
@@ -399,8 +409,10 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 	}
 
 	function isFiberMethod(name:string) {
-		return stype(ctx.scope[name])==ST.METHOD &&
-		!getMethod(name).nowait ;
+		if(stype(ctx.scope[name])!=ST.METHOD) return false;
+		const m=getMethod(name);
+		if(!m) return false;
+		return !(m.nowait);
 	}
 	function checkLVal(node: TNode) {//S
 		if (isVarAccess(node) ||
@@ -553,7 +565,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		},
 		objlit:function (node: Objlit) {
 			var t=this;
-			var dup={};
+			var dup:Record<string,number>={};
 			node.elems.forEach(function (e: JsonElem) {
 				const kn=(e.key.type=="literal")?
 					e.key.text.substring(1,e.key.text.length-1):
@@ -713,7 +725,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			this.def!(node);
 		},
 		exprstmt: function (node:Exprstmt) {
-			var t:any,m: FuncInfo;
+			var t:any;//,m: FuncInfo;
 			if (node.expr.type==="objlit") {
 				throw TError( R("cannotUseObjectLiteralAsTheExpressionOfStatement") , srcFile, node.pos);
 			}
@@ -764,7 +776,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				if (!klass.superclass) {
 					throw new Error(R("Class {1} has no superclass",klass.shortName));
 				}
-				m=getSuperMethod(t.S.name.text);
+				const m=getSuperMethod(t.S.name.text);
 				if (!m) {
 					throw TError( R("undefinedSuperMethod",t.S.name.text) , srcFile, node.pos);
 					//throw new Error(R("undefinedSuperMethod",t.S.name.text));
@@ -809,14 +821,19 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		}
 	});
 	varAccessesAnnotator.def=visitSub;//S
-	function resolveType(node:TypeExpr):AnnotatedType {
+	function resolveType(node:TypeExpr):AnnotatedType|undefined {
 		if (isNamedTypeExpr(node)) return resolveNamedType(node);
 		else if (isArrayTypeExpr(node)) return resolveArrayType(node);
 		else if (isUnionTypeExpr(node)) return resolveUnionType(node);
+		else {
+			throw neverThrown(node);
+		}
 	}
-	function resolveUnionType(node:UnionTypeExpr):UnionType {
+	function resolveUnionType(node:UnionTypeExpr):UnionType|undefined {
 		let left=resolveType(node.left);
 		let right=resolveType(node.right);
+		if (!left) return undefined;
+		if (!right) return undefined;
 		let candidates: AnnotatedType[];
 		if (isUnionType(left) && isUnionType(right)) {
 			candidates=[...left.candidates, ...right.candidates];
@@ -831,14 +848,15 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 		annotation(node, {resolvedType});
 		return resolvedType;
 	}	
-	function resolveArrayType(node:ArrayTypeExpr):ArrayType {
+	function resolveArrayType(node:ArrayTypeExpr):ArrayType|undefined {
 		const et=resolveType(node.element);
+		if(!et) return undefined;
 		//console.log("ET",et);
 		const rt={element:et};
 		if (rt) annotation(node, {resolvedType:rt});
 		return rt;
 	}
-	function resolveNamedType(node:NamedTypeExpr):NamedType {
+	function resolveNamedType(node:NamedTypeExpr):NamedType|undefined {
 		const si=getScopeInfo(node.name);
 		const resolvedType=
 			(si instanceof SI.NATIVE)?si.value:
@@ -881,13 +899,13 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 			annotation(locals.subFuncDecls[i],{scopeInfo:si});
 		}
 	}
-	function resolveTypesOfParams(params:ParamDecl[]):AnnotatedType[] {
+	function resolveTypesOfParams(params:ParamDecl[]):(AnnotatedType|undefined)[] {
 		return params.map((param, i)=>{
 			if (param.typeDecl) {
 				//console.log("restype",param);
 				return resolveType(param.typeDecl.vtype);
 			}
-			return null;
+			return undefined;
 		});
 	}
 	function initParamsLocals(f: FuncInfo) {//S
@@ -1040,7 +1058,7 @@ function annotateSource2(klass:C_Meta, env:BuilderEnv) {//B
 				annotateMethodFiber(method);
 			}
 		});
-		packAnnotation(klass.annotation);
+		if (klass.annotation)packAnnotation(klass.annotation);
 	}
 	initTopLevelScope();//S
 	inheritSuperMethod();//S

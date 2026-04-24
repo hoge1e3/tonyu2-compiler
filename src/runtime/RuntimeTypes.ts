@@ -1,4 +1,5 @@
 export type MetaMap={[key: string]:Meta};
+export type ClassTreeRoot={[key:string]:ClassTree};
 export type ClassTree={[key:string]:ClassTree}|TonyuClass; // Tonyu.classes.user.Hoge  Tonyu.classes.kernel.Actor etc
 export type TonyuMethod=Function & {fiber?: TonyuMethod, methodInfo?:MethodInfo};
 export type Constructor = new (...args: any[]) => any;
@@ -8,7 +9,7 @@ export type TonyuShimClass= Constructor & {meta:ShimMeta, extendFrom:Extender};
 export function isTonyuClass(v:any):v is TonyuClass {
 	return typeof v==="function" && v.meta && !v.meta.isShim;
 }
-export type TypeDigest=string|ArrayTypeDigest|UnionTypeDigest;
+export type TypeDigest=string|ArrayTypeDigest|UnionTypeDigest|null;
 export type ArrayTypeDigest={element: TypeDigest};
 export type UnionTypeDigest={candidates: TypeDigest[]};
 export function isArrayTypeDigest(d:TypeDigest):d is ArrayTypeDigest {

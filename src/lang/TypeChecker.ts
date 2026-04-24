@@ -45,6 +45,7 @@ type TypeChkCtx={
 
 export function checkTypeDecl(klass: C_Meta,env: BuilderEnv) {
 	function annotation(node: TNode, aobj: (Annotation|undefined)=undefined):Annotation {//B
+		if(!klass.annotation)klass.annotation={};
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeDeclVisitor=new Visitor({
@@ -129,6 +130,7 @@ export function checkExpr(klass:C_Meta ,env:BuilderEnv) {
 	const srcFile=klass.src!.tonyu; //file object  //S
 	if (!srcFile) return;
 	function annotation(node:TNode, aobj?:Annotation):Annotation {//B
+		if(!klass.annotation) klass.annotation={};
 		return annotation3(klass.annotation,node,aobj);
 	}
 	var typeAnnotationVisitor=new Visitor({

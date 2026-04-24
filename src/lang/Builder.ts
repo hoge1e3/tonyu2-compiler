@@ -1,20 +1,21 @@
-import Tonyu from "../runtime/TonyuRuntime";
-import TError from "../runtime/TError";
-import R from "../lib/R";
-import { isTonyu1 } from "./tonyu1";
-import JSGenerator from "./JSGenerator";
-import {IndentBuffer} from "./IndentBuffer";
-import * as Semantics from "./Semantics";
-import { SourceFiles, SourceFile, sourceFiles } from "./SourceFiles";
-import { checkExpr, checkTypeDecl } from "./TypeChecker";
-import { Meta, MetaMap } from "../runtime/RuntimeTypes";
-import { BuilderContext, BuilderContextDef, BuilderEnv, CompilerOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isFileDest, isMemoryDest } from "./CompilerTypes";
-import { SFile } from "../lib/SFileType";
+import Tonyu from "../runtime/TonyuRuntime.js";
+import TError from "../runtime/TError.js";
+import R from "../lib/R.js";
+import { isTonyu1 } from "./tonyu1.js";
+import * as JSGenerator from "./JSGenerator.js";
+import {IndentBuffer} from "./IndentBuffer.js";
+import * as Semantics from "./Semantics.js";
+import { SourceFiles, SourceFile, sourceFiles } from "./SourceFiles.js";
+import { checkExpr, checkTypeDecl } from "./TypeChecker.js";
+import { Meta, MetaMap } from "../runtime/RuntimeTypes.js";
+import { BuilderContext, BuilderContextDef, BuilderEnv, CompilerOptions, C_Meta, C_MetaMap, Destinations, GenOptions, isFileDest, isMemoryDest } from "./CompilerTypes.js";
+import { DirBasedTonyuProject } from "../project/projectTypes.js";
+import { SFile } from "@hoge1e3/sfile";
 
 //type ClassMap={[key: string]:Meta};
 //const langMod=require("./langMod");
 function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
-    var added={};
+    var added:Record<string,boolean>={};
     var res=[];
     //var crumbs={};
     var ccnt=0;
@@ -57,7 +58,7 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
     function detectLoop(c:C_Meta) {
         var path=[] as string[];
         var visited={} as {[key:string]:boolean};
-        function pushPath(c:C_Meta) {
+        function pushPath(c:Meta) {
             path.push(c.fullName);
             if (visited[c.fullName]) {
                 throw TError( R("circularDependencyDetected",path.join("->")), "Unknown" ,0);
@@ -65,10 +66,10 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
             visited[c.fullName]=true;
         }
         function popPath() {
-            var p=path.pop();
+            var p=path.pop()!;
             delete visited[p];
         }
-        function loop(c:C_Meta) {
+        function loop(c:Meta) {
             //console.log("detectLoop2",c.fullName,JSON.stringify(visited));
             pushPath(c);
             var dep=dep1(c);
@@ -83,7 +84,7 @@ function orderByInheritance(classes:C_MetaMap):C_Meta[] {/*ENVC*/
 // includes langMod, dirBase
 export default class Builder {
     prj: any;
-    env: BuilderEnv;
+    env: BuilderEnv|undefined;
 	// Difference from TonyuProject
 	//    projectCompiler defines projects of Tonyu 'Language'.
 	//    Responsible for transpilation.
@@ -105,7 +106,7 @@ export default class Builder {
 		options: compile option( same as options.json:compiler?? )
 	}
 	*/
-    constructor (prj) {// langMod + dirBase
+    constructor (prj: DirBasedTonyuProject) {// langMod + dirBase
         this.prj=prj;
     }
     isTonyu1() {
@@ -187,7 +188,7 @@ export default class Builder {
 			// new file added ( no dependency <- NO! all file should compile again!)
             // Why?  `new Added`  will change from `new _this.Added` to `new Tonyu.classes.user.Added`
 			const m=this.addMetaFromFile(file);
-			const c={};c[m.fullName]=m;
+			const c:C_MetaMap={};c[m.fullName]=m;
             // TODO aliases?
 			return this.partialCompile(c);
 		} else {
@@ -196,9 +197,9 @@ export default class Builder {
 			return this.partialCompile(this.reverseDependingClasses(classMeta));
 		}
 	}
-	reverseDependingClasses (klass:Meta) {
+	reverseDependingClasses (klass:C_Meta) {
 		// TODO: cache
-		const dep={};
+		const dep:C_MetaMap={};
 		dep[klass.fullName]=klass;
         let mod=false;
 		do {
@@ -241,7 +242,7 @@ export default class Builder {
 		env.aliases[shortCn]=fullCn;
 		return m;
 	}
-	async fullCompile (_ctx?: BuilderContext| BuilderContextDef/*or options(For external call)*/) {
+	async fullCompile (_ctx: BuilderContext| BuilderContextDef={}/*or options(For external call)*/) {
         const dir=this.getDir();
         const ctx=this.initCtx(_ctx);
 		const ctxOpt=ctx.options ||{};
@@ -332,7 +333,7 @@ export default class Builder {
 			codeBuffer: buf,
 			traceIndex: buf.traceIndex,
 		});
-		const s = sourceFiles.add(buf.close(), buf.srcmap /*, buf.traceIndex */);
+		const s = sourceFiles.add(buf.close(), buf.srcmap.toString() /*, buf.traceIndex */);
 		if (isFileDest(destinations)) {
 			const outf = this.getOutputFile();
 			await s.saveAs(outf);
@@ -342,6 +343,7 @@ export default class Builder {
 	genJS(ord: C_Meta[], genOptions:GenOptions) {
 		// 途中でコンパイルエラーを起こすと。。。
         const env=this.getEnv();
+        if (!genOptions.codeBuffer) throw new Error("genOptions.codeBuffer is not set");
         // TODO: delete polyfill
         genOptions.codeBuffer.printf("if(!Tonyu.load)Tonyu.load=(_,f)=>f();%n");
         //
@@ -364,11 +366,11 @@ export default class Builder {
         const EXT=".tonyu";
         const env=this.getEnv();
         const changed:SFile[]=[];
-        let renamingFile: SFile;
+        let renamingFile: SFile|undefined;
         const cls=env.classes;/*ENVC*/
         for (let cln in cls) {/*ENVC*/
             const klass=cls[cln];/*ENVC*/
-            const f:SFile =klass.src ? klass.src.tonyu : null;
+            const f:SFile|undefined =klass.src ? klass.src.tonyu : undefined;
             const a=klass.annotation;
             let changes:{pos:number,len:number}[]=[];
             if (a && f && f.exists()) {
@@ -470,7 +472,7 @@ export default class Builder {
         function traverse(a:any) {
             if (a && typeof a==="object") {
                 if (map.has(a)) {
-                    return refobj(map.get(a));
+                    return refobj(map.get(a)!);
                 }
                 let id=idseq++;
                 map.set(a, id);

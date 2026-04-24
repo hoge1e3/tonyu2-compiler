@@ -6,9 +6,10 @@ import * as OM from "./ObjectMatcher";
 import * as cu from "./compiler";
 import {context} from "./context";
 import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType, NonArrowFuncInfo, isNonArrowFuncInfo, isArrowFuncInfo } from "./CompilerTypes";
-import { ArgList, ArrowFuncExpr, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, isArrowFuncExpr, JsonElem, NewExpr, NonArrowFuncExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
+import { ArgList, ArrowFuncExpr, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, isArrowFuncExpr, JsonElem, NewExpr, NonArrowFuncExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, Stmt, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
 import { Empty, Token } from "./parser";
 import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
+import R from "../lib/R";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する
@@ -44,7 +45,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	// env.codeBuffer is not recommended(if generate in parallel...?)
 	const buf=(genOptions.codeBuffer || (env as any).codeBuffer || 
 	new IndentBuffer({fixLazyLength:6, compress: env.options.compiler.compress })) as IndentBuffer;
-	var traceIndex=genOptions.traceIndex||{};
+	var traceIndex:Record<string,number>=genOptions.traceIndex||{};
 	buf.setSrcFile(srcFile);
 	var printf=buf.printf;
 	type GenCtx={
@@ -71,7 +72,8 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	var genMod=env.options.compiler.genAMD;
 	var doLoopCheck=!env.options.compiler.noLoopCheck;
 
-	function annotation(node:TNode, aobj:Annotation=undefined) {//B
+	function annotation(node:TNode, aobj:Annotation|undefined=undefined) {//B
+		if(!klass.annotation)klass.annotation={};
 		return annotation3(klass.annotation,node,aobj) as Annotation;
 	}
 	function getClassName(klass:string|C_Meta){// should be object or short name //G
@@ -121,7 +123,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		return si;
 	}
 	function noSurroundCompoundF(node:TNode) {//G
-		return function () {
+		return function (this:Visitor) {
 			noSurroundCompound.apply(this, [node]);
 		};
 	}
@@ -134,7 +136,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	}
 	
 	var THNode={type:"THNode"};//G
-	function optV(node:TNode|undefined) {
+	function optV(node:TNode|undefined|null) {
 		if (node) return node;
 		return {type:"dummy"};
 	}
@@ -267,7 +269,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				buf.printf("%v: %v", node.key, node.value);
 			} else {
 				buf.printf("%v: %f", node.key, function () {
-					varAccess( node.key.text, annotation(node).scopeInfo, annotation(node));
+					const si=annotation(node).scopeInfo;
+					if (!si) throw new Error("Scope info not set for "+node);
+					varAccess( node.key.text, si , annotation(node));
 				});
 			}
 		},
@@ -289,7 +293,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		varAccess: function (node:VarAccess) {
 			buf.addMapping(node);
 			var n=node.name.text;
-			varAccess(n,annotation(node).scopeInfo, annotation(node));
+			const si=annotation(node).scopeInfo;
+			if (!si) throw new Error("Scope info not set for "+node);
+			varAccess(n,si, annotation(node));
 		},
 		exprstmt: function (node:Exprstmt) {//exprStmt
 			//var t:any={};
@@ -318,12 +324,18 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 						to.L, to.P, to.O, FIBPRE, to.N, [", ",[THNode].concat(to.A)],
 				);*/
 			} else if (t && t.type=="noRetSuper") {
+				if (!t.S.name) {
+					throw new Error(R("superWithoutMethodNameIsNotAllowedHere"));
+				}
 				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
 							"(yield* %s.prototype.%s%s.apply( %s, [%j]));" ,//FIBERCALL
 							p,  FIBPRE, t.S.name.text,  THIZ,  [", ",[THNode].concat(t.A)],
 					);
 			} else if (t && t.type=="retSuper") {
+				if (!t.S.name) {
+					throw new Error(R("superWithoutMethodNameIsNotAllowedHere"));
+				}
 				const p=SUPER;//getClassName(klass.superclass);
 				buf.printf(
 							"%v%v(yield* %s.prototype.%s%s.apply( %s, [%j]));" ,//FIBERCALL
@@ -363,7 +375,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			if (node.op.text==="__typeof") {
 				const a=annotation(node.right);
 				//console.log("__typeof",a);
-				typeToLiteral(a.resolvedType);
+				typeToLiteral(a.resolvedType!);
 				/*if (a.resolvedType) {
 					const t=a.resolvedType;
 					if (isMethodType(t)) {
@@ -476,12 +488,13 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 			var an=annotation(node);
 			if (node.inFor.type=="forin") {
 				const inFor:Forin=node.inFor;
-				const pre=( isBlockScopeDeclprefix(inFor.isVar) ? inFor.isVar.text+" ": "");
+				const isVar=inFor.isVar;
+				const pre=( isBlockScopeDeclprefix(isVar) ? isVar!.text+" ": "");
 				buf.printf(
 					"for (%s[%f] of %s(%v,%s)) {%{"+
 						"%f%n" +
 					"%}}",
-					pre, loopVarsF(inFor.isVar, inFor.vars),  ITER2, inFor.set, inFor.vars.length,
+					pre, loopVarsF(/*isVar,*/ inFor.vars),  ITER2, inFor.set, inFor.vars.length,
 					noSurroundCompoundF(node.loop)
 				);
 				
@@ -528,13 +541,15 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				}
 		
 			}
-			function loopVarsF(isVar: Token, vars: Token[]) {
+			function loopVarsF(/*isVar: Token,*/ vars: Token[]) {
 				return function () {
 					vars.forEach((v,i)=>{
 						var an=annotation(v);
 						if (i>0) buf.printf(", ");
 						buf.addMapping(v);
-						varAccess(v.text, an.scopeInfo,an);
+						const si=an.scopeInfo;
+						if (!si) throw new Error("Scope info is not set for "+node);
+						varAccess(v.text, si,an);
 					});
 				};
 			}
@@ -542,7 +557,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				return function () {
 					vars.forEach(function (v,i) {
 						var an=annotation(v);
-						varAccess(v.text, an.scopeInfo,an);
+						const si=an.scopeInfo;
+						if (!si) throw new Error("Scope info is not set for "+node);
+						varAccess(v.text, si,an);
 						buf.printf("=%s[%s];%n", itn, i);
 						//buf.printf("%s=%s[%s];%n", v.text, itn, i);
 					});
@@ -704,7 +721,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		ctx.enter({}, function () {
 			if (genMod) {
 				printf("define(function (require) {%{");
-				var reqs={Tonyu:1};
+				var reqs={Tonyu:1} as Record<string,number>;
 				for (var mod in klass.decls.amds) {
 					reqs[mod]=1;
 				}
@@ -778,7 +795,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				fullName: klass.fullName,
 				namespace: klass.namespace,
 				shortName: klass.shortName,
-				decls:{methods:{}}
+				decls:{methods:{} as Record<string, {nowait:boolean}>}
 		};
 		for (var i in klass.decls.methods) {
 			res.decls.methods[i]=
@@ -789,13 +806,14 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	function genFiber(fiber: NonArrowFuncInfo) {//G
 		if (isConstructor(fiber)) return;
 		var stmts=fiber.stmts;
-		var noWaitStmts=[],  curStmts=noWaitStmts;
+		var noWaitStmts=[] as Stmt[],  curStmts=noWaitStmts;
 		var opt=true;
+		if (!fiber.params) throw new Error("No parameter is set");
 		//waitStmts=stmts;
 		printf(
 			"%s%s :function* %s(%j) {%{"+
 				"var %s=%s;%n",
-			FIBPRE, fiber.name, genFn("f_"+fiber.name), [",",[THNode].concat(fiber.params)],
+			FIBPRE, fiber.name, genFn("f_"+fiber.name), [",",[THNode as ParamDecl].concat(fiber.params)],
 				THIZ, GET_THIS
 		);
 		if (fiber.useArgs) {
@@ -845,6 +863,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	
 	function genArrowFuncExpr(node:ArrowFuncExpr) {	
 		const finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (!(finfo)) {
+			throw new Error("No func info!");
+		}
 		if (!isArrowFuncInfo(finfo)) {
 			throw new Error("NonArrow func info!");
 		}
@@ -860,6 +881,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	}
 	function genNonArrowFuncExpr(node:NonArrowFuncExpr) {//G
 		const finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (!(finfo)) {
+			throw new Error("No func info!");
+		}
 		if (!isNonArrowFuncInfo(finfo)) {
 			throw new Error("Arrow func info!");
 		}
@@ -898,6 +922,9 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	}
 	function genSubFunc(node: FuncDecl) {//G
 		var finfo=annotation(node).funcInfo;// annotateSubFuncExpr(node);
+		if (!(finfo)) {
+			throw new Error("No func info!");
+		}
 		if (!isNonArrowFuncInfo(finfo)) {
 			throw new Error("Arrow func info!");
 		}
@@ -921,12 +948,14 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 	function genLocalsF(finfo:NonArrowFuncInfo) {//G
 		return f;
 		function f() {
+			const locals=finfo.locals;
+			if (!locals) throw new Error("No local info for"+finfo);
 			ctx.enter({/*scope:finfo.scope*/}, function (){
-				for (let i in finfo.locals.varDecls) {
+				for (let i in locals.varDecls) {
 					buf.printf("var %s;%n",i);
 				}
-				for (let i in finfo.locals.subFuncDecls) {
-					genSubFunc(finfo.locals.subFuncDecls[i]);
+				for (let i in locals.subFuncDecls) {
+					genSubFunc(locals.subFuncDecls[i]);
 				}
 			});
 		}
@@ -935,20 +964,22 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		return OM.match(f, {ftype:"constructor"}) || OM.match(f, {name:"new"});
 	}
 	genSource();//G
-	if (genMod) {
-		klass.src.js=klass.src.tonyu.up().rel(klass.src.tonyu.truncExt()+".js");
-		klass.src.js.text(buf.buf);
-	} else {
-		klass.src.js=buf.buf;//G
+	if (klass.src){
+		if (genMod && klass.src.tonyu) {
+			klass.src.js=klass.src.tonyu.up()!.rel(klass.src.tonyu.truncExt(".tonyu")+".js");
+			klass.src.js.text(buf.buf+"");
+		} else {
+			klass.src.js=buf.buf+"";//G
+		}
+		klass.src.map=buf.mapStr;
 	}
 	delete klass.jsNotUpToDate;
-	cu.packAnnotation(klass.annotation);
+	if (klass.annotation)cu.packAnnotation(klass.annotation);
 	if (debug) {
 		console.log("method4", buf.buf);
 		//throw "ERR";
 	}
 	//var bufres=buf.close();
-	klass.src.map=buf.mapStr;
 	return buf;//res;
 }//B
 

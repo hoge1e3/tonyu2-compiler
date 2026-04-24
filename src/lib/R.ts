@@ -35,6 +35,7 @@ const ja={
         "   [参考]https://edit.tonyu.jp/doc/options.html\n",
     "blockScopedVarDeclConflict": "'{1}' は引数または'var'ですでに定義されています.",
     "duplicateVarDecl": "'{1}'が２回定義されています。",
+    "superWithoutMethodNameIsNotAllowedHere": "メソッド名を伴わないsuper();は、ここには書けません。",
 };
 const en={
     "MethodAlreadyDeclared": "Method {1} is already defined",
