@@ -1,15 +1,15 @@
-import {Visitor} from "./Visitor";
+import {Visitor} from "./Visitor.js";
 
-import {IndentBuffer} from "./IndentBuffer";
-import { isTonyu1 } from "./tonyu1";
-import * as OM from "./ObjectMatcher";
-import * as cu from "./compiler";
-import {context} from "./context";
-import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType, NonArrowFuncInfo, isNonArrowFuncInfo, isArrowFuncInfo } from "./CompilerTypes";
-import { ArgList, ArrowFuncExpr, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, isArrowFuncExpr, JsonElem, NewExpr, NonArrowFuncExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, Stmt, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes";
-import { Empty, Token } from "./parser";
-import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler";
-import R from "../lib/R";
+import {IndentBuffer} from "./IndentBuffer.js";
+import { isTonyu1 } from "./tonyu1.js";
+import * as OM from "./ObjectMatcher.js";
+import * as cu from "./compiler.js";
+import {context} from "./context.js";
+import { Annotation, C_Meta, BuilderEnv, FuncInfo, GenOptions, AnnotatedType, NativeClass, isMethodType, isMeta, isNativeClass, isUnionType, NonArrowFuncInfo, isNonArrowFuncInfo, isArrowFuncInfo } from "./CompilerTypes.js";
+import { ArgList, ArrowFuncExpr, Arylit, BackquoteLiteral, BackquoteText, Break, Call, Case, Catch, Compound, Continue, Default, Do, DotExpr, Exprstmt, For, Forin, FuncDecl, FuncDeclHead, FuncExpr, If, IfWait, Infix, isArrowFuncExpr, JsonElem, NewExpr, NonArrowFuncExpr, NormalFor, Objlit, ObjlitArg, ParamDecl, ParamDecls, ParenExpr, Postfix, Prefix, Return, Scall, Stmt, SuperExpr, Switch, Throw, TNode, Trifix, Try, VarAccess, VarDecl, VarsDecl, While } from "./NodeTypes.js";
+import { Empty, Token } from "./parser.js";
+import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix } from "./compiler.js";
+import R from "../lib/R.js";
 
 //export=(cu as any).JSGenerator=(function () {
 // TonyuソースファイルをJavascriptに変換する

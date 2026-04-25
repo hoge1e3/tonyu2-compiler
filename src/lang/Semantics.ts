@@ -1,20 +1,20 @@
-import Tonyu from "../runtime/TonyuRuntime";
-import R from "../lib/R";
-import TError from "../runtime/TError";
-import { isTonyu1 } from "./tonyu1";
-import * as ObjectMatcher from "./ObjectMatcher";
+import Tonyu from "../runtime/TonyuRuntime.js";
+import R from "../lib/R.js";
+import TError from "../runtime/TError.js";
+import { isTonyu1 } from "./tonyu1.js";
+import * as ObjectMatcher from "./ObjectMatcher.js";
 const OM:any=ObjectMatcher;
-import TonyuLang1 from "./parse_tonyu1";
-import TonyuLang2 from "./parse_tonyu2";
+import TonyuLang1 from "./parse_tonyu1.js";
+import TonyuLang2 from "./parse_tonyu2.js";
 //import assert from "../lib/assert";
-import * as cu from "./compiler";
-import {Visitor} from "./Visitor";
-import {context} from "./context";
-import { SUBELEMENTS, Token } from "./parser";
-import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr, isArrowFuncExpr, ArrowFuncExpr, NonArrowFuncExpr} from "./NodeTypes";
-import { FieldInfo, Meta } from "../runtime/RuntimeTypes";
-import { AnnotatedType, Annotation, ArrayType, ArrowFuncInfo, BuilderEnv, C_Decls, C_Meta, FuncInfo, Locals, Methods, NamedType, NonArrowFuncInfo, UnionType, isNonArrowFuncInfo, isUnionType } from "./CompilerTypes";
-import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler";
+import * as cu from "./compiler.js";
+import {Visitor} from "./Visitor.js";
+import {context} from "./context.js";
+import { SUBELEMENTS, Token } from "./parser.js";
+import {Catch, Exprstmt, Forin, FuncDecl, FuncExpr, isPostfix, isVarAccess, NativeDecl, TNode, Program, Stmt, VarDecl, TypeExpr, VarAccess, Objlit, JsonElem, Compound, ParamDecl, Do, Switch, While, For, IfWait, Try, Return, Break, Continue, Postfix, Infix, VarsDecl, NamedTypeExpr, ArrayTypeExpr, isNamedTypeExpr, isArrayTypeExpr, Case, StmtList, UnionTypeExpr, isUnionTypeExpr, isArrowFuncExpr, ArrowFuncExpr, NonArrowFuncExpr} from "./NodeTypes.js";
+import { FieldInfo, Meta } from "../runtime/RuntimeTypes.js";
+import { AnnotatedType, Annotation, ArrayType, ArrowFuncInfo, BuilderEnv, C_Decls, C_Meta, FuncInfo, Locals, Methods, NamedType, NonArrowFuncInfo, UnionType, isNonArrowFuncInfo, isUnionType } from "./CompilerTypes.js";
+import { isBlockScopeDeclprefix, isNonBlockScopeDeclprefix, packAnnotation } from "./compiler.js";
 import { SFile } from "@hoge1e3/sfile";
 
 

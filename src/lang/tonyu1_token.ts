@@ -1,4 +1,4 @@
-import {tokenizerFactory} from "./tokenizerFactory";
+import {tokenizerFactory} from "./tokenizerFactory.js";
 
 export default tokenizerFactory({
 	caseInsensitive: true,

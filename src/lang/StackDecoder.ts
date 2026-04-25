@@ -1,5 +1,5 @@
 import { NullableMappedPosition, Position, SourceMapConsumer } from "source-map";
-import {SourceFile, sourceFiles} from "./SourceFiles";
+import {SourceFile, sourceFiles} from "./SourceFiles.js";
 import {fromError} from "stacktrace-js";
 
 const sf2c=new WeakMap<SourceFile,SourceMapConsumer>();

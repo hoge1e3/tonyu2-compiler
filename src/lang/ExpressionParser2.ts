@@ -1,6 +1,6 @@
 // parser.js の補助ライブラリ．式の解析を担当する
 
-import { Parser, ParserContext, setRange, State } from "./parser";
+import { Parser, ParserContext, setRange, State } from "./parser.js";
 
 export type OpType="infixl"|"infixr"|"infix"|"prefix"|"postfix"|"trifixr"|"element";
 //import Parser from "./parser";

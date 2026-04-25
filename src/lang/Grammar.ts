@@ -1,5 +1,4 @@
-//import * as Parser from "./parser";
-import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct, SUBELEMENTS } from "./parser";
+import { addRange, ALL, lazy, Parser, ParserContext, setRange, Struct, SUBELEMENTS } from "./parser.js";
 
 export default function (context:ParserContext) {
 	function trans(name:Parser|string):Parser {

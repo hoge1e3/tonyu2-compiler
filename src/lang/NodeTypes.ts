@@ -1,4 +1,4 @@
-import { NodeBase, Token } from "./parser";
+import { NodeBase, Token } from "./parser.js";
 
 /*export type Token=NodeBase &{
     type: string,

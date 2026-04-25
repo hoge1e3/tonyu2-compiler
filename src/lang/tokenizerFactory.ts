@@ -1,5 +1,5 @@
-import { RegExpLike } from "./NodeTypes";
-import { ALL, ParsedNode, Parser, State, StringParser, StrLikeResult, StrStateSrc, Token } from "./parser";
+import { RegExpLike } from "./NodeTypes.js";
+import { ALL, ParsedNode, Parser, State, StringParser, StrLikeResult, StrStateSrc, Token } from "./parser.js";
 
 //import Parser from "./parser";
 export type ReservedList={[key: string]:boolean};

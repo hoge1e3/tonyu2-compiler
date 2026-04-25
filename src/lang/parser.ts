@@ -1,5 +1,5 @@
-import R from "../lib/R";
-import { RegExpLike } from "./NodeTypes";
+import R from "../lib/R.js";
+import { RegExpLike } from "./NodeTypes.js";
 
 //const Parser=(function () {
 export type And={type:"and", elems:Parser[]};

@@ -5,13 +5,13 @@
 */
 
 //import * as Parser from "./parser";
-import TError from "../runtime/TError";
-import R from "../lib/R";
+import TError from "../runtime/TError.js";
+import R from "../lib/R.js";
 import {ExpressionParser} from "./ExpressionParser2.js";
 import Grammar from "./Grammar.js";
-import { addRange, ALL, getRange, ParsedNode, Parser, setRange, State, StringParser, Token, TokensParser } from "./parser";
-import { BQH, BQT, BQX, Tokenizer } from "./tokenizerFactory";
-import { ArgList, DottableExpression, Expression, ObjOrFuncArg } from "./NodeTypes";
+import { addRange, ALL, getRange, ParsedNode, Parser, setRange, State, StringParser, Token, TokensParser } from "./parser.js";
+import { BQH, BQT, BQX, Tokenizer } from "./tokenizerFactory.js";
+import { ArgList, DottableExpression, Expression, ObjOrFuncArg } from "./NodeTypes.js";
 import { SFile } from "@hoge1e3/sfile";
 
 
