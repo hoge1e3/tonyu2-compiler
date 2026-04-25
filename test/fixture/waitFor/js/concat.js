@@ -13,9 +13,9 @@ Tonyu.klass.define({
         
         try {
           console.log("await...");
-          _this.r=new Promise((function anonymous_133(s,e) {
+          _this.r=new Promise((function anonymous_126(s,e) {
             
-            setTimeout((function anonymous_162() {
+            setTimeout((function anonymous_154() {
               
               e(100);
             }),500);
@@ -33,9 +33,9 @@ Tonyu.klass.define({
         
         try {
           console.log("await...");
-          _this.r=(yield* _thread.await(new Promise((function anonymous_133(s,e) {
+          _this.r=(yield* _thread.await(new Promise((function anonymous_126(s,e) {
             
-            setTimeout((function anonymous_162() {
+            setTimeout((function anonymous_154() {
               
               e(100);
             }),500);

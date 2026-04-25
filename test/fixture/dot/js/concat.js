@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"dependingProjects":[{"dir":"../updatable/"}],"outputFile":"js/concat.js","namespace":"user"},"run":{}}, ()=>{
 Tonyu.klass.define({
   fullName: 'user.Main',
   shortName: 'Main',
@@ -12,7 +14,6 @@ Tonyu.klass.define({
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         (yield* _this.fiber$f(_thread, "hoge", 3));
         
@@ -24,7 +25,6 @@ Tonyu.klass.define({
       },
       fiber$f :function* _trc_Main_f_f(_thread,...a) {
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         console.log("A",...a);
         
@@ -33,6 +33,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"f":{"nowait":false,"isMain":false,"vtype":{"params":[null],"returnValue":null}}},"fields":{}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map

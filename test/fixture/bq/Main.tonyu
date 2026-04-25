@@ -6,6 +6,6 @@ let s=`test
  \\\n
  "
 desuka? `;
- fuga;
+// fuga;
 console.log(s);
  
