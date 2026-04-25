@@ -1,7 +1,7 @@
 //	var Klass=require("../lib/Klass");
 
-import { TonyuMethod } from "./RuntimeTypes";
-import R from "../lib/R";
+import { TonyuMethod } from "./RuntimeTypes.js";
+import R from "../lib/R.js";
 
 //const R=require("../lib/R");
 interface ThreadGroup {// See Kernel/thread/ThreadGroupMod.tonyu

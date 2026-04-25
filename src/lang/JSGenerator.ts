@@ -95,7 +95,7 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 		};
 	}
 	function varAccess(n:string, si:cu.ScopeInfo, an:Annotation) {//G
-		var t=stype(si);
+		var t=si&&stype(si);
 		if (t==ST.THVAR) {
 			buf.printf("%s",TH);
 		} else if (t==ST.FIELD || t==ST.PROP) {
@@ -117,8 +117,8 @@ export function genJS(klass:C_Meta, env:BuilderEnv, genOptions:GenOptions) {//B
 				buf.printf("%s",n);
 			}
 		} else {
-			console.log("Unknown scope type: ",t);
-			throw new Error("Unknown scope type: "+t);
+			console.log("Unknown scope type: ",n);
+			throw new Error("Unknown scope type: "+n);
 		}
 		return si;
 	}

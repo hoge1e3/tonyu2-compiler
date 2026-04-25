@@ -1,6 +1,6 @@
-import StringBuilder from "../lib/StringBuilder";
+import StringBuilder from "../lib/StringBuilder.js";
 import * as SourceMap from "source-map";
-import { Visitor } from "./Visitor";
+import { Visitor } from "./Visitor.js";
 import { SFile } from "@hoge1e3/sfile";
 /*const A=require("../lib/assert");
 

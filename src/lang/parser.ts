@@ -702,19 +702,27 @@ export type StrLikeResult={
 }
 export class StringParser{
 	//context: ParserContext;
+	empty:Parser;
+	fail:Parser;
+	eof:Parser;
 	constructor(public context:ParserContext=rawStringParserContext) {
+		this.empty=this.create(function(state:State) {
+			const res=state.clone();
+			res.error=null;
+			res.result=[null]; //{length:0, isEmpty:true}];
+			return res;
+		}).setName("E");
+		this.fail=this.create((s:State)=>s.withError("FAIL")).setName("F");
+		this.eof=this.strLike(function (str:string,pos:number) {
+			if (pos==str.length) return {len:0};
+			return {error:`Not EOF: pos=${pos}/${str.length}`};
+		}).setName("EOF");
+
 	}
 	static withSpace(space:SpaceSpec) {
 		return new StringParser(new ParserContext(space));
 	}
 	create(pf:ParseFunc) {return this.context.create(pf);}
-	empty=this.create(function(state:State) {
-		const res=state.clone();
-		res.error=null;
-		res.result=[null]; //{length:0, isEmpty:true}];
-		return res;
-	}).setName("E");
-	fail=this.create((s:State)=>s.withError("FAIL")).setName("F");
 	str(st:string, name=st) {
 		let res=this.strLike((str:string,pos:number)=>{
 			if (str.substring(pos, pos+st.length)===st) return {len:st.length};
@@ -769,10 +777,6 @@ export class StringParser{
 		var st=new State(str,global);
 		return parser.parse(st);
 	}
-	eof=this.strLike(function (str:string,pos:number) {
-		if (pos==str.length) return {len:0};
-		return {error:`Not EOF: pos=${pos}/${str.length}`};
-	}).setName("EOF");
 }
 //  why not eof: ? because StringParser.strLike
 

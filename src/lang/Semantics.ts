@@ -35,15 +35,15 @@ function visitSub(this:Visitor,node: TNode) {//S
 	var t=this;
 	if (!node || typeof node!="object") return;
 	let _es:any[]|undefined;
-	let es:any[]=[];
-	if (Array.isArray(node)) es=node;
+	if (Array.isArray(node)) _es=node;
 	else _es=node[SUBELEMENTS];
+	let es:any[]=[];
 	if (!_es) {
 		es=[];
 		for (var i in node) {
 			es.push((node as any)[i]);
 		}
-	}
+	}else es=_es;
 	es.forEach((e)=>t.visit(e));
 }
 function getSourceFile(klass: C_Meta):SFile {

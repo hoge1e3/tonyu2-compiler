@@ -1,9 +1,9 @@
-import R from "../lib/R";
-import {IT,IT2} from "./TonyuIterator";
-import {TonyuThread} from "./TonyuThread";
-import { ClassDefinition, ClassDefinitionContext, ClassTree, ClassTreeRoot, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes";
-import TError from "./TError";
-import { ProjectOptions } from "../lang/CompilerTypes";
+import R from "../lib/R.js";
+import {IT,IT2} from "./TonyuIterator.js";
+import {TonyuThread} from "./TonyuThread.js";
+import { ClassDefinition, ClassDefinitionContext, ClassTree, ClassTreeRoot, isTonyuClass, Meta, TonyuClass, TonyuShimClass } from "./RuntimeTypes.js";
+import TError from "./TError.js";
+import { ProjectOptions } from "../lang/CompilerTypes.js";
 
 const reservedWords=[
     "abstract",    "arguments",    "await",    "boolean",    "break",    "byte",

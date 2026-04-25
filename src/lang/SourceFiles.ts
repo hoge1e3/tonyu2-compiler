@@ -64,7 +64,7 @@ export class SourceFile {
             return await p.importModule(this.file);
         }
         if (g.process && this.file) {
-            return await import(this.file.path());
+            return await import("file://"+this.file.path());
         }
         if (this.url) {
             u=this.url;

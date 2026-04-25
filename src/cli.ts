@@ -6,10 +6,7 @@ import Tonyu from "./runtime/TonyuRuntime.js";
 //import * as FS from "./lib/FS";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import * as _FS from "@hoge1e3/sfile";
-const FS=new _FS.FileSystemFactory({
-    fs,path,Buffer,
-});
+import {FS} from "./project/FS.js";
 //import * as SourceFiles from "./lang/SourceFiles";
 //import NS2DepSpec from "./project/NS2DepSpec";
 import type { DirBasedTonyuProject } from "./project/projectTypes";
@@ -75,7 +72,7 @@ if (daemon) opt={destinations:{file:false,memory:true}};
 builder.fullCompile(opt).then(async function (s) {
     if (run) {
         const script=prj.getOutputFile();
-        require(script.path());
+        await import("file://"+script.path());
     }
     if (daemon) {
         const tmpdir=prj.getOutputFile().up();

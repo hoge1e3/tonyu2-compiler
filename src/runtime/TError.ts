@@ -1,6 +1,5 @@
 import { SFile } from "@hoge1e3/sfile";
-import { isTonyuClass, TonyuClass } from "./RuntimeTypes";
-import { C_Meta } from "../lang/CompilerTypes";
+import { C_Meta } from "../lang/CompilerTypes.js";
 
 function isCMeta(src:any): src is C_Meta{
 	return src?.src;
