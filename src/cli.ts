@@ -4,7 +4,7 @@ import langMod from "./lang/langMod.js";
 import * as compiledProject from "./project/CompiledProject.js";
 import Tonyu from "./runtime/TonyuRuntime.js";
 //import * as FS from "./lib/FS";
-import * as fs from "node:fs";
+//import * as fs from "node:fs";
 import * as path from "node:path";
 import {FS} from "./project/FS.js";
 //import * as SourceFiles from "./lang/SourceFiles";

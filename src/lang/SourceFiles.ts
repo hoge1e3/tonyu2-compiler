@@ -59,13 +59,14 @@ export class SourceFile {
     async exec() {        
         let u;
         const g=(globalThis as any);
-        if (g.pNode && this.file) {
+        if (g.pNode && this.file) {// petit-node
             const p=g.pNode;
             return await p.importModule(this.file);
         }
-        if (g.process && this.file) {
+        if (g.process && this.file) {// REAL node
             return await import("file://"+this.file.path());
         }
+        // Partial execution?
         if (this.url) {
             u=this.url;
         } else {

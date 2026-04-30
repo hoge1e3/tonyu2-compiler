@@ -174,7 +174,7 @@ function set() {
 \rotateX(angle,axis) {
     return set(rotate(angle,axis));
 }
-\set(x,y,z) {
+/*\set(x,y,z) {
     if (typeof x==="object") {
         y=x.y;
         z=x.z;
@@ -184,7 +184,7 @@ function set() {
     if (typeof y==="number") this.y=y;
     if (typeof z==="number") this.z=z;
     return this;
-}
+}*/
 \toString() {
 	return "("+[x,y,z].join(",")+")";
 }

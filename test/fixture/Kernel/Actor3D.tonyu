@@ -30,7 +30,6 @@ native Tonyu;
     direction.rotate(mode,angle,unit);
     return this;
 }
-
 \defaultLayer{
     return $mainLayer3D;
 }
@@ -74,10 +73,10 @@ nowait \dist(dx,dy,dz) {
     position.set(localToWorld(by));
     return this;
 }
-\rotate(axis,angle) {
+/*\rotate(axis,angle) {
     direction.rotate(axis,angle);
     return this;
-}
+}*/
 // moveBy(1);
 // moveBy{forward:1,left:1};
 // rotate("roll",1);

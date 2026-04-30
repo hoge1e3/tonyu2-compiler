@@ -1,3 +1,5 @@
+if(!Tonyu.load)Tonyu.load=(_,f)=>f();
+Tonyu.load({"compiler":{"namespace":"user","defaultSuperClass":"kernel.Actor","dependingProjects":[{"dir":"../Kernel_offscr/"}],"noLoopCheck":true,"field_strict":true,"typeCheck":true},"run":{"mainClass":"user.Main","bootClass":"kernel.Boot","globals":{"$defaultFPS":60,"$imageSmoothingDisabled":true,"$soundLoadAndDecode":false}},"plugins":{},"kernelEditable":false,"language":"tonyu","version":1658553334869}, ()=>{
 Tonyu.klass.define({
   fullName: 'user.Action',
   shortName: 'Action',
@@ -7,14 +9,11 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Action_main() {
-        "use strict";
         var _this=this;
         
       },
       fiber$main :function* _trc_Action_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
@@ -32,28 +31,22 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Bot_main() {
-        "use strict";
         var _this=this;
         
       },
       fiber$main :function* _trc_Bot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
       play :function _trc_Bot_play(ctx,s) {
-        "use strict";
         var _this=this;
         
         throw new Error("Abstract: メソッドplayが実装されていません");
         
       },
       fiber$play :function* _trc_Bot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドplayが実装されていません");
         
@@ -73,7 +66,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Context_main() {
-        "use strict";
         var _this=this;
         
         
@@ -82,9 +74,7 @@ Tonyu.klass.define({
         
       },
       fiber$main :function* _trc_Context_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -106,7 +96,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_CornerMCTSBot_main() {
-        "use strict";
         var _this=this;
         
         
@@ -120,9 +109,7 @@ Tonyu.klass.define({
         
       },
       fiber$main :function* _trc_CornerMCTSBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -136,7 +123,6 @@ Tonyu.klass.define({
         
       },
       expand :function _trc_CornerMCTSBot_expand(ctx,node) {
-        "use strict";
         var _this=this;
         var hasCorner;
         
@@ -152,7 +138,7 @@ Tonyu.klass.define({
         node.actions=_this.getState(ctx,node).actionsEvents(ctx);
         hasCorner = node.actions.some(Tonyu.bindFunc(_this,_this.isCorner));
         
-        node.subnodes=node.actions.map((function anonymous_772(a) {
+        node.subnodes=node.actions.map((function anonymous_746(a) {
           var q;
           var n;
           
@@ -177,9 +163,7 @@ Tonyu.klass.define({
         return node;
       },
       fiber$expand :function* _trc_CornerMCTSBot_f_expand(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var hasCorner;
         
         if (node.n<_this.expandThresh) {
@@ -194,7 +178,7 @@ Tonyu.klass.define({
         node.actions=_this.getState(ctx,node).actionsEvents(ctx);
         hasCorner = node.actions.some(Tonyu.bindFunc(_this,_this.isCorner));
         
-        node.subnodes=node.actions.map((function anonymous_772(a) {
+        node.subnodes=node.actions.map((function anonymous_746(a) {
           var q;
           var n;
           
@@ -220,7 +204,6 @@ Tonyu.klass.define({
         
       },
       str :function _trc_CornerMCTSBot_str(s) {
-        "use strict";
         var _this=this;
         var r;
         
@@ -232,9 +215,7 @@ Tonyu.klass.define({
         return r;
       },
       fiber$str :function* _trc_CornerMCTSBot_f_str(_thread,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var r;
         
         r = s+"";
@@ -246,7 +227,6 @@ Tonyu.klass.define({
         
       },
       c :function _trc_CornerMCTSBot_c(node,a) {
-        "use strict";
         var _this=this;
         var nsa;
         var _n;
@@ -261,9 +241,7 @@ Tonyu.klass.define({
         return _this.nanc(_this.Cp*_this.sqrt(2*Tonyu.globals.$Math.log(_n))/nsa);
       },
       fiber$c :function* _trc_CornerMCTSBot_f_c(_thread,node,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var nsa;
         var _n;
         
@@ -279,7 +257,6 @@ Tonyu.klass.define({
         
       },
       q :function _trc_CornerMCTSBot_q(node,a) {
-        "use strict";
         var _this=this;
         
         if (a==null) {
@@ -295,9 +272,7 @@ Tonyu.klass.define({
         }
       },
       fiber$q :function* _trc_CornerMCTSBot_f_q(_thread,node,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (a==null) {
           return node.q.value;
@@ -313,7 +288,6 @@ Tonyu.klass.define({
         
       },
       n :function _trc_CornerMCTSBot_n(node,a) {
-        "use strict";
         var _this=this;
         
         if (a==null) {
@@ -329,9 +303,7 @@ Tonyu.klass.define({
         }
       },
       fiber$n :function* _trc_CornerMCTSBot_f_n(_thread,node,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (a==null) {
           return yield* _this.fiber$nanc(_thread, node.n);
@@ -349,7 +321,6 @@ Tonyu.klass.define({
         
       },
       selection :function _trc_CornerMCTSBot_selection(ctx,node) {
-        "use strict";
         var _this=this;
         var subs;
         var sgn;
@@ -395,9 +366,7 @@ Tonyu.klass.define({
         return node;
       },
       fiber$selection :function* _trc_CornerMCTSBot_f_selection(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var subs;
         var sgn;
         var ma;
@@ -443,7 +412,6 @@ Tonyu.klass.define({
         
       },
       play :function _trc_CornerMCTSBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var rootNode;
         var i;
@@ -515,9 +483,7 @@ Tonyu.klass.define({
         return acts[ma];
       },
       fiber$play :function* _trc_CornerMCTSBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var rootNode;
         var i;
         var leaf;
@@ -589,7 +555,6 @@ Tonyu.klass.define({
         
       },
       backup :function _trc_CornerMCTSBot_backup(node,value) {
-        "use strict";
         var _this=this;
         
         while (node) {
@@ -599,9 +564,7 @@ Tonyu.klass.define({
         }
       },
       fiber$backup :function* _trc_CornerMCTSBot_f_backup(_thread,node,value) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         while (node) {
           node.q=node.q.inc(value);
@@ -611,7 +574,6 @@ Tonyu.klass.define({
         
       },
       getState :function _trc_CornerMCTSBot_getState(ctx,node) {
-        "use strict";
         var _this=this;
         var p;
         var idx;
@@ -638,9 +600,7 @@ Tonyu.klass.define({
         return node.state;
       },
       fiber$getState :function* _trc_CornerMCTSBot_f_getState(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var p;
         var idx;
         var act;
@@ -667,7 +627,6 @@ Tonyu.klass.define({
         
       },
       rollout :function _trc_CornerMCTSBot_rollout(ctx,node,timeout) {
-        "use strict";
         var _this=this;
         var state;
         var t;
@@ -690,9 +649,7 @@ Tonyu.klass.define({
         return state;
       },
       fiber$rollout :function* _trc_CornerMCTSBot_f_rollout(_thread,ctx,node,timeout) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var state;
         var t;
         var a;
@@ -715,7 +672,6 @@ Tonyu.klass.define({
         
       },
       isCorner :function _trc_CornerMCTSBot_isCorner(a) {
-        "use strict";
         var _this=this;
         
         if (Tonyu.globals.$stations[a.stext].nexts.length==Tonyu.globals.$stations[a.stext].lines.length) {
@@ -727,9 +683,7 @@ Tonyu.klass.define({
         }
       },
       fiber$isCorner :function* _trc_CornerMCTSBot_f_isCorner(_thread,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (Tonyu.globals.$stations[a.stext].nexts.length==Tonyu.globals.$stations[a.stext].lines.length) {
           return true;
@@ -741,7 +695,6 @@ Tonyu.klass.define({
         
       },
       playRandom :function _trc_CornerMCTSBot_playRandom(ctx,s) {
-        "use strict";
         var _this=this;
         var acts;
         var a;
@@ -757,9 +710,7 @@ Tonyu.klass.define({
         return a;
       },
       fiber$playRandom :function* _trc_CornerMCTSBot_f_playRandom(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -775,7 +726,6 @@ Tonyu.klass.define({
         
       },
       nanc :function _trc_CornerMCTSBot_nanc(v) {
-        "use strict";
         var _this=this;
         
         if (typeof  v!=="number") {
@@ -789,9 +739,7 @@ Tonyu.klass.define({
         return v;
       },
       fiber$nanc :function* _trc_CornerMCTSBot_f_nanc(_thread,v) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (typeof  v!=="number") {
           throw new Error("null");
@@ -818,35 +766,28 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_GameMaster_main() {
-        "use strict";
         var _this=this;
         
         
         
       },
       fiber$main :function* _trc_GameMaster_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
         
       },
       onAppear :function _trc_GameMaster_onAppear() {
-        "use strict";
         var _this=this;
         
       },
       fiber$onAppear :function* _trc_GameMaster_f_onAppear(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
       step :function _trc_GameMaster_step() {
-        "use strict";
         var _this=this;
         var action;
         
@@ -864,9 +805,7 @@ Tonyu.klass.define({
         return action;
       },
       fiber$step :function* _trc_GameMaster_f_step(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var action;
         
         if (_this.gameover()) {
@@ -884,7 +823,6 @@ Tonyu.klass.define({
         
       },
       getBot :function _trc_GameMaster_getBot(p) {
-        "use strict";
         var _this=this;
         
         if (_this.context.bots&&_this.context.bots[p]) {
@@ -894,9 +832,7 @@ Tonyu.klass.define({
         
       },
       fiber$getBot :function* _trc_GameMaster_f_getBot(_thread,p) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (_this.context.bots&&_this.context.bots[p]) {
           return _this.context.bots[p];
@@ -906,21 +842,17 @@ Tonyu.klass.define({
         
       },
       gameover :function _trc_GameMaster_gameover() {
-        "use strict";
         var _this=this;
         
         return _this.state.gameover(_this.context);
       },
       fiber$gameover :function* _trc_GameMaster_f_gameover(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.state.gameover(_this.context);
         
       },
       run :function _trc_GameMaster_run() {
-        "use strict";
         var _this=this;
         
         while (! _this.gameover()) {
@@ -930,9 +862,7 @@ Tonyu.klass.define({
         }
       },
       fiber$run :function* _trc_GameMaster_f_run(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         while (! _this.gameover()) {
           (yield* _this.fiber$step(_thread));
@@ -955,7 +885,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_MCTSBot_main() {
-        "use strict";
         var _this=this;
         
         
@@ -966,9 +895,7 @@ Tonyu.klass.define({
         
       },
       fiber$main :function* _trc_MCTSBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
@@ -979,7 +906,6 @@ Tonyu.klass.define({
         
       },
       expand :function _trc_MCTSBot_expand(ctx,node) {
-        "use strict";
         var _this=this;
         
         if (node.n<_this.expandThresh) {
@@ -990,7 +916,7 @@ Tonyu.klass.define({
           throw new Error(node.state+" already expanded");
           
         }
-        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_679(a) {
+        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_658(a) {
           
           return {parent: node,state: node.state.next(ctx,a),q: new Tonyu.classes.user.Rational(0,0),n: 0,a: _this.str(a),subnodes: null};
         }));
@@ -998,9 +924,7 @@ Tonyu.klass.define({
         return node;
       },
       fiber$expand :function* _trc_MCTSBot_f_expand(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (node.n<_this.expandThresh) {
           throw new Error(node.n+"<"+_this.expandThresh);
@@ -1010,7 +934,7 @@ Tonyu.klass.define({
           throw new Error(node.state+" already expanded");
           
         }
-        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_679(a) {
+        node.subnodes=node.state.actionsEvents(ctx).map((function anonymous_658(a) {
           
           return {parent: node,state: node.state.next(ctx,a),q: new Tonyu.classes.user.Rational(0,0),n: 0,a: _this.str(a),subnodes: null};
         }));
@@ -1019,7 +943,6 @@ Tonyu.klass.define({
         
       },
       str :function _trc_MCTSBot_str(s) {
-        "use strict";
         var _this=this;
         var r;
         
@@ -1031,9 +954,7 @@ Tonyu.klass.define({
         return r;
       },
       fiber$str :function* _trc_MCTSBot_f_str(_thread,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var r;
         
         r = s+"";
@@ -1045,7 +966,6 @@ Tonyu.klass.define({
         
       },
       c :function _trc_MCTSBot_c(node,a) {
-        "use strict";
         var _this=this;
         var nsa;
         var _n;
@@ -1060,9 +980,7 @@ Tonyu.klass.define({
         return _this.nanc(_this.Cp*_this.sqrt(2*Tonyu.globals.$Math.log(_n))/nsa);
       },
       fiber$c :function* _trc_MCTSBot_f_c(_thread,node,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var nsa;
         var _n;
         
@@ -1078,7 +996,6 @@ Tonyu.klass.define({
         
       },
       q :function _trc_MCTSBot_q(node,a) {
-        "use strict";
         var _this=this;
         
         if (a==null) {
@@ -1094,9 +1011,7 @@ Tonyu.klass.define({
         }
       },
       fiber$q :function* _trc_MCTSBot_f_q(_thread,node,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (a==null) {
           return node.q.value;
@@ -1112,7 +1027,6 @@ Tonyu.klass.define({
         
       },
       n :function _trc_MCTSBot_n(node,a) {
-        "use strict";
         var _this=this;
         
         if (a==null) {
@@ -1128,9 +1042,7 @@ Tonyu.klass.define({
         }
       },
       fiber$n :function* _trc_MCTSBot_f_n(_thread,node,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (a==null) {
           return yield* _this.fiber$nanc(_thread, node.n);
@@ -1148,7 +1060,6 @@ Tonyu.klass.define({
         
       },
       selection :function _trc_MCTSBot_selection(ctx,node) {
-        "use strict";
         var _this=this;
         var acts;
         var sgn;
@@ -1194,9 +1105,7 @@ Tonyu.klass.define({
         return node;
       },
       fiber$selection :function* _trc_MCTSBot_f_selection(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var sgn;
         var ma;
@@ -1242,7 +1151,6 @@ Tonyu.klass.define({
         
       },
       play :function _trc_MCTSBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var rootNode;
         var leaf;
@@ -1312,9 +1220,7 @@ Tonyu.klass.define({
         return acts[ma];
       },
       fiber$play :function* _trc_MCTSBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var rootNode;
         var leaf;
         var endState;
@@ -1384,7 +1290,6 @@ Tonyu.klass.define({
         
       },
       backup :function _trc_MCTSBot_backup(node,value) {
-        "use strict";
         var _this=this;
         
         while (node) {
@@ -1394,9 +1299,7 @@ Tonyu.klass.define({
         }
       },
       fiber$backup :function* _trc_MCTSBot_f_backup(_thread,node,value) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         while (node) {
           node.q=node.q.inc(value);
@@ -1406,7 +1309,6 @@ Tonyu.klass.define({
         
       },
       rollout :function _trc_MCTSBot_rollout(ctx,node) {
-        "use strict";
         var _this=this;
         var state;
         var t;
@@ -1431,9 +1333,7 @@ Tonyu.klass.define({
         return state;
       },
       fiber$rollout :function* _trc_MCTSBot_f_rollout(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var state;
         var t;
         var a;
@@ -1458,7 +1358,6 @@ Tonyu.klass.define({
         
       },
       getState :function _trc_MCTSBot_getState(ctx,node) {
-        "use strict";
         var _this=this;
         var p;
         var idx;
@@ -1485,9 +1384,7 @@ Tonyu.klass.define({
         return node.state;
       },
       fiber$getState :function* _trc_MCTSBot_f_getState(_thread,ctx,node) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var p;
         var idx;
         var act;
@@ -1514,7 +1411,6 @@ Tonyu.klass.define({
         
       },
       playRandom :function _trc_MCTSBot_playRandom(ctx,s) {
-        "use strict";
         var _this=this;
         var acts;
         var a;
@@ -1530,9 +1426,7 @@ Tonyu.klass.define({
         return a;
       },
       fiber$playRandom :function* _trc_MCTSBot_f_playRandom(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -1548,7 +1442,6 @@ Tonyu.klass.define({
         
       },
       nanc :function _trc_MCTSBot_nanc(v) {
-        "use strict";
         var _this=this;
         
         if (typeof  v!=="number") {
@@ -1562,9 +1455,7 @@ Tonyu.klass.define({
         return v;
       },
       fiber$nanc :function* _trc_MCTSBot_f_nanc(_thread,v) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (typeof  v!=="number") {
           throw new Error("null");
@@ -1591,23 +1482,19 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_NStepBot_main() {
-        "use strict";
         var _this=this;
         
         
         
       },
       fiber$main :function* _trc_NStepBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
         
       },
       play :function _trc_NStepBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var a;
         
@@ -1621,9 +1508,7 @@ Tonyu.klass.define({
         return a[0];
       },
       fiber$play :function* _trc_NStepBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var a;
         
         a=yield* _this.fiber$playN(_thread, ctx, s, _this.n);
@@ -1637,7 +1522,6 @@ Tonyu.klass.define({
         
       },
       playN :function _trc_NStepBot_playN(ctx,s,n) {
-        "use strict";
         var _this=this;
         var acts;
         var player;
@@ -1661,7 +1545,7 @@ Tonyu.klass.define({
         
         maxv = - 100;
         
-        acvs = acts.map((function anonymous_569(a) {
+        acvs = acts.map((function anonymous_549(a) {
           var ns;
           var sa;
           var ae;
@@ -1680,20 +1564,18 @@ Tonyu.klass.define({
           return {value: v,actions: [a].concat(sa)};
         }));
         
-        acvs.sort((function anonymous_845() {
+        acvs.sort((function anonymous_816() {
           
           return _this.rnd()-0.5;
         }));
-        acvs.sort((function anonymous_882(a,b) {
+        acvs.sort((function anonymous_852(a,b) {
           
           return b.value-a.value;
         }));
         return acvs[0].actions;
       },
       fiber$playN :function* _trc_NStepBot_f_playN(_thread,ctx,s,n) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var player;
         var maxv;
@@ -1716,7 +1598,7 @@ Tonyu.klass.define({
         
         maxv = - 100;
         
-        acvs = acts.map((function anonymous_569(a) {
+        acvs = acts.map((function anonymous_549(a) {
           var ns;
           var sa;
           var ae;
@@ -1735,11 +1617,11 @@ Tonyu.klass.define({
           return {value: v,actions: [a].concat(sa)};
         }));
         
-        acvs.sort((function anonymous_845() {
+        acvs.sort((function anonymous_816() {
           
           return _this.rnd()-0.5;
         }));
-        acvs.sort((function anonymous_882(a,b) {
+        acvs.sort((function anonymous_852(a,b) {
           
           return b.value-a.value;
         }));
@@ -1760,21 +1642,17 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_OneStepBot_main() {
-        "use strict";
         var _this=this;
         
         
       },
       fiber$main :function* _trc_OneStepBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
       },
       play :function _trc_OneStepBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var acts;
         var player;
@@ -1792,7 +1670,7 @@ Tonyu.klass.define({
         
         maxv = - 100;
         
-        acvs = acts.map((function anonymous_325(a) {
+        acvs = acts.map((function anonymous_315(a) {
           var ns;
           var v;
           
@@ -1803,11 +1681,11 @@ Tonyu.klass.define({
           return {value: v,action: a};
         }));
         
-        acvs.sort((function anonymous_478() {
+        acvs.sort((function anonymous_463() {
           
           return _this.rnd()-0.5;
         }));
-        acvs.sort((function anonymous_515(a,b) {
+        acvs.sort((function anonymous_499(a,b) {
           
           return b.value-a.value;
         }));
@@ -1820,9 +1698,7 @@ Tonyu.klass.define({
         return acvs[0].action;
       },
       fiber$play :function* _trc_OneStepBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var player;
         var maxv;
@@ -1839,7 +1715,7 @@ Tonyu.klass.define({
         
         maxv = - 100;
         
-        acvs = acts.map((function anonymous_325(a) {
+        acvs = acts.map((function anonymous_315(a) {
           var ns;
           var v;
           
@@ -1850,11 +1726,11 @@ Tonyu.klass.define({
           return {value: v,action: a};
         }));
         
-        acvs.sort((function anonymous_478() {
+        acvs.sort((function anonymous_463() {
           
           return _this.rnd()-0.5;
         }));
-        acvs.sort((function anonymous_515(a,b) {
+        acvs.sort((function anonymous_499(a,b) {
           
           return b.value-a.value;
         }));
@@ -1881,19 +1757,15 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_RandomBot_main() {
-        "use strict";
         var _this=this;
         
       },
       fiber$main :function* _trc_RandomBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
       play :function _trc_RandomBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var acts;
         var a;
@@ -1909,9 +1781,7 @@ Tonyu.klass.define({
         return a;
       },
       fiber$play :function* _trc_RandomBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -1940,42 +1810,34 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Rational_main() {
-        "use strict";
         var _this=this;
         
         
       },
       fiber$main :function* _trc_Rational_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
       },
       initialize :function _trc_Rational_initialize(q,n) {
-        "use strict";
         var _this=this;
         
         _this.q=q;
         _this.n=n;
       },
       inc :function _trc_Rational_inc(qby) {
-        "use strict";
         var _this=this;
         
         return new Tonyu.classes.user.Rational(_this.q+qby,_this.n+1);
       },
       fiber$inc :function* _trc_Rational_f_inc(_thread,qby) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return new Tonyu.classes.user.Rational(_this.q+qby,_this.n+1);
         
       },
       __getter__value :function _trc_Rational___getter__value() {
-        "use strict";
         var _this=this;
         
         if (_this.n==0) {
@@ -1984,7 +1846,6 @@ Tonyu.klass.define({
         return _this.nanc(_this.q/_this.n);
       },
       nanc :function _trc_Rational_nanc(v) {
-        "use strict";
         var _this=this;
         
         if (v!==v) {
@@ -1994,9 +1855,7 @@ Tonyu.klass.define({
         return v;
       },
       fiber$nanc :function* _trc_Rational_f_nanc(_thread,v) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         if (v!==v) {
           throw new Error(_this.q+" / "+_this.n);
@@ -2019,19 +1878,15 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_SanpuLinesBot_main() {
-        "use strict";
         var _this=this;
         
       },
       fiber$main :function* _trc_SanpuLinesBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
       play :function _trc_SanpuLinesBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var acts;
         var a;
@@ -2047,9 +1902,7 @@ Tonyu.klass.define({
         return a;
       },
       fiber$play :function* _trc_SanpuLinesBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -2065,7 +1918,6 @@ Tonyu.klass.define({
         
       },
       searchCorner :function _trc_SanpuLinesBot_searchCorner(stationArray) {
-        "use strict";
         var _this=this;
         var biggest;
         var i;
@@ -2084,9 +1936,7 @@ Tonyu.klass.define({
         return biggest;
       },
       fiber$searchCorner :function* _trc_SanpuLinesBot_f_searchCorner(_thread,stationArray) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var biggest;
         var i;
         
@@ -2105,7 +1955,6 @@ Tonyu.klass.define({
         
       },
       spraying :function _trc_SanpuLinesBot_spraying(acts) {
-        "use strict";
         var _this=this;
         var choice;
         var stn;
@@ -2131,9 +1980,7 @@ Tonyu.klass.define({
         }
       },
       fiber$spraying :function* _trc_SanpuLinesBot_f_spraying(_thread,acts) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var choice;
         var stn;
         var kouho;
@@ -2159,7 +2006,6 @@ Tonyu.klass.define({
         
       },
       shuffle :function _trc_SanpuLinesBot_shuffle(stArray) {
-        "use strict";
         var _this=this;
         var newArray;
         var choice;
@@ -2182,9 +2028,7 @@ Tonyu.klass.define({
         return newArray;
       },
       fiber$shuffle :function* _trc_SanpuLinesBot_f_shuffle(_thread,stArray) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var newArray;
         var choice;
         var z;
@@ -2220,19 +2064,15 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_SanpuStationsBot_main() {
-        "use strict";
         var _this=this;
         
       },
       fiber$main :function* _trc_SanpuStationsBot_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
       },
       play :function _trc_SanpuStationsBot_play(ctx,s) {
-        "use strict";
         var _this=this;
         var acts;
         var a;
@@ -2248,9 +2088,7 @@ Tonyu.klass.define({
         return a;
       },
       fiber$play :function* _trc_SanpuStationsBot_f_play(_thread,ctx,s) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var acts;
         var a;
         
@@ -2266,7 +2104,6 @@ Tonyu.klass.define({
         
       },
       searchCorner :function _trc_SanpuStationsBot_searchCorner(stationArray) {
-        "use strict";
         var _this=this;
         var max;
         var i;
@@ -2285,9 +2122,7 @@ Tonyu.klass.define({
         return max;
       },
       fiber$searchCorner :function* _trc_SanpuStationsBot_f_searchCorner(_thread,stationArray) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var max;
         var i;
         
@@ -2306,7 +2141,6 @@ Tonyu.klass.define({
         
       },
       spraying :function _trc_SanpuStationsBot_spraying(acts) {
-        "use strict";
         var _this=this;
         var choice;
         var stn;
@@ -2332,9 +2166,7 @@ Tonyu.klass.define({
         }
       },
       fiber$spraying :function* _trc_SanpuStationsBot_f_spraying(_thread,acts) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var choice;
         var stn;
         var kouho;
@@ -2360,7 +2192,6 @@ Tonyu.klass.define({
         
       },
       shuffle :function _trc_SanpuStationsBot_shuffle(stArray) {
-        "use strict";
         var _this=this;
         var newArray;
         var choice;
@@ -2383,9 +2214,7 @@ Tonyu.klass.define({
         return newArray;
       },
       fiber$shuffle :function* _trc_SanpuStationsBot_f_shuffle(_thread,stArray) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var newArray;
         var choice;
         var z;
@@ -2408,7 +2237,6 @@ Tonyu.klass.define({
         
       },
       linesAllStations :function _trc_SanpuStationsBot_linesAllStations(stationName) {
-        "use strict";
         var _this=this;
         var sum;
         var sLines;
@@ -2434,9 +2262,7 @@ Tonyu.klass.define({
         return sum;
       },
       fiber$linesAllStations :function* _trc_SanpuStationsBot_f_linesAllStations(_thread,stationName) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         var sum;
         var sLines;
         var i;
@@ -2475,21 +2301,17 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_State_main() {
-        "use strict";
         var _this=this;
         
         
       },
       fiber$main :function* _trc_State_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
       },
       print :function _trc_State_print(p) {
-        "use strict";
         var _this=this;
         var cp;
         
@@ -2499,7 +2321,6 @@ Tonyu.klass.define({
         cp.print.apply(cp,arguments);
       },
       fiber$print :function* _trc_State_f_print(_thread,p) {
-        "use strict";
         var _this=this;
         var _arguments=Tonyu.A(arguments);
         var cp;
@@ -2511,77 +2332,62 @@ Tonyu.klass.define({
         
       },
       next :function _trc_State_next(ctx,a) {
-        "use strict";
         var _this=this;
         
         throw new Error("Abstract: メソッドnextが実装されていません");
         
       },
       fiber$next :function* _trc_State_f_next(_thread,ctx,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドnextが実装されていません");
         
         
       },
       actionsEvents :function _trc_State_actionsEvents(ctx) {
-        "use strict";
         var _this=this;
         
         throw new Error("Abstract: メソッドactionsEventsが実装されていません");
         
       },
       fiber$actionsEvents :function* _trc_State_f_actionsEvents(_thread,ctx) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドactionsEventsが実装されていません");
         
         
       },
       gameover :function _trc_State_gameover(ctx) {
-        "use strict";
         var _this=this;
         
         return _this.actionsEvents(ctx).length==0;
       },
       fiber$gameover :function* _trc_State_f_gameover(_thread,ctx) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.actionsEvents(ctx).length==0;
         
       },
       id :function _trc_State_id(ctx) {
-        "use strict";
         var _this=this;
         
         throw new Error("Abstract: メソッドidが実装されていません");
         
       },
       fiber$id :function* _trc_State_f_id(_thread,ctx) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         throw new Error("Abstract: メソッドidが実装されていません");
         
         
       },
       playerIndex :function _trc_State_playerIndex(ctx,p) {
-        "use strict";
         var _this=this;
         
         return ctx.players.indexOf(p);
       },
       fiber$playerIndex :function* _trc_State_f_playerIndex(_thread,ctx,p) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return ctx.players.indexOf(p);
         
@@ -2600,7 +2406,6 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Main_main() {
-        "use strict";
         var _this=this;
         
         _this.bots = [];
@@ -2622,9 +2427,7 @@ Tonyu.klass.define({
         }
       },
       fiber$main :function* _trc_Main_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.bots = [];
         
@@ -2646,7 +2449,6 @@ Tonyu.klass.define({
         
       },
       value :function _trc_Main_value(ctx,player,state) {
-        "use strict";
         var _this=this;
         
         let acts = state.actionsEvents(ctx);
@@ -2668,9 +2470,7 @@ Tonyu.klass.define({
         }
       },
       fiber$value :function* _trc_Main_f_value(_thread,ctx,player,state) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let acts = state.actionsEvents(ctx);
         
@@ -2692,7 +2492,6 @@ Tonyu.klass.define({
         
       },
       match :function _trc_Main_match() {
-        "use strict";
         var _this=this;
         
         _this.print("totaltimes:",_this.tt1,_this.tt2);
@@ -2743,9 +2542,7 @@ Tonyu.klass.define({
         _this.to2=_this.rnd()*10+0.1;
       },
       fiber$match :function* _trc_Main_f_match(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         _this.print("totaltimes:",_this.tt1,_this.tt2);
         _this.print("timeouts:",_this.to1,_this.to2);
@@ -2809,23 +2606,19 @@ Tonyu.klass.define({
   methods: function (__superClass) {
     return {
       main :function _trc_Board_main() {
-        "use strict";
         var _this=this;
         
         
         
       },
       fiber$main :function* _trc_Board_f_main(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         
         
         
       },
       next :function _trc_Board_next(ctx,a) {
-        "use strict";
         var _this=this;
         
         let nm = _this.mat.clone();
@@ -2839,9 +2632,7 @@ Tonyu.klass.define({
         return new Tonyu.classes.user.Board({mat: nm,player: foe});
       },
       fiber$next :function* _trc_Board_f_next(_thread,ctx,a) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let nm = _this.mat.clone();
         
@@ -2855,7 +2646,6 @@ Tonyu.klass.define({
         
       },
       actionsEvents :function _trc_Board_actionsEvents(ctx) {
-        "use strict";
         var _this=this;
         
         let res = [];
@@ -2893,9 +2683,7 @@ Tonyu.klass.define({
         return res;
       },
       fiber$actionsEvents :function* _trc_Board_f_actionsEvents(_thread,ctx) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let res = [];
         
@@ -2933,21 +2721,17 @@ Tonyu.klass.define({
         
       },
       gameover :function _trc_Board_gameover(ctx) {
-        "use strict";
         var _this=this;
         
         return _this.actionsEvents(ctx).length==0;
       },
       fiber$gameover :function* _trc_Board_f_gameover(_thread,ctx) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         return _this.actionsEvents(ctx).length==0;
         
       },
       toString :function _trc_Board_toString() {
-        "use strict";
         var _this=this;
         
         let buf = "";
@@ -2965,9 +2749,7 @@ Tonyu.klass.define({
         return buf;
       },
       fiber$toString :function* _trc_Board_f_toString(_thread) {
-        "use strict";
         var _this=this;
-        //var _arguments=Tonyu.A(arguments);
         
         let buf = "";
         let py = 0;
@@ -2988,6 +2770,8 @@ Tonyu.klass.define({
     };
   },
   decls: {"methods":{"main":{"nowait":false,"isMain":true,"vtype":{"params":[],"returnValue":null}},"next":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context",null],"returnValue":"user.State"}},"actionsEvents":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context"],"returnValue":null}},"gameover":{"nowait":false,"isMain":false,"vtype":{"params":["user.Context"],"returnValue":null}},"toString":{"nowait":false,"isMain":false,"vtype":{"params":[],"returnValue":null}}},"fields":{"mat":{"vtype":"kernel.Matrix"},"player":{"vtype":"Number"}}}
+});
+
 });
 
 //# sourceMappingURL=concat.js.map
