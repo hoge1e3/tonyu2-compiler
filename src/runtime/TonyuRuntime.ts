@@ -476,9 +476,9 @@ const Tonyu={
 		A, ID:Math.random()
 };
 //const TT=TonyuThreadF(Tonyu);
-if ((globalThis as any).Tonyu) {
+/*if ((globalThis as any).Tonyu) {
 	console.error("Tonyu called twice!");
 	throw new Error("Tonyu called twice!");
-}
+}*/
 (globalThis as any).Tonyu=Tonyu;
 export default Tonyu;
